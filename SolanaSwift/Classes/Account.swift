@@ -10,11 +10,11 @@ import TweetNacl
 
 public extension SolanaSDK {
     struct Account {
-        let phrase: [String]
-        let publicKey: Data
-        let secretKey: Data
+        public let phrase: [String]
+        public let publicKey: Data
+        public let secretKey: Data
         
-        init(phrase: [String] = []) throws {
+        public init(phrase: [String] = []) throws {
             let mnemonic: Mnemonic
             if !phrase.isEmpty {
                 mnemonic = try Mnemonic(phrase: phrase)

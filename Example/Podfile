@@ -1,4 +1,5 @@
 use_frameworks!
 target 'SolanaSwift_Tests' do
   pod 'SolanaSwift', :path => '../'
+  pod 'RxBlocking'
 end

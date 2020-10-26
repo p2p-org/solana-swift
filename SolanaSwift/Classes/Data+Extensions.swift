@@ -8,7 +8,7 @@
 import Foundation
 import Base58Swift
 
-extension Data {
+public extension Data {
     var base58EncodedString: String {
         Base58.base58Encode([UInt8](self))
     }
