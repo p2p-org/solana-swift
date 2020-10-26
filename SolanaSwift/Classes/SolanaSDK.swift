@@ -38,16 +38,16 @@ public class SolanaSDK {
     }
     
     public func getAccountInfo() -> Single<AccountInfo> {
-        request(bcMethod: "getAccountInfo", parameters: [["encoding": "base58"]])
+        request(parameters: [["encoding": "base58"]])
     }
     
     public func getBalance() -> Single<Balance> {
-        request(bcMethod: "getBalance")
+        request()
     }
     
     #if DEBUG
     public func requestAirdrop(value: UInt = 89588000) -> Single<String> {
-        request(bcMethod: "requestAirdrop", parameters: [value])
+        request(parameters: [value])
     }
     #endif
     
@@ -55,7 +55,7 @@ public class SolanaSDK {
     func request<T: Decodable>(
         method: HTTPMethod = .post,
         path: String = "",
-        bcMethod: String,
+        bcMethod: String = #function,
         parameters: [Encodable] = []
     ) -> Single<T>{
         guard let url = URL(string: endpoint + path) else {
@@ -67,6 +67,7 @@ public class SolanaSDK {
         var params = parameters
         params.insert(account.publicKey.base58EncodedString, at: 0)
         
+        let bcMethod = bcMethod.replacingOccurrences(of: "\\([\\w\\s:]*\\)", with: "", options: .regularExpression)
         Logger.log(message: "\(method.rawValue) \(bcMethod) \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)
         
         do {
