@@ -37,6 +37,10 @@ public class SolanaSDK {
         return account
     }
     
+    public func getAccountInfo() -> Single<AccountInfo> {
+        request(bcMethod: "getAccountInfo", parameters: [["encoding": "base58"]])
+    }
+    
     public func getBalance() -> Single<Balance> {
         request(bcMethod: "getBalance")
     }

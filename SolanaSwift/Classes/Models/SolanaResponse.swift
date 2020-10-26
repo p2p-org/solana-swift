@@ -14,13 +14,27 @@ public extension SolanaSDK {
         let result: T
     }
     
+    /// Get account info
+    struct AccountInfo: Decodable {
+        let context: Context
+        public let value: AccountInfoValue?
+    }
+    
+    struct AccountInfoValue: Decodable {
+        let data: [String]
+        let executable: Bool
+        let lamports: UInt
+        let owner: String
+        let rentEpoch: String
+    }
+    
     /// Get balance
     struct Balance: Decodable {
-        let context: BalanceContext
+        let context: Context
         public let value: Int
     }
     
-    struct BalanceContext: Decodable {
+    struct Context: Decodable {
         let slot: Int
     }
 }
