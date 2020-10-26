@@ -40,4 +40,6 @@ TODO: Add long description of the pod here.
   # s.frameworks = 'UIKit', 'MapKit'
   s.dependency 'RxAlamofire'
   s.dependency 'Base58Swift'
+  s.dependency 'TweetNacl'
+  s.dependency 'CryptoSwift'
 end
