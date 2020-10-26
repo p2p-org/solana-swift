@@ -1,0 +1,6 @@
+use_frameworks!
+target 'SolanaSwift_Tests' do
+  pod 'SolanaSwift', :path => '../'
+  
+  
+end
