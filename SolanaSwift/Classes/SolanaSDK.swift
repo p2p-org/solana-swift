@@ -38,16 +38,21 @@ public class SolanaSDK {
     }
     
     public func getBalance() -> Single<Balance> {
-        request(bcMethod: "getBalance", decodedTo: Balance.self)
+        request(bcMethod: "getBalance")
     }
+    
+    #if DEBUG
+    public func requestAirdrop(value: UInt = 89588000) -> Single<String> {
+        request(bcMethod: "requestAirdrop", parameters: [value])
+    }
+    #endif
     
     // MARK: - Helper
     func request<T: Decodable>(
         method: HTTPMethod = .post,
         path: String = "",
         bcMethod: String,
-        parameters: [Encodable] = [],
-        decodedTo: T.Type
+        parameters: [Encodable] = []
     ) -> Single<T>{
         guard let url = URL(string: endpoint + path) else {
             return .error(Error.invalidURL)
@@ -56,14 +61,14 @@ public class SolanaSDK {
             return .error(Error.accountNotFound)
         }
         var params = parameters
-        params.append(account.publicKey.base58EncodedString)
+        params.insert(account.publicKey.base58EncodedString, at: 0)
         
         Logger.log(message: "\(method.rawValue) \(bcMethod) \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)
         
         do {
             var urlRequest = try URLRequest(url: url, method: method, headers: [.contentType("application/json")])
             
-            let requestAPI = RequestAPI(method: "getBalance", jsonrpc: "2.0", params: params
+            let requestAPI = RequestAPI(method: bcMethod, jsonrpc: "2.0", params: params
             )
             urlRequest.httpBody = try JSONEncoder().encode(requestAPI)
             return RxAlamofire.request(urlRequest)
