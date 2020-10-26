@@ -10,14 +10,14 @@ import Foundation
 public extension SolanaSDK {
     internal struct Response<T: Decodable>: Decodable {
         let jsonrpc: String
-        let id: Int
+        let id: String?
         let result: T
     }
     
     /// Get balance
     struct Balance: Decodable {
         let context: BalanceContext
-        let value: Int
+        public let value: Int
     }
     
     struct BalanceContext: Decodable {

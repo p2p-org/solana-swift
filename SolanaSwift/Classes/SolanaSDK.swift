@@ -23,7 +23,6 @@ public class SolanaSDK {
     let endpoint = ""
     #endif
     let accountStorage: SolanaSDKAccountStorage
-    private var id = 1
     
     // MARK: - Initializer
     public init(accountStorage: SolanaSDKAccountStorage) {
@@ -31,6 +30,7 @@ public class SolanaSDK {
     }
     
     // MARK: - Methods
+    @discardableResult
     public func createAccount() throws -> Account {
         let account = try Account()
         try accountStorage.save(account)
@@ -46,7 +46,7 @@ public class SolanaSDK {
         method: HTTPMethod = .post,
         path: String = "",
         bcMethod: String,
-        parameters: [Any] = [],
+        parameters: [Encodable] = [],
         decodedTo: T.Type
     ) -> Single<T>{
         guard let url = URL(string: endpoint + path) else {
@@ -55,33 +55,35 @@ public class SolanaSDK {
         guard let account = accountStorage.account else {
             return .error(Error.accountNotFound)
         }
-        var parameters = parameters
-        parameters.append([account.publicKey.base58EncodedString])
-        id += 1
-        if id > 1000 {id=1}
+        var params = parameters
+        params.append(account.publicKey.base58EncodedString)
         
-        Logger.log(message: "\(method.rawValue) \(String(describing: (parameters as? Encodable)?.jsonString))", event: .request, apiMethod: bcMethod)
+        Logger.log(message: "\(method.rawValue) \(bcMethod) \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)
         
-        return RxAlamofire.request(method, url, parameters: [
-            "jsonrpc": "2.0",
-            "id": id,
-            "method": bcMethod,
-            "params": parameters
-        ])
-        .responseData()
-        .map {(response, data) -> Response<T> in
-            // Print
-            Logger.log(message: String(data: data, encoding: .utf8) ?? "", event: .response, apiMethod: bcMethod)
+        do {
+            var urlRequest = try URLRequest(url: url, method: method, headers: [.contentType("application/json")])
             
-            // Print
-            guard (200..<300).contains(response.statusCode) else {
-                // Decode errror
-                throw Error.invalidStatusCode(code: response.statusCode)
-            }
-            return try JSONDecoder().decode(Response<T>.self, from: data)
+            let requestAPI = RequestAPI(method: "getBalance", jsonrpc: "2.0", params: params
+            )
+            urlRequest.httpBody = try JSONEncoder().encode(requestAPI)
+            return RxAlamofire.request(urlRequest)
+                .responseData()
+                .map {(response, data) -> Response<T> in
+                    // Print
+                    Logger.log(message: String(data: data, encoding: .utf8) ?? "", event: .response, apiMethod: bcMethod)
+                    
+                    // Print
+                    guard (200..<300).contains(response.statusCode) else {
+                        // Decode errror
+                        throw Error.invalidStatusCode(code: response.statusCode)
+                    }
+                    return try JSONDecoder().decode(Response<T>.self, from: data)
+                }
+                .take(1)
+                .asSingle()
+                .map {$0.result}
+        } catch {
+            return .error(error)
         }
-        .take(1)
-        .asSingle()
-        .map {$0.result}
     }
 }
