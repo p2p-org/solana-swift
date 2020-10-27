@@ -37,20 +37,20 @@ public class SolanaSDK {
         return account
     }
     
-    public func getAccountInfo() -> Single<AccountInfo> {
-        request(parameters: [["encoding": "base58"]])
-    }
-    
-    public func getBalance() -> Single<Balance> {
-        request()
-    }
-    
-    #if DEBUG
-    public func requestAirdrop(value: UInt = 89588000) -> Single<String> {
-        request(parameters: [value])
-    }
-    #endif
-    
+//    public func getAccountInfo() -> Single<AccountInfo> {
+//        request(parameters: [["encoding": "base58"]])
+//    }
+//    
+//    public func getBalance() -> Single<Balance> {
+//        request()
+//    }
+//    
+//    #if DEBUG
+//    public func requestAirdrop(value: UInt = 89588000) -> Single<String> {
+//        request(parameters: [value])
+//    }
+//    #endif
+//    
     // MARK: - Helper
     func request<T: Decodable>(
         method: HTTPMethod = .post,
@@ -78,7 +78,7 @@ public class SolanaSDK {
             urlRequest.httpBody = try JSONEncoder().encode(requestAPI)
             return RxAlamofire.request(urlRequest)
                 .responseData()
-                .map {(response, data) -> Response<T> in
+                .map {(response, data) -> T in
                     // Print
                     Logger.log(message: String(data: data, encoding: .utf8) ?? "", event: .response, apiMethod: bcMethod)
                     
@@ -87,11 +87,10 @@ public class SolanaSDK {
                         // Decode errror
                         throw Error.invalidStatusCode(code: response.statusCode)
                     }
-                    return try JSONDecoder().decode(Response<T>.self, from: data)
+                    return try JSONDecoder().decode(T.self, from: data)
                 }
                 .take(1)
                 .asSingle()
-                .map {$0.result}
         } catch {
             return .error(error)
         }
