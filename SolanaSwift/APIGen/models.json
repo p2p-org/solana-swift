@@ -251,7 +251,10 @@
   {
     "structName": "Version",
     "params": {
-      "solana-core": "String"
+      "solanaCore": "String"
+    },
+    "customCodingKeys": {
+      "solanaCore": "solana-core"
     }
   },
   {

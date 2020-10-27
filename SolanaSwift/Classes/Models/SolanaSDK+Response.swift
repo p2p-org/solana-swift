@@ -172,7 +172,11 @@ public extension SolanaSDK {
 		public let uiAmount: Float64
 	}
 	public struct Version: Decodable {
-		public let solana-core: String
+		public let solanaCore: String
+
+		private enum CodingKeys : String, CodingKey {
+			case solanaCore = "solana-core"
+		}
 	}
 	public struct VoteAccounts: Decodable {
 		public let current: [VoteAccount]

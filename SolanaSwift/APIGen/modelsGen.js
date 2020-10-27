@@ -9,6 +9,14 @@ module.exports = function() {
 		for (const [key, value] of Object.entries(model.params)) {
 			structs += "\t\tpublic let " + key + ": " + value + "\n";
 		}
+		let customCodingKeys = model.customCodingKeys;
+		if (customCodingKeys) {
+			structs += "\n\t\tprivate enum CodingKeys : String, CodingKey {\n"
+			for (const [key, value] of Object.entries(model.customCodingKeys)) {
+				structs += "\t\t\tcase "+key+" = \""+value+"\"\n";
+			}
+			structs += "\t\t}\n"
+		}
 		structs += "\t}\n";
 	}
 
@@ -27,44 +35,3 @@ module.exports = function() {
 
 	fs.writeFileSync('../Classes/Models/SolanaSDK+Response.swift', string);
 }
-
-//
-////  Response.swift
-////  p2p_wallet
-////
-////  Created by Chung Tran on 10/26/20.
-////
-//
-//import Foundation
-//
-//public extension SolanaSDK {
-//    internal struct Response<T: Decodable>: Decodable {
-//        let jsonrpc: String
-//        let id: String?
-//        let result: T
-//    }
-//    
-//    /// Get account info
-//    struct AccountInfo: Decodable {
-//        let context: Context
-//        public let value: AccountInfoValue?
-//    }
-//    
-//    struct AccountInfoValue: Decodable {
-//        let data: [String]
-//        let executable: Bool
-//        let lamports: UInt
-//        let owner: String
-//        let rentEpoch: String
-//    }
-//    
-//    /// Get balance
-//    struct Balance: Decodable {
-//        let context: Context
-//        public let value: Int
-//    }
-//    
-//    struct Context: Decodable {
-//        let slot: Int
-//    }
-//}
