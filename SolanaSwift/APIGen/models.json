@@ -1,10 +1,23 @@
 [
   {
-    "structName": "Rpc<T: Decodable>",
+    "structName": "Response<T: Decodable>",
     "params": {
       "jsonrpc": "String",
       "id": "String",
       "result": "T"
+    }
+  },
+  {
+    "structName": "Rpc<T: Decodable>",
+    "params": {
+      "context": "Context",
+      "value": "T"
+    }
+  },
+  {
+    "structName": "Context",
+    "params": {
+      "slot": "UInt64"
     }
   },
   {

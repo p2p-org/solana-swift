@@ -12,10 +12,17 @@ import RxSwift
 public extension SolanaSDK {
 	typealias Commitment = String
 
-	public struct Rpc<T: Decodable>: Decodable {
+	public struct Response<T: Decodable>: Decodable {
 		public let jsonrpc: String
 		public let id: String
 		public let result: T
+	}
+	public struct Rpc<T: Decodable>: Decodable {
+		public let context: Context
+		public let value: T
+	}
+	public struct Context: Decodable {
+		public let slot: UInt64
 	}
 	public struct AccountInfo: Decodable {
 		public let lamports: UInt64

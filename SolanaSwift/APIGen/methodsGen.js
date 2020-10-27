@@ -36,7 +36,7 @@ module.exports = function() {
 		funcs += "request("+parameters+")";
 		if (startWithRpc) {
 			funcs += " as Single<Rpc<"+returnedType+">>)\n"
-			funcs += "\t\t\t.map {$0.result}";
+			funcs += "\t\t\t.map {$0.value}";
 		}
 		funcs += "\n"
 		funcs += "\t}\n";
