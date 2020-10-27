@@ -7,9 +7,9 @@ module.exports = function() {
 		let model = models[index];
 		structs += "\tpublic struct " + model.structName + ": Decodable {\n";
 		for (const [key, value] of Object.entries(model.params)) {
-			structs += "\t\tpublic let " + key + ": " + value + "\n"
+			structs += "\t\tpublic let " + key + ": " + value + "\n";
 		}
-		structs += "\t}\n"
+		structs += "\t}\n";
 	}
 
 	let string = 
@@ -23,7 +23,7 @@ module.exports = function() {
 	"import Foundation\n"+
 	"import RxSwift\n"+
 	"\n"+
-	"public extension SolanaSDK {\n"+structs+"}"
+	"public extension SolanaSDK {\n\ttypealias Commitment = String\n\n"+structs+"}"
 
 	fs.writeFileSync('../Classes/Models/SolanaSDK+Response.swift', string);
 }

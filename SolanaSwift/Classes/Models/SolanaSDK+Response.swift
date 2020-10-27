@@ -10,6 +10,8 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
+	typealias Commitment = String
+
 	public struct Rpc<T: Decodable>: Decodable {
 		public let jsonrpc: String
 		public let id: String
@@ -42,6 +44,10 @@ public extension SolanaSDK {
 		public let blockTime: UInt64?
 	}
 	public struct Reward: Decodable {
+		public let pubkey: String
+		public let lamports: Int64
+		public let postBalance: UInt64
+		public let rewardType: String?
 	}
 	public struct TransactionInfo: Decodable {
 		public let meta: TransactionMeta?
@@ -63,6 +69,10 @@ public extension SolanaSDK {
 	public struct TransactionMessage: Decodable {
 		public let accountKeys: [String]
 		public let header: TransactionMessageHeader
+	}
+	public struct TransactionMessageHeader: Decodable {
+		public let numReadonlySignedAccounts: Int
+		public let numReadonlyUnsignedAccounts: Int
 	}
 	public struct TransactionSignatureInfo: Decodable {
 		public let signature: String
@@ -119,9 +129,6 @@ public extension SolanaSDK {
 	public struct LargestAccount: Decodable {
 		public let lamports: UInt64
 		public let address: String
-	}
-	public struct RequestConfiguration: Decodable {
-		public let commitment: Commitment?
 	}
 	public struct ProgramAccount: Decodable {
 		public let account: AccountInfo

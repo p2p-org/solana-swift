@@ -47,7 +47,12 @@
   },
   {
     "structName": "Reward",
-    "params": {}
+    "params": {
+      "pubkey": "String",
+      "lamports": "Int64",
+      "postBalance": "UInt64",
+      "rewardType": "String?"
+    }
   },
   {
     "structName": "TransactionInfo",
@@ -82,6 +87,14 @@
     "params": {
       "accountKeys": "[String]",
       "header": "TransactionMessageHeader"
+    }
+  },
+  {
+    "structName": "TransactionMessageHeader",
+    "params": {
+      "numReadonlySignedAccounts": "Int",
+      "numReadonlyUnsignedAccounts": "Int",
+      "numReadonlyUnsignedAccounts": "Int"
     }
   },
   {
@@ -168,12 +181,6 @@
     "params": {
       "lamports": "UInt64",
       "address": "String"
-    }
-  },
-  {
-    "structName": "RequestConfiguration",
-    "params": {
-      "commitment": "Commitment?"
     }
   },
   {

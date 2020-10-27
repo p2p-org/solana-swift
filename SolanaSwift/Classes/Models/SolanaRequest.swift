@@ -38,4 +38,8 @@ extension SolanaSDK {
             try container.encode(wrappedDict, forKey: .params)
         }
     }
+    
+    public struct RequestConfiguration: Encodable {
+        public let commitment: Commitment?
+    }
 }
