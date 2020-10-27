@@ -41,5 +41,19 @@ extension SolanaSDK {
     
     public struct RequestConfiguration: Encodable {
         public let commitment: Commitment?
+        public let encoding: String?
+        public let dataSlice: DataSlice?
+        
+        public init(commitment: Commitment? = nil, encoding: String? = nil, dataSlice: DataSlice? = nil)
+        {
+            self.commitment = commitment
+            self.encoding = encoding
+            self.dataSlice = dataSlice
+        }
+    }
+    
+    public struct DataSlice: Encodable {
+        public let offset: Int
+        public let length: Int
     }
 }

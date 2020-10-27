@@ -61,11 +61,7 @@ public class SolanaSDK {
         guard let url = URL(string: endpoint + path) else {
             return .error(Error.invalidURL)
         }
-        guard let account = accountStorage.account else {
-            return .error(Error.accountNotFound)
-        }
         var params = parameters.compactMap {$0}
-        params.insert(account.publicKey.base58EncodedString, at: 0)
         
         let bcMethod = bcMethod.replacingOccurrences(of: "\\([\\w\\s:]*\\)", with: "", options: .regularExpression)
         Logger.log(message: "\(method.rawValue) \(bcMethod) \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)

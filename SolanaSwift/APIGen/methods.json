@@ -1,12 +1,18 @@
 [
   {
     "method": "getAccountInfo",
-    "params": {},
+    "params": {
+      "account": "String",
+      "configurations": "RequestConfiguration = RequestConfiguration(encoding: \"base58\")"
+    },
     "returnedType": "Rpc<AccountInfo?>"
   },
   {
     "method": "getBalance",
-    "params": {},
+    "params": {
+      "account": "String",
+      "commitment": "Commitment? = nil"
+    },
     "returnedType": "Rpc<UInt64>"
   },
   {

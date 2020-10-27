@@ -10,12 +10,12 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-	public func getAccountInfo() -> Single<AccountInfo?> {
-		(request() as Single<Rpc<AccountInfo?>>)
+	public func getAccountInfo(account: String, configurations: RequestConfiguration = RequestConfiguration(encoding: "base58")) -> Single<AccountInfo?> {
+		(request(parameters: [account, configurations]) as Single<Rpc<AccountInfo?>>)
 			.map {$0.result}
 	}
-	public func getBalance() -> Single<UInt64> {
-		(request() as Single<Rpc<UInt64>>)
+	public func getBalance(account: String, commitment: Commitment? = nil) -> Single<UInt64> {
+		(request(parameters: [account, commitment]) as Single<Rpc<UInt64>>)
 			.map {$0.result}
 	}
 	public func getBlockCommitment(block: String) -> Single<BlockCommitment> {
