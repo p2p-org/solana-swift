@@ -22,7 +22,7 @@ public class SolanaSDK {
     #else
     let endpoint = ""
     #endif
-    let accountStorage: SolanaSDKAccountStorage
+    public let accountStorage: SolanaSDKAccountStorage
     
     // MARK: - Initializer
     public init(accountStorage: SolanaSDKAccountStorage) {
