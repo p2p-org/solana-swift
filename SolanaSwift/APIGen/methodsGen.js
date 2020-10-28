@@ -10,8 +10,9 @@ module.exports = function() {
 
 		let funcParams = [];
 		let paramsToPass = [];
-		for (const [key, value] of Object.entries(methods[index].params)) {
+		for (let [key, value] of Object.entries(methods[index].params)) {
   			funcParams.push(key + ": " + value);
+  			if (key == 'commitment') {key = "RequestConfiguration(commitment: "+key+")";}
   			paramsToPass.push(key);
 		}
 		funcs += funcParams.join(", ");

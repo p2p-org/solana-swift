@@ -3,7 +3,7 @@
     "method": "getAccountInfo",
     "params": {
       "account": "String",
-      "configurations": "RequestConfiguration = RequestConfiguration(encoding: \"base58\")"
+      "configs": "RequestConfiguration? = RequestConfiguration(encoding: \"base58\")"
     },
     "returnedType": "Rpc<AccountInfo?>"
   },
@@ -71,7 +71,7 @@
     "method": "getConfirmedSignaturesForAddress2",
     "params": {
       "account": "String",
-      "configurations": "RequestConfiguration? = nil"
+      "configs": "RequestConfiguration? = nil"
     },
     "returnedType": "TransactionSignatureInfo"
   },

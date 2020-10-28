@@ -31,7 +31,7 @@ module.exports = function() {
 	"import Foundation\n"+
 	"import RxSwift\n"+
 	"\n"+
-	"public extension SolanaSDK {\n\ttypealias Commitment = String\n\n"+structs+"}"
+	"public extension SolanaSDK {\n"+structs+"}"
 
 	fs.writeFileSync('../Classes/Models/SolanaSDK+Response.swift', string);
 }

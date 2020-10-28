@@ -10,12 +10,12 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-	public func getAccountInfo(account: String, configurations: RequestConfiguration = RequestConfiguration(encoding: "base58")) -> Single<AccountInfo?> {
-		(request(parameters: [account, configurations]) as Single<Rpc<AccountInfo?>>)
+	public func getAccountInfo(account: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base58")) -> Single<AccountInfo?> {
+		(request(parameters: [account, configs]) as Single<Rpc<AccountInfo?>>)
 			.map {$0.value}
 	}
 	public func getBalance(account: String, commitment: Commitment? = nil) -> Single<UInt64> {
-		(request(parameters: [account, commitment]) as Single<Rpc<UInt64>>)
+		(request(parameters: [account, RequestConfiguration(commitment: commitment)]) as Single<Rpc<UInt64>>)
 			.map {$0.value}
 	}
 	public func getBlockCommitment(block: String) -> Single<BlockCommitment> {
@@ -39,20 +39,20 @@ public extension SolanaSDK {
 	public func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) -> Single<[String]> {
 		request(parameters: [account, startSlot, endSlot])
 	}
-	public func getConfirmedSignaturesForAddress2(account: String, configurations: RequestConfiguration? = nil) -> Single<TransactionSignatureInfo> {
-		request(parameters: [account, configurations])
+	public func getConfirmedSignaturesForAddress2(account: String, configs: RequestConfiguration? = nil) -> Single<TransactionSignatureInfo> {
+		request(parameters: [account, configs])
 	}
 	public func getConfirmedTransaction(transactionSignature: String, encoding: String = "json") -> Single<TransactionInfo> {
 		request(parameters: [transactionSignature, encoding])
 	}
 	public func getEpochInfo(commitment: Commitment? = nil) -> Single<EpochInfo> {
-		request(parameters: [commitment])
+		request(parameters: [RequestConfiguration(commitment: commitment)])
 	}
 	public func getEpochSchedule() -> Single<EpochSchedule> {
 		request()
 	}
 	public func getFeeCalculatorForBlockhash(blockhash: String, commitment: Commitment? = nil) -> Single<Fee> {
-		(request(parameters: [blockhash, commitment]) as Single<Rpc<Fee>>)
+		(request(parameters: [blockhash, RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)
 			.map {$0.value}
 	}
 	public func getFeeRateGovernor() -> Single<Fee> {
@@ -60,7 +60,7 @@ public extension SolanaSDK {
 			.map {$0.value}
 	}
 	public func getFees(commitment: Commitment? = nil) -> Single<[Fee]> {
-		(request(parameters: [commitment]) as Single<Rpc<[Fee]>>)
+		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<[Fee]>>)
 			.map {$0.value}
 	}
 	public func getFirstAvailableBlock() -> Single<UInt64> {
@@ -73,7 +73,7 @@ public extension SolanaSDK {
 		request()
 	}
 	public func getInflationGovernor(commitment: Commitment? = nil) -> Single<InflationGovernor> {
-		request(parameters: [commitment])
+		request(parameters: [RequestConfiguration(commitment: commitment)])
 	}
 	public func getInflationRate() -> Single<InflationRate> {
 		request()
@@ -83,10 +83,10 @@ public extension SolanaSDK {
 			.map {$0.value}
 	}
 	public func getLeaderSchedule(epoch: UInt64? = nil, commitment: Commitment? = nil) -> Single<[String: [Int]]?> {
-		request(parameters: [epoch, commitment])
+		request(parameters: [epoch, RequestConfiguration(commitment: commitment)])
 	}
 	public func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = nil) -> Single<UInt64> {
-		request(parameters: [dataLength, commitment])
+		request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
 	}
 	public func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[AccountInfo]?> {
 		(request(parameters: [pubkeys, configs]) as Single<Rpc<[AccountInfo]?>>)
@@ -96,7 +96,7 @@ public extension SolanaSDK {
 		request(parameters: [programPubkey, configs])
 	}
 	public func getRecentBlockhash(commitment: Commitment? = nil) -> Single<Fee> {
-		(request(parameters: [commitment]) as Single<Rpc<Fee>>)
+		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)
 			.map {$0.value}
 	}
 	public func getRecentPerformanceSamples(limit: UInt64) -> Single<[PerformanceSample]> {
@@ -107,23 +107,23 @@ public extension SolanaSDK {
 			.map {$0.value}
 	}
 	public func getSlot(commitment: Commitment? = nil) -> Single<UInt64> {
-		request(parameters: [commitment])
+		request(parameters: [RequestConfiguration(commitment: commitment)])
 	}
 	public func getSlotLeader(commitment: Commitment? = nil) -> Single<String> {
-		request(parameters: [commitment])
+		request(parameters: [RequestConfiguration(commitment: commitment)])
 	}
 	public func getStakeActivation(stakeAccount: String, configs: RequestConfiguration? = nil) -> Single<StakeActivation> {
 		request(parameters: [stakeAccount, configs])
 	}
 	public func getSupply(commitment: Commitment? = nil) -> Single<Supply> {
-		(request(parameters: [commitment]) as Single<Rpc<Supply>>)
+		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Supply>>)
 			.map {$0.value}
 	}
 	public func getTransactionCount(commitment: Commitment? = nil) -> Single<UInt64> {
-		request(parameters: [commitment])
+		request(parameters: [RequestConfiguration(commitment: commitment)])
 	}
 	public func getTokenAccountBalance(pubkey: String, commitment: Commitment? = nil) -> Single<TokenAccountBalance> {
-		request(parameters: [pubkey, commitment])
+		request(parameters: [pubkey, RequestConfiguration(commitment: commitment)])
 	}
 	public func getTokenAccountsByDelegate(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount]> {
 		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount]>>)
@@ -134,24 +134,24 @@ public extension SolanaSDK {
 			.map {$0.value}
 	}
 	public func getTokenLargestAccounts(pubkey: String, commitment: Commitment? = nil) -> Single<[TokenAmount]> {
-		(request(parameters: [pubkey, commitment]) as Single<Rpc<[TokenAmount]>>)
+		(request(parameters: [pubkey, RequestConfiguration(commitment: commitment)]) as Single<Rpc<[TokenAmount]>>)
 			.map {$0.value}
 	}
 	public func getTokenSupply(pubkey: String, commitment: Commitment? = nil) -> Single<TokenAmount> {
-		(request(parameters: [pubkey, commitment]) as Single<Rpc<TokenAmount>>)
+		(request(parameters: [pubkey, RequestConfiguration(commitment: commitment)]) as Single<Rpc<TokenAmount>>)
 			.map {$0.value}
 	}
 	public func getVersion() -> Single<Version> {
 		request()
 	}
 	public func getVoteAccounts(commitment: Commitment? = nil) -> Single<VoteAccounts> {
-		request(parameters: [commitment])
+		request(parameters: [RequestConfiguration(commitment: commitment)])
 	}
 	public func minimumLedgerSlot() -> Single<UInt64> {
 		request()
 	}
 	public func requestAirdrop(account: String, lamports: UInt64, commitment: Commitment? = nil) -> Single<String> {
-		request(parameters: [account, lamports, commitment])
+		request(parameters: [account, lamports, RequestConfiguration(commitment: commitment)])
 	}
 	public func sendTransaction(transaction: String, configs: RequestConfiguration? = nil) -> Single<String> {
 		request(parameters: [transaction, configs])
