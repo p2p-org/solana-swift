@@ -36,21 +36,7 @@ public class SolanaSDK {
         try accountStorage.save(account)
         return account
     }
-    
-//    public func getAccountInfo() -> Single<AccountInfo> {
-//        request(parameters: [["encoding": "base58"]])
-//    }
-//    
-//    public func getBalance() -> Single<Balance> {
-//        request()
-//    }
-//    
-//    #if DEBUG
-//    public func requestAirdrop(value: UInt = 89588000) -> Single<String> {
-//        request(parameters: [value])
-//    }
-//    #endif
-//    
+     
     // MARK: - Helper
     func request<T: Decodable>(
         method: HTTPMethod = .post,
