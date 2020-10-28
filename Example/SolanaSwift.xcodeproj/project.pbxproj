@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BC23AE9C2549275E0029FF0B /* SolanaSDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AE982549275E0029FF0B /* SolanaSDKTests.swift */; };
-		BC23AE9D2549275E0029FF0B /* SendTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AE992549275E0029FF0B /* SendTransactionTests.swift */; };
-		BC23AE9E2549275E0029FF0B /* InMemoryAccountStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AE9A2549275E0029FF0B /* InMemoryAccountStorage.swift */; };
-		BC23AE9F2549275E0029FF0B /* AccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AE9B2549275E0029FF0B /* AccountTests.swift */; };
+		BC23AEC2254928870029FF0B /* SendTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBE254928870029FF0B /* SendTransactionTests.swift */; };
+		BC23AEC3254928870029FF0B /* AccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBF254928870029FF0B /* AccountTests.swift */; };
+		BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */; };
+		BC23AEC5254928870029FF0B /* SolanaSDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */; };
 		E6DDE50635D3D9571A63FE4D /* Pods_SolanaSwift_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8C40B5C5D42F5F26B6E4DA /* Pods_SolanaSwift_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -97,10 +97,10 @@
 		656EB490BFE125DA165A4E9A /* Pods-SolanaSwift_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SolanaSwift_Tests.release.xcconfig"; path = "Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		88E637D24AF2B058D65016C3 /* SolanaSwift.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = SolanaSwift.podspec; path = ../SolanaSwift.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		BC23AE51254925F00029FF0B /* _Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = _Pods.xcodeproj; path = ../_Pods.xcodeproj; sourceTree = "<group>"; };
-		BC23AE982549275E0029FF0B /* SolanaSDKTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolanaSDKTests.swift; sourceTree = "<group>"; };
-		BC23AE992549275E0029FF0B /* SendTransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendTransactionTests.swift; sourceTree = "<group>"; };
-		BC23AE9A2549275E0029FF0B /* InMemoryAccountStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InMemoryAccountStorage.swift; sourceTree = "<group>"; };
-		BC23AE9B2549275E0029FF0B /* AccountTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountTests.swift; sourceTree = "<group>"; };
+		BC23AEBE254928870029FF0B /* SendTransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SendTransactionTests.swift; path = Tests/SolanaSDKTests/SendTransactionTests.swift; sourceTree = SOURCE_ROOT; };
+		BC23AEBF254928870029FF0B /* AccountTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AccountTests.swift; path = Tests/SolanaSDKTests/AccountTests.swift; sourceTree = SOURCE_ROOT; };
+		BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InMemoryAccountStorage.swift; path = Tests/SolanaSDKTests/InMemoryAccountStorage.swift; sourceTree = SOURCE_ROOT; };
+		BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SolanaSDKTests.swift; path = Tests/SolanaSDKTests/SolanaSDKTests.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,7 +146,7 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				BC23AE972549275E0029FF0B /* SolanaSDKTests */,
+				BC23AEA7254928490029FF0B /* SolanaSDKTests */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
 			path = Tests;
@@ -196,13 +196,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BC23AE972549275E0029FF0B /* SolanaSDKTests */ = {
+		BC23AEA7254928490029FF0B /* SolanaSDKTests */ = {
 			isa = PBXGroup;
 			children = (
-				BC23AE9A2549275E0029FF0B /* InMemoryAccountStorage.swift */,
-				BC23AE982549275E0029FF0B /* SolanaSDKTests.swift */,
-				BC23AE9B2549275E0029FF0B /* AccountTests.swift */,
-				BC23AE992549275E0029FF0B /* SendTransactionTests.swift */,
+				BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */,
+				BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */,
+				BC23AEBF254928870029FF0B /* AccountTests.swift */,
+				BC23AEBE254928870029FF0B /* SendTransactionTests.swift */,
 			);
 			name = SolanaSDKTests;
 			path = ../../../p2p_walletTests/SolanaSDKTests;
@@ -242,7 +242,7 @@
 				TargetAttributes = {
 					607FACE41AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 1200;
 					};
 				};
 			};
@@ -418,10 +418,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BC23AE9C2549275E0029FF0B /* SolanaSDKTests.swift in Sources */,
-				BC23AE9E2549275E0029FF0B /* InMemoryAccountStorage.swift in Sources */,
-				BC23AE9D2549275E0029FF0B /* SendTransactionTests.swift in Sources */,
-				BC23AE9F2549275E0029FF0B /* AccountTests.swift in Sources */,
+				BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */,
+				BC23AEC2254928870029FF0B /* SendTransactionTests.swift in Sources */,
+				BC23AEC5254928870029FF0B /* SolanaSDKTests.swift in Sources */,
+				BC23AEC3254928870029FF0B /* AccountTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -531,6 +531,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4EF1D0496DCFE4433D5FDA26 /* Pods-SolanaSwift_Tests.debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -543,6 +544,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
 			};
@@ -552,6 +554,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 656EB490BFE125DA165A4E9A /* Pods-SolanaSwift_Tests.release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 					"$(inherited)",
