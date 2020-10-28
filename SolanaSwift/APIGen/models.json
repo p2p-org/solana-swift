@@ -24,7 +24,7 @@
     "structName": "AccountInfo",
     "params": {
       "lamports": "UInt64",
-      "owners": "String",
+      "owner": "String",
       "data": "[String]",
       "executable": "Bool",
       "rentEpoch": "UInt64"

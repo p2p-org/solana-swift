@@ -24,7 +24,7 @@ public extension SolanaSDK {
 	}
 	public struct AccountInfo: Decodable {
 		public let lamports: UInt64
-		public let owners: String
+		public let owner: String
 		public let data: [String]
 		public let executable: Bool
 		public let rentEpoch: UInt64
