@@ -27,9 +27,9 @@ public extension Bytes {
         return len
     }
     
-    func encodingLength(_ len: UInt8) -> Bytes {
+    static func encodingLength(_ len: UInt8) -> Bytes {
         var rem_len = len
-        var bytes = self
+        var bytes = Bytes()
         while true {
             var elem = rem_len & 0x7f
             rem_len = rem_len >> 7
