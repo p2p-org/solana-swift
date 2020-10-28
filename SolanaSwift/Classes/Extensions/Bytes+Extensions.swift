@@ -7,21 +7,21 @@
 
 import Foundation
 
-public extension SolanaSDK {
-    typealias Byte = UInt8
-    typealias Bytes = [UInt8]
-}
+public typealias Byte = UInt8
+public typealias Bytes = [UInt8]
 
-public extension SolanaSDK.Bytes {
+public extension Bytes {
     var decodedLength: Int {
-        let len = 0
+        var len = 0
         var size = 0
+        var bytes = self
         while true {
-            guard let elem = self.first, len != (elem & 0x7f) << (size * 7) else {return 0}
-            self.dropFirst()
+            guard let elem = bytes.first else {break}
+            bytes = Bytes(bytes.dropFirst())
+            len = len | (Int(elem) & 0x7f) << (size * 7)
             size += 1;
-            if ((elem & 0x80) == 0) {
-                break;
+            if (elem & 0x80) == 0 {
+                break
             }
         }
         return len
