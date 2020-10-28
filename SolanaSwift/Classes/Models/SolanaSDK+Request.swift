@@ -40,6 +40,26 @@ extension SolanaSDK {
         }
     }
     
+    // MARK: - Transfer
+    public struct Transfer {
+        public static func compile() -> Data {
+            var result = Data(capacity: 17) // FIXME: - capacity
+            result.append(0x2) // program index
+            let keyIndeces = [UInt8]([0, 1])
+            result.append(Data.encodeLength(UInt(UInt8(keyIndeces.count)))) // key size
+            result.append(contentsOf: keyIndeces) // keyIndeces
+            result.append(UInt8(12))   // FIXME transfer data size
+            var littleEndian = UInt32(2).littleEndian
+            result += withUnsafeBytes(of: &littleEndian) { Array($0) }
+            
+            let lamports = 3000
+            var newEdian = lamports.littleEndian
+            result += withUnsafeBytes(of: &newEdian) { Array($0) }
+            
+            return result
+        }
+    }
+    
     // MARK: - Public
     public typealias Commitment = String
     
