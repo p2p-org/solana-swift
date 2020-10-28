@@ -10,37 +10,37 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-	public struct Response<T: Decodable>: Decodable {
+	struct Response<T: Decodable>: Decodable {
 		public let jsonrpc: String
 		public let id: String
 		public let result: T
 	}
-	public struct Rpc<T: Decodable>: Decodable {
+	struct Rpc<T: Decodable>: Decodable {
 		public let context: Context
 		public let value: T
 	}
-	public struct Context: Decodable {
+	struct Context: Decodable {
 		public let slot: UInt64
 	}
-	public struct AccountInfo: Decodable {
+	struct AccountInfo: Decodable {
 		public let lamports: UInt64
 		public let owner: String
 		public let data: [String]
 		public let executable: Bool
 		public let rentEpoch: UInt64
 	}
-	public struct BlockCommitment: Decodable {
+	struct BlockCommitment: Decodable {
 		public let commitment: [UInt64]?
 		public let totalStake: UInt64
 	}
-	public struct ClusterNodes: Decodable {
+	struct ClusterNodes: Decodable {
 		public let pubkey: String
 		public let gossip: String
 		public let tpu: String
 		public let rpc: String?
 		public let version: String?
 	}
-	public struct ConfirmedBlock: Decodable {
+	struct ConfirmedBlock: Decodable {
 		public let blockhash: String
 		public let previousBlockhash: String
 		public let parentSlot: UInt64
@@ -48,146 +48,146 @@ public extension SolanaSDK {
 		public let rewards: [Reward]
 		public let blockTime: UInt64?
 	}
-	public struct Reward: Decodable {
+	struct Reward: Decodable {
 		public let pubkey: String
 		public let lamports: Int64
 		public let postBalance: UInt64
 		public let rewardType: String?
 	}
-	public struct TransactionInfo: Decodable {
+	struct TransactionInfo: Decodable {
 		public let meta: TransactionMeta?
 		public let transaction: Transaction
 		public let slot: UInt64?
 	}
-	public struct TransactionMeta: Decodable {
+	struct TransactionMeta: Decodable {
 		public let err: TransactionError?
 		public let fee: UInt64
 		public let preBalances: [UInt64]
 		public let postBalances: [UInt64]
 	}
-	public struct Transaction: Decodable {
+	struct Transaction: Decodable {
 		public let signatures: [String]
 		public let message: TransactionMessage
 	}
-	public struct TransactionError: Decodable {
+	struct TransactionError: Decodable {
 	}
-	public struct TransactionMessage: Decodable {
+	struct TransactionMessage: Decodable {
 		public let accountKeys: [String]
 		public let header: TransactionMessageHeader
 	}
-	public struct TransactionMessageHeader: Decodable {
+	struct TransactionMessageHeader: Decodable {
 		public let numReadonlySignedAccounts: Int
 		public let numReadonlyUnsignedAccounts: Int
 	}
-	public struct TransactionSignatureInfo: Decodable {
+	struct TransactionSignatureInfo: Decodable {
 		public let signature: String
 		public let slot: UInt64
 		public let err: TransactionError?
 		public let memo: String?
 	}
-	public struct EpochInfo: Decodable {
+	struct EpochInfo: Decodable {
 		public let absoluteSlot: UInt64
 		public let blockHeight: UInt64
 		public let epoch: UInt64
 		public let slotIndex: UInt64
 		public let slotsInEpoch: UInt64
 	}
-	public struct EpochSchedule: Decodable {
+	struct EpochSchedule: Decodable {
 		public let slotsPerEpoch: UInt64
 		public let leaderScheduleSlotOffset: UInt64
 		public let warmup: Bool
 		public let firstNormalEpoch: UInt64
 		public let firstNormalSlot: UInt64
 	}
-	public struct Fee: Decodable {
+	struct Fee: Decodable {
 		public let feeCalculator: FeeCalculator?
 		public let feeRateGovernor: FeeRateGovernor?
 		public let blockhash: String?
 		public let lastValidSlot: UInt64
 	}
-	public struct FeeCalculator: Decodable {
+	struct FeeCalculator: Decodable {
 		public let lamportsPerSignature: UInt64
 	}
-	public struct FeeRateGovernor: Decodable {
+	struct FeeRateGovernor: Decodable {
 		public let burnPercent: UInt64
 		public let maxLamportsPerSignature: UInt64
 		public let minLamportsPerSignature: UInt64
 		public let targetLamportsPerSignature: UInt64
 		public let targetSignaturesPerSlot: UInt64
 	}
-	public struct Identity: Decodable {
+	struct Identity: Decodable {
 		public let identity: String
 	}
-	public struct InflationGovernor: Decodable {
+	struct InflationGovernor: Decodable {
 		public let foundation: Float64
 		public let foundationTerm: Float64
 		public let initial: Float64
 		public let taper: Float64
 		public let terminal: Float64
 	}
-	public struct InflationRate: Decodable {
+	struct InflationRate: Decodable {
 		public let epoch: Float64
 		public let foundation: Float64
 		public let total: Float64
 		public let validator: Float64
 	}
-	public struct LargestAccount: Decodable {
+	struct LargestAccount: Decodable {
 		public let lamports: UInt64
 		public let address: String
 	}
-	public struct ProgramAccount: Decodable {
+	struct ProgramAccount: Decodable {
 		public let account: AccountInfo
 		public let pubkey: String
 	}
-	public struct PerformanceSample: Decodable {
+	struct PerformanceSample: Decodable {
 		public let numSlots: UInt64
 		public let numTransactions: UInt64
 		public let samplePeriodSecs: UInt
 		public let slot: UInt64
 	}
-	public struct SignatureStatus: Decodable {
+	struct SignatureStatus: Decodable {
 		public let slot: UInt64
 		public let confirmations: UInt64?
 		public let err: TransactionError?
 	}
-	public struct StakeActivation: Decodable {
+	struct StakeActivation: Decodable {
 		public let active: UInt64
 		public let inactive: UInt64
 		public let state: String
 	}
-	public struct Supply: Decodable {
+	struct Supply: Decodable {
 		public let circulating: UInt64
 		public let nonCirculating: UInt64
 		public let nonCirculatingAccounts: [String]
 		public let total: UInt64
 	}
-	public struct TokenAccountBalance: Decodable {
+	struct TokenAccountBalance: Decodable {
 		public let uiAmount: Float64
 		public let amount: String
 		public let decimals: UInt8
 	}
-	public struct TokenAccount: Decodable {
+	struct TokenAccount: Decodable {
 		public let pubkey: String
 		public let account: AccountInfo
 	}
-	public struct TokenAmount: Decodable {
+	struct TokenAmount: Decodable {
 		public let address: String?
 		public let amount: String
 		public let decimals: UInt8
 		public let uiAmount: Float64
 	}
-	public struct Version: Decodable {
+	struct Version: Decodable {
 		public let solanaCore: String
 
 		private enum CodingKeys : String, CodingKey {
 			case solanaCore = "solana-core"
 		}
 	}
-	public struct VoteAccounts: Decodable {
+	struct VoteAccounts: Decodable {
 		public let current: [VoteAccount]
 		public let delinquent: [VoteAccount]
 	}
-	public struct VoteAccount: Decodable {
+	struct VoteAccount: Decodable {
 		public let commission: Int
 		public let epochVoteAccount: Bool
 		public let epochCredits: [[UInt64]]
@@ -196,7 +196,7 @@ public extension SolanaSDK {
 		public let activatedStake: UInt64
 		public let votePubkey: String
 	}
-	public struct TransactionStatus: Decodable {
+	struct TransactionStatus: Decodable {
 		public let err: TransactionError?
 		public let logs: [String]
 	}

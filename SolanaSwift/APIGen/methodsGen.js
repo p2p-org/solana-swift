@@ -6,7 +6,7 @@ module.exports = function() {
 	let funcs = "";
 	for (const index in methods) {
 
-		funcs += "\tpublic func " + methods[index].method + "(";
+		funcs += "\tfunc " + methods[index].method + "(";
 
 		let funcParams = [];
 		let paramsToPass = [];

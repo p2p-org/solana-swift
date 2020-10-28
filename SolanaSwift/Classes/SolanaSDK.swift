@@ -47,7 +47,7 @@ public class SolanaSDK {
         guard let url = URL(string: endpoint + path) else {
             return .error(Error.invalidURL)
         }
-        var params = parameters.compactMap {$0}
+        let params = parameters.compactMap {$0}
         
         let bcMethod = bcMethod.replacingOccurrences(of: "\\([\\w\\s:]*\\)", with: "", options: .regularExpression)
         Logger.log(message: "\(method.rawValue) \(bcMethod) \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)

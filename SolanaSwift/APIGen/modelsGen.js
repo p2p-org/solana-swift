@@ -5,7 +5,7 @@ module.exports = function() {
 	let structs = "";
 	for (const index in models) {
 		let model = models[index];
-		structs += "\tpublic struct " + model.structName + ": Decodable {\n";
+		structs += "\tstruct " + model.structName + ": Decodable {\n";
 		for (const [key, value] of Object.entries(model.params)) {
 			structs += "\t\tpublic let " + key + ": " + value + "\n";
 		}

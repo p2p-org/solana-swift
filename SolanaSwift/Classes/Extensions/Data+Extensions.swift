@@ -9,6 +9,39 @@ import Foundation
 import Base58Swift
 
 public extension Data {
+    var decodedLength: Int {
+        var len = 0
+        var size = 0
+        var bytes = self
+        while true {
+            guard let elem = bytes.first else {break}
+            bytes = bytes.dropFirst()
+            len = len | ((Int(elem) & 0x7f) << (size * 7))
+            size += 1
+            if Int16(elem) & 0x80 == 0 {
+                break
+            }
+        }
+        return len
+    }
+    
+    static func encodeLength(_ len: UInt) -> Data {
+        var rem_len = len
+        var bytes = Data()
+        while true {
+            var elem = rem_len & 0x7f
+            rem_len = rem_len >> 7
+            if rem_len == 0 {
+                bytes.append(UInt8(elem))
+                break
+            } else {
+                elem = elem | 0x80
+                bytes.append(UInt8(elem))
+            }
+        }
+        return bytes
+    }
+    
     var base58EncodedString: String {
         Base58.base58Encode([UInt8](self))
     }
