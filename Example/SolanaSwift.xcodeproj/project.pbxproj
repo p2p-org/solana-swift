@@ -97,10 +97,10 @@
 		656EB490BFE125DA165A4E9A /* Pods-SolanaSwift_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SolanaSwift_Tests.release.xcconfig"; path = "Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		88E637D24AF2B058D65016C3 /* SolanaSwift.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = SolanaSwift.podspec; path = ../SolanaSwift.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		BC23AE51254925F00029FF0B /* _Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = _Pods.xcodeproj; path = ../_Pods.xcodeproj; sourceTree = "<group>"; };
-		BC23AEBE254928870029FF0B /* SendTransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SendTransactionTests.swift; path = Tests/SolanaSDKTests/SendTransactionTests.swift; sourceTree = SOURCE_ROOT; };
-		BC23AEBF254928870029FF0B /* AccountTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AccountTests.swift; path = Tests/SolanaSDKTests/AccountTests.swift; sourceTree = SOURCE_ROOT; };
-		BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InMemoryAccountStorage.swift; path = Tests/SolanaSDKTests/InMemoryAccountStorage.swift; sourceTree = SOURCE_ROOT; };
-		BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SolanaSDKTests.swift; path = Tests/SolanaSDKTests/SolanaSDKTests.swift; sourceTree = SOURCE_ROOT; };
+		BC23AEBE254928870029FF0B /* SendTransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SendTransactionTests.swift; path = Tests/SendTransactionTests.swift; sourceTree = SOURCE_ROOT; };
+		BC23AEBF254928870029FF0B /* AccountTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AccountTests.swift; path = Tests/AccountTests.swift; sourceTree = SOURCE_ROOT; };
+		BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InMemoryAccountStorage.swift; path = Tests/InMemoryAccountStorage.swift; sourceTree = SOURCE_ROOT; };
+		BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SolanaSDKTests.swift; path = Tests/SolanaSDKTests.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,7 +146,10 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				BC23AEA7254928490029FF0B /* SolanaSDKTests */,
+				BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */,
+				BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */,
+				BC23AEBF254928870029FF0B /* AccountTests.swift */,
+				BC23AEBE254928870029FF0B /* SendTransactionTests.swift */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
 			path = Tests;
@@ -194,18 +197,6 @@
 				BC23AE71254925F10029FF0B /* TweetNacl.framework */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		BC23AEA7254928490029FF0B /* SolanaSDKTests */ = {
-			isa = PBXGroup;
-			children = (
-				BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */,
-				BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */,
-				BC23AEBF254928870029FF0B /* AccountTests.swift */,
-				BC23AEBE254928870029FF0B /* SendTransactionTests.swift */,
-			);
-			name = SolanaSDKTests;
-			path = ../../../p2p_walletTests/SolanaSDKTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
