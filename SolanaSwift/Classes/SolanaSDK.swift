@@ -31,8 +31,8 @@ public class SolanaSDK {
     
     // MARK: - Methods
     @discardableResult
-    public func createAccount() throws -> Account {
-        let account = try Account()
+    public func createOrRestoreAccount(phrase: String = "") throws -> Account {
+        let account = try Account(phrase: phrase.components(separatedBy: " "))
         try accountStorage.save(account)
         return account
     }

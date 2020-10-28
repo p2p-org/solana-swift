@@ -16,6 +16,7 @@ public extension SolanaSDK {
         
         public init(phrase: [String] = []) throws {
             let mnemonic: Mnemonic
+            var phrase = phrase.filter {!$0.isEmpty}
             if !phrase.isEmpty {
                 mnemonic = try Mnemonic(phrase: phrase)
             } else {
