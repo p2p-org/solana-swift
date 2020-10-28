@@ -7,20 +7,94 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		955828710CA322FF8F5895A2 /* Pods_SolanaSwift_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEF3F8787AC27DEFE15B2F0F /* Pods_SolanaSwift_Tests.framework */; };
 		BCFBF8972546B5F900C8E640 /* AccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCFBF8962546B5F900C8E640 /* AccountTests.swift */; };
+		E6DDE50635D3D9571A63FE4D /* Pods_SolanaSwift_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8C40B5C5D42F5F26B6E4DA /* Pods_SolanaSwift_Tests.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BC23AE5E254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5D797E9A5C5782CE845840781FA1CC81;
+			remoteInfo = Alamofire;
+		};
+		BC23AE60254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 05F8370DCFAA7EC21DF62907888C5636;
+			remoteInfo = Base58Swift;
+		};
+		BC23AE62254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 91BB24BA472AF523E913108C9AA301F2;
+			remoteInfo = BigInt;
+		};
+		BC23AE64254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F81274EDB681F11E7CB05F7DCA2BB33C;
+			remoteInfo = CryptoSwift;
+		};
+		BC23AE66254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 10E578F345056B8199369BC467F177E0;
+			remoteInfo = "Pods-SolanaSwift_Tests";
+		};
+		BC23AE68254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 82F1475AA0F9C33F7EA4A1459305D2AB;
+			remoteInfo = RxAlamofire;
+		};
+		BC23AE6A254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 25F63A531105CD4E1E4CCF5B918C5494;
+			remoteInfo = RxBlocking;
+		};
+		BC23AE6C254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 809C5FAB588354C9BA37DC3EAB8CB45C;
+			remoteInfo = RxSwift;
+		};
+		BC23AE6E254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6D83BB4DF9B4A37E70D055B125B61137;
+			remoteInfo = SolanaSwift;
+		};
+		BC23AE70254925F10029FF0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 317CDB3617AE7CFBD3C9B5B901F8F543;
+			remoteInfo = TweetNacl;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		095BE9E09703178937A416E3 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
-		170BD26C34AE9C0A04D10B5B /* Pods-SolanaSwift_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SolanaSwift_Tests.debug.xcconfig"; path = "Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		4651EB739F40F3D87A1C6C3A /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		4A8C40B5C5D42F5F26B6E4DA /* Pods_SolanaSwift_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SolanaSwift_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EF1D0496DCFE4433D5FDA26 /* Pods-SolanaSwift_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SolanaSwift_Tests.debug.xcconfig"; path = "Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		607FACE51AFB9204008FA782 /* SolanaSwift_Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SolanaSwift_Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		656EB490BFE125DA165A4E9A /* Pods-SolanaSwift_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SolanaSwift_Tests.release.xcconfig"; path = "Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		88E637D24AF2B058D65016C3 /* SolanaSwift.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = SolanaSwift.podspec; path = ../SolanaSwift.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		A0FAC4FEB86FBF54A8A135A1 /* Pods-SolanaSwift_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SolanaSwift_Tests.release.xcconfig"; path = "Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests.release.xcconfig"; sourceTree = "<group>"; };
+		BC23AE51254925F00029FF0B /* _Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = _Pods.xcodeproj; path = ../_Pods.xcodeproj; sourceTree = "<group>"; };
 		BCFBF8962546B5F900C8E640 /* AccountTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountTests.swift; sourceTree = "<group>"; };
-		DEF3F8787AC27DEFE15B2F0F /* Pods_SolanaSwift_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SolanaSwift_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,21 +102,30 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				955828710CA322FF8F5895A2 /* Pods_SolanaSwift_Tests.framework in Frameworks */,
+				E6DDE50635D3D9571A63FE4D /* Pods_SolanaSwift_Tests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		08E047D88ADCD5A7ADCA9536 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				4EF1D0496DCFE4433D5FDA26 /* Pods-SolanaSwift_Tests.debug.xcconfig */,
+				656EB490BFE125DA165A4E9A /* Pods-SolanaSwift_Tests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		607FACC71AFB9204008FA782 = {
 			isa = PBXGroup;
 			children = (
 				607FACF51AFB993E008FA782 /* Podspec Metadata */,
 				607FACE81AFB9204008FA782 /* Tests */,
 				607FACD11AFB9204008FA782 /* Products */,
-				D04B51C5EB81A87349CB3400 /* Pods */,
-				6FB6728D9DEB441E4B966A3A /* Frameworks */,
+				08E047D88ADCD5A7ADCA9536 /* Pods */,
+				A9F124C49584B9F85C2F867D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -81,21 +164,30 @@
 			name = "Podspec Metadata";
 			sourceTree = "<group>";
 		};
-		6FB6728D9DEB441E4B966A3A /* Frameworks */ = {
+		A9F124C49584B9F85C2F867D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				DEF3F8787AC27DEFE15B2F0F /* Pods_SolanaSwift_Tests.framework */,
+				4A8C40B5C5D42F5F26B6E4DA /* Pods_SolanaSwift_Tests.framework */,
+				BC23AE51254925F00029FF0B /* _Pods.xcodeproj */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		D04B51C5EB81A87349CB3400 /* Pods */ = {
+		BC23AE52254925F00029FF0B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				170BD26C34AE9C0A04D10B5B /* Pods-SolanaSwift_Tests.debug.xcconfig */,
-				A0FAC4FEB86FBF54A8A135A1 /* Pods-SolanaSwift_Tests.release.xcconfig */,
+				BC23AE5F254925F10029FF0B /* Alamofire.framework */,
+				BC23AE61254925F10029FF0B /* Base58Swift.framework */,
+				BC23AE63254925F10029FF0B /* BigInt.framework */,
+				BC23AE65254925F10029FF0B /* CryptoSwift.framework */,
+				BC23AE67254925F10029FF0B /* Pods_SolanaSwift_Tests.framework */,
+				BC23AE69254925F10029FF0B /* RxAlamofire.framework */,
+				BC23AE6B254925F10029FF0B /* RxBlocking.framework */,
+				BC23AE6D254925F10029FF0B /* RxSwift.framework */,
+				BC23AE6F254925F10029FF0B /* SolanaSwift.framework */,
+				BC23AE71254925F10029FF0B /* TweetNacl.framework */,
 			);
-			path = Pods;
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -148,12 +240,91 @@
 			mainGroup = 607FACC71AFB9204008FA782;
 			productRefGroup = 607FACD11AFB9204008FA782 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = BC23AE52254925F00029FF0B /* Products */;
+					ProjectRef = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				607FACE41AFB9204008FA782 /* SolanaSwift_Tests */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		BC23AE5F254925F10029FF0B /* Alamofire.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Alamofire.framework;
+			remoteRef = BC23AE5E254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC23AE61254925F10029FF0B /* Base58Swift.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Base58Swift.framework;
+			remoteRef = BC23AE60254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC23AE63254925F10029FF0B /* BigInt.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = BigInt.framework;
+			remoteRef = BC23AE62254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC23AE65254925F10029FF0B /* CryptoSwift.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = CryptoSwift.framework;
+			remoteRef = BC23AE64254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC23AE67254925F10029FF0B /* Pods_SolanaSwift_Tests.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Pods_SolanaSwift_Tests.framework;
+			remoteRef = BC23AE66254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC23AE69254925F10029FF0B /* RxAlamofire.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = RxAlamofire.framework;
+			remoteRef = BC23AE68254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC23AE6B254925F10029FF0B /* RxBlocking.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = RxBlocking.framework;
+			remoteRef = BC23AE6A254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC23AE6D254925F10029FF0B /* RxSwift.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = RxSwift.framework;
+			remoteRef = BC23AE6C254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC23AE6F254925F10029FF0B /* SolanaSwift.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SolanaSwift.framework;
+			remoteRef = BC23AE6E254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC23AE71254925F10029FF0B /* TweetNacl.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = TweetNacl.framework;
+			remoteRef = BC23AE70254925F10029FF0B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		607FACE31AFB9204008FA782 /* Resources */ = {
@@ -337,7 +508,7 @@
 		};
 		607FACF31AFB9204008FA782 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 170BD26C34AE9C0A04D10B5B /* Pods-SolanaSwift_Tests.debug.xcconfig */;
+			baseConfigurationReference = 4EF1D0496DCFE4433D5FDA26 /* Pods-SolanaSwift_Tests.debug.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
@@ -358,7 +529,7 @@
 		};
 		607FACF41AFB9204008FA782 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A0FAC4FEB86FBF54A8A135A1 /* Pods-SolanaSwift_Tests.release.xcconfig */;
+			baseConfigurationReference = 656EB490BFE125DA165A4E9A /* Pods-SolanaSwift_Tests.release.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",

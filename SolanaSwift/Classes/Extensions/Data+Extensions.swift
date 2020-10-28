@@ -20,8 +20,3 @@ extension Encodable {
         return String(data: data, encoding: .utf8)
     }
 }
-
-public extension SolanaSDK {
-    typealias Byte = UInt8
-    typealias Bytes = [UInt8]
-}
