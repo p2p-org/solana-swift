@@ -26,4 +26,21 @@ public extension Bytes {
         }
         return len
     }
+    
+    func encodingLength(_ len: UInt8) -> Bytes {
+        var rem_len = len
+        var bytes = self
+        while true {
+            var elem = rem_len & 0x7f
+            rem_len = rem_len >> 7
+            if rem_len == 0 {
+                bytes.append(elem)
+                break
+            } else {
+                elem = elem | 0x80
+                bytes.append(elem)
+            }
+        }
+        return bytes
+    }
 }
