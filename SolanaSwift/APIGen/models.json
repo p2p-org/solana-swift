@@ -1,0 +1,299 @@
+[
+  {
+    "structName": "Response<T: Decodable>",
+    "params": {
+      "jsonrpc": "String",
+      "id": "String",
+      "result": "T"
+    }
+  },
+  {
+    "structName": "Rpc<T: Decodable>",
+    "params": {
+      "context": "Context",
+      "value": "T"
+    }
+  },
+  {
+    "structName": "Context",
+    "params": {
+      "slot": "UInt64"
+    }
+  },
+  {
+    "structName": "AccountInfo",
+    "params": {
+      "lamports": "UInt64",
+      "owners": "String",
+      "data": "[String]",
+      "executable": "Bool",
+      "rentEpoch": "UInt64"
+    }
+  },
+  {
+    "structName": "BlockCommitment",
+    "params": {
+      "commitment": "[UInt64]?",
+      "totalStake": "UInt64"
+    }
+  },
+  {
+    "structName": "ClusterNodes",
+    "params": {
+      "pubkey": "String",
+      "gossip": "String",
+      "tpu": "String",
+      "rpc": "String?",
+      "version": "String?"
+    }
+  },
+  {
+    "structName": "ConfirmedBlock",
+    "params": {
+      "blockhash": "String",
+      "previousBlockhash": "String",
+      "parentSlot": "UInt64",
+      "transactions": "[TransactionInfo]",
+      "rewards": "[Reward]",
+      "blockTime": "UInt64?"
+    }
+  },
+  {
+    "structName": "Reward",
+    "params": {
+      "pubkey": "String",
+      "lamports": "Int64",
+      "postBalance": "UInt64",
+      "rewardType": "String?"
+    }
+  },
+  {
+    "structName": "TransactionInfo",
+    "params": {
+      "meta": "TransactionMeta?",
+      "transaction": "Transaction",
+      "slot": "UInt64?"
+    }
+  },
+  {
+    "structName": "TransactionMeta",
+    "params": {
+      "err": "TransactionError?",
+      "fee": "UInt64",
+      "preBalances": "[UInt64]",
+      "postBalances": "[UInt64]"
+    }
+  },
+  {
+    "structName": "Transaction",
+    "params": {
+      "signatures": "[String]",
+      "message": "TransactionMessage"
+    }
+  },
+  {
+    "structName": "TransactionError",
+    "params": {}
+  },
+  {
+    "structName": "TransactionMessage",
+    "params": {
+      "accountKeys": "[String]",
+      "header": "TransactionMessageHeader"
+    }
+  },
+  {
+    "structName": "TransactionMessageHeader",
+    "params": {
+      "numReadonlySignedAccounts": "Int",
+      "numReadonlyUnsignedAccounts": "Int",
+      "numReadonlyUnsignedAccounts": "Int"
+    }
+  },
+  {
+    "structName": "TransactionSignatureInfo",
+    "params": {
+      "signature": "String",
+      "slot": "UInt64",
+      "err": "TransactionError?",
+      "memo": "String?"
+    }
+  },
+  {
+    "structName": "EpochInfo",
+    "params": {
+      "absoluteSlot": "UInt64",
+      "blockHeight": "UInt64",
+      "epoch": "UInt64",
+      "slotIndex": "UInt64",
+      "slotsInEpoch": "UInt64"
+    }
+  },
+  {
+    "structName": "EpochSchedule",
+    "params": {
+      "slotsPerEpoch": "UInt64",
+      "leaderScheduleSlotOffset": "UInt64",
+      "warmup": "Bool",
+      "firstNormalEpoch": "UInt64",
+      "firstNormalSlot": "UInt64"
+    }
+  },
+  {
+    "structName": "Fee",
+    "params": {
+      "feeCalculator": "FeeCalculator?",
+      "feeRateGovernor": "FeeRateGovernor?",
+      "blockhash": "String?",
+      "lastValidSlot": "UInt64"
+    }
+  },
+  {
+    "structName": "FeeCalculator",
+    "params": {
+      "lamportsPerSignature": "UInt64"
+    }
+  },
+  {
+    "structName": "FeeRateGovernor",
+    "params": {
+      "burnPercent": "UInt64",
+      "maxLamportsPerSignature": "UInt64",
+      "minLamportsPerSignature": "UInt64",
+      "targetLamportsPerSignature": "UInt64",
+      "targetSignaturesPerSlot": "UInt64"
+    }
+  },
+  {
+    "structName": "Identity",
+    "params": {
+      "identity": "String"
+    }
+  },
+  {
+    "structName": "InflationGovernor",
+    "params": {
+      "foundation": "Float64",
+      "foundationTerm": "Float64",
+      "initial": "Float64",
+      "taper": "Float64",
+      "terminal": "Float64"
+    }
+  },
+  {
+    "structName": "InflationRate",
+    "params": {
+      "epoch": "Float64",
+      "foundation": "Float64",
+      "total": "Float64",
+      "validator": "Float64"
+    }
+  },
+  {
+    "structName": "LargestAccount",
+    "params": {
+      "lamports": "UInt64",
+      "address": "String"
+    }
+  },
+  {
+    "structName": "ProgramAccount",
+    "params": {
+      "account": "AccountInfo",
+      "pubkey": "String"
+    }
+  },
+  {
+    "structName": "PerformanceSample",
+    "params": {
+      "numSlots": "UInt64",
+      "numTransactions": "UInt64",
+      "samplePeriodSecs": "UInt",
+      "slot": "UInt64"
+    }
+  },
+  {
+    "structName": "SignatureStatus",
+    "params": {
+      "slot": "UInt64",
+      "confirmations": "UInt64?",
+      "err": "TransactionError?"
+    }
+  },
+  {
+    "structName": "StakeActivation",
+    "params": {
+      "active": "UInt64",
+      "inactive": "UInt64",
+      "state": "String"
+    }
+  },
+  {
+    "structName": "Supply",
+    "params": {
+      "circulating": "UInt64",
+      "nonCirculating": "UInt64",
+      "nonCirculatingAccounts": "[String]",
+      "total": "UInt64"
+    }
+  },
+  {
+    "structName": "TokenAccountBalance",
+    "params": {
+      "uiAmount": "Float64",
+      "amount": "String",
+      "decimals": "UInt8"
+    }
+  },
+  {
+    "structName": "TokenAccount",
+    "params": {
+      "pubkey": "String",
+      "account": "AccountInfo"
+    }
+  },
+  {
+    "structName": "TokenAmount",
+    "params": {
+      "address": "String?",
+      "amount": "String",
+      "decimals": "UInt8",
+      "uiAmount": "Float64"
+    }
+  },
+  {
+    "structName": "Version",
+    "params": {
+      "solanaCore": "String"
+    },
+    "customCodingKeys": {
+      "solanaCore": "solana-core"
+    }
+  },
+  {
+    "structName": "VoteAccounts",
+    "params": {
+      "current": "[VoteAccount]",
+      "delinquent": "[VoteAccount]"
+    }
+  },
+  {
+    "structName": "VoteAccount",
+    "params": {
+      "commission": "Int",
+      "epochVoteAccount": "Bool",
+      "epochCredits": "[[UInt64]]",
+      "nodePubkey": "String",
+      "lastVote": "UInt64",
+      "activatedStake": "UInt64",
+      "votePubkey": "String"
+    }
+  },
+  {
+    "structName": "TransactionStatus",
+    "params": {
+      "err": "TransactionError?",
+      "logs": "[String]"
+    }
+  }
+]

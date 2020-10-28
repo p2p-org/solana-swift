@@ -8,6 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
+    // MARK: - Private
     struct EncodableWrapper: Encodable {
         let wrapped: Encodable
         
@@ -16,7 +17,7 @@ extension SolanaSDK {
         }
     }
 
-    public struct RequestAPI: Encodable {
+    struct RequestAPI: Encodable {
         public let id = UUID().uuidString
         public let method: String
         public let jsonrpc: String
@@ -37,5 +38,29 @@ extension SolanaSDK {
             let wrappedDict = params.map(EncodableWrapper.init(wrapped:))
             try container.encode(wrappedDict, forKey: .params)
         }
+    }
+    
+    // MARK: - Public
+    public typealias Commitment = String
+    
+    public struct RequestConfiguration: Encodable {
+        public let commitment: Commitment?
+        public let encoding: String?
+        public let dataSlice: DataSlice?
+        
+        public init?(commitment: Commitment? = nil, encoding: String? = nil, dataSlice: DataSlice? = nil)
+        {
+            if commitment == nil && encoding == nil && dataSlice == nil {
+                return nil
+            }
+            self.commitment = commitment
+            self.encoding = encoding
+            self.dataSlice = dataSlice
+        }
+    }
+    
+    public struct DataSlice: Encodable {
+        public let offset: Int
+        public let length: Int
     }
 }

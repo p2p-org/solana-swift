@@ -1,0 +1,338 @@
+[
+  {
+    "method": "getAccountInfo",
+    "params": {
+      "account": "String",
+      "configs": "RequestConfiguration? = RequestConfiguration(encoding: \"base58\")"
+    },
+    "returnedType": "Rpc<AccountInfo?>"
+  },
+  {
+    "method": "getBalance",
+    "params": {
+      "account": "String",
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "Rpc<UInt64>"
+  },
+  {
+    "method": "getBlockCommitment",
+    "params": {
+      "block": "String"
+    },
+    "returnedType": "BlockCommitment"
+  },
+  {
+    "method": "getBlockTime",
+    "params": {
+      "block": "String"
+    },
+    "returnedType": "UInt64?"
+  },
+  {
+    "method": "getClusterNodes",
+    "params": {},
+    "returnedType": "ClusterNodes"
+  },
+  {
+    "method": "getConfirmedBlock",
+    "params": {
+      "slot": "UInt64",
+      "encoding": "String = \"json\""
+    },
+    "returnedType": "ConfirmedBlock?"
+  },
+  {
+    "method": "getConfirmedBlocks",
+    "params": {
+      "startSlot": "UInt64",
+      "endSlot": "UInt64"
+    },
+    "returnedType": "[UInt64]"
+  },
+  {
+    "method": "getConfirmedBlocksWithLimit",
+    "params": {
+      "startSlot": "UInt64",
+      "limit": "UInt64"
+    },
+    "returnedType": "[UInt64]"
+  },
+  {
+    "method": "getConfirmedSignaturesForAddress",
+    "params": {
+      "account": "String",
+      "startSlot": "UInt64",
+      "endSlot": "UInt64"
+    },
+    "returnedType": "[String]"
+  },
+  {
+    "method": "getConfirmedSignaturesForAddress2",
+    "params": {
+      "account": "String",
+      "configs": "RequestConfiguration? = nil"
+    },
+    "returnedType": "TransactionSignatureInfo"
+  },
+  {
+    "method": "getConfirmedTransaction",
+    "params": {
+      "transactionSignature": "String",
+      "encoding": "String = \"json\""
+    },
+    "returnedType": "TransactionInfo"
+  },
+  {
+    "method": "getEpochInfo",
+    "params": {
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "EpochInfo"
+  },
+  {
+    "method": "getEpochSchedule",
+    "params": {},
+    "returnedType": "EpochSchedule"
+  },
+  {
+    "method": "getFeeCalculatorForBlockhash",
+    "params": {
+      "blockhash": "String",
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "Rpc<Fee>"
+  },
+  {
+    "method": "getFeeRateGovernor",
+    "params": {},
+    "returnedType": "Rpc<Fee>"
+  },
+  {
+    "method": "getFees",
+    "params": {
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "Rpc<[Fee]>"
+  },
+  {
+    "method": "getFirstAvailableBlock",
+    "params": {},
+    "returnedType": "UInt64"
+  },
+  {
+    "method": "getGenesisHash",
+    "params": {},
+    "returnedType": "String"
+  },
+  {
+    "method": "getIdentity",
+    "params": {},
+    "returnedType": "String"
+  },
+  {
+    "method": "getInflationGovernor",
+    "params": {
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "InflationGovernor"
+  },
+  {
+    "method": "getInflationRate",
+    "params": {},
+    "returnedType": "InflationRate"
+  },
+  {
+    "method": "getLargestAccounts",
+    "params": {},
+    "returnedType": "Rpc<[LargestAccount]>"
+  },
+  {
+    "method": "getLeaderSchedule",
+    "params": {
+      "epoch": "UInt64? = nil",
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "[String: [Int]]?"
+  },
+  {
+    "method": "getMinimumBalanceForRentExemption",
+    "params": {
+      "dataLength": "UInt64",
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "UInt64"
+  },
+  {
+    "method": "getMultipleAccounts",
+    "params": {
+      "pubkeys": "[String]",
+      "configs": "RequestConfiguration? = nil"
+    },
+    "returnedType": "Rpc<[AccountInfo]?>"
+  },
+  {
+    "method": "getProgramAccounts",
+    "params": {
+      "programPubkey": "String",
+      "configs": "RequestConfiguration? = nil"
+    },
+    "returnedType": "[ProgramAccount]"
+  },
+  {
+    "method": "getRecentBlockhash",
+    "params": {
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "Rpc<Fee>"
+  },
+  {
+    "method": "getRecentPerformanceSamples",
+    "params": {
+      "limit": "UInt64"
+    },
+    "returnedType": "[PerformanceSample]"
+  },
+  {
+    "method": "getSignatureStatuses",
+    "params": {
+      "pubkeys": "[String]",
+      "configs": "RequestConfiguration? = nil"
+    },
+    "returnedType": "Rpc<[SignatureStatus?]>"
+  },
+  {
+    "method": "getSlot",
+    "params": {
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "UInt64"
+  },
+  {
+    "method": "getSlotLeader",
+    "params": {
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "String"
+  },
+  {
+    "method": "getStakeActivation",
+    "params": {
+      "stakeAccount": "String",
+      "configs": "RequestConfiguration? = nil"
+    },
+    "returnedType": "StakeActivation"
+  },
+  {
+    "method": "getSupply",
+    "params": {
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "Rpc<Supply>"
+  },
+  {
+    "method": "getTransactionCount",
+    "params": {
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "UInt64"
+  },
+  {
+    "method": "getTokenAccountBalance",
+    "params": {
+      "pubkey": "String",
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "TokenAccountBalance"
+  },
+  {
+    "method": "getTokenAccountsByDelegate",
+    "params": {
+      "pubkey": "String",
+      "mint": "String? = nil",
+      "programId": "String? = nil",
+      "configs": "RequestConfiguration? = nil"
+    },
+    "returnedType": "Rpc<[TokenAccount]>"
+  },
+  {
+    "method": "getTokenAccountsByOwner",
+    "params": {
+      "pubkey": "String",
+      "mint": "String? = nil",
+      "programId": "String? = nil",
+      "configs": "RequestConfiguration? = nil"
+    },
+    "returnedType": "Rpc<[TokenAccount]>"
+  },
+  {
+    "method": "getTokenLargestAccounts",
+    "params": {
+      "pubkey": "String",
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "Rpc<[TokenAmount]>"
+  },
+  {
+    "method": "getTokenSupply",
+    "params": {
+      "pubkey": "String",
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "Rpc<TokenAmount>"
+  },
+  {
+    "method": "getVersion",
+    "params": {},
+    "returnedType": "Version"
+  },
+  {
+    "method": "getVoteAccounts",
+    "params": {
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "VoteAccounts"
+  },
+  {
+    "method": "minimumLedgerSlot",
+    "params": {},
+    "returnedType": "UInt64"
+  },
+  {
+    "method": "requestAirdrop",
+    "params": {
+      "account": "String",
+      "lamports": "UInt64",
+      "commitment": "Commitment? = nil"
+    },
+    "returnedType": "String"
+  },
+  {
+    "method": "sendTransaction",
+    "params": {
+      "transaction": "String",
+      "configs": "RequestConfiguration? = nil"
+    },
+    "returnedType": "String"
+  },
+  {
+    "method": "simulateTransaction",
+    "params": {
+      "transaction": "String",
+      "configs": "RequestConfiguration? = nil"
+    },
+    "returnedType": "Rpc<TransactionStatus>"
+  },
+  {
+    "method": "setLogFilter",
+    "params": {
+      "filter": "String"
+    },
+    "returnedType": "String?"
+  },
+  {
+    "method": "validatorExit",
+    "params": {},
+    "returnedType": "Bool"
+  }
+]
