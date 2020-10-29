@@ -28,14 +28,6 @@ public class SolanaSDK {
     public init(accountStorage: SolanaSDKAccountStorage) {
         self.accountStorage = accountStorage
     }
-    
-    // MARK: - Methods
-    @discardableResult
-    public func createOrRestoreAccount(phrase: String = "") throws -> Account {
-        let account = try Account(phrase: phrase.components(separatedBy: " "))
-        try accountStorage.save(account)
-        return account
-    }
      
     // MARK: - Helper
     func request<T: Decodable>(

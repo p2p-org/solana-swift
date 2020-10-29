@@ -15,8 +15,9 @@ class SolanaSDKTests: XCTestCase {
 
     override func setUpWithError() throws {
         solanaSDK = SolanaSDK(accountStorage: InMemoryAccountStorage())
-        try solanaSDK.createOrRestoreAccount(phrase: InMemoryAccountStorage.accountPhraseToTest)
-        account = solanaSDK.accountStorage.account!.publicKey.base58EncodedString
+        let account = try SolanaSDK.Account(phrase: InMemoryAccountStorage.accountPhraseToTest.components(separatedBy: " "))
+        try solanaSDK.accountStorage.save(account)
+        self.account = solanaSDK.accountStorage.account!.publicKey.base58EncodedString
     }
 
 }

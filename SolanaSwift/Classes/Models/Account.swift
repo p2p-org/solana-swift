@@ -9,7 +9,7 @@ import Foundation
 import TweetNacl
 
 public extension SolanaSDK {
-    struct Account {
+    struct Account: Codable {
         public let phrase: [String]
         public let publicKey: Data
         public let secretKey: Data
