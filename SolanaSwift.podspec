@@ -42,4 +42,6 @@ TODO: Add long description of the pod here.
   s.dependency 'Base58Swift'
   s.dependency 'TweetNacl'
   s.dependency 'CryptoSwift'
+  s.dependency 'Socket.IO-Client-Swift'
+  s.dependency 'RxCocoa'
 end

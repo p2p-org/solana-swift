@@ -20,7 +20,7 @@ public class SolanaSDK {
     #if DEBUG
     let endpoint = "https://testnet.solana.com"
     #else
-    let endpoint = ""
+    let endpoint = "https://testnet.solana.com"
     #endif
     public let accountStorage: SolanaSDKAccountStorage
     

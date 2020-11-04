@@ -295,5 +295,12 @@
       "err": "TransactionError?",
       "logs": "[String]"
     }
+  },
+  {
+    "structName": "AccountNotification",
+    "params": {
+      "subscription": "Int64",
+      "result": "Rpc<AccountInfo>"
+    }
   }
 ]

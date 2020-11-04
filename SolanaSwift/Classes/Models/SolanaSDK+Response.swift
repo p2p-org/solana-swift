@@ -200,4 +200,8 @@ public extension SolanaSDK {
 		public let err: TransactionError?
 		public let logs: [String]
 	}
+	struct AccountNotification: Decodable {
+		public let subscription: Int64
+		public let result: Rpc<AccountInfo>
+	}
 }
