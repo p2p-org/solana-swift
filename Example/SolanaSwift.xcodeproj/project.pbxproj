@@ -12,6 +12,7 @@
 		BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */; };
 		BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC1254928870029FF0B /* RestAPITests.swift */; };
 		BC2EC2DF25552EC1006EEDA5 /* AccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */; };
+		BC2EC2E4255530F6006EEDA5 /* MessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC2EC2E3255530F6006EEDA5 /* MessageTests.swift */; };
 		E6DDE50635D3D9571A63FE4D /* Pods_SolanaSwift_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8C40B5C5D42F5F26B6E4DA /* Pods_SolanaSwift_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -103,6 +104,7 @@
 		BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InMemoryAccountStorage.swift; path = Tests/InMemoryAccountStorage.swift; sourceTree = SOURCE_ROOT; };
 		BC23AEC1254928870029FF0B /* RestAPITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RestAPITests.swift; path = Tests/RestAPITests.swift; sourceTree = SOURCE_ROOT; };
 		BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTests.swift; sourceTree = "<group>"; };
+		BC2EC2E3255530F6006EEDA5 /* MessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +152,7 @@
 			children = (
 				BC2EC2C825552DE9006EEDA5 /* RestAPITests */,
 				BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */,
+				BC2EC2E3255530F6006EEDA5 /* MessageTests.swift */,
 				BC23AEBE254928870029FF0B /* SendTransactionTests.swift */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
@@ -421,6 +424,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */,
+				BC2EC2E4255530F6006EEDA5 /* MessageTests.swift in Sources */,
 				BC23AEC2254928870029FF0B /* SendTransactionTests.swift in Sources */,
 				BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */,
 				BC23AEC3254928870029FF0B /* RestAPIAccountTests.swift in Sources */,

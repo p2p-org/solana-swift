@@ -17,7 +17,9 @@ public extension SolanaSDK {
         public var accountKeys = [Account.Meta]()
         private(set) var instructions: [Transaction.Instruction]?
         
-        mutating func add(instruction: Transaction.Instruction) {
+        public init() {}
+        
+        public mutating func add(instruction: Transaction.Instruction) {
             if instructions == nil {
                 instructions = [Transaction.Instruction]()
             }
@@ -26,7 +28,7 @@ public extension SolanaSDK {
             instructions!.append(instruction)
         }
         
-        func serialize() throws -> [Byte] {
+        public func serialize() throws -> [UInt8] {
             guard let string = recentBlockhash, let recentBlockhash = Base58.base58Decode(string)
             else {throw Error.other("Could not decode recentBlockhash")}
             
@@ -91,25 +93,24 @@ public extension SolanaSDK {
 }
 
 extension SolanaSDK.Message {
-    typealias Byte = UInt8
     public struct Header: Decodable {
         static let LENGTH = 3
         // TODO:
-        var numRequiredSignatures: Byte? = 1
-        var numReadonlySignedAccounts: Byte = 0
-        var numReadonlyUnsignedAccounts: Byte = 1
+        var numRequiredSignatures: UInt8? = 1
+        var numReadonlySignedAccounts: UInt8 = 0
+        var numReadonlyUnsignedAccounts: UInt8 = 1
         
-        var bytes: [Byte] {
+        var bytes: [UInt8] {
             [numRequiredSignatures ?? 1, numReadonlySignedAccounts, numReadonlyUnsignedAccounts]
         }
     }
     
     struct CompiledInstruction {
-        let programIdIndex: Byte
-        let keyIndicesCount: [Byte]
-        let keyIndices: [Byte]
-        let dataLength: [Byte]
-        let data: [Byte]
+        let programIdIndex: UInt8
+        let keyIndicesCount: [UInt8]
+        let keyIndices: [UInt8]
+        let dataLength: [UInt8]
+        let data: [UInt8]
         
         var length: Int {
             1 + keyIndicesCount.count + keyIndices.count + dataLength.count + data.count

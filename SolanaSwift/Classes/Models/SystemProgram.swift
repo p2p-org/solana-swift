@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension SolanaSDK {
+public extension SolanaSDK {
     struct SystemProgram {
         public static let PROGRAM_ID = try! PublicKey(string: "11111111111111111111111111111111")
         private static let PROGRAM_INDEX_TRANSFER = UInt32(2)
