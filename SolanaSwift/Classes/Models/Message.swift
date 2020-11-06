@@ -36,23 +36,23 @@ public extension SolanaSDK {
                 throw Error.other("Instructions not found")
             }
             
-            let accountKeysSize = accountKeys.size
-            let accountAddressesLength = Data.encodeLength(accountKeysSize)
+            let accountKeysSize = accountKeys.count
+            let accountAddressesLength = Data.encodeLength(UInt(accountKeysSize))
             
             var compiledInstructionsLength: Int = 0
             var compiledInstructions = [CompiledInstruction]()
             
             for instruction in instructions {
-                let keysSize = instruction.keys.size
+                let keysSize = instruction.keys.count
                 
                 var keyIndices = Data(capacity: Int(keysSize))
-                for i in 0..<keysSize {
-                    keyIndices[Data.Index(i)] = Byte(try findAccountIndex(publicKey: instruction.programId))
+                for _ in 0..<keysSize {
+                    keyIndices.append(Byte(try findAccountIndex(publicKey: instruction.programId)))
                 }
                 
                 let compiledInstruction = CompiledInstruction(
                     programIdIndex: Byte(try findAccountIndex(publicKey: instruction.programId)),
-                    keyIndicesCount: [Byte](Data.encodeLength(keysSize)),
+                    keyIndicesCount: [Byte](Data.encodeLength(UInt(keysSize))),
                     keyIndices: [Byte](keyIndices),
                     dataLength: [Byte](Data.encodeLength(UInt(instruction.data.count))),
                     data: instruction.data
