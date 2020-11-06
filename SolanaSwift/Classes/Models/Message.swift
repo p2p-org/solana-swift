@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Base58Swift
 
 public extension SolanaSDK {
     struct Message: Decodable {
@@ -29,12 +28,14 @@ public extension SolanaSDK {
         }
         
         public func serialize() throws -> [UInt8] {
-            guard let string = recentBlockhash, let recentBlockhash = Base58.base58Decode(string)
+            guard let string = recentBlockhash
             else {throw Error.other("Could not decode recentBlockhash")}
             
             guard let instructions = instructions else {
                 throw Error.other("Instructions not found")
             }
+            
+            let recentBlockhash = Base58.bytesFromBase58(string)
             
             let accountKeysSize = accountKeys.count
             let accountAddressesLength = Data.encodeLength(UInt(accountKeysSize))
@@ -45,9 +46,9 @@ public extension SolanaSDK {
             for instruction in instructions {
                 let keysSize = instruction.keys.count
                 
-                var keyIndices = Data(capacity: Int(keysSize))
-                for _ in 0..<keysSize {
-                    keyIndices.append(UInt8(try findAccountIndex(publicKey: instruction.programId)))
+                var keyIndices = Data()
+                for i in 0..<keysSize {
+                    keyIndices.append(UInt8(try findAccountIndex(publicKey: instruction.keys[i].publicKey)))
                 }
                 
                 let compiledInstruction = CompiledInstruction(

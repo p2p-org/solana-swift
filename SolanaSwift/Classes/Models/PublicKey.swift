@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Base58Swift
 
 public extension SolanaSDK {
     struct PublicKey: Codable, Equatable {
@@ -14,11 +13,11 @@ public extension SolanaSDK {
         public let bytes: [UInt8]
         
         public init(string: String) throws {
-            guard string.utf8.count >= SolanaSDK.PublicKey.LENGTH,
-               let bytes = Base58.base58Decode(string)
+            guard string.utf8.count >= SolanaSDK.PublicKey.LENGTH
             else {
                 throw Error.other("Invalid public key input")
             }
+            let bytes = Base58.bytesFromBase58(string)
             self.bytes = bytes
         }
         
@@ -30,7 +29,7 @@ public extension SolanaSDK {
         }
         
         public var base58EncodedString: String {
-            Base58.base58Encode(bytes)
+            Base58.base58FromBytes(bytes)
         }
         
         public var data: Data {
