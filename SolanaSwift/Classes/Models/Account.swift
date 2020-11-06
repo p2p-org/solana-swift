@@ -32,3 +32,11 @@ public extension SolanaSDK {
         }
     }
 }
+
+public extension SolanaSDK.Account {
+    struct Meta: Codable {
+        public let publicKey: SolanaSDK.PublicKey
+        public let isSigner: Bool
+        public let isWritable: Bool
+    }
+}

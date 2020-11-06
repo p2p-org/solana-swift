@@ -9,23 +9,30 @@ import Foundation
 import Base58Swift
 
 public extension SolanaSDK {
-    struct Message {
+    struct Message: Decodable {
         private static let RECENT_BLOCK_HASH_LENGT = 32
         
-        public let header = Header()
-        public var recentBlockhash: String
-        public var accountKeys = [AccountMeta]()
-        private(set) var instructions = [TransactionInstruction]()
+        public var header = Header()
+        public var recentBlockhash: String?
+        public var accountKeys = [Account.Meta]()
+        private(set) var instructions: [Transaction.Instruction]?
         
-        mutating func add(instruction: TransactionInstruction) {
+        mutating func add(instruction: Transaction.Instruction) {
+            if instructions == nil {
+                instructions = [Transaction.Instruction]()
+            }
             accountKeys.append(contentsOf: instruction.keys)
-            accountKeys.append(AccountMeta(publicKey: instruction.programId, isSigner: false, isWritable: false))
-            instructions.append(instruction)
+            accountKeys.append(Account.Meta(publicKey: instruction.programId, isSigner: false, isWritable: false))
+            instructions!.append(instruction)
         }
         
         func serialize() throws -> [Byte] {
-            guard let recentBlockhash = Base58.base58Decode(recentBlockhash)
+            guard let string = recentBlockhash, let recentBlockhash = Base58.base58Decode(string)
             else {throw Error.other("Could not decode recentBlockhash")}
+            
+            guard let instructions = instructions else {
+                throw Error.other("Instructions not found")
+            }
             
             let accountKeysSize = accountKeys.size
             let accountAddressesLength = Data.encodeLength(accountKeysSize)
@@ -85,15 +92,15 @@ public extension SolanaSDK {
 
 extension SolanaSDK.Message {
     typealias Byte = UInt8
-    public struct Header {
+    public struct Header: Decodable {
         static let LENGTH = 3
         // TODO:
-        let numRequiredSignatures: Byte = 1
-        let numReadonlySignedAccounts: Byte = 0
-        let numReadonlyUnsignedAccounts: Byte = 1
+        var numRequiredSignatures: Byte? = 1
+        var numReadonlySignedAccounts: Byte = 0
+        var numReadonlyUnsignedAccounts: Byte = 1
         
         var bytes: [Byte] {
-            [numRequiredSignatures, numReadonlySignedAccounts, numReadonlyUnsignedAccounts]
+            [numRequiredSignatures ?? 1, numReadonlySignedAccounts, numReadonlyUnsignedAccounts]
         }
     }
     

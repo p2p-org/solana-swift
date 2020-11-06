@@ -73,7 +73,7 @@
       "account": "String",
       "configs": "RequestConfiguration? = nil"
     },
-    "returnedType": "TransactionSignatureInfo"
+    "returnedType": "Transaction.SignatureInfo"
   },
   {
     "method": "getConfirmedTransaction",
@@ -81,7 +81,7 @@
       "transactionSignature": "String",
       "encoding": "String = \"json\""
     },
-    "returnedType": "TransactionInfo"
+    "returnedType": "Transaction.Info"
   },
   {
     "method": "getEpochInfo",
@@ -321,7 +321,7 @@
       "transaction": "String",
       "configs": "RequestConfiguration? = nil"
     },
-    "returnedType": "Rpc<TransactionStatus>"
+    "returnedType": "Rpc<Transaction.Status>"
   },
   {
     "method": "setLogFilter",

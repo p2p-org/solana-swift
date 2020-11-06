@@ -44,7 +44,7 @@ public extension SolanaSDK {
 		public let blockhash: String
 		public let previousBlockhash: String
 		public let parentSlot: UInt64
-		public let transactions: [TransactionInfo]
+		public let transactions: [Transaction.Info]
 		public let rewards: [Reward]
 		public let blockTime: UInt64?
 	}
@@ -53,37 +53,6 @@ public extension SolanaSDK {
 		public let lamports: Int64
 		public let postBalance: UInt64
 		public let rewardType: String?
-	}
-	struct TransactionInfo: Decodable {
-		public let meta: TransactionMeta?
-		public let transaction: Transaction
-		public let slot: UInt64?
-	}
-	struct TransactionMeta: Decodable {
-		public let err: TransactionError?
-		public let fee: UInt64
-		public let preBalances: [UInt64]
-		public let postBalances: [UInt64]
-	}
-	struct Transaction: Decodable {
-		public let signatures: [String]
-		public let message: TransactionMessage
-	}
-	struct TransactionError: Decodable {
-	}
-	struct TransactionMessage: Decodable {
-		public let accountKeys: [String]
-		public let header: TransactionMessageHeader
-	}
-	struct TransactionMessageHeader: Decodable {
-		public let numReadonlySignedAccounts: Int
-		public let numReadonlyUnsignedAccounts: Int
-	}
-	struct TransactionSignatureInfo: Decodable {
-		public let signature: String
-		public let slot: UInt64
-		public let err: TransactionError?
-		public let memo: String?
 	}
 	struct EpochInfo: Decodable {
 		public let absoluteSlot: UInt64
@@ -148,7 +117,7 @@ public extension SolanaSDK {
 	struct SignatureStatus: Decodable {
 		public let slot: UInt64
 		public let confirmations: UInt64?
-		public let err: TransactionError?
+		public let err: Transaction.Error?
 	}
 	struct StakeActivation: Decodable {
 		public let active: UInt64
@@ -195,9 +164,5 @@ public extension SolanaSDK {
 		public let lastVote: UInt64
 		public let activatedStake: UInt64
 		public let votePubkey: String
-	}
-	struct TransactionStatus: Decodable {
-		public let err: TransactionError?
-		public let logs: [String]
 	}
 }
