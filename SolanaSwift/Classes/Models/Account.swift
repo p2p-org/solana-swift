@@ -38,5 +38,13 @@ public extension SolanaSDK.Account {
         public let publicKey: SolanaSDK.PublicKey
         public let isSigner: Bool
         public let isWritable: Bool
+    
+        public init(from decoder: Decoder) throws {
+            let value = try decoder.singleValueContainer()
+            let string = try value.decode(String.self)
+            publicKey = try SolanaSDK.PublicKey(string: string)
+            isSigner = false
+            isWritable = false
+        }
     }
 }
