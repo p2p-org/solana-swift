@@ -14,7 +14,7 @@ public extension SolanaSDK {
         public let bytes: [Byte]
         
         public init(string: String) throws {
-            guard string.utf8.count <= SolanaSDK.PublicKey.LENGTH,
+            guard string.utf8.count >= SolanaSDK.PublicKey.LENGTH,
                let bytes = Base58.base58Decode(string)
             else {
                 throw Error.other("Invalid public key input")
