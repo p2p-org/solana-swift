@@ -49,12 +49,11 @@ extension SolanaSDK {
             result.append(Data.encodeLength(UInt(keyIndeces.count))) // key size
             result.append(contentsOf: keyIndeces) // keyIndeces
             result.append(UInt8(12))   // FIXME transfer data size
-            var littleEndian = UInt32(2).littleEndian
-            result += withUnsafeBytes(of: &littleEndian) { Array($0) }
+            
+            result += UInt32(2).bytes // Program Index
             
             let lamports = 3000
-            var newEdian = lamports.littleEndian
-            result += withUnsafeBytes(of: &newEdian) { Array($0) }
+            result += UInt64(lamports).bytes
             
             return result
         }
