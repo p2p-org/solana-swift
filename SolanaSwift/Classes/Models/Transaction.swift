@@ -9,8 +9,18 @@ import Foundation
 
 public extension SolanaSDK {
     struct Transaction: Decodable {
-        public let signatures: [String]
+        public let signatures: [Byte]
         public let message: Message
+        
+        enum CodingKeys: String, CodingKey {
+            case message, signatures
+        }
+        public init(from decoder: Decoder) throws {
+            let values = try decoder.container(keyedBy: CodingKeys.self)
+            message = try values.decode(Message.self, forKey: .message)
+            let strings = try values.decode([String].self, forKey: .signatures)
+            signatures = strings.compactMap {Byte($0)}
+        }
     }
 }
 
