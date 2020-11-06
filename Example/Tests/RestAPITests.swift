@@ -1,5 +1,5 @@
 //
-//  SolanaSDKTests.swift
+//  RestAPITests.swift
 //  p2p_walletTests
 //
 //  Created by Chung Tran on 10/28/20.
@@ -8,7 +8,7 @@
 import XCTest
 import SolanaSwift
 
-class SolanaSDKTests: XCTestCase {
+class RestAPITests: XCTestCase {
 
     var solanaSDK: SolanaSDK!
     var account: String!

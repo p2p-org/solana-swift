@@ -8,7 +8,7 @@
 import XCTest
 import SolanaSwift
 
-class SendTransactionTests: SolanaSDKTests {
+class SendTransactionTests: XCTestCase {
     
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -33,11 +33,6 @@ class SendTransactionTests: SolanaSDKTests {
         XCTAssertEqual(Data([0x80, 0x02]), Data.encodeLength(256))
         XCTAssertEqual(Data([0xff, 0xff, 0x01]), Data.encodeLength(32767))
         XCTAssertEqual(Data([0x80, 0x80, 0x80, 0x01]), Data.encodeLength(2097152))
-    }
-    
-    func testGetBalance() throws {
-        let balance = try solanaSDK.getBalance(account: account, commitment: "recent").toBlocking().first()
-        XCTAssertNotEqual(balance, 0)
     }
 
     func testCreatingTransfer() throws {

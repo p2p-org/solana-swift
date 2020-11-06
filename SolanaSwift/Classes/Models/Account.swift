@@ -30,6 +30,13 @@ public extension SolanaSDK {
             self.publicKey = try PublicKey(data: keys.publicKey)
             self.secretKey = keys.secretKey
         }
+        
+        public init(secretKey: Data) throws {
+            let keys = try NaclSign.KeyPair.keyPair(fromSecretKey: secretKey)
+            self.publicKey = try PublicKey(data: keys.publicKey)
+            self.secretKey = keys.secretKey
+            self.phrase = []
+        }
     }
 }
 

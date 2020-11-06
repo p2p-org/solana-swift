@@ -8,9 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		BC23AEC2254928870029FF0B /* SendTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBE254928870029FF0B /* SendTransactionTests.swift */; };
-		BC23AEC3254928870029FF0B /* AccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBF254928870029FF0B /* AccountTests.swift */; };
+		BC23AEC3254928870029FF0B /* RestAPIAccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBF254928870029FF0B /* RestAPIAccountTests.swift */; };
 		BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */; };
-		BC23AEC5254928870029FF0B /* SolanaSDKTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */; };
+		BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC1254928870029FF0B /* RestAPITests.swift */; };
+		BC2EC2DF25552EC1006EEDA5 /* AccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */; };
 		E6DDE50635D3D9571A63FE4D /* Pods_SolanaSwift_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8C40B5C5D42F5F26B6E4DA /* Pods_SolanaSwift_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -98,9 +99,10 @@
 		88E637D24AF2B058D65016C3 /* SolanaSwift.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = SolanaSwift.podspec; path = ../SolanaSwift.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		BC23AE51254925F00029FF0B /* _Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = _Pods.xcodeproj; path = ../_Pods.xcodeproj; sourceTree = "<group>"; };
 		BC23AEBE254928870029FF0B /* SendTransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SendTransactionTests.swift; path = Tests/SendTransactionTests.swift; sourceTree = SOURCE_ROOT; };
-		BC23AEBF254928870029FF0B /* AccountTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AccountTests.swift; path = Tests/AccountTests.swift; sourceTree = SOURCE_ROOT; };
+		BC23AEBF254928870029FF0B /* RestAPIAccountTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RestAPIAccountTests.swift; path = Tests/RestAPIAccountTests.swift; sourceTree = SOURCE_ROOT; };
 		BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InMemoryAccountStorage.swift; path = Tests/InMemoryAccountStorage.swift; sourceTree = SOURCE_ROOT; };
-		BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SolanaSDKTests.swift; path = Tests/SolanaSDKTests.swift; sourceTree = SOURCE_ROOT; };
+		BC23AEC1254928870029FF0B /* RestAPITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RestAPITests.swift; path = Tests/RestAPITests.swift; sourceTree = SOURCE_ROOT; };
+		BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,9 +148,8 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */,
-				BC23AEC1254928870029FF0B /* SolanaSDKTests.swift */,
-				BC23AEBF254928870029FF0B /* AccountTests.swift */,
+				BC2EC2C825552DE9006EEDA5 /* RestAPITests */,
+				BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */,
 				BC23AEBE254928870029FF0B /* SendTransactionTests.swift */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
@@ -199,6 +200,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		BC2EC2C825552DE9006EEDA5 /* RestAPITests */ = {
+			isa = PBXGroup;
+			children = (
+				BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */,
+				BC23AEC1254928870029FF0B /* RestAPITests.swift */,
+				BC23AEBF254928870029FF0B /* RestAPIAccountTests.swift */,
+			);
+			name = RestAPITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -233,7 +244,7 @@
 				TargetAttributes = {
 					607FACE41AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						LastSwiftMigration = 1200;
+						LastSwiftMigration = 1210;
 					};
 				};
 			};
@@ -411,8 +422,9 @@
 			files = (
 				BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */,
 				BC23AEC2254928870029FF0B /* SendTransactionTests.swift in Sources */,
-				BC23AEC5254928870029FF0B /* SolanaSDKTests.swift in Sources */,
-				BC23AEC3254928870029FF0B /* AccountTests.swift in Sources */,
+				BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */,
+				BC23AEC3254928870029FF0B /* RestAPIAccountTests.swift in Sources */,
+				BC2EC2DF25552EC1006EEDA5 /* AccountTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
