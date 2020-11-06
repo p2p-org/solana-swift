@@ -9,7 +9,8 @@ import Foundation
 
 public extension SolanaSDK {
     struct Transaction: Decodable {
-        
+        public let signatures: [String]
+        public let message: Message
     }
 }
 
