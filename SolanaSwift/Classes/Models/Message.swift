@@ -62,7 +62,7 @@ public extension SolanaSDK {
                 compiledInstructionsLength += compiledInstruction.length
             }
             
-            let instructionsLength = Data.encodeLength(compiledInstructions.size).bytes
+            let instructionsLength = Data.encodeLength(UInt(compiledInstructions.count)).bytes
             
             let bufferSize: Int = Message.Header.LENGTH + Message.RECENT_BLOCK_HASH_LENGT + accountAddressesLength.count + Int(accountKeysSize) * PublicKey.LENGTH + instructionsLength.count + compiledInstructionsLength
             
