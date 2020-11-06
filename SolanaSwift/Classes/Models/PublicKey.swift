@@ -11,7 +11,7 @@ import Base58Swift
 public extension SolanaSDK {
     struct PublicKey: Codable, Equatable {
         public static let LENGTH = 32
-        public let bytes: [Byte]
+        public let bytes: [UInt8]
         
         public init(string: String) throws {
             guard string.utf8.count >= SolanaSDK.PublicKey.LENGTH,
@@ -26,7 +26,7 @@ public extension SolanaSDK {
             guard data.count <= SolanaSDK.PublicKey.LENGTH else {
                 throw Error.other("Invalid public key input")
             }
-            self.bytes = [Byte](data)
+            self.bytes = [UInt8](data)
         }
         
         public var base58EncodedString: String {

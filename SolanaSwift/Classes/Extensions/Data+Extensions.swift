@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Base58Swift
 
 public extension Data {
     var decodedLength: Int {

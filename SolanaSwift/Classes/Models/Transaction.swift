@@ -10,7 +10,7 @@ import TweetNacl
 
 public extension SolanaSDK {
     struct Transaction: Decodable {
-        public var signatures: [Byte]
+        public var signatures: [UInt8]
         public var message: Message
         
         enum CodingKeys: String, CodingKey {
@@ -20,7 +20,7 @@ public extension SolanaSDK {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             message = try values.decode(Message.self, forKey: .message)
             let strings = try values.decode([String].self, forKey: .signatures)
-            signatures = strings.compactMap {Byte($0)}
+            signatures = strings.compactMap {UInt8($0)}
         }
         
         init() {
@@ -33,7 +33,7 @@ public extension SolanaSDK {
             signatures = try NaclSign.signDetached(message: Data(serializedMessage), secretKey: signer.secretKey).bytes
         }
         
-        public func serialize() throws -> [Byte] {
+        public func serialize() throws -> [UInt8] {
             let serializedMessage = try message.serialize()
             
             // TODO: - signature list
@@ -52,7 +52,7 @@ public extension SolanaSDK.Transaction {
     struct Instruction: Decodable {
         public let keys: [SolanaSDK.Account.Meta]
         public let programId: SolanaSDK.PublicKey
-        public let data: [SolanaSDK.Byte]
+        public let data: [UInt8]
     }
     
     struct Error: Decodable {

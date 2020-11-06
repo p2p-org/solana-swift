@@ -47,14 +47,14 @@ public extension SolanaSDK {
                 
                 var keyIndices = Data(capacity: Int(keysSize))
                 for _ in 0..<keysSize {
-                    keyIndices.append(Byte(try findAccountIndex(publicKey: instruction.programId)))
+                    keyIndices.append(UInt8(try findAccountIndex(publicKey: instruction.programId)))
                 }
                 
                 let compiledInstruction = CompiledInstruction(
-                    programIdIndex: Byte(try findAccountIndex(publicKey: instruction.programId)),
-                    keyIndicesCount: [Byte](Data.encodeLength(UInt(keysSize))),
-                    keyIndices: [Byte](keyIndices),
-                    dataLength: [Byte](Data.encodeLength(UInt(instruction.data.count))),
+                    programIdIndex: UInt8(try findAccountIndex(publicKey: instruction.programId)),
+                    keyIndicesCount: [UInt8](Data.encodeLength(UInt(keysSize))),
+                    keyIndices: [UInt8](keyIndices),
+                    dataLength: [UInt8](Data.encodeLength(UInt(instruction.data.count))),
                     data: instruction.data
                 )
                 
@@ -72,7 +72,7 @@ public extension SolanaSDK {
             data.append(contentsOf: accountKeys.reduce([]) {$0 + $1.publicKey.bytes})
             data.append(contentsOf: recentBlockhash)
             data.append(contentsOf: instructionsLength)
-            data.append(contentsOf: compiledInstructions.reduce([], { (result, instruction) -> [Byte] in
+            data.append(contentsOf: compiledInstructions.reduce([], { (result, instruction) -> [UInt8] in
                 var bytes = result
                 bytes.append(instruction.programIdIndex)
                 bytes += instruction.keyIndicesCount
