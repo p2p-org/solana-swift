@@ -6,11 +6,12 @@
 //
 
 import Foundation
+import TweetNacl
 
 public extension SolanaSDK {
     struct Transaction: Decodable {
-        public let signatures: [Byte]
-        public let message: Message
+        public var signatures: [Byte]
+        public var message: Message
         
         enum CodingKeys: String, CodingKey {
             case message, signatures
@@ -20,6 +21,29 @@ public extension SolanaSDK {
             message = try values.decode(Message.self, forKey: .message)
             let strings = try values.decode([String].self, forKey: .signatures)
             signatures = strings.compactMap {Byte($0)}
+        }
+        
+        init() {
+            message = Message()
+            signatures = []
+        }
+        
+        public mutating func sign(signer: Account) throws {
+            let serializedMessage = try message.serialize()
+            signatures = try NaclSign.signDetached(message: Data(serializedMessage), secretKey: signer.secretKey).bytes
+        }
+        
+        public func serialize() throws -> [Byte] {
+            let serializedMessage = try message.serialize()
+            
+            // TODO: - signature list
+            let signaturesLength = Data.encodeLength(UInt(1)) // change "1" later
+            
+            var data = Data(capacity: signaturesLength.count + signatures.count + serializedMessage.count)
+            data.append(signaturesLength)
+            data.append(contentsOf: signatures)
+            data.append(contentsOf: serializedMessage)
+            return data.bytes
         }
     }
 }
