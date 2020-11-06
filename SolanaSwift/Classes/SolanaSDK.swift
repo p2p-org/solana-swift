@@ -16,6 +16,8 @@ public protocol SolanaSDKAccountStorage {
 }
 
 public class SolanaSDK {
+    public typealias Byte = UInt8
+    
     // MARK: - Properties
     #if DEBUG
     let endpoint = "https://testnet.solana.com"

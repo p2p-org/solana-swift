@@ -13,5 +13,6 @@ public extension SolanaSDK {
         case publicKeyNotFound
         case invalidURL
         case invalidStatusCode(code: Int)
+        case other(String)
     }
 }

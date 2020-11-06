@@ -11,7 +11,7 @@ import TweetNacl
 public extension SolanaSDK {
     struct Account: Codable {
         public let phrase: [String]
-        public let publicKey: Data
+        public let publicKey: PublicKey
         public let secretKey: Data
         
         public init(phrase: [String] = []) throws {
@@ -27,7 +27,7 @@ public extension SolanaSDK {
             let seed = mnemonic.seed[0..<32]
             let keys = try NaclSign.KeyPair.keyPair(fromSeed: Data(seed))
             
-            self.publicKey = keys.publicKey
+            self.publicKey = try PublicKey(data: keys.publicKey)
             self.secretKey = keys.secretKey
         }
     }
