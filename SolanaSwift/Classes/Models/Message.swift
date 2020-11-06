@@ -6,21 +6,86 @@
 //
 
 import Foundation
+import Base58Swift
 
-extension SolanaSDK {
+public extension SolanaSDK {
     struct Message {
         private static let RECENT_BLOCK_HASH_LENGT = 32
         
-        private let header: Header
-        private let recentBlockhash: String
-        private let accountKeys: [AccountMeta]
-//        private let 
+        public let header = Header()
+        public var recentBlockhash: String
+        public var accountKeys = [AccountMeta]()
+        private(set) var instructions = [TransactionInstruction]()
+        
+        mutating func add(instruction: TransactionInstruction) {
+            accountKeys.append(contentsOf: instruction.keys)
+            accountKeys.append(AccountMeta(publicKey: instruction.programId, isSigner: false, isWritable: false))
+            instructions.append(instruction)
+        }
+        
+        func serialize() throws -> [Byte] {
+            guard let recentBlockhash = Base58.base58Decode(recentBlockhash)
+            else {throw Error.other("Could not decode recentBlockhash")}
+            
+            let accountKeysSize = accountKeys.size
+            let accountAddressesLength = Data.encodeLength(accountKeysSize)
+            
+            var compiledInstructionsLength: Int = 0
+            var compiledInstructions = [CompiledInstruction]()
+            
+            for instruction in instructions {
+                let keysSize = instruction.keys.size
+                
+                var keyIndices = Data(capacity: Int(keysSize))
+                for i in 0..<keysSize {
+                    keyIndices[Data.Index(i)] = Byte(try findAccountIndex(publicKey: instruction.programId))
+                }
+                
+                let compiledInstruction = CompiledInstruction(
+                    programIdIndex: Byte(try findAccountIndex(publicKey: instruction.programId)),
+                    keyIndicesCount: [Byte](Data.encodeLength(keysSize)),
+                    keyIndices: [Byte](keyIndices),
+                    dataLength: [Byte](Data.encodeLength(UInt(instruction.data.count))),
+                    data: instruction.data
+                )
+                
+                compiledInstructions.append(compiledInstruction)
+                compiledInstructionsLength += compiledInstruction.length
+            }
+            
+            let instructionsLength = Data.encodeLength(compiledInstructions.size).bytes
+            
+            let bufferSize: Int = Message.Header.LENGTH + Message.RECENT_BLOCK_HASH_LENGT + accountAddressesLength.count + Int(accountKeysSize) * PublicKey.LENGTH + instructionsLength.count + compiledInstructionsLength
+            
+            var data = Data(capacity: bufferSize)
+            data.append(contentsOf: header.bytes)
+            data.append(contentsOf: accountAddressesLength)
+            data.append(contentsOf: accountKeys.reduce([]) {$0 + $1.publicKey.bytes})
+            data.append(contentsOf: recentBlockhash)
+            data.append(contentsOf: instructionsLength)
+            data.append(contentsOf: compiledInstructions.reduce([], { (result, instruction) -> [Byte] in
+                var bytes = result
+                bytes.append(instruction.programIdIndex)
+                bytes += instruction.keyIndicesCount
+                bytes += instruction.keyIndices
+                bytes += instruction.dataLength
+                bytes += instruction.data
+                return bytes
+            }))
+            return data.bytes
+        }
+        
+        private func findAccountIndex(publicKey: PublicKey) throws -> Int {
+            guard let index = accountKeys.firstIndex(where: {$0.publicKey == publicKey})
+            else {throw Error.other("Could not found accountIndex")}
+            return index
+        }
     }
 }
 
 extension SolanaSDK.Message {
     typealias Byte = UInt8
-    struct Header {
+    public struct Header {
         static let LENGTH = 3
         // TODO:
         let numRequiredSignatures: Byte = 1
