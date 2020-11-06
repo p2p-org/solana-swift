@@ -23,7 +23,7 @@ public extension SolanaSDK {
             signatures = strings.compactMap {UInt8($0)}
         }
         
-        init() {
+        public init() {
             message = Message()
             signatures = []
         }
