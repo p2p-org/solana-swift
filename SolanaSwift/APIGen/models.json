@@ -21,16 +21,6 @@
     }
   },
   {
-    "structName": "AccountInfo",
-    "params": {
-      "lamports": "UInt64",
-      "owner": "String",
-      "data": "[String]",
-      "executable": "Bool",
-      "rentEpoch": "UInt64"
-    }
-  },
-  {
     "structName": "BlockCommitment",
     "params": {
       "commitment": "[UInt64]?",
@@ -147,7 +137,7 @@
   {
     "structName": "ProgramAccount",
     "params": {
-      "account": "AccountInfo",
+      "account": "Account.Info",
       "pubkey": "String"
     }
   },
@@ -197,7 +187,7 @@
     "structName": "TokenAccount",
     "params": {
       "pubkey": "String",
-      "account": "AccountInfo"
+      "account": "Account.Info"
     }
   },
   {

@@ -53,4 +53,12 @@ public extension SolanaSDK.Account {
             isWritable = false
         }
     }
+    
+    struct Info: Codable {
+        public let lamports: UInt64
+        public let owner: String
+        public let data: [String]
+        public let executable: Bool
+        public let rentEpoch: UInt64
+    }
 }

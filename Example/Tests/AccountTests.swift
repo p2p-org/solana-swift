@@ -26,7 +26,7 @@ class AccountTests: SolanaSDKTests {
     
     func testGetAccountInfo() throws {
         let accountInfo = try solanaSDK.getAccountInfo(account: account).toBlocking().first()
-        XCTAssertNotNil(accountInfo as? SolanaSDK.AccountInfo)
+        XCTAssertNotNil(accountInfo as? SolanaSDK.Account.Info)
     }
     
     func testRequestAirDrop() throws {

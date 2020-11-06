@@ -5,7 +5,7 @@
       "account": "String",
       "configs": "RequestConfiguration? = RequestConfiguration(encoding: \"base58\")"
     },
-    "returnedType": "Rpc<AccountInfo?>"
+    "returnedType": "Rpc<Account.Info?>"
   },
   {
     "method": "getBalance",
@@ -169,7 +169,7 @@
       "pubkeys": "[String]",
       "configs": "RequestConfiguration? = nil"
     },
-    "returnedType": "Rpc<[AccountInfo]?>"
+    "returnedType": "Rpc<[Account.Info]?>"
   },
   {
     "method": "getProgramAccounts",

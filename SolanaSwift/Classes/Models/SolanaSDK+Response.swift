@@ -22,13 +22,6 @@ public extension SolanaSDK {
 	struct Context: Decodable {
 		public let slot: UInt64
 	}
-	struct AccountInfo: Decodable {
-		public let lamports: UInt64
-		public let owner: String
-		public let data: [String]
-		public let executable: Bool
-		public let rentEpoch: UInt64
-	}
 	struct BlockCommitment: Decodable {
 		public let commitment: [UInt64]?
 		public let totalStake: UInt64
@@ -105,7 +98,7 @@ public extension SolanaSDK {
 		public let address: String
 	}
 	struct ProgramAccount: Decodable {
-		public let account: AccountInfo
+		public let account: Account.Info
 		public let pubkey: String
 	}
 	struct PerformanceSample: Decodable {
@@ -137,7 +130,7 @@ public extension SolanaSDK {
 	}
 	struct TokenAccount: Decodable {
 		public let pubkey: String
-		public let account: AccountInfo
+		public let account: Account.Info
 	}
 	struct TokenAmount: Decodable {
 		public let address: String?

@@ -10,8 +10,8 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-	func getAccountInfo(account: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base58")) -> Single<AccountInfo?> {
-		(request(parameters: [account, configs]) as Single<Rpc<AccountInfo?>>)
+	func getAccountInfo(account: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base58")) -> Single<Account.Info?> {
+		(request(parameters: [account, configs]) as Single<Rpc<Account.Info?>>)
 			.map {$0.value}
 	}
 	func getBalance(account: String, commitment: Commitment? = nil) -> Single<UInt64> {
@@ -88,8 +88,8 @@ public extension SolanaSDK {
 	func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = nil) -> Single<UInt64> {
 		request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
 	}
-	func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[AccountInfo]?> {
-		(request(parameters: [pubkeys, configs]) as Single<Rpc<[AccountInfo]?>>)
+	func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[Account.Info]?> {
+		(request(parameters: [pubkeys, configs]) as Single<Rpc<[Account.Info]?>>)
 			.map {$0.value}
 	}
 	func getProgramAccounts(programPubkey: String, configs: RequestConfiguration? = nil) -> Single<[ProgramAccount]> {
