@@ -21,16 +21,6 @@
     }
   },
   {
-    "structName": "AccountInfo",
-    "params": {
-      "lamports": "UInt64",
-      "owner": "String",
-      "data": "[String]",
-      "executable": "Bool",
-      "rentEpoch": "UInt64"
-    }
-  },
-  {
     "structName": "BlockCommitment",
     "params": {
       "commitment": "[UInt64]?",
@@ -53,7 +43,7 @@
       "blockhash": "String",
       "previousBlockhash": "String",
       "parentSlot": "UInt64",
-      "transactions": "[TransactionInfo]",
+      "transactions": "[Transaction.Info]",
       "rewards": "[Reward]",
       "blockTime": "UInt64?"
     }
@@ -65,58 +55,6 @@
       "lamports": "Int64",
       "postBalance": "UInt64",
       "rewardType": "String?"
-    }
-  },
-  {
-    "structName": "TransactionInfo",
-    "params": {
-      "meta": "TransactionMeta?",
-      "transaction": "Transaction",
-      "slot": "UInt64?"
-    }
-  },
-  {
-    "structName": "TransactionMeta",
-    "params": {
-      "err": "TransactionError?",
-      "fee": "UInt64",
-      "preBalances": "[UInt64]",
-      "postBalances": "[UInt64]"
-    }
-  },
-  {
-    "structName": "Transaction",
-    "params": {
-      "signatures": "[String]",
-      "message": "TransactionMessage"
-    }
-  },
-  {
-    "structName": "TransactionError",
-    "params": {}
-  },
-  {
-    "structName": "TransactionMessage",
-    "params": {
-      "accountKeys": "[String]",
-      "header": "TransactionMessageHeader"
-    }
-  },
-  {
-    "structName": "TransactionMessageHeader",
-    "params": {
-      "numReadonlySignedAccounts": "Int",
-      "numReadonlyUnsignedAccounts": "Int",
-      "numReadonlyUnsignedAccounts": "Int"
-    }
-  },
-  {
-    "structName": "TransactionSignatureInfo",
-    "params": {
-      "signature": "String",
-      "slot": "UInt64",
-      "err": "TransactionError?",
-      "memo": "String?"
     }
   },
   {
@@ -199,7 +137,7 @@
   {
     "structName": "ProgramAccount",
     "params": {
-      "account": "AccountInfo",
+      "account": "Account.Info",
       "pubkey": "String"
     }
   },
@@ -217,7 +155,7 @@
     "params": {
       "slot": "UInt64",
       "confirmations": "UInt64?",
-      "err": "TransactionError?"
+      "err": "Transaction.Error?"
     }
   },
   {
@@ -249,7 +187,7 @@
     "structName": "TokenAccount",
     "params": {
       "pubkey": "String",
-      "account": "AccountInfo"
+      "account": "Account.Info"
     }
   },
   {
@@ -287,13 +225,6 @@
       "lastVote": "UInt64",
       "activatedStake": "UInt64",
       "votePubkey": "String"
-    }
-  },
-  {
-    "structName": "TransactionStatus",
-    "params": {
-      "err": "TransactionError?",
-      "logs": "[String]"
     }
   }
 ]

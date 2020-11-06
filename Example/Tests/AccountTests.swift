@@ -1,39 +1,31 @@
 //
-//  SolanaSwiftSDKTests.swift
-//  p2p_walletTests
+//  AccountTests.swift
+//  SolanaSwift_Tests
 //
-//  Created by Chung Tran on 10/26/20.
+//  Created by Chung Tran on 11/6/20.
+//  Copyright © 2020 CocoaPods. All rights reserved.
 //
 
 import XCTest
 import SolanaSwift
-import RxBlocking
-import RxSwift
 
-class AccountTests: SolanaSDKTests {
+class AccountTests: XCTestCase {
+
     override func setUpWithError() throws {
-        try super.setUpWithError()
+        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
 
     override func tearDownWithError() throws {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    }
+
+    func testCreateAccountFromSecretKey() throws {
+        let secretKey = Base58.bytesFromBase58("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")
+        XCTAssertNotNil(secretKey)
         
-    }
-    
-    func testGetBalance() throws {
-        let balance = try solanaSDK.getBalance(account: account, commitment: "recent").toBlocking().first()
-        XCTAssertNotEqual(balance, 0)
-    }
-    
-    func testGetAccountInfo() throws {
-        let accountInfo = try solanaSDK.getAccountInfo(account: account).toBlocking().first()
-        XCTAssertNotNil(accountInfo as? SolanaSDK.AccountInfo)
-    }
-    
-    func testRequestAirDrop() throws {
-        let balance = try solanaSDK.requestAirdrop(account: account, lamports: 89588000)
-            .flatMap{_ in Single<Int>.timer(.seconds(10), scheduler: MainScheduler.instance)}
-            .flatMap{_ in self.solanaSDK.getBalance(account: self.account, commitment: "recent")}
-            .toBlocking().first()
-        XCTAssertNotEqual(balance, 0)
+        let account = try SolanaSDK.Account(secretKey: Data(bytes: secretKey))
+        
+        XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", account.publicKey.base58EncodedString)
+        XCTAssertEqual(64, account.secretKey.count)
     }
 }

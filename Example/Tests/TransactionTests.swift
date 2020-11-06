@@ -1,5 +1,5 @@
 //
-//  SendTransactionTests.swift
+//  TransactionTests.swift
 //  p2p_walletTests
 //
 //  Created by Chung Tran on 10/28/20.
@@ -7,8 +7,9 @@
 
 import XCTest
 import SolanaSwift
+import CryptoSwift
 
-class SendTransactionTests: SolanaSDKTests {
+class TransactionTests: XCTestCase {
     
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -34,11 +35,6 @@ class SendTransactionTests: SolanaSDKTests {
         XCTAssertEqual(Data([0xff, 0xff, 0x01]), Data.encodeLength(32767))
         XCTAssertEqual(Data([0x80, 0x80, 0x80, 0x01]), Data.encodeLength(2097152))
     }
-    
-    func testGetBalance() throws {
-        let balance = try solanaSDK.getBalance(account: account, commitment: "recent").toBlocking().first()
-        XCTAssertNotEqual(balance, 0)
-    }
 
     func testCreatingTransfer() throws {
         let compiled = [UInt8]([2, 2, 0, 1, 12, 2, 0, 0, 0, 184, 11, 0, 0, 0, 0, 0, 0])
@@ -46,5 +42,20 @@ class SendTransactionTests: SolanaSDKTests {
         let data = SolanaSDK.Transfer.compile()
         receiver.append(contentsOf: data)
         XCTAssertEqual(compiled, receiver)
+    }
+    
+    func testSignAndSerialize() throws {
+        let fromPublicKey = try SolanaSDK.PublicKey(string: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")
+        let toPublicKey = try SolanaSDK.PublicKey(string: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5")
+        let lamports: Int64 = 3000
+        
+        let signer = try SolanaSDK.Account(secretKey: Data(bytes: Base58.bytesFromBase58("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")))
+        
+        var transaction = SolanaSDK.Transaction()
+        transaction.message.add(instruction: SolanaSDK.SystemProgram.transfer(from: fromPublicKey, to: toPublicKey, lamports: lamports))
+        transaction.message.recentBlockhash = "Eit7RCyhUixAe2hGBS8oqnw59QK3kgMMjfLME5bm9wRn"
+        try transaction.sign(signer: signer)
+        let serializedTransaction = try transaction.serialize()
+        XCTAssertEqual("ASdDdWBaKXVRA+6flVFiZokic9gK0+r1JWgwGg/GJAkLSreYrGF4rbTCXNJvyut6K6hupJtm72GztLbWNmRF1Q4BAAEDBhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQzrerzQ2HXrwm2hsYGjM5s+8qMWlbt6vbxngnO8rc3lqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAy+KIwZmU8DLmYglP3bPzrlpDaKkGu6VIJJwTOYQmRfUBAgIAAQwCAAAAuAsAAAAAAAA=", serializedTransaction.toBase64())
     }
 }

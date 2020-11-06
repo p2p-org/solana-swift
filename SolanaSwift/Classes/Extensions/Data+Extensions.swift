@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Base58Swift
 
 public extension Data {
     var decodedLength: Int {
@@ -40,10 +39,6 @@ public extension Data {
             }
         }
         return bytes
-    }
-    
-    var base58EncodedString: String {
-        Base58.base58Encode([UInt8](self))
     }
 }
 
