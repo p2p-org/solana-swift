@@ -153,8 +153,8 @@ public extension SolanaSDK {
 	func requestAirdrop(account: String, lamports: UInt64, commitment: Commitment? = nil) -> Single<String> {
 		request(parameters: [account, lamports, RequestConfiguration(commitment: commitment)])
 	}
-	func sendTransaction(transaction: String, configs: RequestConfiguration? = nil) -> Single<String> {
-		request(parameters: [transaction, configs])
+	func sendTransaction(serializedTransaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<String> {
+		request(parameters: [serializedTransaction, configs])
 	}
 	func simulateTransaction(transaction: String, configs: RequestConfiguration? = nil) -> Single<Transaction.Status> {
 		(request(parameters: [transaction, configs]) as Single<Rpc<Transaction.Status>>)

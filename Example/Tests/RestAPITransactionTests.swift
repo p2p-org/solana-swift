@@ -8,11 +8,12 @@
 
 import Foundation
 import XCTest
+import SolanaSwift
 
 class RestAPITransactionTests: RestAPITests {
     func testGetBalance() throws {
         let serializedTransaction = try TestHelper.testingSerializedTransaction()
-        let result = try solanaSDK.sendTransaction(transaction: serializedTransaction).toBlocking().first()
+        let result = try solanaSDK.sendTransaction(serializedTransaction: serializedTransaction).toBlocking().first()
         
     }
 }

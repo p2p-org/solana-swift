@@ -56,5 +56,5 @@ module.exports = function() {
 	"\n"+
 	"public extension SolanaSDK {\n"+funcs+"}"
 
-	fs.writeFileSync('../Classes/SolanaSDK+Methods.swift', string)
+	fs.writeFileSync('../Classes/SolanaSDK+GeneratedMethods.swift', string)
 }
