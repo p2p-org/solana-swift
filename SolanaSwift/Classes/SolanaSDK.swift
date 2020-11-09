@@ -17,15 +17,12 @@ public protocol SolanaSDKAccountStorage {
 
 public class SolanaSDK {
     // MARK: - Properties
-    #if DEBUG
-    let endpoint = "https://testnet.solana.com"
-    #else
-    let endpoint = ""
-    #endif
+    let endpoint: String
     public let accountStorage: SolanaSDKAccountStorage
     
     // MARK: - Initializer
-    public init(accountStorage: SolanaSDKAccountStorage) {
+    public init(endpoint: String, accountStorage: SolanaSDKAccountStorage) {
+        self.endpoint = endpoint
         self.accountStorage = accountStorage
     }
      
