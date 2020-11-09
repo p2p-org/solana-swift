@@ -313,6 +313,7 @@
       "serializedTransaction": "String",
       "configs": "RequestConfiguration = RequestConfiguration(encoding: \"base64\")!"
     },
+    "scope": "internal",
     "returnedType": "String"
   },
   {

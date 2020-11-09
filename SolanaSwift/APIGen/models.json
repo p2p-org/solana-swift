@@ -83,7 +83,7 @@
       "feeCalculator": "FeeCalculator?",
       "feeRateGovernor": "FeeRateGovernor?",
       "blockhash": "String?",
-      "lastValidSlot": "UInt64"
+      "lastValidSlot": "UInt64?"
     }
   },
   {

@@ -33,5 +33,5 @@ module.exports = function() {
 	"\n"+
 	"public extension SolanaSDK {\n"+structs+"}"
 
-	fs.writeFileSync('../Classes/Models/SolanaSDK+Response.swift', string);
+	fs.writeFileSync('../Classes/Generated/SolanaSDK+GeneratedModels.swift', string);
 }

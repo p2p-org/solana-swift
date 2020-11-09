@@ -65,7 +65,7 @@ public extension SolanaSDK {
 		public let feeCalculator: FeeCalculator?
 		public let feeRateGovernor: FeeRateGovernor?
 		public let blockhash: String?
-		public let lastValidSlot: UInt64
+		public let lastValidSlot: UInt64?
 	}
 	struct FeeCalculator: Decodable {
 		public let lamportsPerSignature: UInt64

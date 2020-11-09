@@ -143,11 +143,11 @@
 			isa = PBXGroup;
 			children = (
 				BCA25BC225591F2500850F3C /* TestHelper.swift */,
-				BC2EC2C825552DE9006EEDA5 /* RestAPITests */,
 				BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */,
 				BCAB474825555FE400E1E743 /* PublicKeyTests.swift */,
 				BC2EC2E3255530F6006EEDA5 /* MessageTests.swift */,
 				BC23AEBE254928870029FF0B /* TransactionTests.swift */,
+				BC2EC2C825552DE9006EEDA5 /* RestAPITests */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
 			path = Tests;

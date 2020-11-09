@@ -5,8 +5,12 @@ module.exports = function() {
 
 	let funcs = "";
 	for (const index in methods) {
+		funcs += "\t";
 
-		funcs += "\tfunc " + methods[index].method + "(";
+		let scope = methods[index].scope; // public by default
+		if (scope) {funcs += scope + " "}
+
+		funcs += "func " + methods[index].method + "(";
 
 		let funcParams = [];
 		let paramsToPass = [];
@@ -56,5 +60,5 @@ module.exports = function() {
 	"\n"+
 	"public extension SolanaSDK {\n"+funcs+"}"
 
-	fs.writeFileSync('../Classes/SolanaSDK+GeneratedMethods.swift', string)
+	fs.writeFileSync('../Classes/Generated/SolanaSDK+GeneratedMethods.swift', string)
 }
