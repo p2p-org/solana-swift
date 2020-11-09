@@ -11,14 +11,6 @@ import RxBlocking
 import RxSwift
 
 class RestAPIAccountTests: RestAPITests {
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-    }
-
-    override func tearDownWithError() throws {
-        
-    }
-    
     func testGetBalance() throws {
         let balance = try solanaSDK.getBalance(account: account, commitment: "recent").toBlocking().first()
         XCTAssertNotEqual(balance, 0)
