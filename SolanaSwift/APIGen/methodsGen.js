@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 module.exports = function() {
-	let methods = require('./methods.json');
+	let methods = require('../Classes/Generated/methods.json');
 
 	let funcs = "";
 	for (const index in methods) {

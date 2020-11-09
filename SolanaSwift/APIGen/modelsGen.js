@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 module.exports = function() {
-	let models = require('./models.json');
+	let models = require('../Classes/Generated/models.json');
 	let structs = "";
 	for (const index in models) {
 		let model = models[index];
