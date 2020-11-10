@@ -32,10 +32,6 @@ public extension SolanaSDK {
             Base58.base58FromBytes(bytes)
         }
         
-        public var string: String {
-            base58EncodedString
-        }
-        
         public var data: Data {
             Data(bytes: bytes)
         }
