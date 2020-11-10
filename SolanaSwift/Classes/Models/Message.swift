@@ -11,28 +11,38 @@ public extension SolanaSDK {
     struct Message: Decodable {
         private static let RECENT_BLOCK_HASH_LENGT = 32
         
-        public var header = Header()
+        public var header: Header?
         public var recentBlockhash: String?
-        public var accountKeys = [Account.Meta]()
+        public var accountKeys: [Account.Meta]?
         private(set) var instructions: [Transaction.Instruction]?
         
-        public init() {}
+        public init() {
+            header = Header()
+        }
         
         public mutating func add(instruction: Transaction.Instruction) {
             if instructions == nil {
                 instructions = [Transaction.Instruction]()
             }
-            accountKeys.append(contentsOf: instruction.keys)
-            accountKeys.append(Account.Meta(publicKey: instruction.programId, isSigner: false, isWritable: false))
+            if accountKeys == nil {
+                accountKeys = [Account.Meta]()
+            }
+            accountKeys!.append(contentsOf: instruction.keys)
+            accountKeys!.append(Account.Meta(publicKey: instruction.programId, isSigner: false, isWritable: false))
+            accountKeys!.sort()
             instructions!.append(instruction)
         }
         
-        public func serialize() throws -> [UInt8] {
+        public mutating func serialize() throws -> [UInt8] {
             guard let string = recentBlockhash
-            else {throw Error.other("Could not decode recentBlockhash")}
+            else {throw Error.other("recentBlockhash required")}
             
-            guard let instructions = instructions else {
-                throw Error.other("Instructions not found")
+            guard let instructions = instructions, instructions.count > 0 else {
+                throw Error.other("No instructions provided")
+            }
+            
+            guard let accountKeys = accountKeys else {
+                throw Error.other("No accountKeys provided")
             }
             
             let recentBlockhash = Base58.bytesFromBase58(string)
@@ -68,9 +78,28 @@ public extension SolanaSDK {
             let bufferSize: Int = Message.Header.LENGTH + Message.RECENT_BLOCK_HASH_LENGT + accountAddressesLength.count + Int(accountKeysSize) * PublicKey.LENGTH + instructionsLength.count + compiledInstructionsLength
             
             var data = Data(capacity: bufferSize)
-            data.append(contentsOf: header.bytes)
+            
+            var accountKeysBuff = Data(capacity: accountKeysSize * PublicKey.LENGTH)
+            for meta in accountKeys {
+                accountKeysBuff.append(contentsOf: meta.publicKey.bytes)
+                if meta.isSigner {
+                    let current = header?.numRequiredSignatures ?? 0
+                    header?.numRequiredSignatures = current + 1
+                    if meta.isWritable {
+                        let current = (header?.numReadonlySignedAccounts ?? 0)
+                        header?.numReadonlySignedAccounts = current + 1
+                    }
+                } else {
+                    if !meta.isWritable {
+                        let current = header?.numReadonlyUnsignedAccounts ?? 0
+                        header?.numReadonlyUnsignedAccounts = current + 1
+                    }
+                }
+            }
+            
+            data.append(contentsOf: header!.bytes)
             data.append(contentsOf: accountAddressesLength)
-            data.append(contentsOf: accountKeys.reduce([]) {$0 + $1.publicKey.bytes})
+            data.append(accountKeysBuff)
             data.append(contentsOf: recentBlockhash)
             data.append(contentsOf: instructionsLength)
             data.append(contentsOf: compiledInstructions.reduce([], { (result, instruction) -> [UInt8] in
@@ -86,7 +115,7 @@ public extension SolanaSDK {
         }
         
         private func findAccountIndex(publicKey: PublicKey) throws -> Int {
-            guard let index = accountKeys.firstIndex(where: {$0.publicKey == publicKey})
+            guard let index = accountKeys!.firstIndex(where: {$0.publicKey == publicKey})
             else {throw Error.other("Could not found accountIndex")}
             return index
         }

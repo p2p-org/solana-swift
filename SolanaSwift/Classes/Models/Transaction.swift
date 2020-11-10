@@ -33,7 +33,7 @@ public extension SolanaSDK {
             signatures = try NaclSign.signDetached(message: Data(serializedMessage), secretKey: signer.secretKey).bytes
         }
         
-        public func serialize() throws -> [UInt8] {
+        public mutating func serialize() throws -> [UInt8] {
             let serializedMessage = try message.serialize()
             
             // TODO: - signature list
