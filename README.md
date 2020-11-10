@@ -7,10 +7,10 @@ Solana-blockchain client, written in pure swift.
 [![Platform](https://img.shields.io/cocoapods/p/SolanaSwift.svg?style=flat)](https://cocoapods.org/pods/SolanaSwift)
 
 ## Features
-[x] Key pairs generation
-[x] Networking with POST methods for comunicating with solana-based networking system
-[x] Create, sign transactions
-[ ] Socket communication // TODO
+- [x] Key pairs generation
+- [x] Networking with POST methods for comunicating with solana-based networking system
+- [x] Create, sign transactions
+- [ ] Socket communication // TODO
 
 ## Example
 
@@ -44,6 +44,7 @@ import SolanaSwift
 ```
 
 * Create an `AccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The `AccountStorage` must conform to protocol `SolanaSDKAccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK.Account?` for retrieving user's account.
+
 Example:
 ```swift
 import KeychainSwift
@@ -75,6 +76,7 @@ struct InMemoryAccountStorage: SolanaSDKAccountStorage {
 let solanaSDK = SolanaSDK(endpoint: <YOUR_API_ENDPOINT>, accountStorage: KeychainAccountStorage.shared)
 ```
 * Send pre-defined POST methods, which return a `RxSwift.Single`. [List of predefined methods](https://github.com/p2p-org/solana-swift/blob/main/SolanaSwift/Classes/Generated/SolanaSDK%2BGeneratedMethods.swift):
+
 Example:
 ```swift
 solanaSDK.getBalance(account: account, commitment: "recent")
@@ -92,15 +94,17 @@ solanaSDK.send(to: <ACCOUNT_PUBLIC_KEY>, amount: <LAMPORTS>)
     .disposed(by: disposeBag)
 ```
 * Send custom method, which was not defined by using method `request<T: Decodable>(method:, path:, bcMethod:, parameters:) -> Single<T>`
+
 Example:
 ```swift
 (solanaSDK.request(method: .post, bcMethod: "aNewMethodThatReturnsAString", parameters: []) as Single<String>)
 ```
 * Observe socket events:
+
 // TODO: The socket implementation has not been ready yet.
 
 ## Contribution
-- For supporting new methods, data type, `SolanaSDK` uses api automatic generation see [API Gen](https://github.com/p2p-org/solana-swift/blob/main/SolanaSwift/Classes/Generated/README.md)
+- For supporting new methods, data type, `SolanaSDK` uses api automatic generation, see [API Gen](https://github.com/p2p-org/solana-swift/blob/main/SolanaSwift/Classes/Generated/README.md)
 - For testing, run `Example` project and creating test using `RxBlocking`
 
 ## Author
