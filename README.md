@@ -106,6 +106,7 @@ Example:
 ## Contribution
 - For supporting new methods, data type, `SolanaSDK` uses api automatic generation, see [API Gen](https://github.com/p2p-org/solana-swift/blob/main/SolanaSwift/Classes/Generated/README.md)
 - For testing, run `Example` project and creating test using `RxBlocking`
+- Welcome to contribute, feel free to change and open a PR.
 
 ## Author
 Chung Tran, chung.t@p2p.org
