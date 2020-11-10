@@ -97,9 +97,9 @@ extension SolanaSDK.Message {
     public struct Header: Decodable {
         static let LENGTH = 3
         // TODO:
-        var numRequiredSignatures: UInt8? = 1
+        var numRequiredSignatures: UInt8? = 0
         var numReadonlySignedAccounts: UInt8 = 0
-        var numReadonlyUnsignedAccounts: UInt8 = 1
+        var numReadonlyUnsignedAccounts: UInt8 = 0
         
         var bytes: [UInt8] {
             [numRequiredSignatures ?? 1, numReadonlySignedAccounts, numReadonlyUnsignedAccounts]
