@@ -14,28 +14,27 @@ public extension SolanaSDK {
         public var header = Header()
         public var recentBlockhash: String?
         public var accountKeys = [Account.Meta]()
-        private(set) var instructions: [Transaction.Instruction]?
+        private(set) var instructions = [Transaction.Instruction]()
         
         public init() {}
         
         public mutating func add(instruction: Transaction.Instruction) {
-            if instructions == nil {
-                instructions = [Transaction.Instruction]()
-            }
-            accountKeys.append(contentsOf: instruction.keys)
-            accountKeys.append(Account.Meta(publicKey: instruction.programId, isSigner: false, isWritable: false))
-            instructions!.append(instruction)
+            accountKeys.appendWritable(contentsOf: instruction.keys)
+            accountKeys.appendWritable(Account.Meta(publicKey: instruction.programId, isSigner: false, isWritable: false))
+            instructions.append(instruction)
         }
         
-        public func serialize() throws -> [UInt8] {
+        public mutating func serialize() throws -> [UInt8] {
             guard let string = recentBlockhash
-            else {throw Error.other("Could not decode recentBlockhash")}
+            else {throw Error.other("recentBlockhash required")}
             
-            guard let instructions = instructions else {
-                throw Error.other("Instructions not found")
+            guard instructions.count > 0 else {
+                throw Error.other("No instructions provided")
             }
             
             let recentBlockhash = Base58.bytesFromBase58(string)
+            
+            accountKeys = accountKeys.sorted(by: <)
             
             let accountKeysSize = accountKeys.count
             let accountAddressesLength = Data.encodeLength(UInt(accountKeysSize))
@@ -68,9 +67,29 @@ public extension SolanaSDK {
             let bufferSize: Int = Message.Header.LENGTH + Message.RECENT_BLOCK_HASH_LENGT + accountAddressesLength.count + Int(accountKeysSize) * PublicKey.LENGTH + instructionsLength.count + compiledInstructionsLength
             
             var data = Data(capacity: bufferSize)
+            
+            var accountKeysBuff = Data(capacity: accountKeysSize * PublicKey.LENGTH)
+            
+            header = Header()
+            
+            for meta in accountKeys {
+                accountKeysBuff.append(meta.publicKey.data)
+                if meta.isSigner {
+                    let current = header.numRequiredSignatures ?? 0
+                    header.numRequiredSignatures = current + 1
+                    if !meta.isWritable {
+                        header.numReadonlySignedAccounts += 1
+                    }
+                } else {
+                    if !meta.isWritable {
+                        header.numReadonlyUnsignedAccounts += 1
+                    }
+                }
+            }
+            
             data.append(contentsOf: header.bytes)
             data.append(contentsOf: accountAddressesLength)
-            data.append(contentsOf: accountKeys.reduce([]) {$0 + $1.publicKey.bytes})
+            data.append(accountKeysBuff)
             data.append(contentsOf: recentBlockhash)
             data.append(contentsOf: instructionsLength)
             data.append(contentsOf: compiledInstructions.reduce([], { (result, instruction) -> [UInt8] in
@@ -97,9 +116,9 @@ extension SolanaSDK.Message {
     public struct Header: Decodable {
         static let LENGTH = 3
         // TODO:
-        var numRequiredSignatures: UInt8? = 1
+        var numRequiredSignatures: UInt8? = 0
         var numReadonlySignedAccounts: UInt8 = 0
-        var numReadonlyUnsignedAccounts: UInt8 = 1
+        var numReadonlyUnsignedAccounts: UInt8 = 0
         
         var bytes: [UInt8] {
             [numRequiredSignatures ?? 1, numReadonlySignedAccounts, numReadonlyUnsignedAccounts]
@@ -116,5 +135,21 @@ extension SolanaSDK.Message {
         var length: Int {
             1 + keyIndicesCount.count + keyIndices.count + dataLength.count + data.count
         }
+    }
+}
+
+fileprivate extension Array where Element == SolanaSDK.Account.Meta {
+    mutating func appendWritable(_ meta: Element) {
+        if let existingMeta = first(where: {meta.publicKey == $0.publicKey}) {
+            if !existingMeta.isWritable && meta.isWritable {
+                append(meta)
+            }
+        } else {
+            append(meta)
+        }
+    }
+    
+    mutating func appendWritable(contentsOf array: Self) {
+        array.forEach {appendWritable($0)}
     }
 }
