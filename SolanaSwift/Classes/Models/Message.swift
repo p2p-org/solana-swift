@@ -70,6 +70,8 @@ public extension SolanaSDK {
             
             var accountKeysBuff = Data(capacity: accountKeysSize * PublicKey.LENGTH)
             
+            header = Header()
+            
             for meta in accountKeys {
                 accountKeysBuff.append(meta.publicKey.data)
                 if meta.isSigner {
