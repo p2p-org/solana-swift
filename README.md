@@ -75,6 +75,12 @@ struct InMemoryAccountStorage: SolanaSDKAccountStorage {
 ```swift
 let solanaSDK = SolanaSDK(endpoint: <YOUR_API_ENDPOINT>, accountStorage: KeychainAccountStorage.shared)
 ```
+* Creating an account:
+```swift
+let mnemonic = Mnemonic()
+let account = try SolanaSDK.Account(phrase: mnemonic.phrase)
+try solanaSDK.accountStorage.save(account)
+```
 * Send pre-defined POST methods, which return a `RxSwift.Single`. [List of predefined methods](https://github.com/p2p-org/solana-swift/blob/main/SolanaSwift/Classes/Generated/SolanaSDK%2BGeneratedMethods.swift):
 
 Example:
