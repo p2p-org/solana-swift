@@ -27,7 +27,7 @@ public class SolanaSDK {
     }
      
     // MARK: - Helper
-    func request<T: Decodable>(
+    public func request<T: Decodable>(
         method: HTTPMethod = .post,
         path: String = "",
         bcMethod: String = #function,
