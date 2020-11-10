@@ -13,7 +13,12 @@ public extension SolanaSDK {
 	struct Response<T: Decodable>: Decodable {
 		public let jsonrpc: String
 		public let id: String
-		public let result: T
+		public let result: T?
+		public let error: ResponseError?
+	}
+	struct ResponseError: Decodable {
+		public let code: Int?
+		public let message: String?
 	}
 	struct Rpc<T: Decodable>: Decodable {
 		public let context: Context

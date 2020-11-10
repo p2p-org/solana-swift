@@ -49,7 +49,7 @@ public class SolanaSDK {
             urlRequest.httpBody = try JSONEncoder().encode(requestAPI)
             return RxAlamofire.request(urlRequest)
                 .responseData()
-                .map {(response, data) -> Response<T> in
+                .map {(response, data) -> T in
                     // Print
                     Logger.log(message: String(data: data, encoding: .utf8) ?? "", event: .response, apiMethod: bcMethod)
                     
@@ -58,11 +58,17 @@ public class SolanaSDK {
                         // Decode errror
                         throw Error.invalidStatusCode(code: response.statusCode)
                     }
-                    return try JSONDecoder().decode(Response<T>.self, from: data)
+                    let response = try JSONDecoder().decode(Response<T>.self, from: data)
+                    if let result = response.result {
+                        return result
+                    }
+                    if let error = response.error {
+                        throw Error.responseError(error)
+                    }
+                    throw Error.unknown
                 }
                 .take(1)
                 .asSingle()
-                .map {$0.result}
         } catch {
             return .error(error)
         }
