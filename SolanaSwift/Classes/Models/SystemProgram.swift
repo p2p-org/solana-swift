@@ -15,7 +15,7 @@ public extension SolanaSDK {
         public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: Int64) -> Transaction.Instruction {
             var keys = [Account.Meta]()
             keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
-            keys.append(Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: false))
+            keys.append(Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true))
             
             // 4 byte instruction index + 8 bytes lamports
             var data = Data()
