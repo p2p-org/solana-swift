@@ -20,7 +20,7 @@ class PublicKeyTests: XCTestCase {
     }
     
     func testInvalidKeys() throws {
-        XCTAssertThrowsError(try SolanaSDK.PublicKey(data: Data(bytes: [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])))
+        XCTAssertThrowsError(try SolanaSDK.PublicKey(data: Data([3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])))
 //        XCTAssertThrowsError(try SolanaSDK.PublicKey(string: "300000000000000000000000000000000000000000000000000000000000000000000"))
 //        XCTAssertThrowsError(try SolanaSDK.PublicKey(string: "300000000000000000000000000000000000000000000000000000000000000"))
     }
@@ -37,7 +37,7 @@ class PublicKeyTests: XCTestCase {
     }
     
     func testPublicKeyToString() throws {
-        let key = try SolanaSDK.PublicKey(data: Data(bytes: [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+        let key = try SolanaSDK.PublicKey(data: Data([3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
         XCTAssertEqual("CiDwVBFgWV9E5MvXWoLgnEgn2hK7rJikbvfWavzAQz3", key.base58EncodedString)
         
         let key1 = try SolanaSDK.PublicKey(string: "CiDwVBFgWV9E5MvXWoLgnEgn2hK7rJikbvfWavzAQz3")
@@ -46,7 +46,7 @@ class PublicKeyTests: XCTestCase {
         let key2 = try SolanaSDK.PublicKey(string: "11111111111111111111111111111111")
         XCTAssertEqual("11111111111111111111111111111111", key2.base58EncodedString)
         
-        let key3 = try SolanaSDK.PublicKey(data: Data(bytes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]))
+        let key3 = try SolanaSDK.PublicKey(data: Data([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]))
         XCTAssertEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], key3.bytes)
     }
 }

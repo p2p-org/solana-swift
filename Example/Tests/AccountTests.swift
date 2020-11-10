@@ -23,7 +23,7 @@ class AccountTests: XCTestCase {
         let secretKey = Base58.bytesFromBase58("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")
         XCTAssertNotNil(secretKey)
         
-        let account = try SolanaSDK.Account(secretKey: Data(bytes: secretKey))
+        let account = try SolanaSDK.Account(secretKey: Data(secretKey))
         
         XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", account.publicKey.base58EncodedString)
         XCTAssertEqual(64, account.secretKey.count)

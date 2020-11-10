@@ -33,7 +33,7 @@ public extension SolanaSDK {
         }
         
         public var data: Data {
-            Data(bytes: bytes)
+            Data(bytes)
         }
     }
 }
