@@ -95,7 +95,7 @@ public extension SolanaSDK.Account {
                 let amountBytes = Array(data[64..<72])
                 mint = try SolanaSDK.PublicKey(data: Data(mintBytes))
                 owner = try SolanaSDK.PublicKey(data: Data(ownerBytes))
-                amount = 0
+                amount = amountBytes.toUInt64() ?? 0
             }
         }
     }
