@@ -112,7 +112,7 @@ Example:
 // TODO: The socket implementation has not been ready yet.
 
 ## Contribution
-- For supporting new methods, data type, `SolanaSDK` uses api automatic generation, see [API Gen](https://github.com/p2p-org/solana-swift/blob/main/SolanaSwift/Classes/Generated/README.md)
+- For supporting new methods, data types, edit `SolanaSDK+Methods` or `SolanaSDK+Models`
 - For testing, run `Example` project and creating test using `RxBlocking`
 - Welcome to contribute, feel free to change and open a PR.
 
