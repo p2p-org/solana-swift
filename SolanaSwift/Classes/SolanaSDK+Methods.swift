@@ -92,8 +92,8 @@ public extension SolanaSDK {
 		(request(parameters: [pubkeys, configs]) as Single<Rpc<[Account.Info]?>>)
 			.map {$0.value}
 	}
-	func getProgramAccounts(programPubkey: String = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA") -> Single<[ProgramAccount]> {
-        guard let account = accountStorage.account?.publicKey.base58EncodedString else {
+    func getProgramAccounts(programPubkey: String = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", account: String? = nil) -> Single<[ProgramAccount]> {
+        guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.accountNotFound)
         }
         let memcmp = EncodableWrapper(
