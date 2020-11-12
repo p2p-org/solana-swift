@@ -175,7 +175,7 @@
     "method": "getProgramAccounts",
     "params": {
       "programPubkey": "String",
-      "configs": "RequestConfiguration? = nil"
+      "configs": "RequestConfiguration = nil"
     },
     "returnedType": "[ProgramAccount]"
   },

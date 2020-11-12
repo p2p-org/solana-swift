@@ -9,10 +9,10 @@ import Foundation
 
 extension SolanaSDK {
     // MARK: - Private
-    struct EncodableWrapper: Encodable {
+    public struct EncodableWrapper: Encodable {
         let wrapped: Encodable
         
-        func encode(to encoder: Encoder) throws {
+        public func encode(to encoder: Encoder) throws {
             try self.wrapped.encode(to: encoder)
         }
     }
@@ -66,8 +66,9 @@ extension SolanaSDK {
         public let commitment: Commitment?
         public let encoding: String?
         public let dataSlice: DataSlice?
+        public let filters: [[String: EncodableWrapper]]?
         
-        public init?(commitment: Commitment? = nil, encoding: String? = nil, dataSlice: DataSlice? = nil)
+        public init?(commitment: Commitment? = nil, encoding: String? = nil, dataSlice: DataSlice? = nil, filters: [[String: EncodableWrapper]]? = nil)
         {
             if commitment == nil && encoding == nil && dataSlice == nil {
                 return nil
@@ -75,6 +76,7 @@ extension SolanaSDK {
             self.commitment = commitment
             self.encoding = encoding
             self.dataSlice = dataSlice
+            self.filters = filters
         }
     }
     

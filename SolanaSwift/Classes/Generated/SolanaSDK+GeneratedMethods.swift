@@ -92,8 +92,20 @@ public extension SolanaSDK {
 		(request(parameters: [pubkeys, configs]) as Single<Rpc<[Account.Info]?>>)
 			.map {$0.value}
 	}
-	func getProgramAccounts(programPubkey: String, configs: RequestConfiguration? = nil) -> Single<[ProgramAccount]> {
-		request(parameters: [programPubkey, configs])
+	func getProgramAccounts(programPubkey: String = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA") -> Single<[ProgramAccount]> {
+        guard let account = accountStorage.account?.publicKey.base58EncodedString else {
+            return .error(Error.accountNotFound)
+        }
+        let memcmp = EncodableWrapper(
+            wrapped:
+                ["offset": EncodableWrapper(wrapped: 32),
+                 "bytes": EncodableWrapper(wrapped: account)]
+        )
+        let configs = RequestConfiguration(commitment: "recent", encoding: "base64", dataSlice: nil, filters: [
+            ["memcmp": memcmp],
+            ["dataSize": .init(wrapped: 165)]
+        ])
+		return request(parameters: [programPubkey, configs])
 	}
 	func getRecentBlockhash(commitment: Commitment? = nil) -> Single<Fee> {
 		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)

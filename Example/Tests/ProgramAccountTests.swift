@@ -12,7 +12,7 @@ import SolanaSwift
 class ProgramAccountTests: XCTestCase {
 
     func testDecodingProgramAccount() throws {
-        let string = #"{"account":{"data":"2pfcvfP2BU7zsv3HYyFfnzi8BwudoDVxLqfWiLWremAbWEhp2GS7CM7t1kDnPc6ic5GBpjoiDFcZdmGtqi2hrUBLPmajeafohsC8wAmCjeScevXK4BLtmRGkJef4YwBMxEwNh2n7j44nQupeMzQQyJPyPMqzg9DH577nmKyMVS4sbCFKV6uXniwAYfxGjJy3E8xrzF9byWBkwtW4qUQXzpbdZg9KMN81om","executable":false,"lamports":2039280,"owner":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","rentEpoch":35},"pubkey":"94s94H8HNCSxvuduxuG16VybBp1YCpzxMV8x5o7RbPMT"}"#
+        let string = #"{"account":{"data":["eFnw9lVnndMN5Jzwx+Sz868QyrMH/D9UqaOcluHkD19Q2GYJMr1ICu1igql4jNhnTngax15GTVqOAfyEWk/shOgDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","base64"],"executable":false,"lamports":2039280,"owner":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","rentEpoch":35},"pubkey":"94s94H8HNCSxvuduxuG16VybBp1YCpzxMV8x5o7RbPMT"}"#
         let programAccount = try JSONDecoder().decode(SolanaSDK.ProgramAccount.self, from: string.data(using: .utf8)!)
         XCTAssertEqual(programAccount.account.data.amount, 1000)
         XCTAssertEqual(programAccount.account.data.mint.base58EncodedString, "96oUA9Zu6hdpp9rv41b8Z6DqRyVQm1VMqVU4cBxQupNJ")

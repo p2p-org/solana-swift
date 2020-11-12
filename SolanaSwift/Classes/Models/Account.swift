@@ -7,6 +7,7 @@
 
 import Foundation
 import TweetNacl
+import CryptoSwift
 
 public extension SolanaSDK {
     struct Account: Codable {
@@ -85,18 +86,16 @@ public extension SolanaSDK.Account {
             
             public init(from decoder: Decoder) throws {
                 let container = try decoder.singleValueContainer()
-                var data = try container.decode(String.self)
-                guard data.count >= 226 else {throw SolanaSDK.Error.other("the length of Account.Info.Data wasn't correct")}
-                let mintString = String(data.prefix(32))
-                data = String(data.dropFirst(32))
-                let ownerString = String(data.prefix(32))
-                data = String(data.dropFirst(32))
-                let amountString = String(data.prefix(8))
-                data = String(data.dropFirst(8))
-                mint = try SolanaSDK.PublicKey(data: Data(Base58.bytesFromBase58(mintString)))
-                owner = try SolanaSDK.PublicKey(data: Data(Base58.bytesFromBase58(ownerString)))
-                let amountBytes = Base58.bytesFromBase58(amountString)
-                amount = amountBytes.toUInt64() ?? 0
+                let strings = try container.decode([String].self)
+                guard let string = strings.first, let data = Data(base64Encoded: string)?.bytes,
+                      data.count >= 32 + 32 + 8
+                else {throw SolanaSDK.Error.other("The data returned by the request wasn't correct")}
+                let mintBytes = Array(data[0..<32])
+                let ownerBytes = Array(data[32..<64])
+                let amountBytes = Array(data[64..<72])
+                mint = try SolanaSDK.PublicKey(data: Data(mintBytes))
+                owner = try SolanaSDK.PublicKey(data: Data(ownerBytes))
+                amount = 0
             }
         }
     }
