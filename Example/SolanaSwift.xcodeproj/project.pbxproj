@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC1ABC4E255CC075002FCE65 /* ProgramAccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC1ABC4D255CC075002FCE65 /* ProgramAccountTests.swift */; };
 		BC23AEC2254928870029FF0B /* TransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBE254928870029FF0B /* TransactionTests.swift */; };
 		BC23AEC3254928870029FF0B /* RestAPIAccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBF254928870029FF0B /* RestAPIAccountTests.swift */; };
 		BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */; };
@@ -86,6 +87,7 @@
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		656EB490BFE125DA165A4E9A /* Pods-SolanaSwift_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SolanaSwift_Tests.release.xcconfig"; path = "Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		88E637D24AF2B058D65016C3 /* SolanaSwift.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = SolanaSwift.podspec; path = ../SolanaSwift.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		BC1ABC4D255CC075002FCE65 /* ProgramAccountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramAccountTests.swift; sourceTree = "<group>"; };
 		BC23AE51254925F00029FF0B /* _Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = _Pods.xcodeproj; path = ../_Pods.xcodeproj; sourceTree = "<group>"; };
 		BC23AEBE254928870029FF0B /* TransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TransactionTests.swift; path = Tests/TransactionTests.swift; sourceTree = SOURCE_ROOT; };
 		BC23AEBF254928870029FF0B /* RestAPIAccountTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RestAPIAccountTests.swift; path = Tests/RestAPIAccountTests.swift; sourceTree = SOURCE_ROOT; };
@@ -144,6 +146,7 @@
 				BCAB474825555FE400E1E743 /* PublicKeyTests.swift */,
 				BC2EC2E3255530F6006EEDA5 /* MessageTests.swift */,
 				BC23AEBE254928870029FF0B /* TransactionTests.swift */,
+				BC1ABC4D255CC075002FCE65 /* ProgramAccountTests.swift */,
 				BC2EC2C825552DE9006EEDA5 /* RestAPITests */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
@@ -401,6 +404,7 @@
 				BCAB474925555FE400E1E743 /* PublicKeyTests.swift in Sources */,
 				BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */,
 				BC23AEC3254928870029FF0B /* RestAPIAccountTests.swift in Sources */,
+				BC1ABC4E255CC075002FCE65 /* ProgramAccountTests.swift in Sources */,
 				BC2EC2DF25552EC1006EEDA5 /* AccountTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

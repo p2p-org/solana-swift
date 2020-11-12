@@ -70,8 +70,34 @@ public extension SolanaSDK.Account {
     struct Info: Codable {
         public let lamports: UInt64
         public let owner: String
-        public let data: [String]
+        public let data: AccountData
         public let executable: Bool
         public let rentEpoch: UInt64
+        
+        public struct AccountData: Codable {
+            public let mint: SolanaSDK.PublicKey
+            public let owner: SolanaSDK.PublicKey
+            public let amount: UInt64
+            
+            public func encode(to encoder: Encoder) throws {
+                fatalError("TODO")
+            }
+            
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                var data = try container.decode(String.self)
+                guard data.count >= 226 else {throw SolanaSDK.Error.other("the length of Account.Info.Data wasn't correct")}
+                let mintString = String(data.prefix(32))
+                data = String(data.dropFirst(32))
+                let ownerString = String(data.prefix(32))
+                data = String(data.dropFirst(32))
+                let amountString = String(data.prefix(8))
+                data = String(data.dropFirst(8))
+                mint = try SolanaSDK.PublicKey(data: Data(Base58.bytesFromBase58(mintString)))
+                owner = try SolanaSDK.PublicKey(data: Data(Base58.bytesFromBase58(ownerString)))
+                let amountBytes = Base58.bytesFromBase58(amountString)
+                amount = amountBytes.toUInt64() ?? 0
+            }
+        }
     }
 }
