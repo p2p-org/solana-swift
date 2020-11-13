@@ -8,11 +8,12 @@
 import Foundation
 
 public extension SolanaSDK {
-    struct Token: Decodable {
+    struct Token: Decodable, Hashable {
         public let name: String
         public let mintAddress: String
         public let symbol: String
         public let icon: String?
+        public var amount: UInt64?
         
         public init(accountInfo: Account.Info, inCluster cluster: String) throws {
             guard let mintAddress = accountInfo.data.mint?.base58EncodedString else {
@@ -23,6 +24,7 @@ public extension SolanaSDK {
             
             if let token = supportedTokens.first(where: {$0.mintAddress == mintAddress}) {
                 self = token
+                self.amount = accountInfo.data.amount
                 return
             }
             
