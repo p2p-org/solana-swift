@@ -12,6 +12,6 @@ import SolanaSwift
 
 class RestAPIProgramAccountTests: RestAPITests {
     func testGetProgramAccounts() throws {
-        XCTAssertNoThrow(try solanaSDK.getProgramAccounts(account: "6SazzPuqoXovicxirySZn6Rq25EvRJwSuoGCdKwdzEQK").toBlocking().first())
+        XCTAssertNoThrow(try solanaSDK.getProgramAccounts(account: "6SazzPuqoXovicxirySZn6Rq25EvRJwSuoGCdKwdzEQK", in: "devnet").toBlocking().first())
     }
 }

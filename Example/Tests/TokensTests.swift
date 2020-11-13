@@ -13,7 +13,7 @@ class TokensTests: XCTestCase {
 
     func testDecodingDevnetTokens() throws {
         let tokens = try SolanaSDK.Token.getSupportedTokens(cluster: "devnet")
-        XCTAssertEqual(tokens.count, 1)
+        XCTAssertEqual(tokens.count, 10)
         XCTAssertEqual(tokens.first!.mintAddress, "96oUA9Zu6hdpp9rv41b8Z6DqRyVQm1VMqVU4cBxQupNJ")
     }
     
