@@ -15,12 +15,14 @@ public extension SolanaSDK {
         public let icon: String?
         public var amount: UInt64?
         
-        public init(accountInfo: Account.Info, inCluster cluster: String) throws {
+        public init?(accountInfo: Account.Info, in network: String) {
             guard let mintAddress = accountInfo.data.mint?.base58EncodedString else {
-                throw Error.other("Mint address not found")
+                return nil
             }
             
-            let supportedTokens = try Self.getSupportedTokens(cluster: cluster)
+            guard let supportedTokens = Self.getSupportedTokens(network: network) else {
+                return nil
+            }
             
             if let token = supportedTokens.first(where: {$0.mintAddress == mintAddress}) {
                 self = token
@@ -28,16 +30,17 @@ public extension SolanaSDK {
                 return
             }
             
-            throw Error.other("Unsupported token")
+            print("unsupported token: \(mintAddress)")
+            return nil
         }
         
-        public static func getSupportedTokens(cluster: String) throws -> [Self] {
-            guard let string = SupportedTokens.shared[cluster],
+        public static func getSupportedTokens(network: String) -> [Self]? {
+            guard let string = SupportedTokens.shared[network],
                   let data = string.data(using: .utf8)
             else {
-                throw Error.other("Data wasn't valid")
+                return nil
             }
-            return try JSONDecoder().decode([SolanaSDK.Token].self, from: data)
+            return try? JSONDecoder().decode([SolanaSDK.Token].self, from: data)
         }
     }
 }

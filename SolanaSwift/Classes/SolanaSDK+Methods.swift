@@ -106,7 +106,7 @@ public extension SolanaSDK {
             ["dataSize": .init(wrapped: 165)]
         ])
 		return (request(parameters: [programPubkey, configs]) as Single<[ProgramAccount]>)
-            .map {try $0.compactMap {try Token(accountInfo: $0.account, inCluster: network)}}
+            .map {$0.compactMap {Token(accountInfo: $0.account, in: network)}}
 	}
 	func getRecentBlockhash(commitment: Commitment? = nil) -> Single<Fee> {
 		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)
