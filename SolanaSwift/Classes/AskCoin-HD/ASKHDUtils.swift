@@ -79,7 +79,7 @@ extension Data {
 		return Data(reversed())
 	}
 	func ask_base58Check() -> String {
-		return ASKBase58.encode(data: self)
+		return Base58.encode([UInt8](self))
 	}
 	static func dataFromHexString(hexString: String) -> Data {
 		let data = Data()
