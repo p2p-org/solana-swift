@@ -92,7 +92,7 @@ public extension SolanaSDK {
 		(request(parameters: [pubkeys, configs]) as Single<Rpc<[Account.Info]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts(programPubkey: String = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", account: String? = nil, in cluster: String) -> Single<[Token]> {
+    func getProgramAccounts(programPubkey: String = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", account: String? = nil, in network: String) -> Single<[Token]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.accountNotFound)
         }
@@ -106,7 +106,7 @@ public extension SolanaSDK {
             ["dataSize": .init(wrapped: 165)]
         ])
 		return (request(parameters: [programPubkey, configs]) as Single<[ProgramAccount]>)
-            .map {try $0.compactMap {try Token(accountInfo: $0.account, inCluster: cluster)}}
+            .map {try $0.compactMap {try Token(accountInfo: $0.account, inCluster: network)}}
 	}
 	func getRecentBlockhash(commitment: Commitment? = nil) -> Single<Fee> {
 		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)
