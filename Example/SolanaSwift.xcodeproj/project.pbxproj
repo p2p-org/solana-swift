@@ -14,6 +14,7 @@
 		BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC1254928870029FF0B /* RestAPITests.swift */; };
 		BC2EC2DF25552EC1006EEDA5 /* AccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */; };
 		BC2EC2E4255530F6006EEDA5 /* MessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC2EC2E3255530F6006EEDA5 /* MessageTests.swift */; };
+		BC5FFEC3256111AD002DB054 /* KeychainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5FFEC2256111AD002DB054 /* KeychainTests.swift */; };
 		BCA0CF19255E36C000CD0F8D /* TokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA0CF18255E36C000CD0F8D /* TokensTests.swift */; };
 		BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */; };
 		BCAB474925555FE400E1E743 /* PublicKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCAB474825555FE400E1E743 /* PublicKeyTests.swift */; };
@@ -78,6 +79,13 @@
 			remoteGlobalIDString = 317CDB3617AE7CFBD3C9B5B901F8F543;
 			remoteInfo = TweetNacl;
 		};
+		BC5FFECD256111AD002DB054 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 65841E5F08F2815D4026575B32E9C7CD;
+			remoteInfo = ASKSecp256k1;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -97,6 +105,7 @@
 		BC23AEC1254928870029FF0B /* RestAPITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RestAPITests.swift; path = Tests/RestAPITests.swift; sourceTree = SOURCE_ROOT; };
 		BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTests.swift; sourceTree = "<group>"; };
 		BC2EC2E3255530F6006EEDA5 /* MessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTests.swift; sourceTree = "<group>"; };
+		BC5FFEC2256111AD002DB054 /* KeychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTests.swift; sourceTree = "<group>"; };
 		BCA0CF18255E36C000CD0F8D /* TokensTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensTests.swift; sourceTree = "<group>"; };
 		BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITransactionTests.swift; sourceTree = "<group>"; };
 		BCAB474825555FE400E1E743 /* PublicKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicKeyTests.swift; sourceTree = "<group>"; };
@@ -152,6 +161,7 @@
 				BC23AEBE254928870029FF0B /* TransactionTests.swift */,
 				BC1ABC4D255CC075002FCE65 /* ProgramAccountTests.swift */,
 				BCA0CF18255E36C000CD0F8D /* TokensTests.swift */,
+				BC5FFEC2256111AD002DB054 /* KeychainTests.swift */,
 				BC2EC2C825552DE9006EEDA5 /* RestAPITests */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
@@ -189,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				BC23AE5F254925F10029FF0B /* Alamofire.framework */,
+				BC5FFECE256111AD002DB054 /* ASKSecp256k1.framework */,
 				BC23AE65254925F10029FF0B /* CryptoSwift.framework */,
 				BC23AE67254925F10029FF0B /* Pods_SolanaSwift_Tests.framework */,
 				BC23AE69254925F10029FF0B /* RxAlamofire.framework */,
@@ -331,6 +342,13 @@
 			remoteRef = BC23AE70254925F10029FF0B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		BC5FFECE256111AD002DB054 /* ASKSecp256k1.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = ASKSecp256k1.framework;
+			remoteRef = BC5FFECD256111AD002DB054 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -373,6 +391,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/ASKSecp256k1/ASKSecp256k1.framework",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/CryptoSwift/CryptoSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/RxAlamofire/RxAlamofire.framework",
@@ -383,6 +402,7 @@
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ASKSecp256k1.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CryptoSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxAlamofire.framework",
@@ -408,6 +428,7 @@
 				BCA0CF19255E36C000CD0F8D /* TokensTests.swift in Sources */,
 				BC2EC2E4255530F6006EEDA5 /* MessageTests.swift in Sources */,
 				BC23AEC2254928870029FF0B /* TransactionTests.swift in Sources */,
+				BC5FFEC3256111AD002DB054 /* KeychainTests.swift in Sources */,
 				BCAB474925555FE400E1E743 /* PublicKeyTests.swift in Sources */,
 				BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */,
 				BCB58327255CE0AA00B10F65 /* RestAPIProgramAccountTests.swift in Sources */,

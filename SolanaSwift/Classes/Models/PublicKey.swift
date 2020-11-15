@@ -17,7 +17,7 @@ public extension SolanaSDK {
             else {
                 throw Error.other("Invalid public key input")
             }
-            let bytes = Base58.bytesFromBase58(string)
+            let bytes = Base58.decode(string)
             self.bytes = bytes
         }
         
@@ -29,7 +29,7 @@ public extension SolanaSDK {
         }
         
         public var base58EncodedString: String {
-            Base58.base58FromBytes(bytes)
+            Base58.encode(bytes)
         }
         
         public var data: Data {

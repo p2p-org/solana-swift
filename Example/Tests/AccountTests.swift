@@ -20,7 +20,7 @@ class AccountTests: XCTestCase {
     }
 
     func testCreateAccountFromSecretKey() throws {
-        let secretKey = Base58.bytesFromBase58("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")
+        let secretKey = Base58.decode("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")
         XCTAssertNotNil(secretKey)
         
         let account = try SolanaSDK.Account(secretKey: Data(secretKey))

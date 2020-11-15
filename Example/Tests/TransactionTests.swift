@@ -49,7 +49,7 @@ class TransactionTests: XCTestCase {
         let toPublicKey = try SolanaSDK.PublicKey(string: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5")
         let lamports: Int64 = 3000
         
-        let signer = try SolanaSDK.Account(secretKey: Data(Base58.bytesFromBase58("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")))
+        let signer = try SolanaSDK.Account(secretKey: Data(Base58.decode("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")))
         
         var transaction = SolanaSDK.Transaction()
         transaction.message.add(instruction: SolanaSDK.SystemProgram.transfer(from: fromPublicKey, to: toPublicKey, lamports: lamports))

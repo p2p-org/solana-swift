@@ -32,7 +32,7 @@ public extension SolanaSDK {
                 throw Error.other("No instructions provided")
             }
             
-            let recentBlockhash = Base58.bytesFromBase58(string)
+            let recentBlockhash = Base58.decode(string)
             
             accountKeys = accountKeys.sorted(by: <)
             
