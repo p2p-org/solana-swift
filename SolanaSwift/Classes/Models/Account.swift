@@ -25,8 +25,13 @@ public extension SolanaSDK {
             }
             self.phrase = mnemonic.phrase
             
-            let seed = mnemonic.seed[0..<32]
-            let keys = try NaclSign.KeyPair.keyPair(fromSeed: Data(seed))
+            let keychain = try Keychain(seedString: phrase.joined(separator: " "))
+            
+            guard let seed = try keychain.derivedKeychain(at: "m/501'/0'/0/0").privateKey else {
+                throw Error.other("Could not derivate private key")
+            }
+            
+            let keys = try NaclSign.KeyPair.keyPair(fromSeed: seed)
             
             self.publicKey = try PublicKey(data: keys.publicKey)
             self.secretKey = keys.secretKey

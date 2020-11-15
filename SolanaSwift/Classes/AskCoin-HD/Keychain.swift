@@ -57,7 +57,7 @@ public class Keychain: NSObject {
 		}
 	}
 	
-	private init(hmac: Array<UInt8>) {
+	public init(hmac: Array<UInt8>) {
 		privateKey = Data(hmac[0..<32])
 		chainCode = Data(hmac[32..<64])
 	}
