@@ -13,7 +13,7 @@ import TweetNacl
 class KeychainTests: XCTestCase {
 
     func testDerivedKeychain() throws {
-        var keychain = try Keychain(seedString: "miracle pizza supply useful steak border same again youth silver access hundred")
+        var keychain = try Keychain(seedString: "miracle pizza supply useful steak border same again youth silver access hundred", network: "mainnet-beta")
         
         keychain = try keychain.derivedKeychain(at: "m/501'/0'/0/0")
         

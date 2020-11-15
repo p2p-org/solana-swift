@@ -36,8 +36,8 @@ public class Keychain: NSObject {
 	private var chainCode: Data?
 	
 	fileprivate var isMasterKey = false
+    var isTestnet = false
 	
-	var network = Network()
 	var depth: UInt8 = 0
 	var hardened = false
 	var index: UInt32 = 0
@@ -46,12 +46,13 @@ public class Keychain: NSObject {
 		
 	}
 	
-	public convenience init(seedString: String) throws {
+    public convenience init(seedString: String, network: String) throws {
         let seed = try Mnemonic(phrase: seedString.components(separatedBy: " ")).seed
 		do {
 			let hmac = try HMAC(key: "Bitcoin seed", variant: .sha512).authenticate(seed)
 			self.init(hmac: hmac)
 			isMasterKey = true
+            isTestnet = network == "devnet" || network == "testnet"
 		} catch {
 			throw error
 		}
@@ -97,7 +98,7 @@ public class Keychain: NSObject {
 		
 		var toReturn = Data()
 		
-		let version = self.network.isMainNet ? BTCKeychainMainnetPrivateVersion : BTCKeychainTestnetPrivateVersion
+		let version = !isTestnet ? BTCKeychainMainnetPrivateVersion : BTCKeychainTestnetPrivateVersion
 		toReturn += self.extendedKeyPrefix(with: version)
 		
 		toReturn += UInt8(0).ask_hexToData()
@@ -121,7 +122,7 @@ public class Keychain: NSObject {
 		
 		var toReturn = Data()
 		
-		let version = self.network.isMainNet ? BTCKeychainMainnetPublicVersion : BTCKeychainTestnetPublicVersion
+		let version = !isTestnet ? BTCKeychainMainnetPublicVersion : BTCKeychainTestnetPublicVersion
 		toReturn += self.extendedKeyPrefix(with: version)
 		
 		if let pubkey = self.publicKey {

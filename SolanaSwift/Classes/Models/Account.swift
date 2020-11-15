@@ -15,7 +15,7 @@ public extension SolanaSDK {
         public let publicKey: PublicKey
         public let secretKey: Data
         
-        public init(phrase: [String] = []) throws {
+        public init(phrase: [String] = [], network: String) throws {
             let mnemonic: Mnemonic
             let phrase = phrase.filter {!$0.isEmpty}
             if !phrase.isEmpty {
@@ -25,7 +25,7 @@ public extension SolanaSDK {
             }
             self.phrase = mnemonic.phrase
             
-            let keychain = try Keychain(seedString: phrase.joined(separator: " "))
+            let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network)
             
             guard let seed = try keychain.derivedKeychain(at: "m/501'/0'/0/0").privateKey else {
                 throw Error.other("Could not derivate private key")
