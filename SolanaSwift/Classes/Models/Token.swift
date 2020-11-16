@@ -15,6 +15,14 @@ public extension SolanaSDK {
         public let icon: String?
         public var amount: UInt64?
         
+        public init(name: String, mintAddress: String, symbol: String, icon: String?, amount: UInt64?) {
+            self.name = name
+            self.mintAddress = mintAddress
+            self.symbol = symbol
+            self.icon = icon
+            self.amount = amount
+        }
+        
         public init?(accountInfo: Account.Info, in network: String) {
             guard let mintAddress = accountInfo.data.mint?.base58EncodedString else {
                 return nil
