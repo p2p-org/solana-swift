@@ -12,15 +12,15 @@ import SolanaSwift
 class TokensTests: XCTestCase {
 
     func testDecodingDevnetTokens() throws {
-        let tokens = try SolanaSDK.Token.getSupportedTokens(cluster: "devnet")
-        XCTAssertEqual(tokens.count, 10)
-        XCTAssertEqual(tokens.first!.mintAddress, "96oUA9Zu6hdpp9rv41b8Z6DqRyVQm1VMqVU4cBxQupNJ")
+        let tokens = SolanaSDK.Token.getSupportedTokens(network: "devnet")
+        XCTAssertEqual(tokens?.count, 10)
+        XCTAssertEqual(tokens?.first!.mintAddress, "96oUA9Zu6hdpp9rv41b8Z6DqRyVQm1VMqVU4cBxQupNJ")
     }
     
     func testDecodingMainnetBetaTokens() throws {
-        let tokens = try SolanaSDK.Token.getSupportedTokens(cluster: "mainnet-beta")
-        XCTAssertEqual(tokens.count, 25)
-        XCTAssertEqual(tokens.first!.mintAddress, "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt")
+        let tokens = SolanaSDK.Token.getSupportedTokens(network: "mainnet-beta")
+        XCTAssertEqual(tokens?.count, 25)
+        XCTAssertEqual(tokens?.first!.mintAddress, "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt")
     }
 
 }
