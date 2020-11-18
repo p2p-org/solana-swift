@@ -11,12 +11,12 @@ public extension SolanaSDK {
     struct Token: Decodable, Hashable {
         public let name: String
         public let mintAddress: String
-        public var owner: String?
+        public var pubkey: String?
         public let symbol: String
         public let icon: String?
         public var amount: UInt64?
         
-        public init?(accountInfo: Account.Info, in network: String) {
+        public init?(accountInfo: Account.Info, pubkey: String, in network: String) {
             guard let mintAddress = accountInfo.data.mint?.base58EncodedString else {
                 return nil
             }
@@ -28,7 +28,7 @@ public extension SolanaSDK {
             if let token = supportedTokens.first(where: {$0.mintAddress == mintAddress}) {
                 self = token
                 self.amount = accountInfo.data.amount
-                self.owner = accountInfo.data.owner?.base58EncodedString
+                self.pubkey = pubkey
                 return
             }
             
