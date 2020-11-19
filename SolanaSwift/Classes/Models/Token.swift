@@ -17,7 +17,7 @@ public extension SolanaSDK {
         public var amount: UInt64?
         public var decimals: Int?
         
-        init?(layout: AccountLayout, pubkey: String, in network: String) {
+        public init?(layout: AccountLayout, pubkey: String, in network: String) {
             guard let supportedTokens = Self.getSupportedTokens(network: network),
                   let mintAddress = layout.parsed?.info?.mint
                   else {

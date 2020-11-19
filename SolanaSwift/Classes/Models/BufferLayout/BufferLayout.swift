@@ -19,7 +19,7 @@ extension BufferLayout {
 }
 
 public struct Buffer<T: BufferLayout>: Codable {
-    let value: T?
+    public let value: T?
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -45,15 +45,14 @@ public struct Buffer<T: BufferLayout>: Codable {
         var dict = [String: [UInt8]]()
         
         let layout = T.layout()
+        
+        var from: Int = 0
         for i in 0..<layout.count {
             if layout[i].key == nil {continue}
-            var from: Int = 0
-            if i > 0 {
-                from = layout[i-1].length
-            }
             let to: Int = from + layout[i].length
             let bytes = Array(data[from..<to])
             dict[layout[i].key!] = bytes
+            from = to
         }
         value = T(dict)
     }
