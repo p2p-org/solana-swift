@@ -16,11 +16,6 @@ class RestAPIAccountTests: RestAPITests {
         XCTAssertNotEqual(balance, 0)
     }
     
-    func testGetAccountInfo() throws {
-        let accountInfo = try solanaSDK.getAccountInfo(account: account).toBlocking().first()
-        XCTAssertNotNil(accountInfo as? SolanaSDK.Account.Info)
-    }
-    
     func testRequestAirDrop() throws {
         let balance = try solanaSDK.requestAirdrop(account: account, lamports: 89588000)
             .flatMap{_ in Single<Int>.timer(.seconds(10), scheduler: MainScheduler.instance)}

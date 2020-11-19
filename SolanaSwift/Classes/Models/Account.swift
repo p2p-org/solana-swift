@@ -72,44 +72,4 @@ public extension SolanaSDK.Account {
             isWritable = false
         }
     }
-    
-    struct Info: Codable {
-        public let lamports: UInt64
-        public let owner: String
-        public let data: AccountData
-        public let executable: Bool
-        public let rentEpoch: UInt64
-        
-        public struct AccountData: Codable {
-            public let mint: SolanaSDK.PublicKey?
-            public let owner: SolanaSDK.PublicKey?
-            public let amount: UInt64?
-            public let string: String?
-            
-            public func encode(to encoder: Encoder) throws {
-                fatalError("TODO")
-            }
-            
-            public init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                let strings = try container.decode([String].self)
-                guard let string = strings.first, let data = Data(base64Encoded: string)?.bytes,
-                      data.count >= 32 + 32 + 8
-                else {
-                    self.mint = nil
-                    self.owner = nil
-                    self.amount = nil
-                    self.string = strings.first
-                    return
-                }
-                let mintBytes = Array(data[0..<32])
-                let ownerBytes = Array(data[32..<64])
-                let amountBytes = Array(data[64..<72])
-                mint = try SolanaSDK.PublicKey(data: Data(mintBytes))
-                owner = try SolanaSDK.PublicKey(data: Data(ownerBytes))
-                amount = amountBytes.toUInt64() ?? 0
-                self.string = string
-            }
-        }
-    }
 }

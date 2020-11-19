@@ -11,7 +11,23 @@ import XCTest
 import SolanaSwift
 
 class RestAPIProgramAccountTests: RestAPITests {
-    func testGetProgramAccounts() throws {
-        XCTAssertNoThrow(try solanaSDK.getProgramAccounts(account: "6SazzPuqoXovicxirySZn6Rq25EvRJwSuoGCdKwdzEQK", in: "devnet").toBlocking().first())
+    func testGetProgramAccountsInBase64() throws {
+        let result = try solanaSDK.getProgramAccounts(programPubkey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", shouldParseJSON: false, in: "devnet").toBlocking().first()
+        if result?.count == 0 {
+            return
+        }
+        XCTAssertNotNil(result?.first!.mintAddress)
+        XCTAssertNotNil(result?.first!.pubkey)
+//        XCTAssertNotNil(result?.first!.decimals)
+    }
+    
+    func testGetProgramAccountsInParsedJSON() throws {
+        let result = try solanaSDK.getProgramAccounts(programPubkey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", in: "devnet").toBlocking().first()
+        if result?.count == 0 {
+            return
+        }
+        XCTAssertNotNil(result?.first!.mintAddress)
+        XCTAssertNotNil(result?.first!.pubkey)
+        XCTAssertNotNil(result?.first!.decimals)
     }
 }
