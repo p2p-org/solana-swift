@@ -164,6 +164,6 @@ extension SolanaSDK.Account.Info {
     private struct ParsedDataParsedInfoTokenAmount: Decodable {
         let amount: String?
         let decimals: Int?
-        let uiAmount: Int?
+        let uiAmount: Double?
     }
 }

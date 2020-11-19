@@ -107,6 +107,21 @@ public extension SolanaSDK {
         ])
 		return (request(parameters: [programPubkey, configs]) as Single<[ProgramAccount]>)
             .map {$0.compactMap {Token(accountInfo: $0.account, pubkey: $0.pubkey, in: network)}}
+            .flatMap { tokens in
+                var unfilledTokens = [Token]()
+                for token in tokens where token.decimals == nil {
+                    unfilledTokens.append(token)
+                }
+                if unfilledTokens.count > 0 {
+                    // TODO: call getAccountInfo and get decimals
+//                    export const MINT_LAYOUT = BufferLayout.struct([
+//                      BufferLayout.blob(44),
+//                      BufferLayout.u8('decimals'),
+//                      BufferLayout.blob(37),
+//                    ]);
+                }
+                return .just(tokens)
+            }
 	}
 	func getRecentBlockhash(commitment: Commitment? = nil) -> Single<Fee> {
 		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)

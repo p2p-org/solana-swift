@@ -203,25 +203,25 @@ extension SolanaSDK {
                   },
                   {
                     "name": "Example Token 7",
-                    "mintAddress": "XhzLJ59JDc4Y75VisPvbRMSnWT8tUEnq6Bf5zKdShxy5",
+                    "mintAddress": "6tFfrTsrZBg4MqaP2LkKn9kKH4zyB2L8ikpLboDQ9SEn",
                     "symbol": "EXMPL7",
                     "icon": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x476c5E26a75bd202a9683ffD34359C0CC15be0fF/logo.png"
                   },
                   {
                     "name": "Example Token 8",
-                    "mintAddress": "tntwqwGjfqg1Y242b88BNXQbPRCTpt7yk7iTxbrd7U5W",
+                    "mintAddress": "3CcnMLgDjXvWsYNg4JwBT2Un3N5zh4UR1iz1RJB4CXEX",
                     "symbol": "EXMPL8",
                     "icon": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x476c5E26a75bd202a9683ffD34359C0CC15be0fF/logo.png"
                   },
                   {
                     "name": "Example Token 9",
-                    "mintAddress": "KtsGy1KUKgo7imJtAnpBbqQwEKwJPTtiLNG3FfpVpCjF",
+                    "mintAddress": "6FoCxCt6d6LGgMCpB7iEuvstQKkoE9GUnaTYF36NRfaW",
                     "symbol": "EXMPL9",
                     "icon": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x476c5E26a75bd202a9683ffD34359C0CC15be0fF/logo.png"
                   },
                   {
                     "name": "Example Token 10",
-                    "mintAddress": "fryoFfKuzPvcrBB8QyAWMbMfsN8dxdG79PJTd2bQteCh",
+                    "mintAddress": "6Xd5kaN87U1CRmJH9r8BTdB91CBEGPkmCjNtn1HiGPcU",
                     "symbol": "EXMPL10",
                     "icon": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x476c5E26a75bd202a9683ffD34359C0CC15be0fF/logo.png"
                   }
