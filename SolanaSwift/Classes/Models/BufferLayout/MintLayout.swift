@@ -9,10 +9,10 @@ import Foundation
 
 extension SolanaSDK {
     public struct MintLayout: BufferLayout {
-        let decimal: UInt8
+        public let decimals: UInt8
         public init?(_ keys: [String: [UInt8]]) {
             guard let bytes = keys["decimals"], bytes.count == 1 else {return nil}
-            decimal = bytes.first!
+            decimals = bytes.first!
         }
         
         public static func layout()  -> [(key: String?, length: Int)] {

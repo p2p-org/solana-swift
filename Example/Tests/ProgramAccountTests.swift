@@ -29,4 +29,10 @@ class ProgramAccountTests: XCTestCase {
         XCTAssertEqual(token?.decimals, 2)
         XCTAssertEqual(token?.amount, 1000)
     }
+    
+    func testDecodingDecimalFromMintLayout() throws {
+        let string = #"["AQAAAFWGNYGxlppwgdY9en3++MwhRGINLq5pJv0L1KNZz9fogFywjDwDAQAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","base64"]"#
+        let mintLayout = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.MintLayout>.self, from: string.data(using: .utf8)!)
+        XCTAssertEqual(mintLayout.value?.decimals, 6)
+    }
 }

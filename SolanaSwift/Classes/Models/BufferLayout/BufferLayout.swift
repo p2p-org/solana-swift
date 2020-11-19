@@ -18,42 +18,47 @@ extension BufferLayout {
     }
 }
 
-public struct Buffer<T: BufferLayout>: Codable {
-    public let value: T?
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
+extension SolanaSDK {
+
+    public struct Buffer<T: BufferLayout>: Codable {
+        public let value: T?
         
-        // decode parsedJSON
-        do {
-            let parsedData = try container.decode(T.self)
-            value = parsedData
-            return
-        } catch {
-            Logger.log(message: "Unable to get parsed data, fallback to decoding base64, error: \(error)", event: .info, apiMethod: "getProgramAccounts")
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            
+            // decode parsedJSON
+            do {
+                let parsedData = try container.decode(T.self)
+                value = parsedData
+                return
+            } catch {
+                Logger.log(message: "Unable to get parsed data, fallback to decoding base64, error: \(error)", event: .info, apiMethod: "getProgramAccounts")
+            }
+            
+            // decode base64 data
+            let strings = try container.decode([String].self)
+            guard let string = strings.first, let data = Data(base64Encoded: string)?.bytes,
+                  data.count >= T.BUFFER_LENGTH
+            else {
+                value = T([:])
+                return
+            }
+            
+            var dict = [String: [UInt8]]()
+            
+            let layout = T.layout()
+            
+            var from: Int = 0
+            for i in 0..<layout.count {
+                let to: Int = from + layout[i].length
+                let bytes = Array(data[from..<to])
+                if let key = layout[i].key {
+                    dict[key] = bytes
+                }
+                from = to
+            }
+            value = T(dict)
         }
-        
-        // decode base64 data
-        let strings = try container.decode([String].self)
-        guard let string = strings.first, let data = Data(base64Encoded: string)?.bytes,
-              data.count >= T.BUFFER_LENGTH
-        else {
-            value = T([:])
-            return
-        }
-        
-        var dict = [String: [UInt8]]()
-        
-        let layout = T.layout()
-        
-        var from: Int = 0
-        for i in 0..<layout.count {
-            if layout[i].key == nil {continue}
-            let to: Int = from + layout[i].length
-            let bytes = Array(data[from..<to])
-            dict[layout[i].key!] = bytes
-            from = to
-        }
-        value = T(dict)
     }
 }
+
