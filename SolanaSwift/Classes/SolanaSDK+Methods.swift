@@ -92,7 +92,7 @@ public extension SolanaSDK {
 		(request(parameters: [pubkeys, configs]) as Single<Rpc<[Account.Info]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts(programPubkey: String = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", account: String? = nil, in network: String) -> Single<[Token]> {
+    func getProgramAccounts(programPubkey: String, account: String? = nil, shouldParseJSON: Bool = true, in network: String) -> Single<[Token]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.accountNotFound)
         }
@@ -101,7 +101,7 @@ public extension SolanaSDK {
                 ["offset": EncodableWrapper(wrapped: 32),
                  "bytes": EncodableWrapper(wrapped: account)]
         )
-        let configs = RequestConfiguration(commitment: "recent", encoding: "base64", dataSlice: nil, filters: [
+        let configs = RequestConfiguration(commitment: "recent", encoding: shouldParseJSON ? "jsonParsed": "base64", dataSlice: nil, filters: [
             ["memcmp": memcmp],
             ["dataSize": .init(wrapped: 165)]
         ])

@@ -15,6 +15,7 @@ public extension SolanaSDK {
         public let symbol: String
         public let icon: String?
         public var amount: UInt64?
+        public var decimals: Int?
         
         public init?(accountInfo: Account.Info, pubkey: String, in network: String) {
             guard let mintAddress = accountInfo.data.mint?.base58EncodedString else {
@@ -29,6 +30,7 @@ public extension SolanaSDK {
                 self = token
                 self.amount = accountInfo.data.amount
                 self.pubkey = pubkey
+                self.decimals = accountInfo.data.decimals
                 return
             }
             
