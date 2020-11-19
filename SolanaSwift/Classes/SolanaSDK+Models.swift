@@ -102,10 +102,19 @@ public extension SolanaSDK {
 		public let lamports: UInt64
 		public let address: String
 	}
-	struct ProgramAccount: Decodable {
-		public let account: Account.Info
+    struct ProgramAccount<T: BufferLayout>: Decodable {
+        public let account: AccountInfo<T>
 		public let pubkey: String
 	}
+    
+    struct AccountInfo<T: BufferLayout>: Decodable {
+        public let lamports: UInt64
+        public let owner: String
+        public let data: Buffer<T>
+        public let executable: Bool
+        public let rentEpoch: UInt64
+    }
+    
 	struct PerformanceSample: Decodable {
 		public let numSlots: UInt64
 		public let numTransactions: UInt64
@@ -133,9 +142,9 @@ public extension SolanaSDK {
 		public let amount: String
 		public let decimals: UInt8
 	}
-	struct TokenAccount: Decodable {
+    struct TokenAccount<T: BufferLayout>: Decodable {
 		public let pubkey: String
-		public let account: Account.Info
+		public let account: AccountInfo<T>
 	}
 	struct TokenAmount: Decodable {
 		public let address: String?

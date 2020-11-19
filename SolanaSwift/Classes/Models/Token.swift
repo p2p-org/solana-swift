@@ -17,20 +17,19 @@ public extension SolanaSDK {
         public var amount: UInt64?
         public var decimals: Int?
         
-        public init?(accountInfo: Account.Info, pubkey: String, in network: String) {
-            guard let mintAddress = accountInfo.data.mint?.base58EncodedString else {
+        init?(layout: AccountLayout, pubkey: String, in network: String) {
+            guard let supportedTokens = Self.getSupportedTokens(network: network),
+                  let mintAddress = layout.parsed?.info?.mint
+                  else {
                 return nil
             }
             
-            guard let supportedTokens = Self.getSupportedTokens(network: network) else {
-                return nil
-            }
             
             if let token = supportedTokens.first(where: {$0.mintAddress == mintAddress}) {
                 self = token
-                self.amount = accountInfo.data.amount
+                self.amount = UInt64(layout.parsed?.info?.tokenAmount?.amount ?? "0")
                 self.pubkey = pubkey
-                self.decimals = accountInfo.data.decimals
+                self.decimals = layout.parsed?.info?.tokenAmount?.decimals
                 return
             }
             

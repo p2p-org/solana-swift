@@ -10,9 +10,9 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-	func getAccountInfo(account: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base58")) -> Single<Account.Info?> {
-		(request(parameters: [account, configs]) as Single<Rpc<Account.Info?>>)
-			.map {$0.value}
+	func getAccountInfo(account: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base58")) -> Single<MintLayout?> {
+		(request(parameters: [account, configs]) as Single<Rpc<AccountInfo<MintLayout>?>>)
+            .map {$0.value?.data.value}
 	}
 	func getBalance(account: String, commitment: Commitment? = nil) -> Single<UInt64> {
 		(request(parameters: [account, RequestConfiguration(commitment: commitment)]) as Single<Rpc<UInt64>>)
@@ -88,8 +88,8 @@ public extension SolanaSDK {
 	func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = nil) -> Single<UInt64> {
 		request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
 	}
-	func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[Account.Info]?> {
-		(request(parameters: [pubkeys, configs]) as Single<Rpc<[Account.Info]?>>)
+	func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[AccountInfo<AccountLayout>]?> {
+		(request(parameters: [pubkeys, configs]) as Single<Rpc<[AccountInfo<AccountLayout>]?>>)
 			.map {$0.value}
 	}
     func getProgramAccounts(programPubkey: String, account: String? = nil, shouldParseJSON: Bool = true, in network: String) -> Single<[Token]> {
@@ -105,8 +105,14 @@ public extension SolanaSDK {
             ["memcmp": memcmp],
             ["dataSize": .init(wrapped: 165)]
         ])
-		return (request(parameters: [programPubkey, configs]) as Single<[ProgramAccount]>)
-            .map {$0.compactMap {Token(accountInfo: $0.account, pubkey: $0.pubkey, in: network)}}
+		return (request(parameters: [programPubkey, configs]) as Single<[ProgramAccount<AccountLayout>]>)
+            .map {
+                $0.compactMap {
+                    $0.account.data.value != nil ?
+                        Token(layout: $0.account.data.value!, pubkey: $0.pubkey, in: network)
+                        : nil
+                }
+            }
             .flatMap { tokens in
                 var unfilledTokens = [Token]()
                 for token in tokens where token.decimals == nil {
@@ -153,12 +159,12 @@ public extension SolanaSDK {
 	func getTokenAccountBalance(pubkey: String, commitment: Commitment? = nil) -> Single<TokenAccountBalance> {
 		request(parameters: [pubkey, RequestConfiguration(commitment: commitment)])
 	}
-	func getTokenAccountsByDelegate(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount]> {
-		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount]>>)
+    func getTokenAccountsByDelegate(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountLayout>]> {
+		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountLayout>]>>)
 			.map {$0.value}
 	}
-	func getTokenAccountsByOwner(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount]> {
-		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount]>>)
+    func getTokenAccountsByOwner(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountLayout>]> {
+		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountLayout>]>>)
 			.map {$0.value}
 	}
 	func getTokenLargestAccounts(pubkey: String, commitment: Commitment? = nil) -> Single<[TokenAmount]> {
