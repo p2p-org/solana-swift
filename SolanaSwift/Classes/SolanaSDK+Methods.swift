@@ -10,8 +10,9 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-	func getAccountInfo(account: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base58")) -> Single<MintLayout?> {
-		(request(parameters: [account, configs]) as Single<Rpc<AccountInfo<MintLayout>?>>)
+	func getAccountInfo(account: String) -> Single<MintLayout?> {
+        let configs = RequestConfiguration(encoding: "base64")
+		return (request(parameters: [account, configs]) as Single<Rpc<AccountInfo<MintLayout>?>>)
             .map {$0.value?.data.value}
 	}
 	func getBalance(account: String, commitment: Commitment? = nil) -> Single<UInt64> {
@@ -115,17 +116,32 @@ public extension SolanaSDK {
             }
             .flatMap { tokens in
                 var unfilledTokens = [Token]()
+                
+                // retrieve decimals if missing
                 for token in tokens where token.decimals == nil {
                     unfilledTokens.append(token)
                 }
                 if unfilledTokens.count > 0 {
-                    // TODO: call getAccountInfo and get decimals
-//                    export const MINT_LAYOUT = BufferLayout.struct([
-//                      BufferLayout.blob(44),
-//                      BufferLayout.u8('decimals'),
-//                      BufferLayout.blob(37),
-//                    ]);
+                    return Single<UInt8>.zip(
+                        unfilledTokens.map {
+                            return self.getAccountInfo(account: $0.mintAddress)
+                                .map {$0?.decimals ?? 0}
+                        }
+                    )
+                    .map {
+                        var tokens = tokens
+                        for i in 0..<unfilledTokens.count {
+                            unfilledTokens[i].decimals = Int($0[i])
+                            if let index = tokens.firstIndex(where: {$0.pubkey == unfilledTokens[i].pubkey})
+                            {
+                                tokens[index] = unfilledTokens[i]
+                            }
+                        }
+                        return tokens
+                    }
                 }
+                
+                // if all decimals isn't missing
                 return .just(tokens)
             }
 	}

@@ -16,9 +16,9 @@ class RestAPIProgramAccountTests: RestAPITests {
         if result?.count == 0 {
             return
         }
-        XCTAssertNotNil(result?.first!.mintAddress)
-        XCTAssertNotNil(result?.first!.pubkey)
-//        XCTAssertNotNil(result?.first!.decimals)
+        XCTAssertEqual(result?.first!.mintAddress, "6Xd5kaN87U1CRmJH9r8BTdB91CBEGPkmCjNtn1HiGPcU")
+        XCTAssertEqual(result?.first!.pubkey, "sKu9wC5Y2SyRPMyrGdFHAtnKNiaVSsRXRwSnPBszrwE")
+        XCTAssertEqual(result?.first!.decimals, 2)
     }
     
     func testGetProgramAccountsInParsedJSON() throws {
