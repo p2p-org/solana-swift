@@ -17,13 +17,14 @@ public extension SolanaSDK {
         
         public init(phrase: [String] = [], network: String) throws {
             let mnemonic: Mnemonic
-            let phrase = phrase.filter {!$0.isEmpty}
+            var phrase = phrase.filter {!$0.isEmpty}
             if !phrase.isEmpty {
                 mnemonic = try Mnemonic(phrase: phrase)
             } else {
                 mnemonic = Mnemonic()
+                phrase = mnemonic.phrase
             }
-            self.phrase = mnemonic.phrase
+            self.phrase = phrase
             
             let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network)
             
