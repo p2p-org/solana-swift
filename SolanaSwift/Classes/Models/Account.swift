@@ -41,7 +41,8 @@ public extension SolanaSDK {
             let keys = try NaclSign.KeyPair.keyPair(fromSecretKey: secretKey)
             self.publicKey = try PublicKey(data: keys.publicKey)
             self.secretKey = keys.secretKey
-            self.phrase = []
+            let phrase = try Mnemonic.toMnemonic(secretKey.bytes)
+            self.phrase = phrase
         }
     }
 }
