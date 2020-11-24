@@ -11,13 +11,6 @@ import RxSwift
 extension SolanaSDK {
     public func send(from fromPublicKey: String, to toPublicKey: String, amount: Int64) -> Single<String> {
         getRecentBlockhash()
-            .map {$0.blockhash}
-            .map { recentBlockhash -> String in
-                if recentBlockhash == nil {
-                    throw Error.other("Could not retrieve recent blockhash")
-                }
-                return recentBlockhash!
-            }
             .flatMap { recentBlockhash in
                 guard let account = self.accountStorage.account else {
                     throw Error.publicKeyNotFound
@@ -46,20 +39,8 @@ extension SolanaSDK {
             return .error(Error.publicKeyNotFound)
         }
 
-        
-        return getRecentBlockhash()
-            .map {$0.blockhash}
-            .map { recentBlockhash -> String in
-                if recentBlockhash == nil {
-                    throw Error.other("Could not retrieve recent blockhash")
-                }
-                return recentBlockhash!
-            }
-            .flatMap { recentBlockhash in
-                self.getMinimumBalanceForRentExemption(dataLength: AccountLayout.span)
-                    .map {($0, recentBlockhash)}
-            }
-            .map { (lamportsForAccount, recentBlockhash) in
+        return Single.zip(getRecentBlockhash(), getMinimumBalanceForRentExemption(dataLength: AccountLayout.span))
+            .map { (recentBlockhash, lamportsForAccount) in
                 // create new account for token
                 let newAccount = try Account(network: network)
                 let programPubkey = try PublicKey(string: programPubkey)

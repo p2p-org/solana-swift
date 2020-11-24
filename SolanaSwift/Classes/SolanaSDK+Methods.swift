@@ -145,9 +145,16 @@ public extension SolanaSDK {
                 return .just(tokens)
             }
 	}
-	func getRecentBlockhash(commitment: Commitment? = nil) -> Single<Fee> {
+	func getRecentBlockhash(commitment: Commitment? = nil) -> Single<String> {
 		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)
 			.map {$0.value}
+            .map {$0.blockhash}
+            .map { recentBlockhash in
+                if recentBlockhash == nil {
+                    throw Error.other("Could not retrieve recent blockhash")
+                }
+                return recentBlockhash!
+            }
 	}
 	func getRecentPerformanceSamples(limit: UInt64) -> Single<[PerformanceSample]> {
 		request(parameters: [limit])
