@@ -53,6 +53,17 @@ public extension SolanaSDK.Transaction {
         public let keys: [SolanaSDK.Account.Meta]
         public let programId: SolanaSDK.PublicKey
         public let data: [UInt8]
+        
+        public static func account(_ account: SolanaSDK.PublicKey, mint: SolanaSDK.PublicKey, owner: SolanaSDK.PublicKey, programPubkey: String) throws -> Self {
+            let SYSVAR_RENT_PUBKEY = try SolanaSDK.PublicKey(string: "SysvarRent111111111111111111111111111111111")
+            var keys: [SolanaSDK.Account.Meta] = [
+                .init(publicKey: account, isSigner: false, isWritable: true),
+                .init(publicKey: mint, isSigner: false, isWritable: false),
+                .init(publicKey: owner, isSigner: false, isWritable: false),
+                .init(publicKey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false)
+            ]
+            
+        }
     }
     
     struct Error: Decodable {
