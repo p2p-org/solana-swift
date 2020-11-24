@@ -54,7 +54,7 @@ public extension SolanaSDK.Transaction {
         public let programId: SolanaSDK.PublicKey
         public let data: [UInt8]
         
-        public static func account(_ account: SolanaSDK.PublicKey, mint: SolanaSDK.PublicKey, owner: SolanaSDK.PublicKey, programPubkey: String) throws -> Self {
+        public static func account(_ account: SolanaSDK.PublicKey, mint: SolanaSDK.PublicKey, owner: SolanaSDK.PublicKey, programPubkey: SolanaSDK.PublicKey) throws -> Self {
             let SYSVAR_RENT_PUBKEY = try SolanaSDK.PublicKey(string: "SysvarRent111111111111111111111111111111111")
             var keys: [SolanaSDK.Account.Meta] = [
                 .init(publicKey: account, isSigner: false, isWritable: true),
@@ -62,7 +62,8 @@ public extension SolanaSDK.Transaction {
                 .init(publicKey: owner, isSigner: false, isWritable: false),
                 .init(publicKey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false)
             ]
-            
+            let data = Data().bytes
+            return Instruction(keys: keys, programId: programPubkey, data: [])
         }
     }
     

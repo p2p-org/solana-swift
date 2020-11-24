@@ -46,8 +46,20 @@ extension SolanaSDK {
             return .error(Error.publicKeyNotFound)
         }
 
-        return getMinimumBalanceForRentExemption(dataLength: AccountLayout.span)
-            .flatMap { lamportsForAccount in
+        
+        return getRecentBlockhash()
+            .map {$0.blockhash}
+            .map { recentBlockhash -> String in
+                if recentBlockhash == nil {
+                    throw Error.other("Could not retrieve recent blockhash")
+                }
+                return recentBlockhash!
+            }
+            .flatMap { recentBlockhash in
+                self.getMinimumBalanceForRentExemption(dataLength: AccountLayout.span)
+                    .map {($0, recentBlockhash)}
+            }
+            .map { (lamportsForAccount, recentBlockhash) in
                 // create new account for token
                 let newAccount = try Account(network: network)
                 let programPubkey = try PublicKey(string: programPubkey)
@@ -55,7 +67,17 @@ extension SolanaSDK {
                 // forming transaction
                 var transaction = Transaction()
                 transaction.message.add(instruction: SystemProgram.createAccount(from: account.publicKey, toNewPubkey: newAccount.publicKey, lamports: Int64(lamportsForAccount), programPubkey: programPubkey))
+                transaction.message.add(instruction: try Transaction.Instruction.account(newAccount.publicKey, mint: try PublicKey(string: mintAddress), owner: account.publicKey, programPubkey: programPubkey))
+                transaction.message.recentBlockhash = recentBlockhash
+                try transaction.sign(signer: account)
                 
+                guard let serializedTransaction = try transaction.serialize().toBase64() else {
+                    throw Error.other("Could not serialize transaction")
+                }
+                return serializedTransaction
+            }
+            .flatMap {
+                self.sendTransaction(serializedTransaction: $0)
             }
     }
 }
