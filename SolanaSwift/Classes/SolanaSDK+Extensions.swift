@@ -36,4 +36,8 @@ extension SolanaSDK {
                 return self.sendTransaction(serializedTransaction: serializedTransaction)
             }
     }
+    
+    public func getCreatingTokenAccountFee() -> Single<UInt64> {
+        getMinimumBalanceForRentExemption(dataLength: AccountLayout.span)
+    }
 }
