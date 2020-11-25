@@ -21,11 +21,12 @@ public extension SolanaSDK {
             space: UInt64 = AccountLayout.span
         ) -> Transaction.Instruction
         {
-            var keys = [Account.Meta]()
-            keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
-            keys.append(Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true))
+            let keys = [
+                Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
+                Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true)
+            ]
             
-            let data = SystemProgram.Instruction.create.encode([
+            let data = InstructionType.create.encode([
                 lamports,
                 space,
                 programPubkey
@@ -34,11 +35,12 @@ public extension SolanaSDK {
         }
         
         public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: UInt64) -> Transaction.Instruction {
-            var keys = [Account.Meta]()
-            keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
-            keys.append(Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true))
+            let keys = [
+                Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
+                Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true)
+            ]
             
-            let data = SystemProgram.Instruction.transfer.encode([
+            let data = InstructionType.transfer.encode([
                 lamports
             ])
             return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
@@ -48,7 +50,7 @@ public extension SolanaSDK {
 
 extension SolanaSDK.SystemProgram {
     // MARK: - Nested types
-    fileprivate enum Instruction: UInt32 {
+    fileprivate enum InstructionType: UInt32 {
         case create                 = 0
         case assign                 = 1
         case transfer               = 2
