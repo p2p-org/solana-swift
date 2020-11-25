@@ -11,8 +11,17 @@ public extension SolanaSDK {
     struct SystemProgram {
         // MARK: - Nested types
         enum Index: UInt32 {
-            case create = 0
-            case transfer = 2
+            case create                 = 0
+            case assign                 = 1
+            case transfer               = 2
+            case createWithSeed         = 3
+            case advanceNonceAccount    = 4
+            case withdrawNonceAccount   = 5
+            case initializeNonceAccount = 6
+            case authorizeNonceAccount  = 7
+            case allocate               = 8
+            case allocateWithSeed       = 9
+            case sssignWithSeed         = 10
             
             var bytes: [UInt8] {
                 rawValue.bytes
@@ -23,20 +32,13 @@ public extension SolanaSDK {
         public static let programId = try! PublicKey(string: "11111111111111111111111111111111")
         
         // MARK: - Instructions
-        public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: Int64) -> Transaction.Instruction {
-            var keys = [Account.Meta]()
-            keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
-            keys.append(Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true))
-            
-            // 4 byte instruction index + 8 bytes lamports
-            var data = Data()
-            data.append(contentsOf: SystemProgram.Index.transfer.bytes)
-            let array = withUnsafeBytes(of: lamports.littleEndian, Array.init)
-            data.append(contentsOf: array)
-            return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
-        }
-        
-        public static func createAccount(from fromPublicKey: PublicKey, toNewPubkey newPubkey: PublicKey, lamports: Int64, programPubkey: PublicKey, space: UInt64 = AccountLayout.span) -> Transaction.Instruction
+        public static func createAccount(
+            from fromPublicKey: PublicKey,
+            toNewPubkey newPubkey: PublicKey,
+            lamports: Int64,
+            programPubkey: PublicKey,
+            space: UInt64 = AccountLayout.span
+        ) -> Transaction.Instruction
         {
             var keys = [Account.Meta]()
             keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
@@ -51,6 +53,19 @@ public extension SolanaSDK {
             data.append(contentsOf: space)
             data.append(programPubkey.data)
             return Transaction.Instruction(keys: keys, programId: programPubkey, data: data.bytes)
+        }
+        
+        public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: Int64) -> Transaction.Instruction {
+            var keys = [Account.Meta]()
+            keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
+            keys.append(Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true))
+            
+            // 4 byte instruction index + 8 bytes lamports
+            var data = Data()
+            data.append(contentsOf: SystemProgram.Index.transfer.bytes)
+            let array = withUnsafeBytes(of: lamports.littleEndian, Array.init)
+            data.append(contentsOf: array)
+            return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
         }
     }
 }
