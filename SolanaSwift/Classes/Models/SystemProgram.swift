@@ -9,10 +9,20 @@ import Foundation
 
 public extension SolanaSDK {
     struct SystemProgram {
-        public static let PROGRAM_ID = try! PublicKey(string: "11111111111111111111111111111111")
-        private static let PROGRAM_INDEX_CREATE = UInt32(2)
-        private static let PROGRAM_INDEX_TRANSFER = UInt32(2)
+        // MARK: - Nested types
+        enum Index: UInt32 {
+            case create = 0
+            case transfer = 2
+            
+            var bytes: [UInt8] {
+                rawValue.bytes
+            }
+        }
         
+        // MARK: - Constraint
+        public static let programId = try! PublicKey(string: "11111111111111111111111111111111")
+        
+        // MARK: - Instructions
         public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: Int64) -> Transaction.Instruction {
             var keys = [Account.Meta]()
             keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
@@ -20,10 +30,10 @@ public extension SolanaSDK {
             
             // 4 byte instruction index + 8 bytes lamports
             var data = Data()
-            data.append(contentsOf: SystemProgram.PROGRAM_INDEX_TRANSFER.bytes)
+            data.append(contentsOf: SystemProgram.Index.transfer.bytes)
             let array = withUnsafeBytes(of: lamports.littleEndian, Array.init)
             data.append(contentsOf: array)
-            return Transaction.Instruction(keys: keys, programId: SystemProgram.PROGRAM_ID, data: data.bytes)
+            return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
         }
         
         public static func createAccount(from fromPublicKey: PublicKey, toNewPubkey newPubkey: PublicKey, lamports: Int64, programPubkey: PublicKey, space: UInt64 = AccountLayout.span) -> Transaction.Instruction
@@ -34,13 +44,13 @@ public extension SolanaSDK {
             
             // 4 byte instruction index + 8 bytes lamports
             var data = Data()
-            data.append(contentsOf: SystemProgram.PROGRAM_INDEX_CREATE.bytes)
+            data.append(contentsOf: SystemProgram.Index.create.bytes)
             let array = withUnsafeBytes(of: lamports.littleEndian, Array.init)
             data.append(contentsOf: array)
             let space = withUnsafeBytes(of: space.littleEndian, Array.init)
             data.append(contentsOf: space)
             data.append(programPubkey.data)
-            return Transaction.Instruction(keys: keys, programId: SystemProgram.PROGRAM_ID, data: data.bytes)
+            return Transaction.Instruction(keys: keys, programId: programPubkey, data: data.bytes)
         }
     }
 }
