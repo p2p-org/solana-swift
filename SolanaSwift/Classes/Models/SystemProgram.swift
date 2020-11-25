@@ -10,7 +10,7 @@ import Foundation
 public extension SolanaSDK {
     struct SystemProgram {
         // MARK: - Nested types
-        enum Index: UInt32 {
+        enum Instruction: UInt32 {
             case create                 = 0
             case assign                 = 1
             case transfer               = 2
@@ -23,8 +23,17 @@ public extension SolanaSDK {
             case allocateWithSeed       = 9
             case sssignWithSeed         = 10
             
-            var bytes: [UInt8] {
+            private var indexBytes: [UInt8] {
                 rawValue.bytes
+            }
+            
+            fileprivate func encode(_ array: [InstructionEncodable]) -> Data {
+                var data = Data()
+                data.append(contentsOf: indexBytes)
+                for el in array {
+                    data.append(contentsOf: el.instructionEncode())
+                }
+                return data
             }
         }
         
@@ -35,7 +44,7 @@ public extension SolanaSDK {
         public static func createAccount(
             from fromPublicKey: PublicKey,
             toNewPubkey newPubkey: PublicKey,
-            lamports: Int64,
+            lamports: UInt64,
             programPubkey: PublicKey,
             space: UInt64 = AccountLayout.span
         ) -> Transaction.Instruction
@@ -45,27 +54,41 @@ public extension SolanaSDK {
             keys.append(Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true))
             
             // 4 byte instruction index + 8 bytes lamports
-            var data = Data()
-            data.append(contentsOf: SystemProgram.Index.create.bytes)
-            let array = withUnsafeBytes(of: lamports.littleEndian, Array.init)
-            data.append(contentsOf: array)
-            let space = withUnsafeBytes(of: space.littleEndian, Array.init)
-            data.append(contentsOf: space)
-            data.append(programPubkey.data)
-            return Transaction.Instruction(keys: keys, programId: programPubkey, data: data.bytes)
+            let data = SystemProgram.Instruction.create.encode([
+                lamports,
+                space,
+                programPubkey
+            ])
+            return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
         }
         
-        public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: Int64) -> Transaction.Instruction {
+        public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: UInt64) -> Transaction.Instruction {
             var keys = [Account.Meta]()
             keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
             keys.append(Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true))
             
             // 4 byte instruction index + 8 bytes lamports
-            var data = Data()
-            data.append(contentsOf: SystemProgram.Index.transfer.bytes)
-            let array = withUnsafeBytes(of: lamports.littleEndian, Array.init)
-            data.append(contentsOf: array)
+            let data = SystemProgram.Instruction.transfer.encode([
+                lamports
+            ])
             return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
         }
     }
 }
+
+fileprivate protocol InstructionEncodable {
+    func instructionEncode() -> [UInt8]
+}
+
+extension UInt64: InstructionEncodable {
+    fileprivate func instructionEncode() -> [UInt8] {
+        withUnsafeBytes(of: littleEndian, Array.init)
+    }
+}
+
+extension SolanaSDK.PublicKey: InstructionEncodable {
+    fileprivate func instructionEncode() -> [UInt8] {
+        bytes
+    }
+}
+
