@@ -56,7 +56,7 @@ public extension SolanaSDK.Transaction {
         
         public static func account(_ account: SolanaSDK.PublicKey, mint: SolanaSDK.PublicKey, owner: SolanaSDK.PublicKey, programPubkey: SolanaSDK.PublicKey) throws -> Self {
             let SYSVAR_RENT_PUBKEY = try SolanaSDK.PublicKey(string: "SysvarRent111111111111111111111111111111111")
-            var keys: [SolanaSDK.Account.Meta] = [
+            let keys: [SolanaSDK.Account.Meta] = [
                 .init(publicKey: account, isSigner: false, isWritable: true),
                 .init(publicKey: mint, isSigner: false, isWritable: false),
                 .init(publicKey: owner, isSigner: false, isWritable: false),

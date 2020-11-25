@@ -9,34 +9,6 @@ import Foundation
 
 public extension SolanaSDK {
     struct SystemProgram {
-        // MARK: - Nested types
-        enum Instruction: UInt32 {
-            case create                 = 0
-            case assign                 = 1
-            case transfer               = 2
-            case createWithSeed         = 3
-            case advanceNonceAccount    = 4
-            case withdrawNonceAccount   = 5
-            case initializeNonceAccount = 6
-            case authorizeNonceAccount  = 7
-            case allocate               = 8
-            case allocateWithSeed       = 9
-            case sssignWithSeed         = 10
-            
-            private var indexBytes: [UInt8] {
-                rawValue.bytes
-            }
-            
-            fileprivate func encode(_ array: [InstructionEncodable]) -> Data {
-                var data = Data()
-                data.append(contentsOf: indexBytes)
-                for el in array {
-                    data.append(contentsOf: el.instructionEncode())
-                }
-                return data
-            }
-        }
-        
         // MARK: - Constraint
         public static let programId = try! PublicKey(string: "11111111111111111111111111111111")
         
@@ -53,7 +25,6 @@ public extension SolanaSDK {
             keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
             keys.append(Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true))
             
-            // 4 byte instruction index + 8 bytes lamports
             let data = SystemProgram.Instruction.create.encode([
                 lamports,
                 space,
@@ -67,11 +38,40 @@ public extension SolanaSDK {
             keys.append(Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true))
             keys.append(Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true))
             
-            // 4 byte instruction index + 8 bytes lamports
             let data = SystemProgram.Instruction.transfer.encode([
                 lamports
             ])
             return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
+        }
+    }
+}
+
+extension SolanaSDK.SystemProgram {
+    // MARK: - Nested types
+    fileprivate enum Instruction: UInt32 {
+        case create                 = 0
+        case assign                 = 1
+        case transfer               = 2
+        case createWithSeed         = 3
+        case advanceNonceAccount    = 4
+        case withdrawNonceAccount   = 5
+        case initializeNonceAccount = 6
+        case authorizeNonceAccount  = 7
+        case allocate               = 8
+        case allocateWithSeed       = 9
+        case sssignWithSeed         = 10
+        
+        private var indexBytes: [UInt8] {
+            rawValue.bytes
+        }
+        
+        fileprivate func encode(_ array: [InstructionEncodable]) -> Data {
+            var data = Data()
+            data.append(contentsOf: indexBytes)
+            for el in array {
+                data.append(contentsOf: el.instructionEncode())
+            }
+            return data
         }
     }
 }
