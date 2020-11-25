@@ -64,9 +64,7 @@ class TransactionTests: XCTestCase {
         transaction.message.recentBlockhash = "JAQiEMPid1xJnNUBh4xxdKxRLnxja2sBRbEFCchandTH"
         try transaction.sign(signer: account)
         
-        guard let serializedTransaction = try transaction.serialize().toBase64() else {
-            throw SolanaSDK.Error.other("Could not serialize transaction")
-        }
+        let serializedTransaction = try transaction.serialize().toBase64()
         XCTAssertEqual("AhbUHO/J+Rh/3v36tNjvw1e9XhR9bVR8OjFRv+7GFvBx/IzJMK7CHWLyNCkR4lWkkyuSlmCXHhmf/WyKfRBdPgEKHmPQPXxODWS6HF11Pj/fVT/k+5oDLA0g9Sp3MhVnGmhIABhfZIlE0PFJHnugAFqnotrtKkXmJoMTmMmiB2ABAgAEBvhKE7W8bXddL85iO5zhtgQdo0on/MP88pES9rX2QyHB+St8WhCYvRUffh0XFv9wpxJZI+OHLhiTJWuRpjiPz7USi8tkfYutHnJQ47g0vPqf2Yb01HfRu7kFTmArEevgYQan1RcZLFxRIYzJTD1K8X9Y2u4Im6H9ROPb2YoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG3fbh12Whk9nL4UbO63msHLSF7V9bN5E6jPWFfv8Aqf7/twmimy5jXqh/Rd7CGGzSD+9lf4qrk8iCAzGOSD5cAgQCAAE0AAAAAPAdHwAAAAAApQAAAAAAAAAG3fbh12Whk9nL4UbO63msHLSF7V9bN5E6jPWFfv8AqQUEAQIAAwEB", serializedTransaction)
     }
 }
