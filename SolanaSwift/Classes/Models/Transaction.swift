@@ -50,9 +50,9 @@ public extension SolanaSDK {
 
 public extension SolanaSDK.Transaction {
     struct Instruction: Decodable {
-        public let keys: [SolanaSDK.Account.Meta]
-        public let programId: SolanaSDK.PublicKey
-        public let data: [UInt8]
+        public let accounts: [UInt64]?
+        public let programIdIndex: UInt32?
+        public let data: String?
     }
     
     struct Error: Decodable {

@@ -40,7 +40,7 @@ public extension SolanaSDK {
 	func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) -> Single<[String]> {
 		request(parameters: [account, startSlot, endSlot])
 	}
-	func getConfirmedSignaturesForAddress2(account: String, configs: RequestConfiguration? = nil) -> Single<Transaction.SignatureInfo> {
+	func getConfirmedSignaturesForAddress2(account: String, configs: RequestConfiguration? = nil) -> Single<[Transaction.SignatureInfo]> {
 		request(parameters: [account, configs])
 	}
 	func getConfirmedTransaction(transactionSignature: String, encoding: String = "json") -> Single<Transaction.Info> {

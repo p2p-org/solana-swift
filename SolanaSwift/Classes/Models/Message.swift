@@ -14,21 +14,26 @@ public extension SolanaSDK {
         public var header = Header()
         public var recentBlockhash: String?
         public var accountKeys = [Account.Meta]()
-        private(set) var instructions = [Transaction.Instruction]()
+        public var instructions = [Transaction.Instruction]()
+        private(set) var programInstructions: [SystemProgram.Instruction]?
         
         public init() {}
         
-        public mutating func add(instruction: Transaction.Instruction) {
+        public mutating func add(instruction: SystemProgram.Instruction) {
             accountKeys.appendWritable(contentsOf: instruction.keys)
             accountKeys.appendWritable(Account.Meta(publicKey: instruction.programId, isSigner: false, isWritable: false))
-            instructions.append(instruction)
+            if programInstructions == nil {
+                programInstructions = [SystemProgram.Instruction]()
+            }
+            programInstructions!.append(instruction)
         }
         
         public mutating func serialize() throws -> [UInt8] {
             guard let string = recentBlockhash
             else {throw Error.other("recentBlockhash required")}
             
-            guard instructions.count > 0 else {
+            guard let programInstructions = programInstructions,
+                  programInstructions.count > 0 else {
                 throw Error.other("No instructions provided")
             }
             
@@ -42,7 +47,8 @@ public extension SolanaSDK {
             var compiledInstructionsLength: Int = 0
             var compiledInstructions = [CompiledInstruction]()
             
-            for instruction in instructions {
+            for instruction in programInstructions {
+                
                 let keysSize = instruction.keys.count
                 
                 var keyIndices = Data()
