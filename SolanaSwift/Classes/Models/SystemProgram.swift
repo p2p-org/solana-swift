@@ -17,7 +17,6 @@ public extension SolanaSDK {
             from fromPublicKey: PublicKey,
             toNewPubkey newPubkey: PublicKey,
             lamports: UInt64,
-            programPubkey: PublicKey,
             space: UInt64 = AccountLayout.span
         ) -> Transaction.Instruction
         {
@@ -29,7 +28,7 @@ public extension SolanaSDK {
             let data = InstructionType.create.encode([
                 lamports,
                 space,
-                programPubkey
+                programId
             ])
             return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
         }
@@ -80,6 +79,12 @@ extension SolanaSDK.SystemProgram {
 
 fileprivate protocol InstructionEncodable {
     func instructionEncode() -> [UInt8]
+}
+
+extension Array: InstructionEncodable where Element == UInt8 {
+    func instructionEncode() -> [UInt8] {
+        self
+    }
 }
 
 extension UInt64: InstructionEncodable {
