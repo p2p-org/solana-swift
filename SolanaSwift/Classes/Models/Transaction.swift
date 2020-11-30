@@ -55,7 +55,7 @@ public extension SolanaSDK.Transaction {
         public let data: String?
     }
     
-    struct Error: Decodable {
+    struct Error: Decodable, Hashable {
         
     }
     
@@ -72,7 +72,7 @@ public extension SolanaSDK.Transaction {
         public let slot: UInt64?
     }
     
-    struct SignatureInfo: Decodable {
+    struct SignatureInfo: Decodable, Hashable {
         public let signature: String
         public let slot: UInt64
         public let err: Error?
