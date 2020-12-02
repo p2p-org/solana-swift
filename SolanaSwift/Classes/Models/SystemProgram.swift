@@ -36,7 +36,7 @@ public extension SolanaSDK {
             return Instruction(keys: keys, programId: programId, data: data.bytes)
         }
         
-        public static func assign(account: PublicKey, mint: PublicKey, owner: PublicKey) -> Instruction
+        public static func initializeAccount(account: PublicKey, mint: PublicKey, owner: PublicKey) -> Instruction
         {
             let keys = [
                 Account.Meta(publicKey: account, isSigner: false, isWritable: true),
@@ -45,8 +45,8 @@ public extension SolanaSDK {
                 Account.Meta(publicKey: SystemProgram.sysvarRent, isSigner: false, isWritable: false)
             ]
             
-            let data = InstructionType.assign.encode([])
-            return Instruction(keys: keys, programId: splTokenProgramId, data: data.bytes)
+            let data: [UInt8] = [1]
+            return Instruction(keys: keys, programId: splTokenProgramId, data: data)
         }
         
         public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: UInt64) -> Instruction {

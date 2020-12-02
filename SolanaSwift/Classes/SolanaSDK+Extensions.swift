@@ -50,12 +50,12 @@ extension SolanaSDK {
                 // instructions
                 let createAccount = SystemProgram.createAccount(from: payer.publicKey, toNewPubkey: newAccount.publicKey, lamports: minBalance)
                 
-                let assign = SystemProgram.assign(account: newAccount.publicKey, mint: mintAddress, owner: payer.publicKey)
+                let initializeAccount = SystemProgram.initializeAccount(account: newAccount.publicKey, mint: mintAddress, owner: payer.publicKey)
                 
                 // forming transaction
                 var transaction = Transaction()
                 transaction.message.add(instruction: createAccount)
-                transaction.message.add(instruction: assign)
+                transaction.message.add(instruction: initializeAccount)
                 transaction.message.recentBlockhash = recentBlockhash
                 try transaction.sign(signers: [payer, newAccount])
                 

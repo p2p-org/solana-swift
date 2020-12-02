@@ -12,6 +12,7 @@ public extension SolanaSDK {
     struct Transaction: Decodable {
         public var signatures: [UInt8]
         public var message: Message
+        public var signaturesLength: Int? = 0
         
         enum CodingKeys: String, CodingKey {
             case message, signatures
@@ -34,13 +35,13 @@ public extension SolanaSDK {
                 let data = try NaclSign.signDetached(message: Data(serializedMessage), secretKey: signer.secretKey).bytes
                 signatures.append(contentsOf: data)
             }
+            signaturesLength = signers.count
         }
         
         public mutating func serialize() throws -> [UInt8] {
             let serializedMessage = try message.serialize()
             
-            // TODO: - signature list
-            let signaturesLength = Data.encodeLength(UInt(1)) // change "1" later
+            let signaturesLength = Data.encodeLength(UInt(self.signaturesLength ?? 1))
             
             var data = Data(capacity: signaturesLength.count + signatures.count + serializedMessage.count)
             data.append(signaturesLength)
