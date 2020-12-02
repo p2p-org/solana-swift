@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    public func send(from fromPublicKey: String, to toPublicKey: String, amount: Int64) -> Single<String> {
+    public func sendTokens(from fromPublicKey: String, to toPublicKey: String, amount: Int64) -> Single<String> {
         getRecentBlockhash()
             .flatMap { recentBlockhash in
                 guard let account = self.accountStorage.account else {
@@ -40,7 +40,7 @@ extension SolanaSDK {
         }
 
         return Single.zip(getRecentBlockhash(), getCreatingTokenAccountFee())
-            .map { (recentBlockhash, minBalance) in
+            .flatMap { (recentBlockhash, minBalance) in
                 
                 let mintAddress = try PublicKey(string: mintAddress)
                 
@@ -62,10 +62,7 @@ extension SolanaSDK {
                 guard let serializedTransaction = try transaction.serialize().toBase64() else {
                     throw Error.other("Could not serialize transaction")
                 }
-                return serializedTransaction
-            }
-            .flatMap {
-                self.sendTransaction(serializedTransaction: $0)
+                return self.sendTransaction(serializedTransaction: serializedTransaction)
             }
     }
 }
