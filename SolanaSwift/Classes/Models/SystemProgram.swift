@@ -20,7 +20,7 @@ public extension SolanaSDK {
             toNewPubkey newPubkey: PublicKey,
             lamports: UInt64,
             space: UInt64 = AccountLayout.span,
-            programPubkey: PublicKey
+            programPubkey: PublicKey = splTokenProgramId
         ) -> Instruction
         {
             let keys = [

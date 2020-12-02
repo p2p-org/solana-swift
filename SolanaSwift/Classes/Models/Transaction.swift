@@ -28,9 +28,12 @@ public extension SolanaSDK {
             signatures = []
         }
         
-        public mutating func sign(signer: Account) throws {
+        public mutating func sign(signers: [Account]) throws {
             let serializedMessage = try message.serialize()
-            signatures = try NaclSign.signDetached(message: Data(serializedMessage), secretKey: signer.secretKey).bytes
+            for signer in signers {
+                let data = try NaclSign.signDetached(message: Data(serializedMessage), secretKey: signer.secretKey).bytes
+                signatures.append(contentsOf: data)
+            }
         }
         
         public mutating func serialize() throws -> [UInt8] {

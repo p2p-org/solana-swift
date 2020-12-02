@@ -22,7 +22,7 @@ extension SolanaSDK {
                 var transaction = Transaction()
                 transaction.message.add(instruction: SystemProgram.transfer(from: fromPublicKey, to: toPublicKey, lamports: UInt64(amount)))
                 transaction.message.recentBlockhash = recentBlockhash
-                try transaction.sign(signer: signer)
+                try transaction.sign(signers: [signer])
                 guard let serializedTransaction = try transaction.serialize().toBase64() else {
                     throw Error.other("Could not serialize transaction")
                 }
@@ -34,7 +34,7 @@ extension SolanaSDK {
         getMinimumBalanceForRentExemption(dataLength: AccountLayout.span)
     }
 
-    public func createTokenAccount(mintAddress: String, programPubkey: String, in network: String) -> Single<String> {
+    public func createTokenAccount(mintAddress: String, in network: String) -> Single<String> {
         guard let payer = self.accountStorage.account else {
             return .error(Error.publicKeyNotFound)
         }
@@ -47,14 +47,17 @@ extension SolanaSDK {
                 // create new account for token
                 let newAccount = try Account(network: network)
                 
-                let programPubkey = try PublicKey(string: programPubkey)
+                // instructions
+                let createAccount = SystemProgram.createAccount(from: payer.publicKey, toNewPubkey: newAccount.publicKey, lamports: minBalance)
+                
+                let assign = SystemProgram.assign(account: newAccount.publicKey, mint: mintAddress, owner: payer.publicKey)
                 
                 // forming transaction
                 var transaction = Transaction()
-                transaction.message.add(instruction: SystemProgram.createAccount(from: payer.publicKey, toNewPubkey: newAccount.publicKey, lamports: minBalance, programPubkey: programPubkey))
-                transaction.message.add(instruction: SystemProgram.assign(account: newAccount.publicKey, mint: mintAddress, owner: payer.publicKey))
+                transaction.message.add(instruction: createAccount)
+                transaction.message.add(instruction: assign)
                 transaction.message.recentBlockhash = recentBlockhash
-                try transaction.sign(signer: payer)
+                try transaction.sign(signers: [payer, newAccount])
                 
                 guard let serializedTransaction = try transaction.serialize().toBase64() else {
                     throw Error.other("Could not serialize transaction")
