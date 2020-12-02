@@ -97,7 +97,7 @@ public extension SolanaSDK {
 		(request(parameters: [pubkeys, configs]) as Single<Rpc<[AccountInfo<AccountLayout>]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts(programPubkey: String, account: String? = nil, shouldParseJSON: Bool = true, in network: String) -> Single<[Token]> {
+    func getProgramAccounts(account: String? = nil, shouldParseJSON: Bool = true, in network: String) -> Single<[Token]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.accountNotFound)
         }
@@ -110,7 +110,7 @@ public extension SolanaSDK {
             ["memcmp": memcmp],
             ["dataSize": .init(wrapped: 165)]
         ])
-		return (request(parameters: [programPubkey, configs]) as Single<[ProgramAccount<AccountLayout>]>)
+        return (request(parameters: [SystemProgram.splTokenProgramId.base58EncodedString, configs]) as Single<[ProgramAccount<AccountLayout>]>)
             .map {
                 $0.compactMap {
                     $0.account.data.value != nil ?
