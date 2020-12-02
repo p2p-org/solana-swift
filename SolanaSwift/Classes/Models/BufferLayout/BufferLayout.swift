@@ -17,7 +17,7 @@ extension BufferLayout {
         layout().reduce(0, {$0 + ($1.key != nil ? $1.length: 0)})
     }
     
-    static var span: UInt64 {
+    public static var span: UInt64 {
         UInt64(layout().reduce(0, {$0 + $1.length}))
     }
 }
