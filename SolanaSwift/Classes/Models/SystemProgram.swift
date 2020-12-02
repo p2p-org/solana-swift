@@ -11,13 +11,16 @@ public extension SolanaSDK {
     struct SystemProgram {
         // MARK: - Constraint
         public static let programId = try! PublicKey(string: "11111111111111111111111111111111")
+        public static let sysvarRent = try! PublicKey(string: "SysvarRent111111111111111111111111111111111")
+        public static let splTokenProgramId = try! PublicKey(string: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
         
         // MARK: - Instructions
         public static func createAccount(
             from fromPublicKey: PublicKey,
             toNewPubkey newPubkey: PublicKey,
             lamports: UInt64,
-            space: UInt64 = AccountLayout.span
+            space: UInt64 = AccountLayout.span,
+            programPubkey: PublicKey
         ) -> Instruction
         {
             let keys = [
@@ -28,9 +31,22 @@ public extension SolanaSDK {
             let data = InstructionType.create.encode([
                 lamports,
                 space,
-                programId
+                programPubkey
             ])
             return Instruction(keys: keys, programId: programId, data: data.bytes)
+        }
+        
+        public static func assign(account: PublicKey, mint: PublicKey, owner: PublicKey) -> Instruction
+        {
+            let keys = [
+                Account.Meta(publicKey: account, isSigner: false, isWritable: true),
+                Account.Meta(publicKey: mint, isSigner: false, isWritable: false),
+                Account.Meta(publicKey: owner, isSigner: false, isWritable: false),
+                Account.Meta(publicKey: SystemProgram.sysvarRent, isSigner: false, isWritable: false)
+            ]
+            
+            let data = InstructionType.assign.encode([])
+            return Instruction(keys: keys, programId: splTokenProgramId, data: data.bytes)
         }
         
         public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: UInt64) -> Instruction {

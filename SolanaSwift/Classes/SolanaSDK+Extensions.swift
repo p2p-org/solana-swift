@@ -35,22 +35,26 @@ extension SolanaSDK {
     }
 
     public func createTokenAccount(mintAddress: String, programPubkey: String, in network: String) -> Single<String> {
-        guard let account = self.accountStorage.account else {
+        guard let payer = self.accountStorage.account else {
             return .error(Error.publicKeyNotFound)
         }
 
-        return Single.zip(getRecentBlockhash(), getMinimumBalanceForRentExemption(dataLength: AccountLayout.span))
-            .map { (recentBlockhash, lamportsForAccount) in
+        return Single.zip(getRecentBlockhash(), getCreatingTokenAccountFee())
+            .map { (recentBlockhash, minBalance) in
+                
+                let mintAddress = try PublicKey(string: mintAddress)
+                
                 // create new account for token
                 let newAccount = try Account(network: network)
+                
                 let programPubkey = try PublicKey(string: programPubkey)
                 
                 // forming transaction
                 var transaction = Transaction()
-                transaction.message.add(instruction: SystemProgram.createAccount(from: account.publicKey, toNewPubkey: newAccount.publicKey, lamports: lamportsForAccount))
-//                transaction.message.add(instruction: try Transaction.Instruction.account(newAccount.publicKey, mint: try PublicKey(string: mintAddress), owner: account.publicKey, programPubkey: programPubkey))
+                transaction.message.add(instruction: SystemProgram.createAccount(from: payer.publicKey, toNewPubkey: newAccount.publicKey, lamports: minBalance, programPubkey: programPubkey))
+                transaction.message.add(instruction: SystemProgram.assign(account: newAccount.publicKey, mint: mintAddress, owner: payer.publicKey))
                 transaction.message.recentBlockhash = recentBlockhash
-                try transaction.sign(signer: account)
+                try transaction.sign(signer: payer)
                 
                 guard let serializedTransaction = try transaction.serialize().toBase64() else {
                     throw Error.other("Could not serialize transaction")
