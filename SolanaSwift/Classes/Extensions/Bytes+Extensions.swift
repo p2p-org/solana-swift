@@ -7,7 +7,12 @@
 
 import Foundation
 
-extension Array where Element == UInt8 {
+public extension Array where Element == UInt8 {
+    func toUInt32() -> UInt32? {
+        let data = Data(self)
+        return UInt32(littleEndian: data.withUnsafeBytes { $0.pointee })
+    }
+    
     func toUInt64() -> UInt64? {
         let data = Data(self)
         return UInt64(littleEndian: data.withUnsafeBytes { $0.pointee })

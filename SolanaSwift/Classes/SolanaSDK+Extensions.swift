@@ -48,7 +48,7 @@ extension SolanaSDK {
                 // forming transaction
                 var transaction = Transaction()
                 transaction.message.add(instruction: SystemProgram.createAccount(from: account.publicKey, toNewPubkey: newAccount.publicKey, lamports: lamportsForAccount))
-                transaction.message.add(instruction: try Transaction.Instruction.account(newAccount.publicKey, mint: try PublicKey(string: mintAddress), owner: account.publicKey, programPubkey: programPubkey))
+//                transaction.message.add(instruction: try Transaction.Instruction.account(newAccount.publicKey, mint: try PublicKey(string: mintAddress), owner: account.publicKey, programPubkey: programPubkey))
                 transaction.message.recentBlockhash = recentBlockhash
                 try transaction.sign(signer: account)
                 

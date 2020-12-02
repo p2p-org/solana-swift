@@ -18,7 +18,7 @@ public extension SolanaSDK {
             toNewPubkey newPubkey: PublicKey,
             lamports: UInt64,
             space: UInt64 = AccountLayout.span
-        ) -> Transaction.Instruction
+        ) -> Instruction
         {
             let keys = [
                 Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
@@ -30,10 +30,10 @@ public extension SolanaSDK {
                 space,
                 programId
             ])
-            return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
+            return Instruction(keys: keys, programId: programId, data: data.bytes)
         }
         
-        public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: UInt64) -> Transaction.Instruction {
+        public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: UInt64) -> Instruction {
             let keys = [
                 Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
                 Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true)
@@ -42,13 +42,19 @@ public extension SolanaSDK {
             let data = InstructionType.transfer.encode([
                 lamports
             ])
-            return Transaction.Instruction(keys: keys, programId: programId, data: data.bytes)
+            return Instruction(keys: keys, programId: programId, data: data.bytes)
         }
     }
 }
 
 extension SolanaSDK.SystemProgram {
     // MARK: - Nested types
+    public struct Instruction: Decodable {
+        public let keys: [SolanaSDK.Account.Meta]
+        public let programId: SolanaSDK.PublicKey
+        public let data: [UInt8]
+    }
+    
     fileprivate enum InstructionType: UInt32 {
         case create                 = 0
         case assign                 = 1

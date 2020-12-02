@@ -50,24 +50,12 @@ public extension SolanaSDK {
 
 public extension SolanaSDK.Transaction {
     struct Instruction: Decodable {
-        public let keys: [SolanaSDK.Account.Meta]
-        public let programId: SolanaSDK.PublicKey
-        public let data: [UInt8]
-        
-        public static func account(_ account: SolanaSDK.PublicKey, mint: SolanaSDK.PublicKey, owner: SolanaSDK.PublicKey, programPubkey: SolanaSDK.PublicKey) throws -> Self {
-            let SYSVAR_RENT_PUBKEY = try SolanaSDK.PublicKey(string: "SysvarRent111111111111111111111111111111111")
-            let keys: [SolanaSDK.Account.Meta] = [
-                .init(publicKey: account, isSigner: false, isWritable: true),
-                .init(publicKey: mint, isSigner: false, isWritable: false),
-                .init(publicKey: owner, isSigner: false, isWritable: false),
-                .init(publicKey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false)
-            ]
-            let data = Data().bytes
-            return Instruction(keys: keys, programId: programPubkey, data: [])
-        }
+        public let accounts: [UInt64]?
+        public let programIdIndex: UInt32?
+        public let data: String?
     }
     
-    struct Error: Decodable {
+    struct Error: Decodable, Hashable {
         
     }
     
@@ -84,7 +72,7 @@ public extension SolanaSDK.Transaction {
         public let slot: UInt64?
     }
     
-    struct SignatureInfo: Decodable {
+    struct SignatureInfo: Decodable, Hashable {
         public let signature: String
         public let slot: UInt64
         public let err: Error?
