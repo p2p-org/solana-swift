@@ -14,6 +14,7 @@
 		BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC1254928870029FF0B /* RestAPITests.swift */; };
 		BC2EC2DF25552EC1006EEDA5 /* AccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */; };
 		BC2EC2E4255530F6006EEDA5 /* MessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC2EC2E3255530F6006EEDA5 /* MessageTests.swift */; };
+		BC3ADEBB2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3ADEBA2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift */; };
 		BC5FFEC3256111AD002DB054 /* KeychainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5FFEC2256111AD002DB054 /* KeychainTests.swift */; };
 		BCA0CF19255E36C000CD0F8D /* TokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA0CF18255E36C000CD0F8D /* TokensTests.swift */; };
 		BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */; };
@@ -106,6 +107,7 @@
 		BC23AEC1254928870029FF0B /* RestAPITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RestAPITests.swift; path = Tests/RestAPITests.swift; sourceTree = SOURCE_ROOT; };
 		BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTests.swift; sourceTree = "<group>"; };
 		BC2EC2E3255530F6006EEDA5 /* MessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTests.swift; sourceTree = "<group>"; };
+		BC3ADEBA2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITransactionHistoryTests.swift; sourceTree = "<group>"; };
 		BC5FFEC2256111AD002DB054 /* KeychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTests.swift; sourceTree = "<group>"; };
 		BCA0CF18255E36C000CD0F8D /* TokensTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensTests.swift; sourceTree = "<group>"; };
 		BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITransactionTests.swift; sourceTree = "<group>"; };
@@ -222,6 +224,7 @@
 				BC23AEBF254928870029FF0B /* RestAPIAccountTests.swift */,
 				BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */,
 				BCB58326255CE0AA00B10F65 /* RestAPIProgramAccountTests.swift */,
+				BC3ADEBA2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift */,
 			);
 			name = RestAPITests;
 			sourceTree = "<group>";
@@ -430,6 +433,7 @@
 				BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */,
 				BCBBE23E25650A1700533F6B /* RegexTests.swift in Sources */,
 				BCA0CF19255E36C000CD0F8D /* TokensTests.swift in Sources */,
+				BC3ADEBB2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift in Sources */,
 				BC2EC2E4255530F6006EEDA5 /* MessageTests.swift in Sources */,
 				BC23AEC2254928870029FF0B /* TransactionTests.swift in Sources */,
 				BC5FFEC3256111AD002DB054 /* KeychainTests.swift in Sources */,

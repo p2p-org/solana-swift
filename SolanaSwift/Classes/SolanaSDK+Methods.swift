@@ -22,8 +22,12 @@ public extension SolanaSDK {
 	func getBlockCommitment(block: String) -> Single<BlockCommitment> {
 		request(parameters: [block])
 	}
-	func getBlockTime(block: String) -> Single<UInt64?> {
-		request(parameters: [block])
+	func getBlockTime(block: UInt64) -> Single<Date?> {
+		(request(parameters: [block]) as Single<Int64?>)
+            .map {timestamp in
+                guard let timestamp = timestamp else {return nil}
+                return Date(timeIntervalSince1970: TimeInterval(timestamp))
+            }
 	}
 	func getClusterNodes() -> Single<ClusterNodes> {
 		request()
@@ -40,7 +44,7 @@ public extension SolanaSDK {
 	func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) -> Single<[String]> {
 		request(parameters: [account, startSlot, endSlot])
 	}
-	func getConfirmedSignaturesForAddress2(account: String, configs: RequestConfiguration? = nil) -> Single<Transaction.SignatureInfo> {
+	func getConfirmedSignaturesForAddress2(account: String, configs: RequestConfiguration? = nil) -> Single<[Transaction.SignatureInfo]> {
 		request(parameters: [account, configs])
 	}
 	func getConfirmedTransaction(transactionSignature: String, encoding: String = "json") -> Single<Transaction.Info> {
