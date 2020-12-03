@@ -12,13 +12,17 @@ import RxCocoa
 
 extension SolanaSDK {
     public class Socket {
+        // MARK: - Properties
         let disposeBag = DisposeBag()
         let socket: WebSocket
         let account: PublicKey?
-        
-        public let status = BehaviorRelay<Status>(value: .initializing)
         var wsHeartBeat: Timer!
+        
+        // MARK: - Subjects
+        public let status = BehaviorRelay<Status>(value: .initializing)
+        let textSubject = PublishSubject<String>()
 
+        // MARK: - Initializer
         public init(endpoint: String, publicKey: PublicKey?) {
             var request = URLRequest(url: URL(string: endpoint)!)
             request.timeoutInterval = 5
@@ -27,15 +31,26 @@ extension SolanaSDK {
             defer {socket.delegate = self}
         }
         
-        public func connect() {
-            socket.connect()
-        }
-        
         deinit {
             socket.disconnect()
             unsubscribe(method: "accountSubscribe", params: [account?.base58EncodedString])
         }
-
+        
+        // MARK: - Methods
+        public func connect() {
+            status.accept(.connecting)
+            socket.connect()
+        }
+        
+        func updateSubscriptions() {
+            subscribe(method: "accountSubscribe", params: [account?.base58EncodedString])
+        }
+        
+        func resetSubscriptions() {
+            // TODO: - resetSubscriptions
+        }
+        
+        // MARK: - Handlers
         func onOpen() {
             status.accept(.connected)
             wsHeartBeat?.invalidate()
@@ -69,14 +84,8 @@ extension SolanaSDK {
             
         }
         
-        func updateSubscriptions() {
-            subscribe(method: "accountSubscribe", params: [account?.base58EncodedString])
-        }
-        
-        func resetSubscriptions() {
-        }
-        
-        private func subscribe(method: String, params: [Encodable]) {
+        // MARK: - Subscriptions
+        public func subscribe(method: String, params: [Encodable]) {
             let requestAPI = RequestAPI(
                 method: method,
                 params: params + [["encoding":"jsonParsed"]]
@@ -84,7 +93,7 @@ extension SolanaSDK {
             write(requestAPI: requestAPI)
         }
         
-        private func unsubscribe(method: String, params: [Encodable]) {
+        public func unsubscribe(method: String, params: [Encodable]) {
             let requestAPI = RequestAPI(
                 method: method,
                 params: params
@@ -92,18 +101,44 @@ extension SolanaSDK {
             write(requestAPI: requestAPI)
         }
         
+        // MARK: - Request
+        public func observe<T: Decodable>(method: String, params: [Encodable]) -> Observable<T> {
+            let requestAPI = RequestAPI(
+                method: method,
+                params: params
+            )
+            write(requestAPI: requestAPI)
+            
+        }
+        
         private func write(requestAPI: RequestAPI, completion: (() -> ())? = nil) {
-            do {
-                let data = try JSONEncoder().encode(requestAPI)
-                guard let string = String(data: data, encoding: .utf8) else {
-                    throw Error.other("Request is invalid \(requestAPI)")
+            // closure for writing
+            let writeAndLog: () -> Void = { [weak self] in
+                do {
+                    let data = try JSONEncoder().encode(requestAPI)
+                    guard let string = String(data: data, encoding: .utf8) else {
+                        throw Error.other("Request is invalid \(requestAPI)")
+                    }
+                    self?.socket.write(string: string, completion: {
+                        Logger.log(message: "\(requestAPI.method) success", event: .event)
+                        completion?()
+                    })
+                } catch {
+                    Logger.log(message: "\(requestAPI.method) failed: \(error)", event: .event)
                 }
-                socket.write(string: string, completion: {
-                    Logger.log(message: "\(requestAPI.method) success", event: .event)
-                    completion?()
-                })
-            } catch {
-                Logger.log(message: "\(requestAPI.method) failed: \(error)", event: .event)
+            }
+            
+            // auto reconnect
+            if status.value != .connected {
+                socket.connect()
+                status.filter {$0 == .connected}
+                    .take(1).asSingle()
+                    .subscribe(onSuccess: { _ in
+                        writeAndLog()
+                    })
+                    .disposed(by: disposeBag)
+            } else {
+                writeAndLog()
             }
         }
     }
@@ -152,10 +187,22 @@ extension SolanaSDK.Socket: WebSocketDelegate {
 }
 
 extension SolanaSDK.Socket {
-    public enum Status {
+    public enum Status: Equatable {
         case initializing
+        case connecting
         case connected
         case disconnected
         case error(Error)
+        
+        public static func == (rhs: Self, lhs: Self) -> Bool {
+            switch (lhs, rhs) {
+            case (.initializing, .initializing), (.connected, .connected), (.disconnected, .disconnected):
+                return true
+            case (.error(let err1), .error(let err2)):
+                return err1.localizedDescription == err2.localizedDescription
+            default:
+                return false
+            }
+        }
     }
 }
