@@ -10,16 +10,30 @@ import RxSwift
 import SocketIO
 import RxCocoa
 
+public protocol SolanaSoketHttpClient: class {
+    func accountSubscribe() -> Single<UInt64>
+    func accountUnsubscribe() -> Single<Bool>
+    func programSubscribe(pubkey: String)
+    func programUnsubscribe(pubkey: String)
+    func signatureSubscribe(_ signature: String, commitment: String)
+    func signatureUnsubscribe(_ signature: String) -> Single<Bool>
+}
+
 extension SolanaSDK {
     public class Socket {
+        let disposeBag = DisposeBag()
+        weak var httpClient: SolanaSoketHttpClient?
+        
         let manager: SocketManager
         public lazy var socket = manager.defaultSocket
         
         public let status = BehaviorRelay<Status>(value: .initializing)
         var wsHeartBeat: Timer!
 
-        public init(endpoint: String) {
+        public init(endpoint: String, httpClient: SolanaSoketHttpClient) {
             manager = SocketManager(socketURL: URL(string: endpoint)!, config: [.log(true), .compress, .reconnectAttempts(-1)])
+            
+            self.httpClient = httpClient
             
             socket.on("open") { _,_  in self.onOpen() }
             socket.on("error") { (data, _) in
@@ -42,6 +56,10 @@ extension SolanaSDK {
                 self.onNotification(notification)
             }
             socket.connect()
+        }
+        
+        deinit {
+            socket.disconnect()
         }
 
         func onOpen() {
@@ -78,11 +96,23 @@ extension SolanaSDK {
         }
         
         func updateSubscriptions() {
-            
+            httpClient?.accountSubscribe()
+                .subscribe(onSuccess: {number in
+                    Logger.log(message: "Account subscribed: \(number)", event: .event)
+                }, onError: { (error) in
+                    Logger.log(message: "Account subscribed failed: \(error)", event: .error)
+                })
+                .disposed(by: disposeBag)
         }
         
         func resetSubscriptions() {
-            
+            httpClient?.accountUnsubscribe()
+                .subscribe(onSuccess: {bool in
+                    Logger.log(message: "Account unsubscribed: \(bool)", event: .event)
+                }, onError: { (error) in
+                    Logger.log(message: "Account unsubscribed failed: \(error)", event: .error)
+                })
+                .disposed(by: disposeBag)
         }
     }
 }
