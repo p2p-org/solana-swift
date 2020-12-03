@@ -11,7 +11,7 @@
 import Foundation
 
 /// App Scheme
-enum LogEvent: String {
+public enum LogEvent: String {
     case error      =   "[‼️]"
     case info       =   "[ℹ️]"          // for guard & alert & route
     case debug      =   "[💬]"          // tested values & local notifications
@@ -23,7 +23,7 @@ enum LogEvent: String {
     case event      =   "[🎇]"
 }
 
-class Logger {
+public class Logger {
     // MARK: - Properties
     static var showEvents: [LogEvent]?
     static var shownApiMethods: [String]?
@@ -52,7 +52,7 @@ class Logger {
     // line:        The line number of the log message.
     // column:      The same will happen for this parameter too.
     // funcName:    The default value of this parameter is the signature of the function from where the log function is getting called.
-    class func log(message: String, event: LogEvent, fileName: String = #file, line: Int = #line, column: Int = #column, funcName: String = #function, apiMethod: String? = nil) {
+    public class func log(message: String, event: LogEvent, fileName: String = #file, line: Int = #line, column: Int = #column, funcName: String = #function, apiMethod: String? = nil) {
         if showEvents?.contains(event) == false {return}
         if let method = apiMethod, shownApiMethods?.contains(method) == false {return}
         #if DEBUG

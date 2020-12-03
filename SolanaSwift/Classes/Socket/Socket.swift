@@ -33,7 +33,7 @@ extension SolanaSDK {
         
         deinit {
             socket.disconnect()
-            unsubscribe(method: "accountSubscribe", params: [account?.base58EncodedString])
+            unsubscribe(method: "accountSubscribe", params: [account?.base58EncodedString, ["encoding":"jsonParsed"]])
         }
         
         // MARK: - Methods
@@ -88,7 +88,7 @@ extension SolanaSDK {
         public func subscribe(method: String, params: [Encodable]) {
             let requestAPI = RequestAPI(
                 method: method,
-                params: params + [["encoding":"jsonParsed"]]
+                params: params
             )
             write(requestAPI: requestAPI)
         }
@@ -101,13 +101,17 @@ extension SolanaSDK {
             write(requestAPI: requestAPI)
         }
         
-        public func observe<T: Decodable>(method: String, params: [Encodable], decodedTo: T.Type) -> Observable<T> {
-            let requestAPI = RequestAPI(
-                method: method,
-                params: params
-            )
-            write(requestAPI: requestAPI)
-            return textSubject
+        public func signatureWaitForConfirming(signature: String) -> Completable
+        {
+            subscribe(method: "signatureSubscribe", params: [signature, ["commitment": "max"]])
+            return observe(method: "signatureNotification", decodedTo: String.self)
+                .take(1)
+                .asSingle()
+                .asCompletable()
+        }
+        
+        public func observe<T: Decodable>(method: String, decodedTo type: T.Type) -> Observable<T> {
+            textSubject
                 .filter { string in
                     guard let jsonData = string.data(using: .utf8),
                         let json = (try? JSONSerialization.jsonObject(with: jsonData, options: .mutableLeaves)) as? [String: Any]
@@ -117,6 +121,10 @@ extension SolanaSDK {
                     return (json["method"] as? String) == method
                 }
                 .map { string in
+                    if type == String.self {
+                        return string as! T
+                    }
+                    
                     guard let data = string.data(using: .utf8) else {
                         throw Error.other("The response is not valid")
                     }
