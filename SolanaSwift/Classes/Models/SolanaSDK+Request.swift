@@ -20,7 +20,7 @@ extension SolanaSDK {
     struct RequestAPI: Encodable {
         public let id = UUID().uuidString
         public let method: String
-        public let jsonrpc: String
+        public let jsonrpc: String = "2.0"
         public let params: [Encodable]
         
         enum CodingKeys: String, CodingKey {

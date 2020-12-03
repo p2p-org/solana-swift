@@ -15,6 +15,7 @@ public extension SolanaSDK {
         case invalidStatusCode(code: Int)
         case responseError(ResponseError)
         case other(String)
+        case socket(Swift.Error)
         case unknown
     }
 }
