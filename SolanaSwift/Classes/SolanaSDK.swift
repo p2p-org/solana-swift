@@ -40,7 +40,7 @@ public class SolanaSDK {
         
         let bcMethod = bcMethod.replacingOccurrences(of: "\\([\\w\\s:]*\\)", with: "", options: .regularExpression)
         
-        let requestAPI = RequestAPI(method: bcMethod, jsonrpc: "2.0", params: params)
+        let requestAPI = RequestAPI(method: bcMethod, params: params)
         
         Logger.log(message: "\(method.rawValue) \(bcMethod) [id=\(requestAPI.id)] \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)
         

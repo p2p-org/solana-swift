@@ -13,20 +13,18 @@ import RxCocoa
 extension SolanaSDK {
     public class Socket {
         let disposeBag = DisposeBag()
-        weak var httpClient: SolanaSoketHttpClient?
-        
         let socket: WebSocket
+        let account: PublicKey?
         
         public let status = BehaviorRelay<Status>(value: .initializing)
         var wsHeartBeat: Timer!
 
-        public init(endpoint: String, httpClient: SolanaSoketHttpClient) {
+        public init(endpoint: String, publicKey: PublicKey?) {
             var request = URLRequest(url: URL(string: endpoint)!)
             request.timeoutInterval = 5
             socket = WebSocket(request: request)
-            socket.delegate = self
-            
-            self.httpClient = httpClient
+            account = publicKey
+            defer {socket.delegate = self}
         }
         
         public func connect() {
@@ -35,6 +33,7 @@ extension SolanaSDK {
         
         deinit {
             socket.disconnect()
+            unsubscribe(method: "accountSubscribe", params: [account?.base58EncodedString])
         }
 
         func onOpen() {
@@ -71,23 +70,41 @@ extension SolanaSDK {
         }
         
         func updateSubscriptions() {
-            httpClient?.accountSubscribe()
-                .subscribe(onSuccess: {number in
-                    Logger.log(message: "Account subscribed: \(number)", event: .event)
-                }, onError: { (error) in
-                    Logger.log(message: "Account subscribed failed: \(error)", event: .error)
-                })
-                .disposed(by: disposeBag)
+            subscribe(method: "accountSubscribe", params: [account?.base58EncodedString])
         }
         
         func resetSubscriptions() {
-            httpClient?.accountUnsubscribe()
-                .subscribe(onSuccess: {bool in
-                    Logger.log(message: "Account unsubscribed: \(bool)", event: .event)
-                }, onError: { (error) in
-                    Logger.log(message: "Account unsubscribed failed: \(error)", event: .error)
+        }
+        
+        private func subscribe(method: String, params: [Encodable]) {
+            let requestAPI = RequestAPI(
+                method: method,
+                params: params + [["encoding":"jsonParsed"]]
+            )
+            write(requestAPI: requestAPI)
+        }
+        
+        private func unsubscribe(method: String, params: [Encodable]) {
+            let requestAPI = RequestAPI(
+                method: method,
+                params: params
+            )
+            write(requestAPI: requestAPI)
+        }
+        
+        private func write(requestAPI: RequestAPI, completion: (() -> ())? = nil) {
+            do {
+                let data = try JSONEncoder().encode(requestAPI)
+                guard let string = String(data: data, encoding: .utf8) else {
+                    throw Error.other("Request is invalid \(requestAPI)")
+                }
+                socket.write(string: string, completion: {
+                    Logger.log(message: "\(requestAPI.method) success", event: .event)
+                    completion?()
                 })
-                .disposed(by: disposeBag)
+            } catch {
+                Logger.log(message: "\(requestAPI.method) failed: \(error)", event: .event)
+            }
         }
     }
 }
