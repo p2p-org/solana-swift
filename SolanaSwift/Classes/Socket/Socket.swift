@@ -7,54 +7,29 @@
 
 import Foundation
 import RxSwift
-import SocketIO
+import Starscream
 import RxCocoa
-
-public protocol SolanaSoketHttpClient: class {
-    func accountSubscribe() -> Single<UInt64>
-    func accountUnsubscribe() -> Single<Bool>
-    func programSubscribe(pubkey: String)
-    func programUnsubscribe(pubkey: String)
-    func signatureSubscribe(_ signature: String, commitment: String)
-    func signatureUnsubscribe(_ signature: String) -> Single<Bool>
-}
 
 extension SolanaSDK {
     public class Socket {
         let disposeBag = DisposeBag()
         weak var httpClient: SolanaSoketHttpClient?
         
-        let manager: SocketManager
-        public lazy var socket = manager.defaultSocket
+        let socket: WebSocket
         
         public let status = BehaviorRelay<Status>(value: .initializing)
         var wsHeartBeat: Timer!
 
         public init(endpoint: String, httpClient: SolanaSoketHttpClient) {
-            manager = SocketManager(socketURL: URL(string: endpoint)!, config: [.log(true), .compress, .reconnectAttempts(-1)])
+            var request = URLRequest(url: URL(string: endpoint)!)
+            request.timeoutInterval = 5
+            socket = WebSocket(request: request)
+            socket.delegate = self
             
             self.httpClient = httpClient
-            
-            socket.on("open") { _,_  in self.onOpen() }
-            socket.on("error") { (data, _) in
-                guard let error = data[0] as? Error else {return}
-                self.onError(error)
-            }
-            socket.on("close") { data,_ in
-                guard let code = data[0] as? Int else {return}
-                self.onClose(code)
-            }
-            socket.on("accountNotification") { data,_ in
-                guard let string = data.first as? String else {
-                    Logger.log(message: String.init(describing: data), event: .event)
-                    return
-                }
-                Logger.log(message: string, event: .event)
-                guard let data = string.data(using: .utf8),
-                      let notification = try? JSONDecoder().decode(Notification.Account.self, from: data)
-                else {return}
-                self.onNotification(notification)
-            }
+        }
+        
+        public func connect() {
             socket.connect()
         }
         
@@ -67,7 +42,7 @@ extension SolanaSDK {
             wsHeartBeat?.invalidate()
             wsHeartBeat = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { (_) in
                 // Ping server every 5s to prevent idle timeouts
-                self.socket.emit("ping")
+                self.socket.write(ping: Data())
             }
             updateSubscriptions()
         }
@@ -113,6 +88,48 @@ extension SolanaSDK {
                     Logger.log(message: "Account unsubscribed failed: \(error)", event: .error)
                 })
                 .disposed(by: disposeBag)
+        }
+    }
+}
+
+extension SolanaSDK.Socket: WebSocketDelegate {
+    public func didReceive(event: WebSocketEvent, client: WebSocket) {
+        switch event {
+        case .connected(let headers):
+            status.accept(.connected)
+            onOpen()
+            Logger.log(message: "websocket is connected: \(headers)", event: .event)
+        case .disconnected(let reason, let code):
+            status.accept(.disconnected)
+            onClose(Int(code))
+            Logger.log(message: "websocket is disconnected: \(reason) with code: \(code)", event: .event)
+            socket.connect()
+        case .text(let string):
+            Logger.log(message: "Received text: \(string)", event: .event)
+        case .binary(let data):
+            Logger.log(message: "Received data: \(data.count)", event: .event)
+        case .ping(_):
+//            Logger.log(message: "Socket ping", event: .event)
+            break
+        case .pong(_):
+//            Logger.log(message: "Socket pong", event: .event)
+            break
+        case .viabilityChanged(_):
+            break
+        case .reconnectSuggested(let bool):
+            Logger.log(message: "reconnectSuggested \(bool)", event: .event)
+            if bool { socket.connect() }
+        case .cancelled:
+            status.accept(.disconnected)
+        case .error(let error):
+            if let error = error {
+                status.accept(.error(error))
+                Logger.log(message: "Socket error: \(error)", event: .error)
+                onError(.socket(error))
+                
+                // reconnect
+                socket.connect()
+            }
         }
     }
 }

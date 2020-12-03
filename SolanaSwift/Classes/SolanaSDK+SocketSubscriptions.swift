@@ -8,7 +8,7 @@
 import Foundation
 import RxSwift
 
-extension SolanaSDK {
+public extension SolanaSDK {
     // MARK: - Account
     func accountSubscribe() -> Single<UInt64> {
         guard let account = accountStorage.account?.publicKey.base58EncodedString else
