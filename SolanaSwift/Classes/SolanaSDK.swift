@@ -39,14 +39,15 @@ public class SolanaSDK {
         let params = parameters.compactMap {$0}
         
         let bcMethod = bcMethod.replacingOccurrences(of: "\\([\\w\\s:]*\\)", with: "", options: .regularExpression)
-        Logger.log(message: "\(method.rawValue) \(bcMethod) \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)
+        
+        let requestAPI = RequestAPI(method: bcMethod, jsonrpc: "2.0", params: params)
+        
+        Logger.log(message: "\(method.rawValue) \(bcMethod) [id=\(requestAPI.id)] \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)
         
         do {
             var urlRequest = try URLRequest(url: url, method: method, headers: [.contentType("application/json")])
-            
-            let requestAPI = RequestAPI(method: bcMethod, jsonrpc: "2.0", params: params
-            )
             urlRequest.httpBody = try JSONEncoder().encode(requestAPI)
+            
             return RxAlamofire.request(urlRequest)
                 .responseData()
                 .map {(response, data) -> T in
