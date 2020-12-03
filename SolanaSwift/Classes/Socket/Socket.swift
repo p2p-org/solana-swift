@@ -84,7 +84,7 @@ extension SolanaSDK {
             
         }
         
-        // MARK: - Subscriptions
+        // MARK: - Writting
         public func subscribe(method: String, params: [Encodable]) {
             let requestAPI = RequestAPI(
                 method: method,
@@ -101,16 +101,34 @@ extension SolanaSDK {
             write(requestAPI: requestAPI)
         }
         
-        // MARK: - Request
-        public func observe<T: Decodable>(method: String, params: [Encodable]) -> Observable<T> {
+        public func observe<T: Decodable>(method: String, params: [Encodable], decodedTo: T.Type) -> Observable<T> {
             let requestAPI = RequestAPI(
                 method: method,
                 params: params
             )
             write(requestAPI: requestAPI)
-            
+            return textSubject
+                .filter { string in
+                    guard let jsonData = string.data(using: .utf8),
+                        let json = (try? JSONSerialization.jsonObject(with: jsonData, options: .mutableLeaves)) as? [String: Any]
+                        else {
+                            return false
+                    }
+                    return (json["method"] as? String) == method
+                }
+                .map { string in
+                    guard let data = string.data(using: .utf8) else {
+                        throw Error.other("The response is not valid")
+                    }
+                    guard let result = try JSONDecoder().decode(Response<T>.self, from: data).result
+                    else {
+                        throw Error.other("The response is empty")
+                    }
+                    return result
+                }
         }
         
+        // MARK: - Helpers
         private func write(requestAPI: RequestAPI, completion: (() -> ())? = nil) {
             // closure for writing
             let writeAndLog: () -> Void = { [weak self] in
@@ -157,6 +175,7 @@ extension SolanaSDK.Socket: WebSocketDelegate {
             Logger.log(message: "websocket is disconnected: \(reason) with code: \(code)", event: .event)
             socket.connect()
         case .text(let string):
+            textSubject.onNext(string)
             Logger.log(message: "Received text: \(string)", event: .event)
         case .binary(let data):
             Logger.log(message: "Received data: \(data.count)", event: .event)

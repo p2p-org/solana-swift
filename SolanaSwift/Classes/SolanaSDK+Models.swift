@@ -15,6 +15,7 @@ public extension SolanaSDK {
 		public let id: String
 		public let result: T?
 		public let error: ResponseError?
+        public let method: String?
 	}
 	struct ResponseError: Decodable {
 		public let code: Int?
