@@ -33,24 +33,51 @@ extension SolanaSDK {
         
         deinit {
             socket.disconnect()
-            unsubscribe(method: "accountSubscribe", params: [account?.base58EncodedString, ["encoding":"jsonParsed"]])
+            write(method: "accountUnsubscribe", params: [account?.base58EncodedString])
         }
         
-        // MARK: - Methods
+        // MARK: - Public methods
         public func connect() {
             status.accept(.connecting)
             socket.connect()
         }
         
+        @discardableResult
+        public func write(method: String, params: [Encodable]) -> String {
+            let requestAPI = RequestAPI(
+                method: method,
+                params: params
+            )
+            write(requestAPI: requestAPI)
+            return requestAPI.id
+        }
+        
+        public func observeAccountNotification() -> Observable<Notification.Account> {
+            observe(method: "accountNotification", decodedTo: Notification.Account.self)
+        }
+        
+        public func observeSignatureNotification(signature: String) -> Completable
+        {
+            let id = write(method: "signatureSubscribe", params: [signature, ["commitment": "max"]])
+            
+            return subscribe(id: id)
+                .flatMap {
+                    self.observe(method: "signatureNotification", decodedTo: Rpc<Notification.Signature>.self, subscription: $0)
+                        .take(1)
+                        .asSingle()
+                }
+                .asCompletable()
+        }
+        
+        // MARK: - Handlers
         func updateSubscriptions() {
-            subscribe(method: "accountSubscribe", params: [account?.base58EncodedString])
+            write(method: "accountSubscribe", params: [account?.base58EncodedString, ["encoding":"jsonParsed"]])
         }
         
         func resetSubscriptions() {
             // TODO: - resetSubscriptions
         }
         
-        // MARK: - Handlers
         func onOpen() {
             status.accept(.connected)
             wsHeartBeat?.invalidate()
@@ -80,37 +107,33 @@ extension SolanaSDK {
             resetSubscriptions()
         }
         
-        func onNotification(_ notification: Notification.Account) {
-            
-        }
-        
-        // MARK: - Writting
-        public func subscribe(method: String, params: [Encodable]) {
-            let requestAPI = RequestAPI(
-                method: method,
-                params: params
-            )
-            write(requestAPI: requestAPI)
-        }
-        
-        public func unsubscribe(method: String, params: [Encodable]) {
-            let requestAPI = RequestAPI(
-                method: method,
-                params: params
-            )
-            write(requestAPI: requestAPI)
-        }
-        
-        public func signatureWaitForConfirming(signature: String) -> Completable
-        {
-            subscribe(method: "signatureSubscribe", params: [signature, ["commitment": "max"]])
-            return observe(method: "signatureNotification", decodedTo: String.self)
+        // MARK: - Helpers
+        private func subscribe(id: String) -> Single<UInt64> {
+            textSubject
+                .filter {
+                    guard let jsonData = $0.data(using: .utf8),
+                        let json = (try? JSONSerialization.jsonObject(with: jsonData, options: .mutableLeaves)) as? [String: Any]
+                        else {
+                            return false
+                    }
+                    return (json["id"] as? String) == id
+                }
+                .map {
+                    guard let data = $0.data(using: .utf8) else {
+                        throw Error.other("The response is not valid")
+                    }
+                    
+                    guard let subscription = try JSONDecoder().decode(Response<UInt64>.self, from: data).result
+                    else {
+                        throw Error.other("Subscription is not valid")
+                    }
+                    return subscription
+                }
                 .take(1)
                 .asSingle()
-                .asCompletable()
         }
         
-        public func observe<T: Decodable>(method: String, decodedTo type: T.Type) -> Observable<T> {
+        private func observe<T: Decodable>(method: String, decodedTo type: T.Type, subscription: UInt64? = nil) -> Observable<T> {
             textSubject
                 .filter { string in
                     guard let jsonData = string.data(using: .utf8),
@@ -118,13 +141,13 @@ extension SolanaSDK {
                         else {
                             return false
                     }
-                    return (json["method"] as? String) == method
+                    var condition = (json["method"] as? String) == method
+                    if let subscription = subscription {
+                        condition = condition && (((json["params"] as? [String: Any])?["subscription"] as? UInt64) == subscription)
+                    }
+                    return condition
                 }
                 .map { string in
-                    if type == String.self {
-                        return string as! T
-                    }
-                    
                     guard let data = string.data(using: .utf8) else {
                         throw Error.other("The response is not valid")
                     }
@@ -136,7 +159,6 @@ extension SolanaSDK {
                 }
         }
         
-        // MARK: - Helpers
         private func write(requestAPI: RequestAPI, completion: (() -> ())? = nil) {
             // closure for writing
             let writeAndLog: () -> Void = { [weak self] in

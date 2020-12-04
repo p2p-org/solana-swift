@@ -22,6 +22,7 @@ public extension SolanaSDK {
 	}
     struct SocketParams<T: Decodable>: Decodable {
         public let result: T?
+        public let subscription: UInt64?
     }
 	struct ResponseError: Decodable {
 		public let code: Int?

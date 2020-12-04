@@ -10,5 +10,8 @@ import Foundation
 public extension SolanaSDK {
     struct Notification {
         public typealias Account = Rpc<SolanaSDK.AccountInfo<AccountLayout>>
+        public struct Signature: Decodable {
+            let err: ResponseError?
+        }
     }
 }
