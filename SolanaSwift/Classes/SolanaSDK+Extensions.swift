@@ -34,7 +34,7 @@ extension SolanaSDK {
         getMinimumBalanceForRentExemption(dataLength: AccountLayout.span)
     }
 
-    public func createTokenAccount(mintAddress: String, in network: String) -> Single<String> {
+    public func createTokenAccount(mintAddress: String, in network: String) -> Single<(signature: String, newPubkey: String)> {
         guard let payer = self.accountStorage.account else {
             return .error(Error.publicKeyNotFound)
         }
@@ -63,6 +63,7 @@ extension SolanaSDK {
                     throw Error.other("Could not serialize transaction")
                 }
                 return self.sendTransaction(serializedTransaction: serializedTransaction)
+                    .map {($0, newAccount.publicKey.base58EncodedString)}
             }
     }
 }
