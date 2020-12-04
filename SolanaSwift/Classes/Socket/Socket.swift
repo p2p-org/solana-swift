@@ -128,7 +128,7 @@ extension SolanaSDK {
                     guard let data = string.data(using: .utf8) else {
                         throw Error.other("The response is not valid")
                     }
-                    guard let result = try JSONDecoder().decode(Response<T>.self, from: data).result
+                    guard let result = try JSONDecoder().decode(Response<T>.self, from: data).params?.result
                     else {
                         throw Error.other("The response is empty")
                     }
@@ -174,17 +174,17 @@ extension SolanaSDK.Socket: WebSocketDelegate {
     public func didReceive(event: WebSocketEvent, client: WebSocket) {
         switch event {
         case .connected(let headers):
+            Logger.log(message: "websocket is connected: \(headers)", event: .event)
             status.accept(.connected)
             onOpen()
-            Logger.log(message: "websocket is connected: \(headers)", event: .event)
         case .disconnected(let reason, let code):
+            Logger.log(message: "websocket is disconnected: \(reason) with code: \(code)", event: .event)
             status.accept(.disconnected)
             onClose(Int(code))
-            Logger.log(message: "websocket is disconnected: \(reason) with code: \(code)", event: .event)
             socket.connect()
         case .text(let string):
-            textSubject.onNext(string)
             Logger.log(message: "Received text: \(string)", event: .event)
+            textSubject.onNext(string)
         case .binary(let data):
             Logger.log(message: "Received data: \(data.count)", event: .event)
         case .ping(_):

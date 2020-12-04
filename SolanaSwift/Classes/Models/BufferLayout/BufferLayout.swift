@@ -40,8 +40,8 @@ extension SolanaSDK {
             }
             
             // decode base64 data
-            let strings = try container.decode([String].self)
-            guard let string = strings.first, let data = Data(base64Encoded: string)?.bytes,
+            let stringData = (try? container.decode([String].self).first) ?? (try? container.decode(String.self))
+            guard let string = stringData, let data = Data(base64Encoded: string)?.bytes,
                   data.count >= T.BUFFER_LENGTH
             else {
                 value = T([:])

@@ -9,9 +9,6 @@ import Foundation
 
 public extension SolanaSDK {
     struct Notification {
-        public struct Account: Decodable {
-            public let subscription: Int64
-            public let result: Rpc<SolanaSDK.AccountInfo<AccountLayout>>
-        }
+        public typealias Account = Rpc<SolanaSDK.AccountInfo<AccountLayout>>
     }
 }

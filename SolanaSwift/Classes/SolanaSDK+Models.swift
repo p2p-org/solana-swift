@@ -12,11 +12,17 @@ import RxSwift
 public extension SolanaSDK {
 	struct Response<T: Decodable>: Decodable {
 		public let jsonrpc: String
-		public let id: String
+		public let id: String?
 		public let result: T?
 		public let error: ResponseError?
         public let method: String?
+        
+        // socket
+        public let params: SocketParams<T>?
 	}
+    struct SocketParams<T: Decodable>: Decodable {
+        public let result: T?
+    }
 	struct ResponseError: Decodable {
 		public let code: Int?
 		public let message: String?
