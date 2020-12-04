@@ -31,15 +31,12 @@ extension SolanaSDK {
             let container = try decoder.singleValueContainer()
             
             // decode parsedJSON
-            do {
-                let parsedData = try container.decode(T.self)
+            if let parsedData = try? container.decode(T.self) {
                 value = parsedData
                 return
-            } catch {
-                Logger.log(message: "Unable to get parsed data, fallback to decoding base64, error: \(error)", event: .info, apiMethod: "getProgramAccounts")
             }
             
-            // decode base64 data
+            // Unable to get parsed data, fallback to decoding base64
             let stringData = (try? container.decode([String].self).first) ?? (try? container.decode(String.self))
             guard let string = stringData, let data = Data(base64Encoded: string)?.bytes,
                   data.count >= T.BUFFER_LENGTH
