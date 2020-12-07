@@ -64,8 +64,8 @@ public extension SolanaSDK {
 		(request() as Single<Rpc<Fee>>)
 			.map {$0.value}
 	}
-	func getFees(commitment: Commitment? = nil) -> Single<[Fee]> {
-		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<[Fee]>>)
+	func getFees(commitment: Commitment? = nil) -> Single<Fee> {
+		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)
 			.map {$0.value}
 	}
 	func getFirstAvailableBlock() -> Single<UInt64> {
