@@ -78,9 +78,16 @@ public extension SolanaSDK.Transaction {
     
     struct SignatureInfo: Decodable, Hashable {
         public let signature: String
-        public let slot: UInt64
+        public let slot: UInt64?
         public let err: Error?
         public let memo: String?
+        
+        public init(signature: String) {
+            self.signature = signature
+            self.slot = nil
+            self.err = nil
+            self.memo = nil
+        }
     }
     
     struct Status: Decodable {
