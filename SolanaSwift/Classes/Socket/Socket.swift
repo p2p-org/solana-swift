@@ -32,14 +32,19 @@ extension SolanaSDK {
         }
         
         deinit {
-            socket.disconnect()
-            write(method: "accountUnsubscribe", params: [account?.base58EncodedString])
+            disconnect()
         }
         
         // MARK: - Public methods
         public func connect() {
             status.accept(.connecting)
             socket.connect()
+        }
+        
+        public func disconnect() {
+            status.accept(.disconnected)
+            socket.disconnect()
+            write(method: "accountUnsubscribe", params: [account?.base58EncodedString])
         }
         
         @discardableResult
