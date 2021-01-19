@@ -53,7 +53,7 @@ class TransactionTests: XCTestCase {
     
     func testCreateAccountInstruction() throws {
         let programPubkey = try SolanaSDK.PublicKey(string: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-        let instruction = SolanaSDK.SystemProgram.createAccount(from: programPubkey, toNewPubkey: programPubkey, lamports: 2039280, programPubkey: SolanaSDK.SystemProgram.programId)
+        let instruction = SolanaSDK.SystemProgram.createAccount(from: programPubkey, toNewPubkey: programPubkey, lamports: 2039280, programPubkey: SolanaSDK.Constants.programId)
         XCTAssertEqual(instruction.data, Base58.decode("11119os1e9qSs2u7TsThXqkBSRUo9x7kpbdqtNNbTeaxHGPdWbvoHsks9hpp6mb2ed1NeB"))
     }
 }

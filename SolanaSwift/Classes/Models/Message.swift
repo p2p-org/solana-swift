@@ -15,15 +15,15 @@ public extension SolanaSDK {
         public var recentBlockhash: String?
         public var accountKeys = [Account.Meta]()
         public var instructions = [Transaction.Instruction]()
-        private(set) var programInstructions: [SystemProgram.Instruction]?
+        private(set) var programInstructions: [TransactionInstruction]?
         
         public init() {}
         
-        public mutating func add(instruction: SystemProgram.Instruction) {
+        public mutating func add(instruction: TransactionInstruction) {
             accountKeys.appendWritable(contentsOf: instruction.keys)
             accountKeys.appendWritable(Account.Meta(publicKey: instruction.programId, isSigner: false, isWritable: false))
             if programInstructions == nil {
-                programInstructions = [SystemProgram.Instruction]()
+                programInstructions = [TransactionInstruction]()
             }
             programInstructions!.append(instruction)
         }

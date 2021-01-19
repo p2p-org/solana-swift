@@ -9,19 +9,14 @@ import Foundation
 
 public extension SolanaSDK {
     struct SystemProgram {
-        // MARK: - Constraint
-        public static let programId = try! PublicKey(string: "11111111111111111111111111111111")
-        public static let sysvarRent = try! PublicKey(string: "SysvarRent111111111111111111111111111111111")
-        public static let splTokenProgramId = try! PublicKey(string: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-        
         // MARK: - Instructions
         public static func createAccount(
             from fromPublicKey: PublicKey,
             toNewPubkey newPubkey: PublicKey,
             lamports: UInt64,
             space: UInt64 = AccountLayout.span,
-            programPubkey: PublicKey = splTokenProgramId
-        ) -> Instruction
+            programPubkey: PublicKey = Constants.splTokenProgramId
+        ) -> TransactionInstruction
         {
             let keys = [
                 Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
@@ -33,23 +28,23 @@ public extension SolanaSDK {
                 space,
                 programPubkey
             ])
-            return Instruction(keys: keys, programId: programId, data: data.bytes)
+            return TransactionInstruction(keys: keys, programId: Constants.programId, data: data.bytes)
         }
         
-        public static func initializeAccount(account: PublicKey, mint: PublicKey, owner: PublicKey) -> Instruction
+        public static func initializeAccount(account: PublicKey, mint: PublicKey, owner: PublicKey) -> TransactionInstruction
         {
             let keys = [
                 Account.Meta(publicKey: account, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: mint, isSigner: false, isWritable: false),
                 Account.Meta(publicKey: owner, isSigner: false, isWritable: false),
-                Account.Meta(publicKey: SystemProgram.sysvarRent, isSigner: false, isWritable: false)
+                Account.Meta(publicKey: Constants.sysvarRent, isSigner: false, isWritable: false)
             ]
             
             let data: [UInt8] = [1]
-            return Instruction(keys: keys, programId: splTokenProgramId, data: data)
+            return TransactionInstruction(keys: keys, programId: Constants.splTokenProgramId, data: data)
         }
         
-        public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: UInt64) -> Instruction {
+        public static func transfer(from fromPublicKey: PublicKey, to toPublicKey: PublicKey, lamports: UInt64) -> TransactionInstruction {
             let keys = [
                 Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
                 Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true)
@@ -58,19 +53,12 @@ public extension SolanaSDK {
             let data = InstructionType.transfer.encode([
                 lamports
             ])
-            return Instruction(keys: keys, programId: programId, data: data.bytes)
+            return TransactionInstruction(keys: keys, programId: Constants.programId, data: data.bytes)
         }
     }
 }
 
 extension SolanaSDK.SystemProgram {
-    // MARK: - Nested types
-    public struct Instruction: Decodable {
-        public let keys: [SolanaSDK.Account.Meta]
-        public let programId: SolanaSDK.PublicKey
-        public let data: [UInt8]
-    }
-    
     fileprivate enum InstructionType: UInt32 {
         case create                 = 0
         case assign                 = 1
