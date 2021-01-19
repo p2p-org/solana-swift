@@ -20,7 +20,7 @@ extension SolanaSDK {
                 let signer = account
                 
                 var transaction = Transaction()
-                transaction.message.add(instruction: SystemProgram.transfer(from: fromPublicKey, to: toPublicKey, lamports: UInt64(amount)))
+                transaction.message.add(instruction: SPLTokenProgram.transfer(from: fromPublicKey, to: toPublicKey, lamports: UInt64(amount)))
                 transaction.message.recentBlockhash = recentBlockhash
                 try transaction.sign(signers: [signer])
                 guard let serializedTransaction = try transaction.serialize().toBase64() else {
@@ -48,9 +48,9 @@ extension SolanaSDK {
                 let newAccount = try Account(network: network)
                 
                 // instructions
-                let createAccount = SystemProgram.createAccount(from: payer.publicKey, toNewPubkey: newAccount.publicKey, lamports: minBalance)
+                let createAccount = SPLTokenProgram.createAccount(from: payer.publicKey, toNewPubkey: newAccount.publicKey, lamports: minBalance)
                 
-                let initializeAccount = SystemProgram.initializeAccount(account: newAccount.publicKey, mint: mintAddress, owner: payer.publicKey)
+                let initializeAccount = SPLTokenProgram.initializeAccount(account: newAccount.publicKey, mint: mintAddress, owner: payer.publicKey)
                 
                 // forming transaction
                 var transaction = Transaction()
