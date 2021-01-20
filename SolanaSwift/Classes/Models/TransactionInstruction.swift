@@ -17,7 +17,7 @@ extension SolanaSDK {
 
 extension RawRepresentable where RawValue == UInt32 {
     var indexBytes: [UInt8] {rawValue.bytes}
-    func encode(_ array: [InstructionEncodable]) -> Data {
+    func encode(with array: [InstructionEncodable] = []) -> Data {
         var data = Data()
         data.append(contentsOf: indexBytes)
         for el in array {
@@ -58,5 +58,11 @@ extension SolanaSDK.PublicKey: InstructionEncodable {
 extension Data: InstructionEncodable {
     func instructionEncode() -> [UInt8] {
         bytes
+    }
+}
+
+extension Bool: InstructionEncodable {
+    func instructionEncode() -> [UInt8] {
+        return self ? [UInt8(1)]: [UInt8(0)]
     }
 }

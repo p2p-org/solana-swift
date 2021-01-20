@@ -110,7 +110,7 @@ public extension SolanaSDK {
             ["memcmp": memcmp],
             ["dataSize": .init(wrapped: 165)]
         ])
-        return (request(parameters: [SPLTokenProgram.splTokenProgramId.base58EncodedString, configs]) as Single<[ProgramAccount<AccountLayout>]>)
+        return (request(parameters: [PublicKey.tokenProgramId.base58EncodedString, configs]) as Single<[ProgramAccount<AccountLayout>]>)
             .map {
                 $0.compactMap {
                     $0.account.data.value != nil ?

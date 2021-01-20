@@ -49,7 +49,7 @@ extension SolanaSDK {
                 keys.append(Account.Meta(publicKey: hostFeeAccount, isSigner: false, isWritable: true))
             }
             
-            let data = Index.swap.encode([
+            let data = Index.swap.encode(with: [
                 amountIn,
                 minimumAmountOut
             ])
@@ -84,7 +84,7 @@ extension SolanaSDK {
                 Account.Meta(publicKey: tokenProgramId, isSigner: false, isWritable: true)
             ]
             
-            let data = Index.deposit.encode([
+            let data = Index.deposit.encode(with: [
                 poolTokenAmount,
                 maximumTokenA,
                 maximumTokenB
@@ -123,7 +123,7 @@ extension SolanaSDK {
                 Account.Meta(publicKey: tokenProgramId, isSigner: false, isWritable: false)
             ]
             
-            let data = Index.withdraw.encode([
+            let data = Index.withdraw.encode(with: [
                 poolTokenAmount,
                 minimumTokenA,
                 minimumTokenB

@@ -20,7 +20,13 @@ extension SolanaSDK {
                 let signer = account
                 
                 var transaction = Transaction()
-                transaction.message.add(instruction: SPLTokenProgram.transfer(from: fromPublicKey, to: toPublicKey, lamports: UInt64(amount)))
+                transaction.message.add(
+                    instruction: SPLTokenProgram.transferInstruction(
+                        from: fromPublicKey,
+                        to: toPublicKey,
+                        lamports: UInt64(amount)
+                    )
+                )
                 transaction.message.recentBlockhash = recentBlockhash
                 try transaction.sign(signers: [signer])
                 guard let serializedTransaction = try transaction.serialize().toBase64() else {
@@ -48,14 +54,22 @@ extension SolanaSDK {
                 let newAccount = try Account(network: network)
                 
                 // instructions
-                let createAccount = SPLTokenProgram.createAccount(from: payer.publicKey, toNewPubkey: newAccount.publicKey, lamports: minBalance)
+                let createAccountInstruction = SPLTokenProgram.createAccountInstruction(
+                    from: payer.publicKey,
+                    toNewPubkey: newAccount.publicKey,
+                    lamports: minBalance
+                )
                 
-                let initializeAccount = SPLTokenProgram.initializeAccount(account: newAccount.publicKey, mint: mintAddress, owner: payer.publicKey)
+                let initializeAccountInstruction = SPLTokenProgram.initializeAccountInstruction(
+                    account: newAccount.publicKey,
+                    mint: mintAddress,
+                    owner: payer.publicKey
+                )
                 
                 // forming transaction
                 var transaction = Transaction()
-                transaction.message.add(instruction: createAccount)
-                transaction.message.add(instruction: initializeAccount)
+                transaction.message.add(instruction: createAccountInstruction)
+                transaction.message.add(instruction: initializeAccountInstruction)
                 transaction.message.recentBlockhash = recentBlockhash
                 try transaction.sign(signers: [payer, newAccount])
                 
