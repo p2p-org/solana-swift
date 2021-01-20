@@ -42,7 +42,7 @@ extension SolanaSDK {
                 Account.Meta(publicKey: userDestination, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: poolMint, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: feeAccount, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: tokenProgramId, isSigner: false, isWritable: true)
+                Account.Meta(publicKey: tokenProgramId, isSigner: false, isWritable: false)
             ]
             
             if let hostFeeAccount = hostFeeAccount {
