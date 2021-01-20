@@ -6,63 +6,19 @@
 //
 
 import Foundation
+import BigInt
 
 extension SolanaSDK {
     public struct TransactionInstruction: Decodable {
         public let keys: [SolanaSDK.Account.Meta]
         public let programId: SolanaSDK.PublicKey
         public let data: [UInt8]
-    }
-}
-
-extension RawRepresentable where RawValue == UInt32 {
-    var indexBytes: [UInt8] {rawValue.bytes}
-    func encode(with array: [InstructionEncodable] = []) -> Data {
-        var data = Data()
-        data.append(contentsOf: indexBytes)
-        for el in array {
-            data.append(contentsOf: el.instructionEncode())
+        
+        init(keys: [SolanaSDK.Account.Meta], programId: SolanaSDK.PublicKey, data: [BytesEncodable])
+        {
+            self.keys = keys
+            self.programId = programId
+            self.data = data.bytes
         }
-        return data
-    }
-}
-
-protocol InstructionEncodable {
-    func instructionEncode() -> [UInt8]
-}
-
-extension UInt8: InstructionEncodable {
-    func instructionEncode() -> [UInt8] {
-        [self]
-    }
-}
-
-extension Array: InstructionEncodable where Element == UInt8 {
-    func instructionEncode() -> [UInt8] {
-        self
-    }
-}
-
-extension UInt64: InstructionEncodable {
-    func instructionEncode() -> [UInt8] {
-        withUnsafeBytes(of: littleEndian, Array.init)
-    }
-}
-
-extension SolanaSDK.PublicKey: InstructionEncodable {
-    func instructionEncode() -> [UInt8] {
-        bytes
-    }
-}
-
-extension Data: InstructionEncodable {
-    func instructionEncode() -> [UInt8] {
-        bytes
-    }
-}
-
-extension Bool: InstructionEncodable {
-    func instructionEncode() -> [UInt8] {
-        return self ? [UInt8(1)]: [UInt8(0)]
     }
 }

@@ -10,7 +10,7 @@ import Foundation
 public extension SolanaSDK {
     struct SPLTokenProgram {
         // MARK: - Nested type
-        private enum Index: UInt32 {
+        private enum Index: UInt32, BytesEncodable {
             case create                 = 0
             case initializeAccount      = 1
             case transfer               = 2
@@ -39,13 +39,13 @@ public extension SolanaSDK {
                     Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false)
                 ],
                 programId: tokenProgramId,
-                data: Index.create.encode(with: [
+                data: [
+                    Index.create,
                     decimals,
                     authority,
                     freezeAuthority != nil,
                     freezeAuthority?.bytes ?? Data(capacity: PublicKey.LENGTH).bytes
-                ])
-                .bytes
+                ]
             )
         }
         
@@ -64,8 +64,7 @@ public extension SolanaSDK {
                     Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false)
                 ],
                 programId: programId,
-                data: Index.initializeAccount.encode()
-                    .bytes
+                data: [Index.initializeAccount]
             )
         }
         
@@ -83,12 +82,7 @@ public extension SolanaSDK {
                     Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true)
                 ],
                 programId: PublicKey.programId,
-                data: Index.create.encode(with: [
-                    lamports,
-                    space,
-                    programPubkey
-                ])
-                .bytes
+                data: [Index.create, lamports, space, programPubkey]
             )
         }
         
@@ -104,8 +98,7 @@ public extension SolanaSDK {
                     Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true)
                 ],
                 programId: PublicKey.programId,
-                data: Index.transfer.encode(with: [lamports])
-                    .bytes
+                data: [Index.transfer, lamports]
             )
         }
         
@@ -124,8 +117,7 @@ public extension SolanaSDK {
                     Account.Meta(publicKey: owner, isSigner: true, isWritable: true)
                 ],
                 programId: tokenProgramId,
-                data: Index.approve.encode(with: [amount])
-                    .bytes
+                data: [Index.approve, amount]
             )
         }
         
@@ -144,8 +136,7 @@ public extension SolanaSDK {
                     Account.Meta(publicKey: authority, isSigner: true, isWritable: true)
                 ],
                 programId: tokenProgramId,
-                data: Index.mintTo.encode(with: [amount])
-                    .bytes
+                data: [Index.mintTo, amount]
             )
         }
         
@@ -163,7 +154,7 @@ public extension SolanaSDK {
                     Account.Meta(publicKey: owner, isSigner: false, isWritable: false)
                 ],
                 programId: tokenProgramId,
-                data: Index.close.encode().bytes
+                data: [Index.close]
             )
         }
     }

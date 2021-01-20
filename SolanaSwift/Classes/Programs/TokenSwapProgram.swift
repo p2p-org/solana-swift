@@ -6,11 +6,12 @@
 //
 
 import Foundation
+import BigInt
 
-extension SolanaSDK {
+public extension SolanaSDK {
     struct TokenSwapProgram {
         // MARK: - Nested type
-        private enum Index: UInt32 {
+        private enum Index: UInt8, BytesEncodable {
             case initialize = 0
             case swap = 1
             case deposit = 2
@@ -30,8 +31,8 @@ extension SolanaSDK {
             hostFeeAccount: PublicKey?,
             tokenProgramId: PublicKey,
             swapProgramId: PublicKey,
-            amountIn: UInt64,
-            minimumAmountOut: UInt64
+            amountIn: BigInt,
+            minimumAmountOut: BigInt
         ) -> TransactionInstruction {
             var keys = [
                 Account.Meta(publicKey: tokenSwapAccount, isSigner: false, isWritable: false),
@@ -49,11 +50,11 @@ extension SolanaSDK {
                 keys.append(Account.Meta(publicKey: hostFeeAccount, isSigner: false, isWritable: true))
             }
             
-            let data = Index.swap.encode(with: [
-                amountIn,
-                minimumAmountOut
-            ])
-            return TransactionInstruction(keys: keys, programId: swapProgramId, data: data.bytes)
+            return TransactionInstruction(
+                keys: keys,
+                programId: swapProgramId,
+                data: [Index.swap, amountIn.advanced(by: 8), minimumAmountOut]
+            )
         }
         
         // MARK: - Deposit
@@ -72,25 +73,22 @@ extension SolanaSDK {
             maximumTokenA: UInt64,
             maximumTokenB: UInt64
         ) -> TransactionInstruction {
-            let keys = [
-                Account.Meta(publicKey: tokenSwap, isSigner: false, isWritable: false),
-                Account.Meta(publicKey: authority, isSigner: false, isWritable: false),
-                Account.Meta(publicKey: sourceA, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: sourceB, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: intoA, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: intoB, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: poolToken, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: poolAccount, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: tokenProgramId, isSigner: false, isWritable: true)
-            ]
             
-            let data = Index.deposit.encode(with: [
-                poolTokenAmount,
-                maximumTokenA,
-                maximumTokenB
-            ])
-            
-            return TransactionInstruction(keys: keys, programId: swapProgramId, data: data.bytes)
+            TransactionInstruction(
+                keys: [
+                    Account.Meta(publicKey: tokenSwap, isSigner: false, isWritable: false),
+                    Account.Meta(publicKey: authority, isSigner: false, isWritable: false),
+                    Account.Meta(publicKey: sourceA, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: sourceB, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: intoA, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: intoB, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: poolToken, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: poolAccount, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: tokenProgramId, isSigner: false, isWritable: true)
+                ],
+                programId: swapProgramId,
+                data: [Index.deposit, poolTokenAmount, maximumTokenA, maximumTokenB]
+            )
         }
         
         // MARK: - Withdraw
@@ -110,26 +108,22 @@ extension SolanaSDK {
             minimumTokenA: UInt64,
             minimumTokenB: UInt64
         ) -> TransactionInstruction {
-            let keys = [
-                Account.Meta(publicKey: tokenSwap, isSigner: false, isWritable: false),
-                Account.Meta(publicKey: authority, isSigner: false, isWritable: false),
-                Account.Meta(publicKey: poolMint, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: sourcePoolAccount, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: fromA, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: fromB, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: userAccountA, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: userAccountB, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: feeAccount, isSigner: false, isWritable: false),
-                Account.Meta(publicKey: tokenProgramId, isSigner: false, isWritable: false)
-            ]
             
-            let data = Index.withdraw.encode(with: [
-                poolTokenAmount,
-                minimumTokenA,
-                minimumTokenB
-            ])
-            
-            return TransactionInstruction(keys: keys, programId: swapProgramId, data: data.bytes)
+            TransactionInstruction(
+                keys: [
+                    Account.Meta(publicKey: tokenSwap, isSigner: false, isWritable: false),
+                    Account.Meta(publicKey: authority, isSigner: false, isWritable: false),
+                    Account.Meta(publicKey: poolMint, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: sourcePoolAccount, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: fromA, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: fromB, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: userAccountA, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: userAccountB, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: feeAccount, isSigner: false, isWritable: false),
+                    Account.Meta(publicKey: tokenProgramId, isSigner: false, isWritable: false)
+                ],
+                programId: swapProgramId,
+                data: [Index.withdraw, poolTokenAmount, minimumTokenA, minimumTokenB])
         }
         
         //        public static func initialize(

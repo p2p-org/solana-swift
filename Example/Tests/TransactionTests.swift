@@ -43,7 +43,7 @@ class TransactionTests: XCTestCase {
         let signer = try SolanaSDK.Account(secretKey: Data(Base58.decode("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")))
         
         var transaction = SolanaSDK.Transaction()
-        transaction.message.add(instruction: SolanaSDK.SystemProgram.transfer(from: fromPublicKey, to: toPublicKey, lamports: lamports))
+        transaction.message.add(instruction: SolanaSDK.SPLTokenProgram.transferInstruction(from: fromPublicKey, to: toPublicKey, lamports: lamports))
         transaction.message.recentBlockhash = "Eit7RCyhUixAe2hGBS8oqnw59QK3kgMMjfLME5bm9wRn"
         try transaction.sign(signers: [signer])
         let serializedTransaction = try transaction.serialize().toBase64()!
@@ -53,7 +53,7 @@ class TransactionTests: XCTestCase {
     
     func testCreateAccountInstruction() throws {
         let programPubkey = try SolanaSDK.PublicKey(string: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-        let instruction = SolanaSDK.SystemProgram.createAccount(from: programPubkey, toNewPubkey: programPubkey, lamports: 2039280, programPubkey: SolanaSDK.Constants.programId)
+        let instruction = SolanaSDK.SPLTokenProgram.createAccountInstruction(from: programPubkey, toNewPubkey: programPubkey, lamports: 2039280, programPubkey: SolanaSDK.PublicKey.programId)
         XCTAssertEqual(instruction.data, Base58.decode("11119os1e9qSs2u7TsThXqkBSRUo9x7kpbdqtNNbTeaxHGPdWbvoHsks9hpp6mb2ed1NeB"))
     }
 }
