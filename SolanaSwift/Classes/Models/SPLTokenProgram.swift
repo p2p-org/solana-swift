@@ -9,6 +9,21 @@ import Foundation
 
 public extension SolanaSDK {
     struct SPLTokenProgram {
+        // MARK: - Nested type
+        private enum Index: UInt32 {
+            case create                 = 0
+            case assign                 = 1
+            case transfer               = 2
+            case createWithSeed         = 3
+            case advanceNonceAccount    = 4
+            case withdrawNonceAccount   = 5
+            case initializeNonceAccount = 6
+            case authorizeNonceAccount  = 7
+            case allocate               = 8
+            case allocateWithSeed       = 9
+            case sssignWithSeed         = 10
+        }
+        
         // MARK: - Constants
         public static let splTokenProgramId = try! PublicKey(string: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
         public static let programId = try! PublicKey(string: "11111111111111111111111111111111")
@@ -28,7 +43,7 @@ public extension SolanaSDK {
                 Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true)
             ]
             
-            let data = InstructionType.create.encode([
+            let data = Index.create.encode([
                 lamports,
                 space,
                 programPubkey
@@ -55,7 +70,7 @@ public extension SolanaSDK {
                 Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true)
             ]
             
-            let data = InstructionType.transfer.encode([
+            let data = Index.transfer.encode([
                 lamports
             ])
             return TransactionInstruction(keys: keys, programId: programId, data: data.bytes)
@@ -64,53 +79,5 @@ public extension SolanaSDK {
 }
 
 extension SolanaSDK.SPLTokenProgram {
-    fileprivate enum InstructionType: UInt32 {
-        case create                 = 0
-        case assign                 = 1
-        case transfer               = 2
-        case createWithSeed         = 3
-        case advanceNonceAccount    = 4
-        case withdrawNonceAccount   = 5
-        case initializeNonceAccount = 6
-        case authorizeNonceAccount  = 7
-        case allocate               = 8
-        case allocateWithSeed       = 9
-        case sssignWithSeed         = 10
-        
-        private var indexBytes: [UInt8] {
-            rawValue.bytes
-        }
-        
-        fileprivate func encode(_ array: [InstructionEncodable]) -> Data {
-            var data = Data()
-            data.append(contentsOf: indexBytes)
-            for el in array {
-                data.append(contentsOf: el.instructionEncode())
-            }
-            return data
-        }
-    }
+    
 }
-
-fileprivate protocol InstructionEncodable {
-    func instructionEncode() -> [UInt8]
-}
-
-extension Array: InstructionEncodable where Element == UInt8 {
-    func instructionEncode() -> [UInt8] {
-        self
-    }
-}
-
-extension UInt64: InstructionEncodable {
-    fileprivate func instructionEncode() -> [UInt8] {
-        withUnsafeBytes(of: littleEndian, Array.init)
-    }
-}
-
-extension SolanaSDK.PublicKey: InstructionEncodable {
-    fileprivate func instructionEncode() -> [UInt8] {
-        bytes
-    }
-}
-
