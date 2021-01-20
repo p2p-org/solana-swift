@@ -6,18 +6,9 @@
 //
 
 import Foundation
-import BigInt
 
 protocol BytesEncodable {
     var bytes: [UInt8] {get}
-}
-
-extension BigInt: BytesEncodable {
-    var bytes: [UInt8] { serialize().bytes.reversed() }
-}
-
-extension BigUInt: BytesEncodable {
-    var bytes: [UInt8] { serialize().bytes.reversed() }
 }
 
 extension UInt8: BytesEncodable {

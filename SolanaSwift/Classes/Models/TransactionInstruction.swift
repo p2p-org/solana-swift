@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import BigInt
 
 extension SolanaSDK {
     public struct TransactionInstruction: Decodable {

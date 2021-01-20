@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import BigInt
 
 public extension SolanaSDK {
     struct TokenSwapProgram {
@@ -31,8 +30,8 @@ public extension SolanaSDK {
             hostFeeAccount: PublicKey?,
             tokenProgramId: PublicKey,
             swapProgramId: PublicKey,
-            amountIn: BigInt,
-            minimumAmountOut: BigInt
+            amountIn: UInt64,
+            minimumAmountOut: UInt64
         ) -> TransactionInstruction {
             var keys = [
                 Account.Meta(publicKey: tokenSwapAccount, isSigner: false, isWritable: false),
@@ -53,7 +52,7 @@ public extension SolanaSDK {
             return TransactionInstruction(
                 keys: keys,
                 programId: swapProgramId,
-                data: [Index.swap, amountIn.advanced(by: 8), minimumAmountOut]
+                data: [Index.swap, amountIn, minimumAmountOut]
             )
         }
         
