@@ -115,5 +115,4 @@ class TokenSwapProgramTests: XCTestCase {
         
         XCTAssertEqual(Base58.decode("2aJyv2ixHWcYWoAKJkYMzSPwTrGUfnSR9R"), instruction.data)
     }
-    
 }
