@@ -42,8 +42,8 @@ extension SolanaSDK {
                 }
                 return Single.zip(
                     [
-                        self.getTokenAccountBalance(pubkey: tokenA!.base58EncodedString),
-                        self.getTokenAccountBalance(pubkey: tokenB!.base58EncodedString)
+                        self.getTokenAccountBalance(pubkey: tokenA.base58EncodedString),
+                        self.getTokenAccountBalance(pubkey: tokenB.base58EncodedString)
                     ]
                 )
                 .map {balances in
@@ -76,17 +76,16 @@ extension SolanaSDK {
         getAccountInfo(account: address, decodedTo: TokenSwapInfo.self)
             .map { info -> TokenSwapInfo in
                 let swapInfo = info.data.value
-                if let swapInfo = swapInfo, swapInfo.mintA != nil, swapInfo.mintB != nil, swapInfo.tokenPool != nil
-                {
+                if let swapInfo = swapInfo {
                     return swapInfo
                 }
                 throw Error.other("Invalid data")
             }
             .flatMap { swapData in
                 Single.zip([
-                    self.getMintData(mintAddress: swapData.mintA!, programId: PublicKey.tokenProgramId),
-                    self.getMintData(mintAddress: swapData.mintB!, programId: PublicKey.tokenProgramId),
-                    self.getMintData(mintAddress: swapData.tokenPool!, programId: PublicKey.tokenProgramId)
+                    self.getMintData(mintAddress: swapData.mintA, programId: PublicKey.tokenProgramId),
+                    self.getMintData(mintAddress: swapData.mintB, programId: PublicKey.tokenProgramId),
+                    self.getMintData(mintAddress: swapData.tokenPool, programId: PublicKey.tokenProgramId)
                 ])
                 .map { mintDatas in
                     guard let authority = mintDatas[2].mintAuthority else {
@@ -95,8 +94,6 @@ extension SolanaSDK {
                     return Pool(tokenAInfo: mintDatas[0], tokenBInfo: mintDatas[1], poolTokenMint: mintDatas[2], authority: authority, swapData: swapData)
                 }
             }
-        
-        //            .flat
     }
     
     private func getMintData(
@@ -115,5 +112,9 @@ extension SolanaSDK {
                 
                 throw Error.other("Invalid data")
             }
+    }
+    
+    private func getAccountInfoData(account: String) {
+        getAccountInfo(account: account, decodedTo: AccountLayout.self)
     }
 }

@@ -9,7 +9,7 @@ import Foundation
 
 extension SolanaSDK {
     public struct AccountLayout: BufferLayout {
-        let parsed: AccountLayoutParsed?
+        let parsed: AccountLayoutParsed
         let program: String?
         let space: Int?
         

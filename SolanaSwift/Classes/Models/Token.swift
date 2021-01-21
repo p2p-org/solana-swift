@@ -19,7 +19,7 @@ public extension SolanaSDK {
         
         public init?(layout: AccountLayout, pubkey: String, in network: String) {
             guard let supportedTokens = Self.getSupportedTokens(network: network),
-                  let mintAddress = layout.parsed?.info?.mint
+                  let mintAddress = layout.parsed.info?.mint
                   else {
                 return nil
             }
@@ -27,9 +27,9 @@ public extension SolanaSDK {
             
             if let token = supportedTokens.first(where: {$0.mintAddress == mintAddress}) {
                 self = token
-                self.amount = UInt64(layout.parsed?.info?.tokenAmount?.amount ?? "0")
+                self.amount = UInt64(layout.parsed.info?.tokenAmount?.amount ?? "0")
                 self.pubkey = pubkey
-                self.decimals = layout.parsed?.info?.tokenAmount?.decimals
+                self.decimals = layout.parsed.info?.tokenAmount?.decimals
                 return
             }
             

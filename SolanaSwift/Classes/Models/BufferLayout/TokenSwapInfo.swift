@@ -10,46 +10,67 @@ import Foundation
 extension SolanaSDK {
     public struct TokenSwapInfo: BufferLayout {
         // MARK: - Properties
-        public let isInitialized: Bool?
-        public let nonce: UInt8?
-        public let tokenProgramId: PublicKey?
-        public let tokenAccountA: PublicKey?
-        public let tokenAccountB: PublicKey?
-        public let tokenPool: PublicKey?
-        public let mintA: PublicKey?
-        public let mintB: PublicKey?
-        public let feeAccount: PublicKey?
-        public let curveType: UInt8?
-        public let tradeFeeNumerator: UInt64?
-        public let tradeFeeDenominator: UInt64?
-        public let ownerTradeFeeNumerator: UInt64?
-        public let ownerTradeFeeDenominator: UInt64?
-        public let ownerWithdrawFeeNumerator: UInt64?
-        public let ownerWithdrawFeeDenominator: UInt64?
-        public let hostFeeNumerator: UInt64?
-        public let hostFeeDenominator: UInt64?
+        public let isInitialized: Bool
+        public let nonce: UInt8
+        public let tokenProgramId: PublicKey
+        public let tokenAccountA: PublicKey
+        public let tokenAccountB: PublicKey
+        public let tokenPool: PublicKey
+        public let mintA: PublicKey
+        public let mintB: PublicKey
+        public let feeAccount: PublicKey
+        public let curveType: UInt8
+        public let tradeFeeNumerator: UInt64
+        public let tradeFeeDenominator: UInt64
+        public let ownerTradeFeeNumerator: UInt64
+        public let ownerTradeFeeDenominator: UInt64
+        public let ownerWithdrawFeeNumerator: UInt64
+        public let ownerWithdrawFeeDenominator: UInt64
+        public let hostFeeNumerator: UInt64
+        public let hostFeeDenominator: UInt64
         
         
         // MARK: - Initializer
         public init?(_ keys: [String: [UInt8]]) {
-            self.isInitialized = keys["isInitialized"]?.first == 1
-            self.nonce = keys["nonce"]?.first
-            self.tokenProgramId = try? PublicKey(bytes: keys["tokenProgramId"])
-            self.tokenAccountA = try? PublicKey(bytes: keys["tokenAccountA"])
-            self.tokenAccountB = try? PublicKey(bytes: keys["tokenAccountB"])
-            self.tokenPool = try? PublicKey(bytes: keys["tokenPool"])
-            self.mintA = try? PublicKey(bytes: keys["mintA"])
-            self.mintB = try? PublicKey(bytes: keys["mintB"])
-            self.feeAccount = try? PublicKey(bytes: keys["feeAccount"])
-            self.curveType = keys["curveType"]?.first
-            self.tradeFeeNumerator = keys["tradeFeeNumerator"]?.toUInt64()
-            self.tradeFeeDenominator = keys["tradeFeeDenominator"]?.toUInt64()
-            self.ownerTradeFeeNumerator = keys["ownerTradeFeeNumerator"]?.toUInt64()
-            self.ownerTradeFeeDenominator = keys["ownerTradeFeeDenominator"]?.toUInt64()
-            self.ownerWithdrawFeeNumerator = keys["ownerWithdrawFeeNumerator"]?.toUInt64()
-            self.ownerWithdrawFeeDenominator = keys["ownerWithdrawFeeDenominator"]?.toUInt64()
-            self.hostFeeNumerator = keys["hostFeeNumerator"]?.toUInt64()
-            self.hostFeeDenominator = keys["hostFeeDenominator"]?.toUInt64()
+            guard let isInitialized = keys["isInitialized"]?.first,
+                  let nonce = keys["nonce"]?.first,
+                  let tokenProgramId = try? PublicKey(bytes: keys["tokenProgramId"]),
+                  let tokenAccountA = try? PublicKey(bytes: keys["tokenAccountA"]),
+                  let tokenAccountB = try? PublicKey(bytes: keys["tokenAccountB"]),
+                  let tokenPool = try? PublicKey(bytes: keys["tokenPool"]),
+                  let mintA = try? PublicKey(bytes: keys["mintA"]),
+                  let mintB = try? PublicKey(bytes: keys["mintB"]),
+                  let feeAccount = try? PublicKey(bytes: keys["feeAccount"]),
+                  let curveType = keys["curveType"]?.first,
+                  let tradeFeeNumerator = keys["tradeFeeNumerator"]?.toUInt64(),
+                  let tradeFeeDenominator = keys["tradeFeeDenominator"]?.toUInt64(),
+                  let ownerTradeFeeNumerator = keys["ownerTradeFeeNumerator"]?.toUInt64(),
+                  let ownerTradeFeeDenominator = keys["ownerTradeFeeDenominator"]?.toUInt64(),
+                  let ownerWithdrawFeeNumerator = keys["ownerWithdrawFeeNumerator"]?.toUInt64(),
+                  let ownerWithdrawFeeDenominator = keys["ownerWithdrawFeeDenominator"]?.toUInt64(),
+                  let hostFeeNumerator = keys["hostFeeNumerator"]?.toUInt64(),
+                  let hostFeeDenominator = keys["hostFeeDenominator"]?.toUInt64()
+            else {
+                return nil
+            }
+            self.isInitialized = isInitialized == 1
+            self.nonce = nonce
+            self.tokenProgramId = tokenProgramId
+            self.tokenAccountA = tokenAccountA
+            self.tokenAccountB = tokenAccountB
+            self.tokenPool = tokenPool
+            self.mintA = mintA
+            self.mintB = mintB
+            self.feeAccount = feeAccount
+            self.curveType = curveType
+            self.tradeFeeNumerator = tradeFeeNumerator
+            self.tradeFeeDenominator = tradeFeeDenominator
+            self.ownerTradeFeeNumerator = ownerTradeFeeNumerator
+            self.ownerTradeFeeDenominator = ownerTradeFeeDenominator
+            self.ownerWithdrawFeeNumerator = ownerWithdrawFeeNumerator
+            self.ownerWithdrawFeeDenominator = ownerWithdrawFeeDenominator
+            self.hostFeeNumerator = hostFeeNumerator
+            self.hostFeeDenominator = hostFeeDenominator
         }
         
         // MARK: - Layout

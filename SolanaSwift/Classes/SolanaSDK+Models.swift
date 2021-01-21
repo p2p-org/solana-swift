@@ -146,9 +146,9 @@ public extension SolanaSDK {
 		public let total: UInt64
 	}
 	struct TokenAccountBalance: Decodable {
-		public let uiAmount: Float64
+		public let uiAmount: Float64?
 		public let amount: String
-		public let decimals: UInt8
+		public let decimals: UInt8?
 	}
     struct TokenAccount<T: BufferLayout>: Decodable {
 		public let pubkey: String
