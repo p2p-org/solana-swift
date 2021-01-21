@@ -80,4 +80,44 @@ extension SolanaSDK {
                     .map {($0, newAccount.publicKey.base58EncodedString)}
             }
     }
+    
+    // MARK: - Swap
+    public func swap(
+        owner: Account,
+        slippage: Double,
+        tokenInputAmount: UInt64
+    ) {
+        let wrappedSOLMint = PublicKey.wrappedSOLMint
+        let ownerPubkey = owner.publicKey
+        let swapProgramId = PublicKey.swapProgramId
+        let poolAddress = PublicKey.poolAddress
+        
+        var signers = [owner]
+        
+        // get pool info
+        
+        // forming transaction
+        let transaction = Transaction()
+        
+    }
+    
+    // MARK: - Helpers
+//    private func findAccountAddress(tokenMint: PublicKey) -> PublicKey {
+//        // TODO: - findAccountAddress
+//        return try! PublicKey(string: "7PECuw9WYABTpb19mGMwbq7ZDHnXcd1kTqXu1NuCP9o4")
+//    }
+//    
+//    private func calculateAmount(
+//        tokenABalance: UInt64,
+//        tokenBBalance: UInt64,
+//        slippage: Double,
+//        inputAmount: UInt64
+//    ) -> UInt64 {
+//        let estimatedAmount = tokenBBalance * inputAmount / (tokenABalance + inputAmount)
+//        return UInt64(Float64(estimatedAmount) * Float64(1 - slippage))
+//    }
+    
+//    private func getPoolInfo(address: String) {
+//        getAccountInfo(account: <#T##String#>)
+//    }
 }

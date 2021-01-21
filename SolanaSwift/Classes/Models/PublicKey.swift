@@ -28,6 +28,13 @@ public extension SolanaSDK {
             self.bytes = [UInt8](data)
         }
         
+        public init(bytes: [UInt8]?) throws {
+            guard let bytes = bytes, bytes.count <= PublicKey.LENGTH else {
+                throw Error.other("Invalid public key input")
+            }
+            self.bytes = bytes
+        }
+        
         public var base58EncodedString: String {
             Base58.encode(bytes)
         }
