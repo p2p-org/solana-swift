@@ -9,17 +9,49 @@ import Foundation
 
 extension SolanaSDK {
     public struct MintLayout: BufferLayout {
+        public let mintAuthorityOption: UInt32
+        public let mintAuthority: PublicKey?
+        public let supply: UInt64
         public let decimals: UInt8
+        public let isInitialized: Bool
+        public let freezeAuthorityOption: UInt32
+        public let freezeAuthority: PublicKey?
         public init?(_ keys: [String: [UInt8]]) {
-            guard let bytes = keys["decimals"], bytes.count == 1 else {return nil}
-            decimals = bytes.first!
+            guard let mintAuthorityOption = keys["mintAuthorityOption"]?.toUInt32(),
+                let mintAuthority = try? PublicKey(bytes: keys["mintAuthority"]),
+                let supply = keys["supply"]?.toUInt64(),
+                let decimals = keys["decimals"]?.first,
+                let isInitialized = keys["decimals"]?.first,
+                let freezeAuthorityOption = keys["freezeAuthorityOption"]?.toUInt32(),
+                let freezeAuthority = try? PublicKey(bytes: keys["freezeAuthority"])
+            else {return nil}
+            self.mintAuthorityOption = mintAuthorityOption
+            if mintAuthorityOption == 0 {
+                self.mintAuthority = nil
+            } else {
+                self.mintAuthority = mintAuthority
+            }
+            
+            self.supply = supply
+            self.decimals = decimals
+            self.isInitialized = isInitialized != 0
+            self.freezeAuthorityOption = freezeAuthorityOption
+            if freezeAuthorityOption == 0 {
+                self.freezeAuthority = nil
+            } else {
+                self.freezeAuthority = freezeAuthority
+            }
         }
         
         public static func layout()  -> [(key: String?, length: Int)] {
             [
-                (key: nil, length: 44),
+                (key: "mintAuthorityOption", length: 4),
+                (key: "mintAuthority", length: PublicKey.LENGTH),
+                (key: "supply", length: 8),
                 (key: "decimals", length: 1),
-                (key: nil, length: 37)
+                (key: "isInitialized", length: 1),
+                (key: "freezeAuthorityOption", length: 4),
+                (key: "freezeAuthority", length: PublicKey.LENGTH)
             ]
         }
     }

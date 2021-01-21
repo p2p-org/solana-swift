@@ -31,8 +31,12 @@ class ProgramAccountTests: XCTestCase {
     }
     
     func testDecodingDecimalFromMintLayout() throws {
-        let string = #"["AQAAAFWGNYGxlppwgdY9en3++MwhRGINLq5pJv0L1KNZz9fogFywjDwDAQAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","base64"]"#
-        let mintLayout = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.MintLayout>.self, from: string.data(using: .utf8)!)
-        XCTAssertEqual(mintLayout.value?.decimals, 6)
+        let string = #"["AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","base64"]"#
+        let mintLayout = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.MintLayout>.self, from: string.data(using: .utf8)!).value
+        XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", mintLayout?.mintAuthority?.base58EncodedString)
+        XCTAssertEqual(1000000000000, mintLayout?.supply)
+        XCTAssertEqual(mintLayout?.decimals, 6)
+        XCTAssertTrue(mintLayout?.isInitialized == true)
+        XCTAssertNil(mintLayout?.freezeAuthority)
     }
 }
