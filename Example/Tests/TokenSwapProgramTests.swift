@@ -28,6 +28,33 @@ class TokenSwapProgramTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
+    func testDecodingSwapData() throws {
+        let string = #"["Af8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJtI5Id8QBhfDU9HbNjlM8tWzr5NFhnaIL7zaMrcQO6xAAMAAAAAAAAA6AMAAAAAAAABAAAAAAAAAOgDAAAAAAAAAAAAAAAAAAA=", "base64"]"#
+        
+        let publicKey = try SolanaSDK.PublicKey(string: "11111111111111111111111111111111")
+        
+        let info = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.TokenSwapInfo>.self, from: string.data(using: .utf8)!)
+        
+        XCTAssertTrue(info.value?.isInitialized == true)
+        XCTAssertEqual(255, info.value?.nonce)
+        XCTAssertEqual(publicKey, info.value?.tokenProgramId)
+        XCTAssertEqual(publicKey, info.value?.tokenAccountA)
+        XCTAssertEqual(publicKey, info.value?.tokenAccountB)
+        XCTAssertEqual(publicKey, info.value?.tokenPool)
+        XCTAssertEqual(publicKey, info.value?.mintA)
+        XCTAssertEqual(publicKey, info.value?.mintB)
+        XCTAssertEqual(publicKey, info.value?.feeAccount)
+        XCTAssertEqual(155, info.value?.curveType)
+        XCTAssertEqual(963515510526829640, info.value?.tradeFeeNumerator)
+        XCTAssertEqual(6254149569805567823, info.value?.tradeFeeDenominator)
+        XCTAssertEqual(13700189867744280270, info.value?.ownerTradeFeeNumerator)
+        XCTAssertEqual(50083033227356403, info.value?.ownerTradeFeeDenominator)
+        XCTAssertEqual(3, info.value?.ownerWithdrawFeeNumerator)
+        XCTAssertEqual(1000, info.value?.ownerWithdrawFeeDenominator)
+        XCTAssertEqual(1, info.value?.hostFeeNumerator)
+        XCTAssertEqual(1000, info.value?.hostFeeDenominator)
+    }
+    
     func testSwapInstruction() throws {
         let instruction = SolanaSDK.TokenSwapProgram.swapInstruction(
             tokenSwapAccount: publicKey,

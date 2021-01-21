@@ -72,8 +72,7 @@ extension SolanaSDK {
                 (key: "ownerWithdrawFeeNumerator", length: 8),
                 (key: "ownerWithdrawFeeDenominator", length: 8),
                 (key: "hostFeeNumerator", length: 8),
-                (key: "hostFeeDenominator", length: 8),
-                
+                (key: "hostFeeDenominator", length: 8)
             ]
         }
     }
