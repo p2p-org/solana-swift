@@ -32,7 +32,7 @@ class ProgramAccountTests: XCTestCase {
     
     func testDecodingDecimalFromMintLayout() throws {
         let string = #"["AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","base64"]"#
-        let mintLayout = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.MintLayout>.self, from: string.data(using: .utf8)!).value
+        let mintLayout = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.Mint>.self, from: string.data(using: .utf8)!).value
         XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", mintLayout?.mintAuthority?.base58EncodedString)
         XCTAssertEqual(1000000000000, mintLayout?.supply)
         XCTAssertEqual(mintLayout?.decimals, 6)

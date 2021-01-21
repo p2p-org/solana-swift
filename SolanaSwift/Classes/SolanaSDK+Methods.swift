@@ -131,7 +131,7 @@ public extension SolanaSDK {
                 if unfilledTokens.count > 0 {
                     return Single<UInt8>.zip(
                         unfilledTokens.map {
-                            return self.getAccountInfo(account: $0.mintAddress, decodedTo: MintLayout.self)
+                            return self.getAccountInfo(account: $0.mintAddress, decodedTo: Mint.self)
                                 .map {$0.data.value?.decimals ?? 0}
                         }
                     )
