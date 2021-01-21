@@ -117,7 +117,44 @@ extension SolanaSDK {
 //        return UInt64(Float64(estimatedAmount) * Float64(1 - slippage))
 //    }
     
-//    private func getPoolInfo(address: String) {
-//        getAccountInfo(account: <#T##String#>)
-//    }
+    private func getPoolInfo(address: String) {
+        getAccountInfo(account: address, decodedTo: TokenSwapInfo.self)
+            .map { info -> TokenSwapInfo in
+                let swapInfo = info.data.value
+                if let swapInfo = swapInfo, swapInfo.mintA != nil, swapInfo.mintB != nil, swapInfo.tokenPool != nil
+                {
+                    return swapInfo
+                }
+                throw Error.other("Invalid data")
+            }
+            .flatMap { swapData in
+                Single.zip([
+                    self.getMintData(mintAddress: swapData.mintA!, programId: PublicKey.tokenProgramId),
+                    self.getMintData(mintAddress: swapData.mintB!, programId: PublicKey.tokenProgramId),
+                    self.getMintData(mintAddress: swapData.tokenPool!, programId: PublicKey.tokenProgramId)
+                ])
+            }
+            .map {
+                $0.reduce([], {$0 + [$1]})
+            }
+//            .flat
+    }
+    
+    private func getMintData(
+        mintAddress: PublicKey,
+        programId: PublicKey
+    ) -> Single<MintLayout> {
+        getAccountInfo(account: mintAddress.base58EncodedString, decodedTo: MintLayout.self)
+            .map {
+                if $0.owner != programId.base58EncodedString {
+                    throw Error.other("Invalid mint owner")
+                }
+                
+                if let data = $0.data.value {
+                    return data
+                }
+                
+                throw Error.other("Invalid data")
+            }
+    }
 }

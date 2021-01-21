@@ -10,10 +10,13 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-    func getAccountInfo<T: BufferLayout>(account: String, decodedTo: T.Type) -> Single<T?> {
+    func getAccountInfo<T: BufferLayout>(account: String, decodedTo: T.Type) -> Single<AccountInfo<T>> {
         let configs = RequestConfiguration(encoding: "base64")
 		return (request(parameters: [account, configs]) as Single<Rpc<AccountInfo<T>?>>)
-            .map {$0.value?.data.value}
+            .map {
+                if let value = $0.value {return value}
+                throw Error.other("Invalid account info")
+            }
 	}
 	func getBalance(account: String, commitment: Commitment? = nil) -> Single<UInt64> {
 		(request(parameters: [account, RequestConfiguration(commitment: commitment)]) as Single<Rpc<UInt64>>)
@@ -129,7 +132,7 @@ public extension SolanaSDK {
                     return Single<UInt8>.zip(
                         unfilledTokens.map {
                             return self.getAccountInfo(account: $0.mintAddress, decodedTo: MintLayout.self)
-                                .map {$0?.decimals ?? 0}
+                                .map {$0.data.value?.decimals ?? 0}
                         }
                     )
                     .map {
