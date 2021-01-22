@@ -68,6 +68,40 @@ public extension SolanaSDK {
             
             return newAccount
         }
+        
+        mutating func approveAndSwap(fromAccount: PublicKey, owner: PublicKey, inPool pool: Pool, poolSource: PublicKey, poolDestination: PublicKey, userDestination toAccount: PublicKey, amount: UInt64, minimumAmountOut: UInt64) {
+            let approveInstruction = SPLTokenProgram.approveInstruction(
+                tokenProgramId: .tokenProgramId,
+                account: fromAccount,
+                delegate: pool.authority,
+                owner: owner,
+                amount: amount
+            )
+            
+            let swapInstruction = TokenSwapProgram.swapInstruction(
+                tokenSwapAccount: .poolAddress,
+                authority: pool.authority,
+                userSource: fromAccount,
+                poolSource: poolSource,
+                poolDestination: poolDestination,
+                userDestination: toAccount,
+                poolMint: pool.swapData.tokenPool,
+                feeAccount: pool.swapData.feeAccount,
+                hostFeeAccount: pool.swapData.feeAccount,
+                tokenProgramId: .tokenProgramId,
+                swapProgramId: .swapProgramId,
+                amountIn: amount,
+                minimumAmountOut: minimumAmountOut
+            )
+            
+            message.add(instruction: approveInstruction)
+            message.add(instruction: swapInstruction)
+        }
+        
+        mutating func closeAccount(_ account: PublicKey, destination: PublicKey, owner: PublicKey) {
+            let closeInstruction = SPLTokenProgram.closeAccountInstruction(tokenProgramId: .tokenProgramId, account: account, destination: destination, owner: owner)
+            message.add(instruction: closeInstruction)
+        }
     }
 }
 

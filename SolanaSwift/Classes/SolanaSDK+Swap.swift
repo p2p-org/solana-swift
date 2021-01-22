@@ -9,17 +9,52 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
+    typealias TransactionAndSigners = (Transaction, [Account])
+    
     public func swap(
         owner: Account,
         fromToken tokenSource: PublicKey,
         toToken tokenDestination: PublicKey,
         slippage: Double,
         amount tokenInputAmount: UInt64,
+        cluster network: String
+    ) -> Single<TransactionID> {
+        (Single.zip([
+            swapTransaction(
+                owner: owner,
+                fromToken: tokenSource,
+                toToken: tokenDestination,
+                slippage: slippage,
+                amount: tokenInputAmount,
+                network: network
+            )
+                .map {$0 as Any},
+            getRecentBlockhash()
+                .map {$0 as Any}
+        ]) as Single<[Any]>)
+            .flatMap { params in
+                let transactionAndSigner = params[0] as! TransactionAndSigners
+                var transaction = transactionAndSigner.0
+                let signers = transactionAndSigner.1
+                let recentBlockhash = params[1] as! String
+                transaction.message.recentBlockhash = recentBlockhash
+                try transaction.sign(signers: signers)
+                guard let serializedTransaction = try transaction.serialize().toBase64() else {
+                    throw Error.other("Could not serialize transaction")
+                }
+                return self.sendTransaction(serializedTransaction: serializedTransaction)
+            }
+    }
+    
+    private func swapTransaction(
+        owner: Account,
+        fromToken tokenSource: PublicKey,
+        toToken tokenDestination: PublicKey,
+        slippage: Double,
+        amount tokenInputAmount: UInt64,
         network: String
-    ) {
+    ) -> Single<TransactionAndSigners> {
         let ownerPubkey = owner.publicKey
-        let swapProgramId = PublicKey.swapProgramId
-        let poolAddress = PublicKey.poolAddress
         
         var tokenA: PublicKey!
         var tokenB: PublicKey!
@@ -27,12 +62,10 @@ extension SolanaSDK {
         var mintB: PublicKey!
         var minAmountIn: UInt64!
         
-        var signers = [owner]
-        
         var pool: Pool!
         
         // get pool info
-        getPoolInfo(address: poolAddress.base58EncodedString)
+        return getPoolInfo(address: PublicKey.poolAddress.base58EncodedString)
             // get balances
             .flatMap {newPool -> Single<[Any]> in
                 // save pool
@@ -65,9 +98,10 @@ extension SolanaSDK {
                     ]
                 )
             }
-            .map {params -> Transaction in
+            .map {params -> TransactionAndSigners in
                 // form transaction
                 var transaction = Transaction()
+                var signers = [owner]
                 
                 // calculate balance
                 let tokenABalance = params[0] as! TokenAccountBalance
@@ -112,64 +146,29 @@ extension SolanaSDK {
                     toAccount = newAccount.publicKey
                 }
                 
-                // APPROVAL
-                let approveInstruction = SPLTokenProgram.approveInstruction(
-                    tokenProgramId: .tokenProgramId,
-                    account: fromAccount,
-                    delegate: pool.authority,
-                    owner: ownerPubkey,
-                    amount: tokenInputAmount
-                )
+                // approve and swap
+                transaction.approveAndSwap(fromAccount: fromAccount, owner: ownerPubkey, inPool: pool, poolSource: tokenA, poolDestination: tokenB, userDestination: toAccount, amount: tokenInputAmount, minimumAmountOut: minAmountIn)
                 
-                let swapInstruction = TokenSwapProgram.swapInstruction(
-                    tokenSwapAccount: poolAddress,
-                    authority: pool.authority,
-                    userSource: fromAccount,
-                    poolSource: tokenA,
-                    poolDestination: tokenB,
-                    userDestination: toAccount,
-                    poolMint: pool.swapData.tokenPool,
-                    feeAccount: pool.swapData.feeAccount,
-                    hostFeeAccount: pool.swapData.feeAccount,
-                    tokenProgramId: .tokenProgramId,
-                    swapProgramId: .swapProgramId,
-                    amountIn: tokenInputAmount,
-                    minimumAmountOut: minAmountIn
-                )
+                let isNeedCloseAccount = tokenAInfo.isNative || isWrappedSol
+                var closingAccount: PublicKey!
                 
-                transaction.message.add(instruction: approveInstruction)
-                transaction.message.add(instruction: swapInstruction)
+                if tokenAInfo.isNative {
+                    closingAccount = fromAccount
+                } else if isWrappedSol {
+                    closingAccount = toAccount
+                }
                 
-                return transaction
+                if isNeedCloseAccount,
+                   let closingAccount = closingAccount
+                {
+                    transaction.closeAccount(closingAccount, destination: ownerPubkey, owner: ownerPubkey)
+                }
+                
+                return (transaction, signers)
             }
-        
-        
-        
     }
     
     // MARK: - Helpers
-    private func addCreateAccountInstructionToTransaction(
-        transaction: inout Transaction,
-        signers: inout [Account],
-        withTokenInputAmount tokenInputAmount: UInt64,
-        balanceNeeded: UInt64,
-        ownerPubkey: PublicKey,
-        inNetwork network: String
-    ) throws -> Account {
-        let newAccount = try Account(network: network)
-        let newAccountPubkey = newAccount.publicKey
-        
-        let createAccountInstruction = SPLTokenProgram.createAccountInstruction(from: ownerPubkey, toNewPubkey: newAccountPubkey, lamports: tokenInputAmount + balanceNeeded, space: UInt64(_AccountInfoData.BUFFER_LENGTH), programPubkey: .tokenProgramId)
-        
-        let initializeAccountInstruction = SPLTokenProgram.initializeAccountInstruction(programId: .tokenProgramId, account: newAccountPubkey, mint: .wrappedSOLMint, owner: ownerPubkey)
-        
-        transaction.message.add(instruction: createAccountInstruction)
-        transaction.message.add(instruction: initializeAccountInstruction)
-        
-        signers.append(newAccount)
-        return newAccount
-    }
-    
     private func findAccountAddress(tokenMint: PublicKey) -> PublicKey? {
         // TODO: - findAccountAddress
         return try! PublicKey(string: "7PECuw9WYABTpb19mGMwbq7ZDHnXcd1kTqXu1NuCP9o4")

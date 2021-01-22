@@ -10,6 +10,8 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
+    typealias TransactionID = String
+    
 	struct Response<T: Decodable>: Decodable {
 		public let jsonrpc: String
 		public let id: String?

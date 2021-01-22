@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    public func sendTokens(from fromPublicKey: String, to toPublicKey: String, amount: Int64) -> Single<String> {
+    public func sendTokens(from fromPublicKey: String, to toPublicKey: String, amount: Int64) -> Single<TransactionID> {
         getRecentBlockhash()
             .flatMap { recentBlockhash in
                 guard let account = self.accountStorage.account else {
