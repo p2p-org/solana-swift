@@ -188,7 +188,12 @@ public extension SolanaSDK {
 	}
 	func getTokenAccountBalance(pubkey: String, commitment: Commitment? = nil) -> Single<TokenAccountBalance> {
 		(request(parameters: [pubkey, RequestConfiguration(commitment: commitment)]) as Single<Rpc<TokenAccountBalance>>)
-            .map {$0.value}
+            .map {
+                if UInt64($0.value.amount) == nil {
+                    throw Error.other("Invalid amount")
+                }
+                return $0.value
+            }
 	}
     func getTokenAccountsByDelegate(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountLayout>]> {
 		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountLayout>]>>)

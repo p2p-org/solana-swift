@@ -107,7 +107,7 @@ public extension SolanaSDK {
             account: PublicKey,
             delegate: PublicKey,
             owner: PublicKey,
-            amount: PublicKey
+            amount: UInt64
         ) -> TransactionInstruction {
             
             TransactionInstruction(

@@ -49,6 +49,25 @@ public extension SolanaSDK {
             data.append(contentsOf: serializedMessage)
             return data.bytes
         }
+        
+        mutating func createAndInitializeAccount(
+            ownerPubkey: PublicKey,
+            tokenInputAmount: UInt64,
+            minimumBalanceForRentExemption: UInt64,
+            inNetwork network: String
+        ) throws -> Account {
+            let newAccount = try Account(network: network)
+            let newAccountPubkey = newAccount.publicKey
+            
+            let createAccountInstruction = SPLTokenProgram.createAccountInstruction(from: ownerPubkey, toNewPubkey: newAccountPubkey, lamports: tokenInputAmount + minimumBalanceForRentExemption, space: UInt64(AccountLayout.BUFFER_LENGTH), programPubkey: .tokenProgramId)
+            
+            let initializeAccountInstruction = SPLTokenProgram.initializeAccountInstruction(programId: .tokenProgramId, account: newAccountPubkey, mint: .wrappedSOLMint, owner: ownerPubkey)
+            
+            message.add(instruction: createAccountInstruction)
+            message.add(instruction: initializeAccountInstruction)
+            
+            return newAccount
+        }
     }
 }
 
