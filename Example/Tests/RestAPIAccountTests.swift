@@ -12,14 +12,14 @@ import RxSwift
 
 class RestAPIAccountTests: RestAPITests {
     func testGetBalance() throws {
-        let balance = try solanaSDK.getBalance(account: account, commitment: "recent").toBlocking().first()
+        let balance = try solanaSDK.getBalance(account: account.publicKey.base58EncodedString, commitment: "recent").toBlocking().first()
         XCTAssertNotEqual(balance, 0)
     }
     
     func testRequestAirDrop() throws {
-        let balance = try solanaSDK.requestAirdrop(account: account, lamports: 89588000)
+        let balance = try solanaSDK.requestAirdrop(account: account.publicKey.base58EncodedString, lamports: 89588000)
             .flatMap{_ in Single<Int>.timer(.seconds(10), scheduler: MainScheduler.instance)}
-            .flatMap{_ in self.solanaSDK.getBalance(account: self.account, commitment: "recent")}
+            .flatMap{_ in self.solanaSDK.getBalance(account: self.account.publicKey.base58EncodedString, commitment: "recent")}
             .toBlocking().first()
         XCTAssertNotEqual(balance, 0)
     }

@@ -10,29 +10,24 @@ import SolanaSwift
 import CryptoSwift
 
 class TransactionTests: XCTestCase {
-    func testCodingBytesLength() throws {
-        let bytes = Data([5,3,1,2,3,7,8,5,4])
-        XCTAssertEqual(bytes.decodedLength, 5)
-        let bytes2 = Data([74,174,189,206,113,78 ,60,226,136,170])
-        XCTAssertEqual(bytes2.decodedLength, 74)
-        
-        XCTAssertEqual(Data([0]), Data.encodeLength(0))
-        XCTAssertEqual(Data([1]), Data.encodeLength(1))
-        XCTAssertEqual(Data([5]), Data.encodeLength(5))
-        XCTAssertEqual(Data([0x7f]), Data.encodeLength(127))
-        XCTAssertEqual(Data([128, 1]), Data.encodeLength(128))
-        XCTAssertEqual(Data([0xff, 0x01]), Data.encodeLength(255))
-        XCTAssertEqual(Data([0x80, 0x02]), Data.encodeLength(256))
-        XCTAssertEqual(Data([0xff, 0xff, 0x01]), Data.encodeLength(32767))
-        XCTAssertEqual(Data([0x80, 0x80, 0x80, 0x01]), Data.encodeLength(2097152))
-    }
-
     func testCreatingTransfer() throws {
         let compiled = [UInt8]([2, 2, 0, 1, 12, 2, 0, 0, 0, 184, 11, 0, 0, 0, 0, 0, 0])
         var receiver = [UInt8]()
         let data = SolanaSDK.Transfer.compile()
         receiver.append(contentsOf: data)
         XCTAssertEqual(compiled, receiver)
+    }
+    
+    func testSerializeMessage() throws {
+        let fromPublicKey = try SolanaSDK.PublicKey(string: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")
+        let toPublicKey = try SolanaSDK.PublicKey(string: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5")
+        let lamports: UInt64 = 3000
+        
+        var message = SolanaSDK.Message()
+        message.add(instruction: SolanaSDK.SystemProgram.transferInstruction(from: fromPublicKey, to: toPublicKey, lamports: lamports))
+        message.recentBlockhash = "Eit7RCyhUixAe2hGBS8oqnw59QK3kgMMjfLME5bm9wRn"
+        
+        XCTAssertEqual([1, 0, 1, 3, 6, 26, 217, 208, 83, 135, 21, 72, 83, 126, 222, 62, 38, 24, 73, 163, 223, 183, 253, 2, 250, 188, 117, 178, 35, 200, 228, 106, 219, 133, 61, 12, 235, 122, 188, 208, 216, 117, 235, 194, 109, 161, 177, 129, 163, 51, 155, 62, 242, 163, 22, 149, 187, 122, 189, 188, 103, 130, 115, 188, 173, 205, 229, 170, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 203, 226, 136, 193, 153, 148, 240, 50, 230, 98, 9, 79, 221, 179, 243, 174, 90, 67, 104, 169, 6, 187, 165, 72, 36, 156, 19, 57, 132, 38, 69, 245, 1, 2, 2, 0, 1, 12, 2, 0, 0, 0, 184, 11, 0, 0, 0, 0, 0, 0], try message.serialize())
     }
     
     func testSignAndSerializeTransfer() throws {
@@ -51,9 +46,4 @@ class TransactionTests: XCTestCase {
         XCTAssertEqual("ASdDdWBaKXVRA+6flVFiZokic9gK0+r1JWgwGg/GJAkLSreYrGF4rbTCXNJvyut6K6hupJtm72GztLbWNmRF1Q4BAAEDBhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQzrerzQ2HXrwm2hsYGjM5s+8qMWlbt6vbxngnO8rc3lqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAy+KIwZmU8DLmYglP3bPzrlpDaKkGu6VIJJwTOYQmRfUBAgIAAQwCAAAAuAsAAAAAAAA=", serializedTransaction)
     }
     
-    func testCreateAccountInstruction() throws {
-        let programPubkey = try SolanaSDK.PublicKey(string: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-        let instruction = SolanaSDK.SystemProgram.createAccountInstruction(from: programPubkey, toNewPubkey: programPubkey, lamports: 2039280, programPubkey: SolanaSDK.PublicKey.programId)
-        XCTAssertEqual(instruction.data, Base58.decode("11119os1e9qSs2u7TsThXqkBSRUo9x7kpbdqtNNbTeaxHGPdWbvoHsks9hpp6mb2ed1NeB"))
-    }
 }

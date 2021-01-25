@@ -9,6 +9,7 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
+    // MARK: - Send tokens
     public func sendTokens(from fromPublicKey: String, to toPublicKey: String, amount: Int64) -> Single<TransactionID> {
         getRecentBlockhash()
             .flatMap { recentBlockhash in

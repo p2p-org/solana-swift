@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    typealias TransactionAndSigners = (Transaction, [Account])
+    public typealias TransactionAndSigners = (Transaction, [Account])
     
     public func swap(
         owner: Account,
@@ -46,7 +46,7 @@ extension SolanaSDK {
             }
     }
     
-    private func swapTransaction(
+    public func swapTransaction(
         owner: Account,
         fromToken tokenSource: PublicKey,
         toToken tokenDestination: PublicKey,
@@ -76,13 +76,11 @@ extension SolanaSDK {
                 tokenB = pool.swapData.tokenAccountB
                 mintA = pool.swapData.mintA
                 mintB = pool.swapData.mintB
-                //                var isSourceEqToPoolTokenAccountA = true
                 if tokenSource != pool.swapData.tokenAccountA {
                     tokenA = pool.swapData.tokenAccountB
                     tokenB = pool.swapData.tokenAccountA
                     mintA = pool.swapData.mintB
                     mintB = pool.swapData.mintA
-                    //                    isSourceEqToPoolTokenAccountA = false
                 }
                 
                 return Single.zip(
@@ -229,10 +227,10 @@ extension SolanaSDK {
     private func getAccountInfoData(account: String, tokenProgramId: PublicKey) -> Single<AccountInfo> {
         getAccountInfo(account: account, decodedTo: AccountInfo.self)
             .map {
+                if $0.owner != tokenProgramId.base58EncodedString {
+                    throw Error.other("Invalid account owner")
+                }
                 if let info = $0.data.value {
-                    if info.owner != tokenProgramId {
-                        throw Error.other("Invalid account owner")
-                    }
                     return info
                 }
                 throw Error.other("Invalid data")
