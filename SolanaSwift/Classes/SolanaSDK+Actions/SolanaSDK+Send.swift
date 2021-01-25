@@ -22,6 +22,7 @@ extension SolanaSDK {
             let fromPublicKey = try PublicKey(string: fromPublicKey)
             let toPublicKey = try PublicKey(string: toPublicKey)
             return createSendTransaction(from: fromPublicKey, to: toPublicKey, amount: amount, signer: account)
+                .flatMap {self.sendTransaction(serializedTransaction: $0)}
         } catch {
             return .error(error)
         }

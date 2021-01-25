@@ -50,6 +50,8 @@ extension SolanaSDK {
         
         var pool: Pool!
         
+        // TODO: - getPools
+        
         // get pool info
         return getPoolInfo(address: PublicKey.poolAddress.base58EncodedString)
             // get balances

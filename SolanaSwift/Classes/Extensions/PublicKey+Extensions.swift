@@ -12,6 +12,6 @@ public extension SolanaSDK.PublicKey {
     static let sysvarRent = try! SolanaSDK.PublicKey(string: "SysvarRent111111111111111111111111111111111")
     static let programId = try! SolanaSDK.PublicKey(string: "11111111111111111111111111111111")
     static let wrappedSOLMint = try! SolanaSDK.PublicKey(string: "So11111111111111111111111111111111111111112")
-    static let swapProgramId = try! SolanaSDK.PublicKey(string: "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL")
+    static let swapProgramId = try! SolanaSDK.PublicKey(string: "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL") // SERUM
     static let poolAddress = try! SolanaSDK.PublicKey(string: "2FRBMKb1BffCjHTHRvTgX27wm7osZ194x1hoP8ykez99")
 }
