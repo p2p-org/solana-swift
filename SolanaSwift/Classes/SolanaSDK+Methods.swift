@@ -10,9 +10,9 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-    func getAccountInfo<T: BufferLayout>(account: String, decodedTo: T.Type) -> Single<AccountInfo<T>> {
+    func getAccountInfo<T: BufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
         let configs = RequestConfiguration(encoding: "base64")
-		return (request(parameters: [account, configs]) as Single<Rpc<AccountInfo<T>?>>)
+		return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
             .map {
                 if let value = $0.value {return value}
                 throw Error.other("Invalid account info")
@@ -96,11 +96,11 @@ public extension SolanaSDK {
     internal func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") -> Single<UInt64> {
 		request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
 	}
-	func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[AccountInfo<AccountLayout>]?> {
-		(request(parameters: [pubkeys, configs]) as Single<Rpc<[AccountInfo<AccountLayout>]?>>)
+	func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[BufferInfo<AccountInfo>]?> {
+		(request(parameters: [pubkeys, configs]) as Single<Rpc<[BufferInfo<AccountInfo>]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts(account: String? = nil, shouldParseJSON: Bool = true, in network: String) -> Single<[Token]> {
+    func getProgramAccounts(account: String? = nil, in network: String) -> Single<[Token]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.accountNotFound)
         }
@@ -109,15 +109,15 @@ public extension SolanaSDK {
                 ["offset": EncodableWrapper(wrapped: 32),
                  "bytes": EncodableWrapper(wrapped: account)]
         )
-        let configs = RequestConfiguration(commitment: "recent", encoding: shouldParseJSON ? "jsonParsed": "base64", dataSlice: nil, filters: [
+        let configs = RequestConfiguration(commitment: "recent", encoding: "base64", dataSlice: nil, filters: [
             ["memcmp": memcmp],
             ["dataSize": .init(wrapped: 165)]
         ])
-        return (request(parameters: [PublicKey.tokenProgramId.base58EncodedString, configs]) as Single<[ProgramAccount<AccountLayout>]>)
+        return (request(parameters: [PublicKey.tokenProgramId.base58EncodedString, configs]) as Single<[ProgramAccount<AccountInfo>]>)
             .map {
                 $0.compactMap {
                     $0.account.data.value != nil ?
-                        Token(layout: $0.account.data.value!, pubkey: $0.pubkey, in: network)
+                        Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: network)
                         : nil
                 }
             }
@@ -195,12 +195,12 @@ public extension SolanaSDK {
                 return $0.value
             }
 	}
-    func getTokenAccountsByDelegate(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountLayout>]> {
-		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountLayout>]>>)
+    func getTokenAccountsByDelegate(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountInfo>]> {
+		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountInfo>]>>)
 			.map {$0.value}
 	}
-    func getTokenAccountsByOwner(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountLayout>]> {
-		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountLayout>]>>)
+    func getTokenAccountsByOwner(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountInfo>]> {
+		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountInfo>]>>)
 			.map {$0.value}
 	}
 	func getTokenLargestAccounts(pubkey: String, commitment: Commitment? = nil) -> Single<[TokenAmount]> {

@@ -18,7 +18,7 @@ public extension SolanaSDK {
             from fromPublicKey: PublicKey,
             toNewPubkey newPubkey: PublicKey,
             lamports: UInt64,
-            space: UInt64 = AccountLayout.span,
+            space: UInt64 = AccountInfo.span,
             programPubkey: PublicKey = PublicKey.tokenProgramId
         ) -> TransactionInstruction {
             

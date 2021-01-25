@@ -59,7 +59,7 @@ public extension SolanaSDK {
             let newAccount = try Account(network: network)
             let newAccountPubkey = newAccount.publicKey
             
-            let createAccountInstruction = SystemProgram.createAccountInstruction(from: ownerPubkey, toNewPubkey: newAccountPubkey, lamports: tokenInputAmount + minimumBalanceForRentExemption, space: UInt64(AccountLayout.BUFFER_LENGTH), programPubkey: .tokenProgramId)
+            let createAccountInstruction = SystemProgram.createAccountInstruction(from: ownerPubkey, toNewPubkey: newAccountPubkey, lamports: tokenInputAmount + minimumBalanceForRentExemption, space: UInt64(AccountInfo.BUFFER_LENGTH), programPubkey: .tokenProgramId)
             
             let initializeAccountInstruction = TokenProgram.initializeAccountInstruction(programId: .tokenProgramId, account: newAccountPubkey, mint: .wrappedSOLMint, owner: ownerPubkey)
             

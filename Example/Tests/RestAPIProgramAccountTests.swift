@@ -12,7 +12,7 @@ import SolanaSwift
 
 class RestAPIProgramAccountTests: RestAPITests {
     func testGetProgramAccountsInBase64() throws {
-        let result = try solanaSDK.getProgramAccounts(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", shouldParseJSON: false, in: "devnet").toBlocking().first()
+        let result = try solanaSDK.getProgramAccounts(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", in: "devnet").toBlocking().first()
         if result?.count == 0 {
             return
         }

@@ -37,7 +37,7 @@ extension SolanaSDK {
     }
     
     public func getCreatingTokenAccountFee() -> Single<UInt64> {
-        getMinimumBalanceForRentExemption(dataLength: AccountLayout.span)
+        getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
     }
 
     public func createTokenAccount(mintAddress: String, in network: String) -> Single<(signature: String, newPubkey: String)> {
