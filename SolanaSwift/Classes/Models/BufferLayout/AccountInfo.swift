@@ -9,21 +9,21 @@ import Foundation
 
 extension SolanaSDK {
     public struct AccountInfo: BufferLayout {
-        let mint: PublicKey
-        let owner: PublicKey
-        let amount: UInt64
-        let delegateOption: UInt32
-        var delegate: PublicKey?
-        let isInitialized: Bool
-        let isFrozen: Bool
-        let state: UInt8
-        let isNativeOption: UInt32
-        let rentExemptReserve: UInt64?
-        let isNativeRaw: UInt64
-        let isNative: Bool
-        var delegatedAmount: UInt64
-        let closeAuthorityOption: UInt32
-        var closeAuthority: PublicKey?
+        public let mint: PublicKey
+        public let owner: PublicKey
+        public let amount: UInt64
+        public let delegateOption: UInt32
+        public var delegate: PublicKey?
+        public let isInitialized: Bool
+        public let isFrozen: Bool
+        public let state: UInt8
+        public let isNativeOption: UInt32
+        public let rentExemptReserve: UInt64?
+        public let isNativeRaw: UInt64
+        public let isNative: Bool
+        public var delegatedAmount: UInt64
+        public let closeAuthorityOption: UInt32
+        public var closeAuthority: PublicKey?
         
         public init?(_ keys: [String : [UInt8]]) {
             guard let mint = try? PublicKey(bytes: keys["mint"]),

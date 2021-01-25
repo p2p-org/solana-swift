@@ -41,7 +41,7 @@ class DecodingTests: XCTestCase {
 //        XCTAssertEqual(token?.amount, 1000)
 //    }
     
-    func testDecodingDecimalFromMintLayout() throws {
+    func testDecodingMint() throws {
         let string = #"["AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","base64"]"#
         let mintLayout = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.Mint>.self, from: string.data(using: .utf8)!).value
         XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", mintLayout?.mintAuthority?.base58EncodedString)
@@ -49,5 +49,65 @@ class DecodingTests: XCTestCase {
         XCTAssertEqual(mintLayout?.decimals, 6)
         XCTAssertTrue(mintLayout?.isInitialized == true)
         XCTAssertNil(mintLayout?.freezeAuthority)
+    }
+    
+    func testDecodingAccountInfo() throws {
+        let string = #"["BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","base64"]"#
+        let accountInfo = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.AccountInfo>.self, from: string.data(using: .utf8)!).value
+        
+        XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", accountInfo?.mint.base58EncodedString)
+        XCTAssertEqual("BQWWFhzBdw2vKKBUX17NHeFbCoFQHfRARpdztPE2tDJ", accountInfo?.owner.base58EncodedString)
+        XCTAssertEqual("GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", accountInfo?.delegate?.base58EncodedString)
+        XCTAssertEqual(100, accountInfo?.delegatedAmount)
+        XCTAssertEqual(false, accountInfo?.isNative)
+        XCTAssertEqual(true, accountInfo?.isInitialized)
+        XCTAssertEqual(false, accountInfo?.isFrozen)
+        XCTAssertNil(accountInfo?.rentExemptReserve)
+        XCTAssertNil(accountInfo?.closeAuthority)
+    }
+    
+    func testDecodingAccountInfo2() throws {
+        let string = #"["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWq","base64"]"#
+        let accountInfo = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.AccountInfo>.self, from: string.data(using: .utf8)!).value
+        
+        XCTAssertNil(accountInfo?.delegate)
+        XCTAssertEqual(0, accountInfo?.delegatedAmount)
+        XCTAssertEqual(false, accountInfo?.isInitialized)
+        XCTAssertEqual(false, accountInfo?.isNative)
+        XCTAssertNil(accountInfo?.rentExemptReserve)
+        XCTAssertEqual("GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", accountInfo?.closeAuthority?.base58EncodedString)
+        
+        let string2 = #"["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWq","base64"]"#
+        let accountInfo2 = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.AccountInfo>.self, from: string2.data(using: .utf8)!).value
+        
+        
+        XCTAssertEqual(true, accountInfo2?.isFrozen)
+    }
+    
+    func testDecodingSwapData() throws {
+        let string = #"["Af8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJtI5Id8QBhfDU9HbNjlM8tWzr5NFhnaIL7zaMrcQO6xAAMAAAAAAAAA6AMAAAAAAAABAAAAAAAAAOgDAAAAAAAAAAAAAAAAAAA=", "base64"]"#
+        
+        let publicKey = try SolanaSDK.PublicKey(string: "11111111111111111111111111111111")
+        
+        let info = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.TokenSwapInfo>.self, from: string.data(using: .utf8)!)
+        
+        XCTAssertTrue(info.value?.isInitialized == true)
+        XCTAssertEqual(255, info.value?.nonce)
+        XCTAssertEqual(publicKey, info.value?.tokenProgramId)
+        XCTAssertEqual(publicKey, info.value?.tokenAccountA)
+        XCTAssertEqual(publicKey, info.value?.tokenAccountB)
+        XCTAssertEqual(publicKey, info.value?.tokenPool)
+        XCTAssertEqual(publicKey, info.value?.mintA)
+        XCTAssertEqual(publicKey, info.value?.mintB)
+        XCTAssertEqual(publicKey, info.value?.feeAccount)
+        XCTAssertEqual(155, info.value?.curveType)
+        XCTAssertEqual(963515510526829640, info.value?.tradeFeeNumerator)
+        XCTAssertEqual(6254149569805567823, info.value?.tradeFeeDenominator)
+        XCTAssertEqual(13700189867744280270, info.value?.ownerTradeFeeNumerator)
+        XCTAssertEqual(50083033227356403, info.value?.ownerTradeFeeDenominator)
+        XCTAssertEqual(3, info.value?.ownerWithdrawFeeNumerator)
+        XCTAssertEqual(1000, info.value?.ownerWithdrawFeeDenominator)
+        XCTAssertEqual(1, info.value?.hostFeeNumerator)
+        XCTAssertEqual(1000, info.value?.hostFeeDenominator)
     }
 }
