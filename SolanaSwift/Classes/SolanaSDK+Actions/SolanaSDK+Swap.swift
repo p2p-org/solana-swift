@@ -9,8 +9,6 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    public typealias TransactionAndSigners = (Transaction, [Account])
-    
     public func swap(
         owner: Account,
         fromToken tokenSource: PublicKey,
@@ -19,41 +17,29 @@ extension SolanaSDK {
         amount tokenInputAmount: UInt64,
         cluster network: String
     ) -> Single<TransactionID> {
-        (Single.zip([
-            swapTransaction(
-                owner: owner,
-                fromToken: tokenSource,
-                toToken: tokenDestination,
-                slippage: slippage,
-                amount: tokenInputAmount,
-                network: network
-            )
-                .map {$0 as Any},
-            getRecentBlockhash()
-                .map {$0 as Any}
-        ]) as Single<[Any]>)
-            .flatMap { params in
-                let transactionAndSigner = params[0] as! TransactionAndSigners
-                var transaction = transactionAndSigner.0
-                let signers = transactionAndSigner.1
-                let recentBlockhash = params[1] as! String
-                transaction.message.recentBlockhash = recentBlockhash
-                try transaction.sign(signers: signers)
-                guard let serializedTransaction = try transaction.serialize().toBase64() else {
-                    throw Error.other("Could not serialize transaction")
-                }
-                return self.sendTransaction(serializedTransaction: serializedTransaction)
+        
+        createSwapTransaction(
+            owner: owner,
+            fromToken: tokenSource,
+            toToken: tokenDestination,
+            slippage: slippage,
+            amount: tokenInputAmount,
+            network: network
+        )
+            .flatMap {
+                self.sendTransaction(serializedTransaction: $0)
             }
     }
     
-    public func swapTransaction(
+    public func createSwapTransaction(
         owner: Account,
         fromToken tokenSource: PublicKey,
         toToken tokenDestination: PublicKey,
         slippage: Double,
         amount tokenInputAmount: UInt64,
-        network: String
-    ) -> Single<TransactionAndSigners> {
+        network: String,
+        recentBlockhash: String? = nil
+    ) -> Single<String> {
         let ownerPubkey = owner.publicKey
         
         var tokenA: PublicKey!
@@ -96,7 +82,7 @@ extension SolanaSDK {
                     ]
                 )
             }
-            .map {params -> TransactionAndSigners in
+            .flatMap {params in
                 // form transaction
                 var transaction = Transaction()
                 var signers = [owner]
@@ -162,7 +148,7 @@ extension SolanaSDK {
                     transaction.closeAccount(closingAccount, destination: ownerPubkey, owner: ownerPubkey)
                 }
                 
-                return (transaction, signers)
+                return self.serializeTransaction(transaction, recentBlockhash: recentBlockhash, signers: signers)
             }
     }
     
