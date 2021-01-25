@@ -10,10 +10,13 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-	func getAccountInfo(account: String) -> Single<MintLayout?> {
+    func getAccountInfo<T: BufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
         let configs = RequestConfiguration(encoding: "base64")
-		return (request(parameters: [account, configs]) as Single<Rpc<AccountInfo<MintLayout>?>>)
-            .map {$0.value?.data.value}
+		return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
+            .map {
+                if let value = $0.value {return value}
+                throw Error.other("Invalid account info")
+            }
 	}
 	func getBalance(account: String, commitment: Commitment? = nil) -> Single<UInt64> {
 		(request(parameters: [account, RequestConfiguration(commitment: commitment)]) as Single<Rpc<UInt64>>)
@@ -93,11 +96,11 @@ public extension SolanaSDK {
     internal func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") -> Single<UInt64> {
 		request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
 	}
-	func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[AccountInfo<AccountLayout>]?> {
-		(request(parameters: [pubkeys, configs]) as Single<Rpc<[AccountInfo<AccountLayout>]?>>)
+	func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[BufferInfo<AccountInfo>]?> {
+		(request(parameters: [pubkeys, configs]) as Single<Rpc<[BufferInfo<AccountInfo>]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts(account: String? = nil, shouldParseJSON: Bool = true, in network: String) -> Single<[Token]> {
+    func getProgramAccounts(account: String? = nil, in network: String) -> Single<[Token]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.accountNotFound)
         }
@@ -106,15 +109,15 @@ public extension SolanaSDK {
                 ["offset": EncodableWrapper(wrapped: 32),
                  "bytes": EncodableWrapper(wrapped: account)]
         )
-        let configs = RequestConfiguration(commitment: "recent", encoding: shouldParseJSON ? "jsonParsed": "base64", dataSlice: nil, filters: [
+        let configs = RequestConfiguration(commitment: "recent", encoding: "base64", dataSlice: nil, filters: [
             ["memcmp": memcmp],
             ["dataSize": .init(wrapped: 165)]
         ])
-        return (request(parameters: [SPLTokenProgram.splTokenProgramId.base58EncodedString, configs]) as Single<[ProgramAccount<AccountLayout>]>)
+        return (request(parameters: [PublicKey.tokenProgramId.base58EncodedString, configs]) as Single<[ProgramAccount<AccountInfo>]>)
             .map {
                 $0.compactMap {
                     $0.account.data.value != nil ?
-                        Token(layout: $0.account.data.value!, pubkey: $0.pubkey, in: network)
+                        Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: network)
                         : nil
                 }
             }
@@ -128,8 +131,8 @@ public extension SolanaSDK {
                 if unfilledTokens.count > 0 {
                     return Single<UInt8>.zip(
                         unfilledTokens.map {
-                            return self.getAccountInfo(account: $0.mintAddress)
-                                .map {$0?.decimals ?? 0}
+                            return self.getAccountInfo(account: $0.mintAddress, decodedTo: Mint.self)
+                                .map {$0.data.value?.decimals ?? 0}
                         }
                     )
                     .map {
@@ -184,14 +187,20 @@ public extension SolanaSDK {
 		request(parameters: [RequestConfiguration(commitment: commitment)])
 	}
 	func getTokenAccountBalance(pubkey: String, commitment: Commitment? = nil) -> Single<TokenAccountBalance> {
-		request(parameters: [pubkey, RequestConfiguration(commitment: commitment)])
+		(request(parameters: [pubkey, RequestConfiguration(commitment: commitment)]) as Single<Rpc<TokenAccountBalance>>)
+            .map {
+                if UInt64($0.value.amount) == nil {
+                    throw Error.other("Invalid amount")
+                }
+                return $0.value
+            }
 	}
-    func getTokenAccountsByDelegate(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountLayout>]> {
-		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountLayout>]>>)
+    func getTokenAccountsByDelegate(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountInfo>]> {
+		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountInfo>]>>)
 			.map {$0.value}
 	}
-    func getTokenAccountsByOwner(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountLayout>]> {
-		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountLayout>]>>)
+    func getTokenAccountsByOwner(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountInfo>]> {
+		(request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountInfo>]>>)
 			.map {$0.value}
 	}
 	func getTokenLargestAccounts(pubkey: String, commitment: Commitment? = nil) -> Single<[TokenAmount]> {
@@ -214,7 +223,7 @@ public extension SolanaSDK {
 	func requestAirdrop(account: String, lamports: UInt64, commitment: Commitment? = nil) -> Single<String> {
 		request(parameters: [account, lamports, RequestConfiguration(commitment: commitment)])
 	}
-	internal func sendTransaction(serializedTransaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<String> {
+	internal func sendTransaction(serializedTransaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<TransactionID> {
 		request(parameters: [serializedTransaction, configs])
 	}
 	func simulateTransaction(transaction: String, configs: RequestConfiguration? = nil) -> Single<Transaction.Status> {

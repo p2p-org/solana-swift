@@ -49,6 +49,59 @@ public extension SolanaSDK {
             data.append(contentsOf: serializedMessage)
             return data.bytes
         }
+        
+        mutating func createAndInitializeAccount(
+            ownerPubkey: PublicKey,
+            tokenInputAmount: UInt64,
+            minimumBalanceForRentExemption: UInt64,
+            inNetwork network: String
+        ) throws -> Account {
+            let newAccount = try Account(network: network)
+            let newAccountPubkey = newAccount.publicKey
+            
+            let createAccountInstruction = SystemProgram.createAccountInstruction(from: ownerPubkey, toNewPubkey: newAccountPubkey, lamports: tokenInputAmount + minimumBalanceForRentExemption, space: UInt64(AccountInfo.BUFFER_LENGTH), programPubkey: .tokenProgramId)
+            
+            let initializeAccountInstruction = TokenProgram.initializeAccountInstruction(programId: .tokenProgramId, account: newAccountPubkey, mint: .wrappedSOLMint, owner: ownerPubkey)
+            
+            message.add(instruction: createAccountInstruction)
+            message.add(instruction: initializeAccountInstruction)
+            
+            return newAccount
+        }
+        
+        mutating func approveAndSwap(fromAccount: PublicKey, owner: PublicKey, inPool pool: Pool, poolSource: PublicKey, poolDestination: PublicKey, userDestination toAccount: PublicKey, amount: UInt64, minimumAmountOut: UInt64) {
+            let approveInstruction = TokenProgram.approveInstruction(
+                tokenProgramId: .tokenProgramId,
+                account: fromAccount,
+                delegate: pool.authority,
+                owner: owner,
+                amount: amount
+            )
+            
+            let swapInstruction = TokenSwapProgram.swapInstruction(
+                tokenSwapAccount: .poolAddress,
+                authority: pool.authority,
+                userSource: fromAccount,
+                poolSource: poolSource,
+                poolDestination: poolDestination,
+                userDestination: toAccount,
+                poolMint: pool.swapData.tokenPool,
+                feeAccount: pool.swapData.feeAccount,
+                hostFeeAccount: pool.swapData.feeAccount,
+                tokenProgramId: .tokenProgramId,
+                swapProgramId: .swapProgramId,
+                amountIn: amount,
+                minimumAmountOut: minimumAmountOut
+            )
+            
+            message.add(instruction: approveInstruction)
+            message.add(instruction: swapInstruction)
+        }
+        
+        mutating func closeAccount(_ account: PublicKey, destination: PublicKey, owner: PublicKey) {
+            let closeInstruction = TokenProgram.closeAccountInstruction(tokenProgramId: .tokenProgramId, account: account, destination: destination, owner: owner)
+            message.add(instruction: closeInstruction)
+        }
     }
 }
 

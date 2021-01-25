@@ -12,7 +12,7 @@ class RestAPITests: XCTestCase {
     var network: String {"devnet"}
 
     var solanaSDK: SolanaSDK!
-    var account: String!
+    var account: SolanaSDK.Account {solanaSDK.accountStorage.account!}
 
     override func setUpWithError() throws {
         var endpoint = "https://devnet.solana.com"
@@ -26,7 +26,6 @@ class RestAPITests: XCTestCase {
         }
         let account = try SolanaSDK.Account(phrase: phrases.components(separatedBy: " "), network: network)
         try solanaSDK.accountStorage.save(account)
-        self.account = solanaSDK.accountStorage.account!.publicKey.base58EncodedString
     }
 
 }

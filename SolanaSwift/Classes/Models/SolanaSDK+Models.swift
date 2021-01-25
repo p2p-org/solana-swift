@@ -10,6 +10,8 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
+    typealias TransactionID = String
+    
 	struct Response<T: Decodable>: Decodable {
 		public let jsonrpc: String
 		public let id: String?
@@ -111,11 +113,11 @@ public extension SolanaSDK {
 		public let address: String
 	}
     struct ProgramAccount<T: BufferLayout>: Decodable {
-        public let account: AccountInfo<T>
+        public let account: BufferInfo<T>
 		public let pubkey: String
 	}
     
-    struct AccountInfo<T: BufferLayout>: Decodable {
+    struct BufferInfo<T: BufferLayout>: Decodable {
         public let lamports: UInt64
         public let owner: String
         public let data: Buffer<T>
@@ -146,13 +148,13 @@ public extension SolanaSDK {
 		public let total: UInt64
 	}
 	struct TokenAccountBalance: Decodable {
-		public let uiAmount: Float64
+		public let uiAmount: Float64?
 		public let amount: String
-		public let decimals: UInt8
+		public let decimals: UInt8?
 	}
     struct TokenAccount<T: BufferLayout>: Decodable {
 		public let pubkey: String
-		public let account: AccountInfo<T>
+		public let account: BufferInfo<T>
 	}
 	struct TokenAmount: Decodable {
 		public let address: String?

@@ -17,23 +17,22 @@ public extension SolanaSDK {
         public var amount: UInt64?
         public var decimals: Int?
         
-        public init?(layout: AccountLayout, pubkey: String, in network: String) {
-            guard let supportedTokens = Self.getSupportedTokens(network: network),
-                  let mintAddress = layout.parsed?.info?.mint
-                  else {
+        public init?(accountInfo: AccountInfo, pubkey: String, in network: String) {
+            guard let supportedTokens = Self.getSupportedTokens(network: network)
+            else {
                 return nil
             }
             
             
-            if let token = supportedTokens.first(where: {$0.mintAddress == mintAddress}) {
+            if let token = supportedTokens.first(where: {$0.mintAddress == accountInfo.mint.base58EncodedString}) {
                 self = token
-                self.amount = UInt64(layout.parsed?.info?.tokenAmount?.amount ?? "0")
+                self.amount = accountInfo.amount
                 self.pubkey = pubkey
-                self.decimals = layout.parsed?.info?.tokenAmount?.decimals
+                self.decimals = nil
                 return
             }
             
-            print("unsupported token: \(mintAddress)")
+            print("unsupported token: \(accountInfo.mint.base58EncodedString)")
             return nil
         }
         
