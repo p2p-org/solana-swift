@@ -43,6 +43,7 @@ extension SolanaSDK {
             )
         )
         
-        return serializeTransaction(transaction, recentBlockhash: recentBlockhash, signers: [signer])
+        let serializedTransaction = serializeTransaction(transaction, recentBlockhash: recentBlockhash, signers: [signer])
+        return serializedTransaction
     }
 }
