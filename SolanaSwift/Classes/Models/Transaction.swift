@@ -59,9 +59,9 @@ public extension SolanaSDK {
             let newAccount = try Account(network: network)
             let newAccountPubkey = newAccount.publicKey
             
-            let createAccountInstruction = SPLTokenProgram.createAccountInstruction(from: ownerPubkey, toNewPubkey: newAccountPubkey, lamports: tokenInputAmount + minimumBalanceForRentExemption, space: UInt64(AccountLayout.BUFFER_LENGTH), programPubkey: .tokenProgramId)
+            let createAccountInstruction = SystemProgram.createAccountInstruction(from: ownerPubkey, toNewPubkey: newAccountPubkey, lamports: tokenInputAmount + minimumBalanceForRentExemption, space: UInt64(AccountLayout.BUFFER_LENGTH), programPubkey: .tokenProgramId)
             
-            let initializeAccountInstruction = SPLTokenProgram.initializeAccountInstruction(programId: .tokenProgramId, account: newAccountPubkey, mint: .wrappedSOLMint, owner: ownerPubkey)
+            let initializeAccountInstruction = TokenProgram.initializeAccountInstruction(programId: .tokenProgramId, account: newAccountPubkey, mint: .wrappedSOLMint, owner: ownerPubkey)
             
             message.add(instruction: createAccountInstruction)
             message.add(instruction: initializeAccountInstruction)
@@ -70,7 +70,7 @@ public extension SolanaSDK {
         }
         
         mutating func approveAndSwap(fromAccount: PublicKey, owner: PublicKey, inPool pool: Pool, poolSource: PublicKey, poolDestination: PublicKey, userDestination toAccount: PublicKey, amount: UInt64, minimumAmountOut: UInt64) {
-            let approveInstruction = SPLTokenProgram.approveInstruction(
+            let approveInstruction = TokenProgram.approveInstruction(
                 tokenProgramId: .tokenProgramId,
                 account: fromAccount,
                 delegate: pool.authority,
@@ -99,7 +99,7 @@ public extension SolanaSDK {
         }
         
         mutating func closeAccount(_ account: PublicKey, destination: PublicKey, owner: PublicKey) {
-            let closeInstruction = SPLTokenProgram.closeAccountInstruction(tokenProgramId: .tokenProgramId, account: account, destination: destination, owner: owner)
+            let closeInstruction = TokenProgram.closeAccountInstruction(tokenProgramId: .tokenProgramId, account: account, destination: destination, owner: owner)
             message.add(instruction: closeInstruction)
         }
     }

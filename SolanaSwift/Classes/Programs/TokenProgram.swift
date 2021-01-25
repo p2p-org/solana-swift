@@ -8,20 +8,15 @@
 import Foundation
 
 public extension SolanaSDK {
-    struct SPLTokenProgram {
+    struct TokenProgram {
         // MARK: - Nested type
-        private enum Index: UInt32, BytesEncodable {
-            case create                 = 0
-            case initializeAccount      = 1
-            case transfer               = 2
-            case createWithSeed         = 3
-            case approve                = 4
-            case withdrawNonceAccount   = 5
-            case initializeNonceAccount = 6
-            case mintTo                 = 7
-            case allocate               = 8
-            case close                  = 9
-            case sssignWithSeed         = 10
+        private struct Index {
+            static let initalizeMint: UInt8 = 0
+            static let initializeAccount: UInt8 = 1
+            static let transfer: UInt8 = 3
+            static let approve: UInt8 = 4
+            static let mintTo: UInt8 = 7
+            static let closeAccount: UInt8 = 9
         }
         
         // MARK: - Instructions
@@ -40,7 +35,7 @@ public extension SolanaSDK {
                 ],
                 programId: tokenProgramId,
                 data: [
-                    Index.create,
+                    Index.initalizeMint,
                     decimals,
                     authority,
                     freezeAuthority != nil,
@@ -68,37 +63,21 @@ public extension SolanaSDK {
             )
         }
         
-        public static func createAccountInstruction(
-            from fromPublicKey: PublicKey,
-            toNewPubkey newPubkey: PublicKey,
-            lamports: UInt64,
-            space: UInt64 = AccountLayout.span,
-            programPubkey: PublicKey = PublicKey.tokenProgramId
-        ) -> TransactionInstruction {
-            
-            TransactionInstruction(
-                keys: [
-                    Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
-                    Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true)
-                ],
-                programId: PublicKey.programId,
-                data: [Index.create, lamports, space, programPubkey]
-            )
-        }
-        
         public static func transferInstruction(
-            from fromPublicKey: PublicKey,
-            to toPublicKey: PublicKey,
-            lamports: UInt64
+            tokenProgramId: PublicKey,
+            source: PublicKey,
+            destination: PublicKey,
+            owner: PublicKey,
+            amount: UInt64
         ) -> TransactionInstruction {
-            
             TransactionInstruction(
                 keys: [
-                    Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
-                    Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true)
+                    Account.Meta(publicKey: source, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
+                    Account.Meta(publicKey: owner, isSigner: true, isWritable: true)
                 ],
-                programId: PublicKey.programId,
-                data: [Index.transfer, lamports]
+                programId: tokenProgramId,
+                data: [Index.transfer, amount]
             )
         }
         
@@ -154,7 +133,7 @@ public extension SolanaSDK {
                     Account.Meta(publicKey: owner, isSigner: false, isWritable: false)
                 ],
                 programId: tokenProgramId,
-                data: [Index.close]
+                data: [Index.closeAccount]
             )
         }
     }

@@ -21,7 +21,7 @@ extension SolanaSDK {
                 
                 var transaction = Transaction()
                 transaction.message.add(
-                    instruction: SPLTokenProgram.transferInstruction(
+                    instruction: SystemProgram.transferInstruction(
                         from: fromPublicKey,
                         to: toPublicKey,
                         lamports: UInt64(amount)
@@ -54,13 +54,13 @@ extension SolanaSDK {
                 let newAccount = try Account(network: network)
                 
                 // instructions
-                let createAccountInstruction = SPLTokenProgram.createAccountInstruction(
+                let createAccountInstruction = SystemProgram.createAccountInstruction(
                     from: payer.publicKey,
                     toNewPubkey: newAccount.publicKey,
                     lamports: minBalance
                 )
                 
-                let initializeAccountInstruction = SPLTokenProgram.initializeAccountInstruction(
+                let initializeAccountInstruction = TokenProgram.initializeAccountInstruction(
                     account: newAccount.publicKey,
                     mint: mintAddress,
                     owner: payer.publicKey
