@@ -8,9 +8,20 @@
 import Foundation
 import SolanaSwift
 
+extension SolanaSDK.Network {
+    var testAccount: String {
+        switch self {
+        case .mainnetBeta:
+            return "miracle pizza supply useful steak border same again youth silver access hundred"
+        case .devnet:
+            return "galaxy lend nose glow equip student way hockey step dismiss expect silent"
+        default:
+            fatalError("unsupported")
+        }
+    }
+}
+
 class InMemoryAccountStorage: SolanaSDKAccountStorage {
-    static let devnetAccount = "galaxy lend nose glow equip student way hockey step dismiss expect silent"
-    static let mainnetAccount = "miracle pizza supply useful steak border same again youth silver access hundred"
     private var _account: SolanaSDK.Account?
     func save(_ account: SolanaSDK.Account) throws {
         _account = account

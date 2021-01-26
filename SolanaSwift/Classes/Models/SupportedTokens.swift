@@ -9,10 +9,10 @@ import Foundation
 
 extension SolanaSDK {
     struct SupportedTokens {
-        static var shared: [String: String] {
+        static var shared: [Network: String] {
             [
                 // MARK: - mainnet-Beta
-                "mainnet-beta": """
+                .mainnetBeta: """
                 [
                   {
                     "mintAddress": "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt",
@@ -163,7 +163,7 @@ extension SolanaSDK {
                 """,
                 
                 // MARK: - devnet
-                "devnet": """
+                .devnet: """
                 [
                   {
                     "name": "Example Token",

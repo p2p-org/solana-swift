@@ -9,22 +9,13 @@ import XCTest
 import SolanaSwift
 
 class RestAPITests: XCTestCase {
-    var network: String {"devnet"}
-
+    var network: SolanaSDK.Network {.devnet}
     var solanaSDK: SolanaSDK!
     var account: SolanaSDK.Account {solanaSDK.accountStorage.account!}
 
     override func setUpWithError() throws {
-        var endpoint = "https://devnet.solana.com"
-        if network == "mainnet-beta" {
-            endpoint = "https://api.mainnet-beta.solana.com"
-        }
-        solanaSDK = SolanaSDK(endpoint: endpoint, accountStorage: InMemoryAccountStorage())
-        var phrases = InMemoryAccountStorage.devnetAccount
-        if phrases == "mainnet-beta" {
-            phrases = InMemoryAccountStorage.mainnetAccount
-        }
-        let account = try SolanaSDK.Account(phrase: phrases.components(separatedBy: " "), network: network)
+        solanaSDK = SolanaSDK(network: network, accountStorage: InMemoryAccountStorage())
+        let account = try SolanaSDK.Account(phrase: network.testAccount.components(separatedBy: " "), network: network)
         try solanaSDK.accountStorage.save(account)
     }
 

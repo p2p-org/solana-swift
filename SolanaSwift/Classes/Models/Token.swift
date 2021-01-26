@@ -17,7 +17,7 @@ public extension SolanaSDK {
         public var amount: UInt64?
         public var decimals: Int?
         
-        public init?(accountInfo: AccountInfo, pubkey: String, in network: String) {
+        public init?(accountInfo: AccountInfo, pubkey: String, in network: Network) {
             guard let supportedTokens = Self.getSupportedTokens(network: network)
             else {
                 return nil
@@ -36,7 +36,7 @@ public extension SolanaSDK {
             return nil
         }
         
-        public static func getSupportedTokens(network: String) -> [Self]? {
+        public static func getSupportedTokens(network: Network) -> [Self]? {
             guard let string = SupportedTokens.shared[network],
                   let data = string.data(using: .utf8)
             else {

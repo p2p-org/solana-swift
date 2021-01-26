@@ -100,7 +100,7 @@ public extension SolanaSDK {
 		(request(parameters: [pubkeys, configs]) as Single<Rpc<[BufferInfo<AccountInfo>]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts<T: BufferLayout>(publicKey: String, configs: RequestConfiguration? = nil, decodedTo: T.Type) -> Single<[ProgramAccount<T>]>
+    func getProgramAccounts<T: BufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<[ProgramAccount<T>]>
     {
         request(parameters: [publicKey, configs])
     }
