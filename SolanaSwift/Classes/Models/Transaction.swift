@@ -54,7 +54,7 @@ public extension SolanaSDK {
             ownerPubkey: PublicKey,
             tokenInputAmount: UInt64,
             minimumBalanceForRentExemption: UInt64,
-            inNetwork network: String
+            inNetwork network: Network
         ) throws -> Account {
             let newAccount = try Account(network: network)
             let newAccountPubkey = newAccount.publicKey

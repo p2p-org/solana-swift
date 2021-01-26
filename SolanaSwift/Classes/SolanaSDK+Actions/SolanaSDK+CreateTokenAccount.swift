@@ -13,7 +13,7 @@ extension SolanaSDK {
         getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
     }
 
-    public func createTokenAccount(mintAddress: String, in network: String) -> Single<(signature: String, newPubkey: String)> {
+    public func createTokenAccount(mintAddress: String) -> Single<(signature: String, newPubkey: String)> {
         guard let payer = self.accountStorage.account else {
             return .error(Error.publicKeyNotFound)
         }
@@ -25,7 +25,7 @@ extension SolanaSDK {
                 let mintAddress = try PublicKey(string: mintAddress)
                 
                 // create new account for token
-                newAccount = try Account(network: network)
+                newAccount = try Account(network: self.network)
                 
                 // instructions
                 let createAccountInstruction = SystemProgram.createAccountInstruction(

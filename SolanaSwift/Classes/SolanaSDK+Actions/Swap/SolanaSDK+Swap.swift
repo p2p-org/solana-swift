@@ -14,8 +14,7 @@ extension SolanaSDK {
         fromToken tokenSource: PublicKey,
         toToken tokenDestination: PublicKey,
         slippage: Double,
-        amount tokenInputAmount: UInt64,
-        cluster network: String
+        amount tokenInputAmount: UInt64
     ) -> Single<TransactionID> {
         
         createSwapTransaction(
@@ -23,8 +22,7 @@ extension SolanaSDK {
             fromToken: tokenSource,
             toToken: tokenDestination,
             slippage: slippage,
-            amount: tokenInputAmount,
-            network: network
+            amount: tokenInputAmount
         )
             .flatMap {
                 self.sendTransaction(serializedTransaction: $0)
@@ -37,7 +35,6 @@ extension SolanaSDK {
         toToken tokenDestination: PublicKey,
         slippage: Double,
         amount tokenInputAmount: UInt64,
-        network: String,
         recentBlockhash: String? = nil
     ) -> Single<String> {
         let ownerPubkey = owner.publicKey
@@ -106,7 +103,7 @@ extension SolanaSDK {
                         ownerPubkey: ownerPubkey,
                         tokenInputAmount: tokenInputAmount,
                         minimumBalanceForRentExemption: minimumBalanceForRentExemption,
-                        inNetwork: network
+                        inNetwork: self.network
                     )
                     
                     signers.append(newAccount)
@@ -124,7 +121,7 @@ extension SolanaSDK {
                         ownerPubkey: ownerPubkey,
                         tokenInputAmount: tokenInputAmount,
                         minimumBalanceForRentExemption: minimumBalanceForRentExemption,
-                        inNetwork: network
+                        inNetwork: self.network
                     )
                     
                     signers.append(newAccount)
