@@ -7,11 +7,11 @@
 //
 
 import XCTest
+import SolanaSwift
 
 class RestAPIPoolTests: RestAPITests {
-    override var network: String {"mainnet-beta"}
-    func testGetTokenAccountBalance() throws {
-        let pools = try solanaSDK.getPools(swapProgramId: "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL").toBlocking().first()
+    func testGetPools() throws {
+        let pools = try solanaSDK.getPools(swapProgramId: solanaSDK.network.swapProgramId.base58EncodedString).toBlocking().first()
         XCTAssertNotNil(pools)
         XCTAssertNotEqual(pools!.count, 0)
     }

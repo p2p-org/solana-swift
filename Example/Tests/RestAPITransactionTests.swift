@@ -11,7 +11,7 @@ import XCTest
 import SolanaSwift
 
 class RestAPITransactionTests: RestAPITests {
-    override var network: String {"mainnet-beta"}
+    override var network: SolanaSDK.Network {.mainnetBeta}
     
     func testSendTransaction() throws {
         let accountToSend = try SolanaSDK.PublicKey(string: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5")

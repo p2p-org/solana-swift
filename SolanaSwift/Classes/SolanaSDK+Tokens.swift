@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    public func getTokensInfo(account: String? = nil, in network: String) -> Single<[Token]> {
+    public func getTokensInfo(account: String? = nil) -> Single<[Token]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.accountNotFound)
         }
@@ -31,7 +31,7 @@ extension SolanaSDK {
             .map {
                 $0.compactMap {
                     $0.account.data.value != nil ?
-                        Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: network)
+                        Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: self.network)
                         : nil
                 }
             }

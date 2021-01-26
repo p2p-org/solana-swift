@@ -12,7 +12,7 @@ import SolanaSwift
 
 class RestAPITokenProgramTests: RestAPITests {
     func testGetTokensInfo() throws {
-        let result = try solanaSDK.getTokensInfo(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", in: "devnet").toBlocking().first()
+        let result = try solanaSDK.getTokensInfo(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG").toBlocking().first()
         if result?.count == 0 {
             return
         }

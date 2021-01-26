@@ -8,13 +8,13 @@
 import Foundation
 
 extension SolanaSDK {
-    public enum Network: String {
+    public enum Network: String, CaseIterable {
         case mainnetBeta = "mainnet-beta"
         case devnet = "devnet"
         case testnet = "testnet"
         case localnet = "localnet"
         
-        var swapProgramId: PublicKey {
+        public var swapProgramId: PublicKey {
             switch self {
             case .mainnetBeta:
                 return try! SolanaSDK.PublicKey(string: "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL")
@@ -25,6 +25,19 @@ extension SolanaSDK {
             default:
                 fatalError("Unsupported network")
             }
+        }
+        
+        public var cluster: String {rawValue}
+        
+        public var endpoint: String {
+            // FIXME: - Remove later
+            
+            var string = cluster + ".solana.com"
+            if self == .mainnetBeta {
+//                string = "api." + string
+                string = "solana-api.projectserum.com"
+            }
+            return "https://\(string)"
         }
     }
 }
