@@ -100,58 +100,10 @@ public extension SolanaSDK {
 		(request(parameters: [pubkeys, configs]) as Single<Rpc<[BufferInfo<AccountInfo>]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts(account: String? = nil, in network: String) -> Single<[Token]> {
-        guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
-            return .error(Error.accountNotFound)
-        }
-        let memcmp = EncodableWrapper(
-            wrapped:
-                ["offset": EncodableWrapper(wrapped: 32),
-                 "bytes": EncodableWrapper(wrapped: account)]
-        )
-        let configs = RequestConfiguration(commitment: "recent", encoding: "base64", dataSlice: nil, filters: [
-            ["memcmp": memcmp],
-            ["dataSize": .init(wrapped: 165)]
-        ])
-        return (request(parameters: [PublicKey.tokenProgramId.base58EncodedString, configs]) as Single<[ProgramAccount<AccountInfo>]>)
-            .map {
-                $0.compactMap {
-                    $0.account.data.value != nil ?
-                        Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: network)
-                        : nil
-                }
-            }
-            .flatMap { tokens in
-                var unfilledTokens = [Token]()
-                
-                // retrieve decimals if missing
-                for token in tokens where token.decimals == nil {
-                    unfilledTokens.append(token)
-                }
-                if unfilledTokens.count > 0 {
-                    return Single<UInt8>.zip(
-                        unfilledTokens.map {
-                            return self.getAccountInfo(account: $0.mintAddress, decodedTo: Mint.self)
-                                .map {$0.data.value?.decimals ?? 0}
-                        }
-                    )
-                    .map {
-                        var tokens = tokens
-                        for i in 0..<unfilledTokens.count {
-                            unfilledTokens[i].decimals = Int($0[i])
-                            if let index = tokens.firstIndex(where: {$0.pubkey == unfilledTokens[i].pubkey})
-                            {
-                                tokens[index] = unfilledTokens[i]
-                            }
-                        }
-                        return tokens
-                    }
-                }
-                
-                // if all decimals isn't missing
-                return .just(tokens)
-            }
-	}
+    func getProgramAccounts<T: BufferLayout>(publicKey: String, configs: RequestConfiguration? = nil, decodedTo: T.Type) -> Single<[ProgramAccount<T>]>
+    {
+        request(parameters: [publicKey, configs])
+    }
 	func getRecentBlockhash(commitment: Commitment? = nil) -> Single<String> {
 		(request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)
 			.map {$0.value}
