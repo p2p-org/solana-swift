@@ -170,48 +170,6 @@ extension SolanaSDK {
         return UInt64(Float64(estimatedAmount) * Float64(1 - slippage))
     }
     
-    private func getPoolInfo(address: String) -> Single<Pool> {
-        getAccountInfo(account: address, decodedTo: TokenSwapInfo.self)
-            .map { info -> TokenSwapInfo in
-                let swapInfo = info.data.value
-                if let swapInfo = swapInfo {
-                    return swapInfo
-                }
-                throw Error.other("Invalid data")
-            }
-            .flatMap { swapData in
-                Single.zip([
-                    self.getMintData(mintAddress: swapData.mintA, programId: PublicKey.tokenProgramId),
-                    self.getMintData(mintAddress: swapData.mintB, programId: PublicKey.tokenProgramId),
-                    self.getMintData(mintAddress: swapData.tokenPool, programId: PublicKey.tokenProgramId)
-                ])
-                .map { mintDatas in
-                    guard let authority = mintDatas[2].mintAuthority else {
-                        throw Error.other("Invalid mintAuthority")
-                    }
-                    return Pool(tokenAInfo: mintDatas[0], tokenBInfo: mintDatas[1], poolTokenMint: mintDatas[2], authority: authority, swapData: swapData)
-                }
-            }
-    }
-    
-    private func getMintData(
-        mintAddress: PublicKey,
-        programId: PublicKey
-    ) -> Single<Mint> {
-        getAccountInfo(account: mintAddress.base58EncodedString, decodedTo: Mint.self)
-            .map {
-                if $0.owner != programId.base58EncodedString {
-                    throw Error.other("Invalid mint owner")
-                }
-                
-                if let data = $0.data.value {
-                    return data
-                }
-                
-                throw Error.other("Invalid data")
-            }
-    }
-    
     private func getAccountInfoData(account: String, tokenProgramId: PublicKey) -> Single<AccountInfo> {
         getAccountInfo(account: account, decodedTo: AccountInfo.self)
             .map {

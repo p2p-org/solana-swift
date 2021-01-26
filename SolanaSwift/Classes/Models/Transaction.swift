@@ -89,7 +89,7 @@ public extension SolanaSDK {
                 feeAccount: pool.swapData.feeAccount,
                 hostFeeAccount: pool.swapData.feeAccount,
                 tokenProgramId: .tokenProgramId,
-                swapProgramId: .swapProgramId,
+                swapProgramId: .swapProgramIdMainnetBeta,
                 amountIn: amount,
                 minimumAmountOut: minimumAmountOut
             )
