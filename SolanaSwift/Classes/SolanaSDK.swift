@@ -17,10 +17,10 @@ public protocol SolanaSDKAccountStorage {
 
 public class SolanaSDK {
     // MARK: - Properties
-//    let endpoint: String
     public let network: Network
     public let accountStorage: SolanaSDKAccountStorage
     var endpoint: String {network.endpoint}
+    var _swapPool: [Pool]?
     
     // MARK: - Initializer
     public init(network: Network, accountStorage: SolanaSDKAccountStorage) {

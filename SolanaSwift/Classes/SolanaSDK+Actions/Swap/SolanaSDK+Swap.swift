@@ -10,98 +10,94 @@ import RxSwift
 
 extension SolanaSDK {
     public func swap(
-        owner: Account,
-        fromToken tokenSource: PublicKey,
-        toToken tokenDestination: PublicKey,
+        account: Account? = nil,
+        tokenA: PublicKey,
+        mintA: PublicKey,
+        tokenB: PublicKey? = nil,
+        mintB: PublicKey,
         slippage: Double,
-        amount tokenInputAmount: UInt64
+        amount: UInt64
     ) -> Single<TransactionID> {
+        // verify account
+        guard let owner = account ?? accountStorage.account
+        else {return .error(Error.accountNotFound)}
         
-        createSwapTransaction(
-            owner: owner,
-            fromToken: tokenSource,
-            toToken: tokenDestination,
-            slippage: slippage,
-            amount: tokenInputAmount
-        )
-            .flatMap {
-                self.sendTransaction(serializedTransaction: $0)
-            }
-    }
-    
-    public func createSwapTransaction(
-        owner: Account,
-        fromToken tokenSource: PublicKey,
-        toToken tokenDestination: PublicKey,
-        slippage: Double,
-        amount tokenInputAmount: UInt64,
-        recentBlockhash: String? = nil
-    ) -> Single<String> {
-        let ownerPubkey = owner.publicKey
-        
-        var tokenA: PublicKey!
-        var tokenB: PublicKey!
-        var mintA: PublicKey!
-        var mintB: PublicKey!
-        var minAmountIn: UInt64!
-        
+        // reuse variables
         var pool: Pool!
         
-        // TODO: - getPools
-        
-        // get pool info
-        return getPoolInfo(address: PublicKey.poolAddress.base58EncodedString)
-            // get balances
-            .flatMap {newPool -> Single<[Any]> in
-                // save pool
-                pool = newPool
+        // get pool
+        return getSwapPools()
+            .map {pools -> Pool in
+                // filter pool that match requirement
+                if let matchPool = pools.first(where: {$0.swapData.mintA == mintA && $0.swapData.mintB == mintB})
+                {
+                    pool = matchPool
+                    return pool
+                }
+                throw Error.other("Unsupported swapping tokens")
+            }
+            .flatMap { matchedPool -> Single<[Any]> in
+                // get balance for tokenA
+                var singles = [Single<Any>]()
+                singles.append(
+                    self.getTokenAccountBalance(pubkey: tokenA.base58EncodedString)
+                        .map {UInt64($0.amount)}
+                        .map {$0 as Any}
+                )
                 
-                // swap type
-                tokenA = pool.swapData.tokenAccountA
-                tokenB = pool.swapData.tokenAccountB
-                mintA = pool.swapData.mintA
-                mintB = pool.swapData.mintB
-                if tokenSource != pool.swapData.tokenAccountA {
-                    tokenA = pool.swapData.tokenAccountB
-                    tokenB = pool.swapData.tokenAccountA
-                    mintA = pool.swapData.mintB
-                    mintB = pool.swapData.mintA
+                // get balance for tokenB, return 0 if tokenB does not exist
+                if let tokenB = tokenB {
+                    singles.append(
+                        self.getTokenAccountBalance(pubkey: tokenB.base58EncodedString)
+                            .map {UInt64($0.amount)}
+                            .map {$0 as Any}
+                    )
+                } else {
+                    singles.append(
+                        Single<UInt64>.just(0)
+                            .map {$0 as Any}
+                    )
                 }
                 
-                return Single.zip(
-                    [
-                        self.getTokenAccountBalance(pubkey: tokenA.base58EncodedString)
-                            .map {$0 as Any},
-                        self.getTokenAccountBalance(pubkey: tokenB.base58EncodedString)
-                            .map {$0 as Any},
-                        self.getAccountInfoData(account: tokenA.base58EncodedString, tokenProgramId: .tokenProgramId)
-                            .map {$0 as Any},
-                        self.getMinimumBalanceForRentExemption(dataLength: UInt64(AccountInfo.BUFFER_LENGTH))
-                            .map {$0 as Any}
-                    ]
-                )
+                // get account info data and minimun balance for rent exemption
+                singles += [
+                    self.getAccountInfoData(account: tokenA.base58EncodedString, tokenProgramId: .tokenProgramId)
+                        .map {$0 as Any},
+                    self.getMinimumBalanceForRentExemption(dataLength: UInt64(AccountInfo.BUFFER_LENGTH))
+                        .map {$0 as Any}
+                ]
+                
+                return Single.zip(singles)
             }
             .flatMap {params in
+                // get variables
+                let tokenABalance   = params[0] as! UInt64
+                let tokenBBalance   = params[1] as! UInt64
+                let tokenAInfo      = params[2] as! AccountInfo
+                let minimumBalanceForRentExemption
+                                    = params[3] as! UInt64
+                
                 // form transaction
                 var transaction = Transaction()
                 var signers = [owner]
                 
-                // calculate balance
-                let tokenABalance = params[0] as! TokenAccountBalance
-                let tokenBBalance = params[1] as! TokenAccountBalance
-                minAmountIn = self.calculateAmount(tokenABalance: UInt64(tokenABalance.amount)!, tokenBBalance:  UInt64(tokenBBalance.amount)!, slippage: slippage, inputAmount: tokenInputAmount)
+                // calculate mintAmountIn
+                let minAmountIn = self.calculateAmount(
+                    tokenABalance: tokenABalance,
+                    tokenBBalance:  tokenBBalance,
+                    slippage: slippage,
+                    inputAmount: amount
+                )
                 
-                // account info
-                let tokenAInfo = params[2] as! AccountInfo
-                let minimumBalanceForRentExemption = params[3] as! UInt64
+                // find account
+                var fromAccount = tokenA
+                var toAccount = tokenB
                 
-                var fromAccount: PublicKey!
-                var toAccount: PublicKey!
-                
+                // create fromToken if it is native
                 if tokenAInfo.isNative {
                     let newAccount = try transaction.createAndInitializeAccount(
-                        ownerPubkey: ownerPubkey,
-                        tokenInputAmount: tokenInputAmount,
+                        ownerPubkey: owner.publicKey,
+                        tokenInputAmount: amount,
                         minimumBalanceForRentExemption: minimumBalanceForRentExemption,
                         inNetwork: self.network
                     )
@@ -109,17 +105,15 @@ extension SolanaSDK {
                     signers.append(newAccount)
                     
                     fromAccount = newAccount.publicKey
-                } else {
-                    fromAccount = self.findAccountAddress(tokenMint: mintA)
                 }
                 
-                toAccount = self.findAccountAddress(tokenMint: mintB)
-                let isWrappedSol = mintB == .wrappedSOLMint
-                
+                // check toToken
+                let isMintBWSOL = mintB == .wrappedSOLMint
                 if toAccount == nil {
+                    // create toToken if it doesn't exist
                     let newAccount = try transaction.createAndInitializeAccount(
-                        ownerPubkey: ownerPubkey,
-                        tokenInputAmount: tokenInputAmount,
+                        ownerPubkey: owner.publicKey,
+                        tokenInputAmount: amount,
                         minimumBalanceForRentExemption: minimumBalanceForRentExemption,
                         inNetwork: self.network
                     )
@@ -130,33 +124,44 @@ extension SolanaSDK {
                 }
                 
                 // approve and swap
-                transaction.approveAndSwap(fromAccount: fromAccount, owner: ownerPubkey, inPool: pool, poolSource: tokenA, poolDestination: tokenB, userDestination: toAccount, amount: tokenInputAmount, minimumAmountOut: minAmountIn)
+                transaction.approve(
+                    tokenProgramId: .tokenProgramId,
+                    account: fromAccount,
+                    delegate: pool.authority,
+                    owner: owner.publicKey,
+                    amount: amount
+                )
                 
-                let isNeedCloseAccount = tokenAInfo.isNative || isWrappedSol
+                transaction.swap(
+                    swapProgramId: self.network.swapProgramId,
+                    pool: pool,
+                    userSource: fromAccount,
+                    userDestination: toAccount!,
+                    amount: amount,
+                    minAmountIn: minAmountIn
+                )
+                
+                // close redundant account
+                let isNeedCloseAccount = tokenAInfo.isNative || isMintBWSOL
                 var closingAccount: PublicKey!
                 
                 if tokenAInfo.isNative {
                     closingAccount = fromAccount
-                } else if isWrappedSol {
+                } else if isMintBWSOL {
                     closingAccount = toAccount
                 }
                 
                 if isNeedCloseAccount,
                    let closingAccount = closingAccount
                 {
-                    transaction.closeAccount(closingAccount, destination: ownerPubkey, owner: ownerPubkey)
+                    transaction.closeAccount(closingAccount, destination: owner.publicKey, owner: owner.publicKey)
                 }
                 
-                return self.serializeTransaction(transaction, recentBlockhash: recentBlockhash, signers: signers)
+                return self.serializeTransaction(transaction, signers: signers)
             }
     }
     
     // MARK: - Helpers
-    private func findAccountAddress(tokenMint: PublicKey) -> PublicKey? {
-        // TODO: - findAccountAddress
-        return try! PublicKey(string: "7PECuw9WYABTpb19mGMwbq7ZDHnXcd1kTqXu1NuCP9o4")
-    }
-
     private func calculateAmount(
         tokenABalance: UInt64,
         tokenBBalance: UInt64,

@@ -9,28 +9,28 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    public func getPools(swapProgramId: String) -> Single<[Pool]> {
+    public func getSwapPools() -> Single<[Pool]> {
+        if let pools = _swapPool {return .just(pools)}
+        return getPools(swapProgramId: network.swapProgramId.base58EncodedString)
+            .do(onSuccess: {self._swapPool = $0})
+    }
+    
+    func getPools(swapProgramId: String) -> Single<[Pool]> {
         getProgramAccounts(publicKey: swapProgramId, decodedTo: TokenSwapInfo.self)
-            .map {$0.compactMap {$0.account.data.value}}
             .flatMap {
                 Single.zip(
-                    $0.compactMap {self.getPoolInfo(swapData: $0)}
+                    try $0.filter {$0.account.data.value != nil}
+                        .compactMap {
+                            self.getPoolInfo(
+                                address: try PublicKey(string: $0.pubkey),
+                                swapData: $0.account.data.value!
+                            )
+                        }
                 )
             }
     }
     
-    func getPoolInfo(address: String) -> Single<Pool> {
-        return getAccountInfo(account: address, decodedTo: TokenSwapInfo.self)
-            .flatMap { info in
-                let swapInfo = info.data.value
-                if let swapInfo = swapInfo {
-                    return self.getPoolInfo(swapData: swapInfo)
-                }
-                throw Error.other("Invalid data")
-            }
-    }
-    
-    func getPoolInfo(swapData: TokenSwapInfo) -> Single<Pool> {
+    func getPoolInfo(address: PublicKey, swapData: TokenSwapInfo) -> Single<Pool> {
         Single.zip([
             self.getMintData(mintAddress: swapData.mintA, programId: PublicKey.tokenProgramId),
             self.getMintData(mintAddress: swapData.mintB, programId: PublicKey.tokenProgramId),
@@ -40,7 +40,7 @@ extension SolanaSDK {
                 guard let authority = mintDatas[2].mintAuthority else {
                     throw Error.other("Invalid mintAuthority")
                 }
-                return Pool(tokenAInfo: mintDatas[0], tokenBInfo: mintDatas[1], poolTokenMint: mintDatas[2], authority: authority, swapData: swapData)
+                return Pool(address: address, tokenAInfo: mintDatas[0], tokenBInfo: mintDatas[1], poolTokenMint: mintDatas[2], authority: authority, swapData: swapData)
             }
     }
     

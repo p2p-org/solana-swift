@@ -69,33 +69,47 @@ public extension SolanaSDK {
             return newAccount
         }
         
-        mutating func approveAndSwap(fromAccount: PublicKey, owner: PublicKey, inPool pool: Pool, poolSource: PublicKey, poolDestination: PublicKey, userDestination toAccount: PublicKey, amount: UInt64, minimumAmountOut: UInt64) {
+        mutating func approve(
+            tokenProgramId: PublicKey,
+            account: PublicKey,
+            delegate: PublicKey,
+            owner: PublicKey,
+            amount: UInt64
+        ) {
             let approveInstruction = TokenProgram.approveInstruction(
                 tokenProgramId: .tokenProgramId,
-                account: fromAccount,
-                delegate: pool.authority,
+                account: account,
+                delegate: delegate,
                 owner: owner,
                 amount: amount
             )
-            
-            let swapInstruction = TokenSwapProgram.swapInstruction(
-                tokenSwapAccount: .poolAddress,
+            message.add(instruction: approveInstruction)
+        }
+        
+        mutating func swap(
+            swapProgramId: PublicKey,
+            pool: Pool,
+            userSource: PublicKey,
+            userDestination: PublicKey,
+            amount: UInt64,
+            minAmountIn: UInt64
+        ) {
+            let instruction = TokenSwapProgram.swapInstruction(
+                tokenSwapAccount: pool.address,
                 authority: pool.authority,
-                userSource: fromAccount,
-                poolSource: poolSource,
-                poolDestination: poolDestination,
-                userDestination: toAccount,
+                userSource: userSource,
+                poolSource: pool.swapData.tokenAccountA,
+                poolDestination: pool.swapData.tokenAccountB,
+                userDestination: userDestination,
                 poolMint: pool.swapData.tokenPool,
                 feeAccount: pool.swapData.feeAccount,
                 hostFeeAccount: pool.swapData.feeAccount,
                 tokenProgramId: .tokenProgramId,
-                swapProgramId: .swapProgramIdMainnetBeta,
+                swapProgramId: swapProgramId,
                 amountIn: amount,
-                minimumAmountOut: minimumAmountOut
+                minimumAmountOut: minAmountIn
             )
-            
-            message.add(instruction: approveInstruction)
-            message.add(instruction: swapInstruction)
+            message.add(instruction: instruction)
         }
         
         mutating func closeAccount(_ account: PublicKey, destination: PublicKey, owner: PublicKey) {

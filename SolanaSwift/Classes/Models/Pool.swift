@@ -9,6 +9,7 @@ import Foundation
 
 extension SolanaSDK {
     public struct Pool {
+        public let address: PublicKey
         public let tokenAInfo: Mint
         public let tokenBInfo: Mint
         public let poolTokenMint: Mint
