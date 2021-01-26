@@ -37,7 +37,7 @@ public extension SolanaSDK {
         }
         
         public static func getSupportedTokens(network: Network) -> [Self]? {
-            guard let string = SupportedTokens.shared[network.cluster],
+            guard let string = SupportedTokens.shared[network],
                   let data = string.data(using: .utf8)
             else {
                 return nil
