@@ -37,7 +37,6 @@ extension SolanaSDK {
                 throw Error.other("Unsupported swapping tokens")
             }
             .flatMap { matchedPool -> Single<[Any]> in
-                // get balance for tokenA
                 Single.zip([
                     self.getTokenAccountBalance(
                         pubkey: pool.swapData.tokenAccountA.base58EncodedString
@@ -69,10 +68,6 @@ extension SolanaSDK {
                 let minimumBalanceForRentExemption
                                     = params[3] as! UInt64
                 
-                // form transaction
-                var transaction = Transaction()
-                var signers = [owner]
-                
                 // calculate mintAmountIn
                 let minAmountIn = self.calculateAmount(
                     tokenABalance: tokenABalance,
@@ -82,8 +77,12 @@ extension SolanaSDK {
                 )
                 
                 // find account
-                var fromAccount = source
-                var toAccount = destination
+                var source = source
+                var destination = destination
+                
+                // form transaction
+                var transaction = Transaction()
+                var signers = [owner]
                 
                 // create fromToken if it is native
                 if tokenAInfo.isNative {
@@ -96,12 +95,12 @@ extension SolanaSDK {
                     
                     signers.append(newAccount)
                     
-                    fromAccount = newAccount.publicKey
+                    source = newAccount.publicKey
                 }
                 
                 // check toToken
                 let isMintBWSOL = destinationMint == .wrappedSOLMint
-                if toAccount == nil {
+                if destination == nil {
                     // create toToken if it doesn't exist
                     let newAccount = try transaction.createAndInitializeAccount(
                         ownerPubkey: owner.publicKey,
@@ -112,13 +111,13 @@ extension SolanaSDK {
                     
                     signers.append(newAccount)
                     
-                    toAccount = newAccount.publicKey
+                    destination = newAccount.publicKey
                 }
                 
                 // approve and swap
                 transaction.approve(
                     tokenProgramId: .tokenProgramId,
-                    account: fromAccount,
+                    account: source,
                     delegate: pool.authority,
                     owner: owner.publicKey,
                     amount: amount
@@ -127,8 +126,8 @@ extension SolanaSDK {
                 transaction.swap(
                     swapProgramId: self.network.swapProgramId,
                     pool: pool,
-                    userSource: fromAccount,
-                    userDestination: toAccount!,
+                    userSource: source,
+                    userDestination: destination!,
                     amount: amount,
                     minAmountIn: minAmountIn
                 )
@@ -138,9 +137,9 @@ extension SolanaSDK {
                 var closingAccount: PublicKey!
                 
                 if tokenAInfo.isNative {
-                    closingAccount = fromAccount
+                    closingAccount = source
                 } else if isMintBWSOL {
-                    closingAccount = toAccount
+                    closingAccount = destination
                 }
                 
                 if isNeedCloseAccount,
