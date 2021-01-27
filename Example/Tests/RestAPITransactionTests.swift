@@ -13,6 +13,19 @@ import SolanaSwift
 class RestAPITransactionTests: RestAPITests {
     override var network: SolanaSDK.Network {.mainnetBeta}
     
+//    func testSwap() throws {
+//        let id = try solanaSDK.swap(
+//            account: account,
+//            source: try SolanaSDK.PublicKey(string: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"),
+//            sourceMint: .wrappedSOLMint,
+//            destination: try SolanaSDK.PublicKey(string: "7PECuw9WYABTpb19mGMwbq7ZDHnXcd1kTqXu1NuCP9o4"),
+//            destinationMint: try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
+//            slippage: 0.01,
+//            amount: 34960
+//        )
+//            .toBlocking().first()
+//    }
+    
 //    func testSendTransaction() throws {
 //        let accountToSend = try SolanaSDK.PublicKey(string: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5")
 //        let recentBlockhash = "H8GCAE8Xh72WkGpsgdEhUpwnAHe3eicTW7sHpAQsMg5M"

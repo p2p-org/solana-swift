@@ -150,6 +150,7 @@ extension SolanaSDK {
                 
                 return self.serializeTransaction(transaction, signers: signers)
             }
+            .flatMap {self.sendTransaction(serializedTransaction: $0)}
     }
     
     // MARK: - Helpers
