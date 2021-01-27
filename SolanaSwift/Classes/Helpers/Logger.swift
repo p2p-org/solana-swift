@@ -38,8 +38,17 @@ public class Logger {
         
         return formatter
     }
+    private static var isOn = true
     
     // MARK: - Class Functions
+    public static func on() {
+        isOn = true
+    }
+    
+    public static func off() {
+        isOn = false
+    }
+    
     private class func sourceFileName(filePath: String) -> String {
         let components = filePath.components(separatedBy: "/")
         
@@ -52,14 +61,15 @@ public class Logger {
     // line:        The line number of the log message.
     // column:      The same will happen for this parameter too.
     // funcName:    The default value of this parameter is the signature of the function from where the log function is getting called.
-    public class func log(message: String, event: LogEvent, fileName: String = #file, line: Int = #line, column: Int = #column, funcName: String = #function, apiMethod: String? = nil) {
+    public class func log(message: String, event: LogEvent, fileName: String = #file, line: Int = #line, column: Int = #column, funcName: String = #function, apiMethod: String? = nil)
+    {
+        if !isOn {return}
         if showEvents?.contains(event) == false {return}
         if let method = apiMethod, shownApiMethods?.contains(method) == false {return}
         #if DEBUG
             print("\(Date().toString()) \(event.rawValue)[\(sourceFileName(filePath: fileName))]:\(line) \(column) \(funcName) -> \(message)")
         #else
         #endif
-
     }
 }
 

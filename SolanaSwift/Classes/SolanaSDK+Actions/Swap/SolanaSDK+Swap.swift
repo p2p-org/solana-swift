@@ -11,10 +11,10 @@ import RxSwift
 extension SolanaSDK {
     public func swap(
         account: Account? = nil,
-        tokenA: PublicKey,
-        mintA: PublicKey,
-        tokenB: PublicKey? = nil,
-        mintB: PublicKey,
+        source: PublicKey,
+        sourceMint: PublicKey,
+        destination: PublicKey? = nil,
+        destinationMint: PublicKey,
         slippage: Double,
         amount: UInt64
     ) -> Single<TransactionID> {
@@ -29,7 +29,7 @@ extension SolanaSDK {
         return getSwapPools()
             .map {pools -> Pool in
                 // filter pool that match requirement
-                if let matchPool = pools.first(where: {$0.swapData.mintA == mintA && $0.swapData.mintB == mintB})
+                if let matchPool = pools.first(where: {$0.swapData.mintA == sourceMint && $0.swapData.mintB == destinationMint})
                 {
                     pool = matchPool
                     return pool
@@ -51,7 +51,10 @@ extension SolanaSDK {
                         .map {UInt64($0.amount)}
                         .map {$0 as Any},
                     
-                    self.getAccountInfoData(account: tokenA.base58EncodedString, tokenProgramId: .tokenProgramId)
+                    self.getAccountInfoData(
+                        account: pool.swapData.tokenAccountA.base58EncodedString,
+                        tokenProgramId: .tokenProgramId
+                    )
                         .map {$0 as Any},
                     
                     self.getMinimumBalanceForRentExemption(dataLength: UInt64(AccountInfo.BUFFER_LENGTH))
@@ -79,8 +82,8 @@ extension SolanaSDK {
                 )
                 
                 // find account
-                var fromAccount = tokenA
-                var toAccount = tokenB
+                var fromAccount = source
+                var toAccount = destination
                 
                 // create fromToken if it is native
                 if tokenAInfo.isNative {
@@ -97,7 +100,7 @@ extension SolanaSDK {
                 }
                 
                 // check toToken
-                let isMintBWSOL = mintB == .wrappedSOLMint
+                let isMintBWSOL = destinationMint == .wrappedSOLMint
                 if toAccount == nil {
                     // create toToken if it doesn't exist
                     let newAccount = try transaction.createAndInitializeAccount(
