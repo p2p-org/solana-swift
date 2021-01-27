@@ -38,36 +38,25 @@ extension SolanaSDK {
             }
             .flatMap { matchedPool -> Single<[Any]> in
                 // get balance for tokenA
-                var singles = [Single<Any>]()
-                singles.append(
-                    self.getTokenAccountBalance(pubkey: tokenA.base58EncodedString)
+                Single.zip([
+                    self.getTokenAccountBalance(
+                        pubkey: pool.swapData.tokenAccountA.base58EncodedString
+                    )
                         .map {UInt64($0.amount)}
-                        .map {$0 as Any}
-                )
-                
-                // get balance for tokenB, return 0 if tokenB does not exist
-                if let tokenB = tokenB {
-                    singles.append(
-                        self.getTokenAccountBalance(pubkey: tokenB.base58EncodedString)
-                            .map {UInt64($0.amount)}
-                            .map {$0 as Any}
+                        .map {$0 as Any},
+                    
+                    self.getTokenAccountBalance(
+                        pubkey: pool.swapData.tokenAccountB.base58EncodedString
                     )
-                } else {
-                    singles.append(
-                        Single<UInt64>.just(0)
-                            .map {$0 as Any}
-                    )
-                }
-                
-                // get account info data and minimun balance for rent exemption
-                singles += [
+                        .map {UInt64($0.amount)}
+                        .map {$0 as Any},
+                    
                     self.getAccountInfoData(account: tokenA.base58EncodedString, tokenProgramId: .tokenProgramId)
                         .map {$0 as Any},
+                    
                     self.getMinimumBalanceForRentExemption(dataLength: UInt64(AccountInfo.BUFFER_LENGTH))
                         .map {$0 as Any}
-                ]
-                
-                return Single.zip(singles)
+                ])
             }
             .flatMap {params in
                 // get variables
