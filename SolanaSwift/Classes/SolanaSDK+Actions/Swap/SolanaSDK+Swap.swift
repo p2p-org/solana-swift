@@ -164,11 +164,11 @@ extension SolanaSDK {
             )
                 .map {UInt64($0.amount) ?? 0}
         )
-            .map {self.calculateAmount(tokenABalance: $0.0, tokenBBalance: $0.1, slippage: slippage, inputAmount: inputAmount)}
+            .map {self.getSwapEstimatedAmount(tokenABalance: $0.0, tokenBBalance: $0.1, slippage: slippage, inputAmount: inputAmount)}
     }
     
     // MARK: - Helpers
-    private func calculateAmount(
+    private func getSwapEstimatedAmount(
         tokenABalance: UInt64,
         tokenBBalance: UInt64,
         slippage: Double,
@@ -177,6 +177,16 @@ extension SolanaSDK {
         let a = Double(tokenBBalance) * pow(10, -9)
         let b = Double(inputAmount) * pow(10, -9)
         let estimatedAmount: Double = a * b / Double(tokenABalance + inputAmount) / pow(10, -18)
+        return UInt64(estimatedAmount)
+    }
+    
+    private func calculateAmount(
+        tokenABalance: UInt64,
+        tokenBBalance: UInt64,
+        slippage: Double,
+        inputAmount: UInt64
+    ) -> UInt64 {
+        let estimatedAmount = getSwapEstimatedAmount(tokenABalance: tokenABalance, tokenBBalance: tokenBBalance, slippage: slippage, inputAmount: inputAmount)
         return UInt64(Double(estimatedAmount) * Double(1 - slippage))
     }
     
