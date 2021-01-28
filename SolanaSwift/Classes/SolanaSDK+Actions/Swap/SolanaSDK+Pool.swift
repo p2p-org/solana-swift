@@ -32,15 +32,28 @@ extension SolanaSDK {
     
     func getPoolInfo(address: PublicKey, swapData: TokenSwapInfo) -> Single<Pool> {
         Single.zip([
-            self.getMintData(mintAddress: swapData.mintA, programId: PublicKey.tokenProgramId),
-            self.getMintData(mintAddress: swapData.mintB, programId: PublicKey.tokenProgramId),
+            self.getMintData(mintAddress: swapData.mintA, programId: PublicKey.tokenProgramId)
+                .map {$0 as Any},
+            self.getMintData(mintAddress: swapData.mintB, programId: PublicKey.tokenProgramId)
+                .map {$0 as Any},
             self.getMintData(mintAddress: swapData.tokenPool, programId: PublicKey.tokenProgramId)
+                .map {$0 as Any},
+            self.getTokenAccountBalance(pubkey: swapData.tokenAccountA.base58EncodedString)
+                .map {$0 as Any},
+            self.getTokenAccountBalance(pubkey: swapData.tokenAccountB.base58EncodedString)
+                .map {$0 as Any},
         ])
             .map { mintDatas in
-                guard let authority = mintDatas[2].mintAuthority else {
-                    throw Error.other("Invalid mintAuthority")
+                guard let tokenAInfo = mintDatas[0] as? Mint,
+                      let tokenBInfo = mintDatas[1] as? Mint,
+                      let poolTokenMint = mintDatas[2] as? Mint,
+                      let authority = poolTokenMint.mintAuthority,
+                      let tokenABalance = mintDatas[3] as? TokenAccountBalance,
+                      let tokenBBalance = mintDatas[4] as? TokenAccountBalance
+                else {
+                    throw Error.other("Invalid pool")
                 }
-                return Pool(address: address, tokenAInfo: mintDatas[0], tokenBInfo: mintDatas[1], poolTokenMint: mintDatas[2], authority: authority, swapData: swapData)
+                return Pool(address: address, tokenAInfo: tokenAInfo, tokenBInfo: tokenBInfo, poolTokenMint: poolTokenMint, authority: authority, swapData: swapData, tokenABalance: tokenABalance, tokenBBalance: tokenBBalance)
             }
     }
     

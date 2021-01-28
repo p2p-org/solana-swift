@@ -15,5 +15,7 @@ extension SolanaSDK {
         public let poolTokenMint: Mint
         public let authority: PublicKey
         public let swapData: TokenSwapInfo
+        public var tokenABalance: TokenAccountBalance?
+        public var tokenBBalance: TokenAccountBalance?
     }
 }
