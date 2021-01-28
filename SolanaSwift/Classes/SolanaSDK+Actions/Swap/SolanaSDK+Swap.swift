@@ -153,6 +153,20 @@ extension SolanaSDK {
             .flatMap {self.sendTransaction(serializedTransaction: $0)}
     }
     
+    public func getEstimatedAmount(pool: Pool, slippage: Double, inputAmount: UInt64) -> Single<UInt64> {
+        Single.zip(
+            self.getTokenAccountBalance(
+                pubkey: pool.swapData.tokenAccountA.base58EncodedString
+            )
+                .map {UInt64($0.amount) ?? 0},
+            self.getTokenAccountBalance(
+                pubkey: pool.swapData.tokenAccountB.base58EncodedString
+            )
+                .map {UInt64($0.amount) ?? 0}
+        )
+            .map {self.calculateAmount(tokenABalance: $0.0, tokenBBalance: $0.1, slippage: slippage, inputAmount: inputAmount)}
+    }
+    
     // MARK: - Helpers
     private func calculateAmount(
         tokenABalance: UInt64,
