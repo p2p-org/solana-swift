@@ -174,8 +174,10 @@ extension SolanaSDK {
         slippage: Double,
         inputAmount: UInt64
     ) -> UInt64 {
-        let estimatedAmount = tokenBBalance * inputAmount / (tokenABalance + inputAmount)
-        return UInt64(Float64(estimatedAmount) * Float64(1 - slippage))
+        let a = Double(tokenBBalance) * pow(10, -9)
+        let b = Double(inputAmount) * pow(10, -9)
+        let estimatedAmount: Double = a * b / Double(tokenABalance + inputAmount) / pow(10, -18)
+        return UInt64(Double(estimatedAmount) * Double(1 - slippage))
     }
     
     private func getAccountInfoData(account: String, tokenProgramId: PublicKey) -> Single<AccountInfo> {
