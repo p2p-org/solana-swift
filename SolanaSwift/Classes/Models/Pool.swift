@@ -17,5 +17,9 @@ extension SolanaSDK {
         public let swapData: TokenSwapInfo
         public var tokenABalance: TokenAccountBalance?
         public var tokenBBalance: TokenAccountBalance?
+        
+        public var fee: Double {
+            Double(swapData.tradeFeeNumerator) / Double(swapData.tradeFeeDenominator) * 100
+        }
     }
 }
