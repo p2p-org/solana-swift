@@ -8,7 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct Mint: BufferLayout {
+    public struct Mint: BufferLayout, Equatable, Hashable {
         public let mintAuthorityOption: UInt32
         public let mintAuthority: PublicKey?
         public let supply: UInt64

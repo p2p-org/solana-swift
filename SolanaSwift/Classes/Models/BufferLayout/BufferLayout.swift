@@ -13,7 +13,7 @@ public protocol BufferLayout: Codable {
 }
 
 extension BufferLayout {
-    static var BUFFER_LENGTH: Int {
+    public static var BUFFER_LENGTH: Int {
         layout().reduce(0, {$0 + ($1.key != nil ? $1.length: 0)})
     }
     

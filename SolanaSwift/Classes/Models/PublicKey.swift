@@ -8,7 +8,7 @@
 import Foundation
 
 public extension SolanaSDK {
-    struct PublicKey: Codable, Equatable, CustomStringConvertible {
+    struct PublicKey: Codable, Equatable, CustomStringConvertible, Hashable {
         public static let LENGTH = 32
         public let bytes: [UInt8]
         

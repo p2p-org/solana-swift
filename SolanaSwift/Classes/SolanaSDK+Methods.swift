@@ -93,7 +93,7 @@ public extension SolanaSDK {
 	func getLeaderSchedule(epoch: UInt64? = nil, commitment: Commitment? = nil) -> Single<[String: [Int]]?> {
 		request(parameters: [epoch, RequestConfiguration(commitment: commitment)])
 	}
-    internal func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") -> Single<UInt64> {
+    func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") -> Single<UInt64> {
 		request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
 	}
 	func getMultipleAccounts(pubkeys: [String], configs: RequestConfiguration? = nil) -> Single<[BufferInfo<AccountInfo>]?> {

@@ -8,7 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct Pool {
+    public struct Pool: Hashable {
         public let address: PublicKey
         public let tokenAInfo: Mint
         public let tokenBInfo: Mint
