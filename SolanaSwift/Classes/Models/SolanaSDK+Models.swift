@@ -151,6 +151,10 @@ public extension SolanaSDK {
 		public let uiAmount: Float64?
 		public let amount: String
 		public let decimals: UInt8?
+        
+        public var amountInUInt64: UInt64? {
+            return UInt64(amount)
+        }
 	}
     struct TokenAccount<T: BufferLayout>: Decodable {
 		public let pubkey: String
