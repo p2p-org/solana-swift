@@ -69,11 +69,15 @@ extension SolanaSDK {
                                     = params[3] as! UInt64
                 
                 // calculate mintAmountIn
-                let minAmountIn = self.calculateAmount(
+                let estimatedAmount = Self.calculateSwapEstimatedAmount(
                     tokenABalance: tokenABalance,
                     tokenBBalance:  tokenBBalance,
-                    slippage: slippage,
                     inputAmount: amount
+                )
+                
+                let minAmountIn = Self.calculateSwapMinimumReceiveAmount(
+                    estimatedAmount: estimatedAmount,
+                    slippage: slippage
                 )
                 
                 // find account
@@ -154,26 +158,19 @@ extension SolanaSDK {
     }
     
     // MARK: - Helpers
-    public func getSwapEstimatedAmount(
+    public static func calculateSwapEstimatedAmount(
         tokenABalance: UInt64,
         tokenBBalance: UInt64,
-        slippage: Double,
         inputAmount: UInt64
     ) -> UInt64 {
-        let a = Double(tokenBBalance) * pow(10, -9)
-        let b = Double(inputAmount) * pow(10, -9)
-        let estimatedAmount: Double = a * b / Double(tokenABalance + inputAmount) / pow(10, -18)
-        return UInt64(estimatedAmount)
+        UInt64(BInt(tokenBBalance) * BInt(inputAmount) / (BInt(tokenABalance) + BInt(inputAmount)))
     }
     
-    private func calculateAmount(
-        tokenABalance: UInt64,
-        tokenBBalance: UInt64,
-        slippage: Double,
-        inputAmount: UInt64
+    public static func calculateSwapMinimumReceiveAmount(
+        estimatedAmount: UInt64,
+        slippage: Double
     ) -> UInt64 {
-        let estimatedAmount = getSwapEstimatedAmount(tokenABalance: tokenABalance, tokenBBalance: tokenBBalance, slippage: slippage, inputAmount: inputAmount)
-        return UInt64(Double(estimatedAmount) * Double(1 - slippage))
+        UInt64(Float64(estimatedAmount) * Float64(1 - slippage / 100))
     }
     
     private func getAccountInfoData(account: String, tokenProgramId: PublicKey) -> Single<AccountInfo> {
