@@ -38,18 +38,6 @@ extension SolanaSDK {
             }
             .flatMap { matchedPool -> Single<[Any]> in
                 Single.zip([
-                    self.getTokenAccountBalance(
-                        pubkey: pool.swapData.tokenAccountA.base58EncodedString
-                    )
-                        .map {UInt64($0.amount)}
-                        .map {$0 as Any},
-                    
-                    self.getTokenAccountBalance(
-                        pubkey: pool.swapData.tokenAccountB.base58EncodedString
-                    )
-                        .map {UInt64($0.amount)}
-                        .map {$0 as Any},
-                    
                     self.getAccountInfoData(
                         account: pool.swapData.tokenAccountA.base58EncodedString,
                         tokenProgramId: .tokenProgramId
@@ -61,12 +49,13 @@ extension SolanaSDK {
                 ])
             }
             .flatMap {params in
+                guard let tokenABalance = UInt64(pool.tokenABalance?.amount ?? ""),
+                      let tokenBBalance = UInt64(pool.tokenBBalance?.amount ?? "")
+                else {return .error(Error.other("Balance amount is not valid"))}
                 // get variables
-                let tokenABalance   = params[0] as! UInt64
-                let tokenBBalance   = params[1] as! UInt64
-                let tokenAInfo      = params[2] as! AccountInfo
+                let tokenAInfo      = params[0] as! AccountInfo
                 let minimumBalanceForRentExemption
-                                    = params[3] as! UInt64
+                                    = params[1] as! UInt64
                 
                 // calculate mintAmountIn
                 let estimatedAmount = Self.calculateSwapEstimatedAmount(
