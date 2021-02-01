@@ -8,7 +8,7 @@
 import Foundation
 
 public extension SolanaSDK {
-    enum Error: Swift.Error {
+    enum Error: LocalizedError {
         case accountNotFound
         case publicKeyNotFound
         case invalidURL
