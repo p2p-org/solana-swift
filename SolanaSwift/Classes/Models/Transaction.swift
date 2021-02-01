@@ -103,7 +103,7 @@ public extension SolanaSDK {
                 userDestination: userDestination,
                 poolMint: pool.swapData.tokenPool,
                 feeAccount: pool.swapData.feeAccount,
-                hostFeeAccount: pool.swapData.feeAccount,
+                hostFeeAccount: .hostFeePubkey/*pool.swapData.feeAccount*/,
                 tokenProgramId: .tokenProgramId,
                 swapProgramId: swapProgramId,
                 amountIn: amount,
