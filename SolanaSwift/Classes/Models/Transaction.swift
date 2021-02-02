@@ -30,6 +30,11 @@ public extension SolanaSDK {
         }
         
         public mutating func sign(signers: [Account]) throws {
+            guard signers.count > 0 else {throw SolanaSDK.Error.other("No signers found")}
+            
+            // add fee payer
+            message.feePayer = signers.first!
+            
             let serializedMessage = try message.serialize()
             for signer in signers {
                 let data = try NaclSign.signDetached(message: Data(serializedMessage), secretKey: signer.secretKey).bytes

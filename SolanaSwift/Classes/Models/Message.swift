@@ -16,6 +16,7 @@ public extension SolanaSDK {
         public var accountKeys = [Account.Meta]()
         public var instructions = [Transaction.Instruction]()
         private(set) var programInstructions: [TransactionInstruction]?
+        public var feePayer: Account?
         
         public init() {}
         
@@ -78,6 +79,7 @@ public extension SolanaSDK {
             
             header = Header()
             
+            addFeePayerToAccountKeys()
             for meta in accountKeys {
                 accountKeysBuff.append(meta.publicKey.data)
                 if meta.isSigner {
@@ -114,6 +116,14 @@ public extension SolanaSDK {
             guard let index = accountKeys.firstIndex(where: {$0.publicKey == publicKey})
             else {throw Error.other("Could not found accountIndex")}
             return index
+        }
+        
+        private mutating func addFeePayerToAccountKeys() {
+            guard let feePayer = feePayer,
+                  let index = accountKeys.firstIndex(where: {$0.publicKey == feePayer.publicKey})
+            else {return}
+            accountKeys.remove(at: index)
+            accountKeys.insert(Account.Meta(publicKey: feePayer.publicKey, isSigner: true, isWritable: true), at: 0)
         }
     }
 }
