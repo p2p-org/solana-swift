@@ -93,8 +93,8 @@ extension SolanaSDK {
                 if tokenAInfo.isNative {
                     let newAccount = try transaction.createAndInitializeAccount(
                         ownerPubkey: owner.publicKey,
-                        tokenInputAmount: amount,
-                        minimumBalanceForRentExemption: minimumBalanceForRentExemption,
+                        mint: sourceMint,
+                        balance: amount + minimumBalanceForRentExemption,
                         inNetwork: self.network
                     )
                     
@@ -109,8 +109,8 @@ extension SolanaSDK {
                     // create toToken if it doesn't exist
                     let newAccount = try transaction.createAndInitializeAccount(
                         ownerPubkey: owner.publicKey,
-                        tokenInputAmount: amount,
-                        minimumBalanceForRentExemption: minimumBalanceForRentExemption,
+                        mint: destinationMint,
+                        balance: minimumBalanceForRentExemption,
                         inNetwork: self.network
                     )
                     

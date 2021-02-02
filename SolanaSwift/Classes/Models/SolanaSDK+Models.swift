@@ -147,7 +147,7 @@ public extension SolanaSDK {
 		public let nonCirculatingAccounts: [String]
 		public let total: UInt64
 	}
-	struct TokenAccountBalance: Decodable, Equatable, Hashable {
+	struct TokenAccountBalance: Codable, Equatable, Hashable {
 		public let uiAmount: Float64?
 		public let amount: String
 		public let decimals: UInt8?

@@ -8,10 +8,10 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct Pool: Hashable {
+    public struct Pool: Hashable, Codable {
         public let address: PublicKey
-        public let tokenAInfo: Mint
-        public let tokenBInfo: Mint
+        public var tokenAInfo: Mint
+        public var tokenBInfo: Mint
         public let poolTokenMint: Mint
         public let authority: PublicKey
         public var swapData: TokenSwapInfo
@@ -38,6 +38,7 @@ extension Array where Element == SolanaSDK.Pool {
                 swap(&pool.swapData.tokenAccountA, &pool.swapData.tokenAccountB)
                 swap(&pool.swapData.mintA, &pool.swapData.mintB)
                 swap(&pool.tokenABalance, &pool.tokenBBalance)
+                swap(&pool.tokenAInfo, &pool.tokenBInfo)
             }
             return pool
         }

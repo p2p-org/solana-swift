@@ -8,7 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct TokenSwapInfo: BufferLayout, Equatable, Hashable {
+    public struct TokenSwapInfo: BufferLayout, Equatable, Hashable, Encodable {
         // MARK: - Properties
         public let isInitialized: Bool
         public let nonce: UInt8
