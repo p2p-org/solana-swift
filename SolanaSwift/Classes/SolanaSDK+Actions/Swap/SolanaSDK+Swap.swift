@@ -105,7 +105,7 @@ extension SolanaSDK {
                 
                 // check toToken
                 let isMintBWSOL = destinationMint == .wrappedSOLMint
-                if destination == nil {
+                if destination == nil || isMintBWSOL {
                     // create toToken if it doesn't exist
                     let newAccount = try transaction.createAndInitializeAccount(
                         ownerPubkey: owner.publicKey,
