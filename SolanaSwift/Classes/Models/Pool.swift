@@ -14,12 +14,32 @@ extension SolanaSDK {
         public let tokenBInfo: Mint
         public let poolTokenMint: Mint
         public let authority: PublicKey
-        public let swapData: TokenSwapInfo
+        public var swapData: TokenSwapInfo
         public var tokenABalance: TokenAccountBalance?
         public var tokenBBalance: TokenAccountBalance?
         
         public var fee: Double {
             Double(swapData.tradeFeeNumerator) / Double(swapData.tradeFeeDenominator) * 100
+        }
+    }
+}
+
+extension Array where Element == SolanaSDK.Pool {
+    public func matchedFor(sourceMint: String, destinationMint: String) -> SolanaSDK.Pool?
+    {
+        first(where: {
+            ($0.swapData.mintA.base58EncodedString == sourceMint && $0.swapData.mintB.base58EncodedString == destinationMint) ||
+                ($0.swapData.mintB.base58EncodedString == sourceMint && $0.swapData.mintA.base58EncodedString == destinationMint)
+        })
+        .map { pool in
+            var pool = pool
+            if (pool.swapData.mintB.base58EncodedString == sourceMint && pool.swapData.mintA.base58EncodedString == destinationMint)
+            {
+                swap(&pool.swapData.tokenAccountA, &pool.swapData.tokenAccountB)
+                swap(&pool.swapData.mintA, &pool.swapData.mintB)
+                swap(&pool.tokenABalance, &pool.tokenBBalance)
+            }
+            return pool
         }
     }
 }
