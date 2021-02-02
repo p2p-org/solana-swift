@@ -25,7 +25,7 @@ extension SolanaSDK {
 }
 
 extension Array where Element == SolanaSDK.Pool {
-    public func matchedFor(sourceMint: String, destinationMint: String) -> SolanaSDK.Pool?
+    public func matchedFor(sourceMint: String?, destinationMint: String?) -> SolanaSDK.Pool?
     {
         first(where: {
             ($0.swapData.mintA.base58EncodedString == sourceMint && $0.swapData.mintB.base58EncodedString == destinationMint) ||
