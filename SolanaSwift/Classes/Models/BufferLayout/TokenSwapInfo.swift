@@ -8,16 +8,16 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct TokenSwapInfo: BufferLayout, Equatable, Hashable {
+    public struct TokenSwapInfo: BufferLayout, Equatable, Hashable, Encodable {
         // MARK: - Properties
         public let isInitialized: Bool
         public let nonce: UInt8
         public let tokenProgramId: PublicKey
-        public let tokenAccountA: PublicKey
-        public let tokenAccountB: PublicKey
+        public var tokenAccountA: PublicKey
+        public var tokenAccountB: PublicKey
         public let tokenPool: PublicKey
-        public let mintA: PublicKey
-        public let mintB: PublicKey
+        public var mintA: PublicKey
+        public var mintB: PublicKey
         public let feeAccount: PublicKey
         public let curveType: UInt8
         public let tradeFeeNumerator: UInt64

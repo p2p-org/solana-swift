@@ -12,6 +12,11 @@ public extension SolanaSDK {
         public static let LENGTH = 32
         public let bytes: [UInt8]
         
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(base58EncodedString)
+        }
+        
         public init(string: String) throws {
             guard string.utf8.count >= SolanaSDK.PublicKey.LENGTH
             else {

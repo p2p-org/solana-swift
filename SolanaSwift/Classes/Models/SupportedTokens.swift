@@ -215,13 +215,13 @@ extension SolanaSDK {
                   },
                   {
                     "name": "Example Token 9",
-                    "mintAddress": "6FoCxCt6d6LGgMCpB7iEuvstQKkoE9GUnaTYF36NRfaW",
+                    "mintAddress": "HHpyfYteg2MjMBaZC6Vj43ppMKt8MUxSCxPzRaruTbpM",
                     "symbol": "EXMPL9",
                     "icon": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x476c5E26a75bd202a9683ffD34359C0CC15be0fF/logo.png"
                   },
                   {
                     "name": "Example Token 10",
-                    "mintAddress": "6Xd5kaN87U1CRmJH9r8BTdB91CBEGPkmCjNtn1HiGPcU",
+                    "mintAddress": "4TJRe6gZZG3ybtjn5GPCGtQtVCG4zG5URC4t6u4ddTwM",
                     "symbol": "EXMPL10",
                     "icon": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x476c5E26a75bd202a9683ffD34359C0CC15be0fF/logo.png"
                   }

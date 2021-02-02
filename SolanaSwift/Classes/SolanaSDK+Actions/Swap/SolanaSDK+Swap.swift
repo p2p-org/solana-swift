@@ -11,6 +11,7 @@ import RxSwift
 extension SolanaSDK {
     public func swap(
         account: Account? = nil,
+        pool: Pool? = nil,
         source: PublicKey,
         sourceMint: PublicKey,
         destination: PublicKey? = nil,
@@ -23,20 +24,30 @@ extension SolanaSDK {
         else {return .error(Error.accountNotFound)}
         
         // reuse variables
-        var pool: Pool!
+        var pool = pool
+        
+        // reduce pools
+        var getPoolRequest: Single<Pool>
+        if let pool = pool {
+            getPoolRequest = .just(pool)
+        } else {
+            getPoolRequest = getSwapPools()
+                .map {pools -> Pool in
+                    // filter pool that match requirement
+                    if let matchPool = pools.matchedPool(
+                        sourceMint: sourceMint.base58EncodedString,
+                        destinationMint: destinationMint.base58EncodedString
+                    ) {
+                        pool = matchPool
+                        return matchPool
+                    }
+                    throw Error.other("Unsupported swapping tokens")
+                }
+        }
         
         // get pool
-        return getSwapPools()
-            .map {pools -> Pool in
-                // filter pool that match requirement
-                if let matchPool = pools.first(where: {$0.swapData.mintA == sourceMint && $0.swapData.mintB == destinationMint})
-                {
-                    pool = matchPool
-                    return pool
-                }
-                throw Error.other("Unsupported swapping tokens")
-            }
-            .flatMap { matchedPool -> Single<[Any]> in
+        return getPoolRequest
+            .flatMap { pool -> Single<[Any]> in
                 Single.zip([
                     self.getAccountInfoData(
                         account: pool.swapData.tokenAccountA.base58EncodedString,
@@ -49,7 +60,8 @@ extension SolanaSDK {
                 ])
             }
             .flatMap {params in
-                guard let tokenABalance = UInt64(pool.tokenABalance?.amount ?? ""),
+                guard let pool = pool,
+                      let tokenABalance = UInt64(pool.tokenABalance?.amount ?? ""),
                       let tokenBBalance = UInt64(pool.tokenBBalance?.amount ?? "")
                 else {return .error(Error.other("Balance amount is not valid"))}
                 // get variables
@@ -81,8 +93,8 @@ extension SolanaSDK {
                 if tokenAInfo.isNative {
                     let newAccount = try transaction.createAndInitializeAccount(
                         ownerPubkey: owner.publicKey,
-                        tokenInputAmount: amount,
-                        minimumBalanceForRentExemption: minimumBalanceForRentExemption,
+                        mint: sourceMint,
+                        balance: amount + minimumBalanceForRentExemption,
                         inNetwork: self.network
                     )
                     
@@ -93,12 +105,12 @@ extension SolanaSDK {
                 
                 // check toToken
                 let isMintBWSOL = destinationMint == .wrappedSOLMint
-                if destination == nil {
+                if destination == nil || isMintBWSOL {
                     // create toToken if it doesn't exist
                     let newAccount = try transaction.createAndInitializeAccount(
                         ownerPubkey: owner.publicKey,
-                        tokenInputAmount: amount,
-                        minimumBalanceForRentExemption: minimumBalanceForRentExemption,
+                        mint: destinationMint,
+                        balance: minimumBalanceForRentExemption,
                         inNetwork: self.network
                     )
                     
