@@ -34,8 +34,10 @@ extension SolanaSDK {
             getPoolRequest = getSwapPools()
                 .map {pools -> Pool in
                     // filter pool that match requirement
-                    if let matchPool = pools.matchedFor(sourceMint: sourceMint.base58EncodedString, destinationMint: destinationMint.base58EncodedString)
-                    {
+                    if let matchPool = pools.matchedPool(
+                        sourceMint: sourceMint.base58EncodedString,
+                        destinationMint: destinationMint.base58EncodedString
+                    ) {
                         pool = matchPool
                         return matchPool
                     }
