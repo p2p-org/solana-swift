@@ -17,6 +17,12 @@ public extension SolanaSDK {
             try container.encode(base58EncodedString)
         }
         
+        public init(from decoder: Decoder) throws {
+            var container = try decoder.singleValueContainer()
+            let string = try container.decode(String.self)
+            try self.init(string: string)
+        }
+        
         public init(string: String) throws {
             guard string.utf8.count >= SolanaSDK.PublicKey.LENGTH
             else {
