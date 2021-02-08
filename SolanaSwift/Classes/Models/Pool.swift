@@ -17,10 +17,6 @@ extension SolanaSDK {
         public var tokenABalance: TokenAccountBalance?
         public var tokenBBalance: TokenAccountBalance?
         
-        public var fee: Double {
-            Double(swapData.tradeFeeNumerator) / Double(swapData.tradeFeeDenominator) * 100
-        }
-        
         public var authority: PublicKey? {
             poolTokenMint.mintAuthority
         }
@@ -38,6 +34,36 @@ extension SolanaSDK {
             slippage: Double
         ) -> UInt64 {
             UInt64(Float64(estimatedAmount) * Float64(1 - slippage / 100))
+        }
+        
+        public func amountInOtherToken(
+            forInputAmount inputAmount: UInt64,
+            includeFees: Bool
+        ) -> Decimal? {
+            guard let tokenABalance = tokenABalance?.amountInUInt64,
+                  let tokenBBalance = tokenBBalance?.amountInUInt64
+            else {return nil}
+            let feeRatio = Decimal(swapData.tradeFeeNumerator) / Decimal(swapData.tradeFeeDenominator)
+            let invariant = BInt(tokenABalance) * BInt(tokenBBalance)
+            let newFromAmountInPool = BInt(tokenABalance) + BInt(inputAmount)
+            let newToAmountInPool = invariant / newFromAmountInPool
+            let grossToAmount = BInt(tokenBBalance) - newToAmountInPool
+            
+            let grossToAmountDecimal = Decimal(string: grossToAmount.asString(withBase: 10)) ?? 0
+            
+            let fees = includeFees ? grossToAmountDecimal * feeRatio: Decimal(0)
+            return grossToAmountDecimal - fees
+        }
+        
+        public func fee(forInputAmount inputAmount: UInt64) -> Double? {
+            guard let swappedAmountWithFee = amountInOtherToken(forInputAmount: inputAmount, includeFees: true),
+                  let swappedAmountWithoutFee = amountInOtherToken(forInputAmount: inputAmount, includeFees: false)
+            else {
+                return nil
+            }
+            let fee = swappedAmountWithoutFee - swappedAmountWithFee
+            let feeInDouble = NSDecimalNumber(decimal:fee).doubleValue
+            return feeInDouble * pow(10, -Double(tokenBInfo.decimals))
         }
     }
 }
