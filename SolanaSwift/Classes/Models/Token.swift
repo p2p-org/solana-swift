@@ -14,7 +14,7 @@ public extension SolanaSDK {
         public var pubkey: String?
         public let symbol: String
         public let icon: String?
-        public var amount: UInt64?
+        public var lamports: UInt64?
         public var decimals: Int?
         
         public init(
@@ -23,7 +23,7 @@ public extension SolanaSDK {
             pubkey: String?,
             symbol: String,
             icon: String?,
-            amount: UInt64?,
+            lamports: UInt64?,
             decimals: Int?
         ) {
             self.name = name
@@ -31,7 +31,7 @@ public extension SolanaSDK {
             self.pubkey = pubkey
             self.symbol = symbol
             self.icon = icon
-            self.amount = amount
+            self.lamports = lamports
             self.decimals = decimals
         }
         
@@ -44,7 +44,7 @@ public extension SolanaSDK {
             
             if let token = supportedTokens.first(where: {$0.mintAddress == accountInfo.mint.base58EncodedString}) {
                 self = token
-                self.amount = accountInfo.amount
+                self.lamports = accountInfo.lamports
                 self.pubkey = pubkey
                 self.decimals = nil
                 return

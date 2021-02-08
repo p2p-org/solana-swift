@@ -11,7 +11,7 @@ extension SolanaSDK {
     public struct AccountInfo: BufferLayout {
         public let mint: PublicKey
         public let owner: PublicKey
-        public let amount: UInt64
+        public let lamports: UInt64
         public let delegateOption: UInt32
         public var delegate: PublicKey?
         public let isInitialized: Bool
@@ -28,7 +28,7 @@ extension SolanaSDK {
         public init?(_ keys: [String : [UInt8]]) {
             guard let mint = try? PublicKey(bytes: keys["mint"]),
                   let owner = try? PublicKey(bytes: keys["owner"]),
-                  let amount = keys["amount"]?.toUInt64(),
+                  let amount = keys["lamports"]?.toUInt64(),
                   let delegateOption = keys["delegateOption"]?.toUInt32(),
                   let delegate = try? PublicKey(bytes: keys["delegate"]),
                   let state = keys["state"]?.first,
@@ -43,7 +43,7 @@ extension SolanaSDK {
             
             self.mint = mint
             self.owner = owner
-            self.amount = amount
+            self.lamports = amount
             self.delegateOption = delegateOption
             self.delegate = delegate
             self.state = state
@@ -78,7 +78,7 @@ extension SolanaSDK {
             [
                 (key: "mint", length: PublicKey.LENGTH),
                 (key: "owner", length: PublicKey.LENGTH),
-                (key: "amount", length: 8),
+                (key: "lamports", length: 8),
                 (key: "delegateOption", length: 4),
                 (key: "delegate", length: PublicKey.LENGTH),
                 (key: "state", length: 1),
