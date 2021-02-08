@@ -33,7 +33,7 @@ extension SolanaSDK {
             estimatedAmount: UInt64,
             slippage: Double
         ) -> UInt64 {
-            UInt64(Float64(estimatedAmount) * Float64(1 - slippage / 100))
+            UInt64(Float64(estimatedAmount) * Float64(1 - slippage))
         }
         
         public func amountInOtherToken(
