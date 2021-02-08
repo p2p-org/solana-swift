@@ -19,4 +19,14 @@ extension UInt64 {
         var littleEndian = self.littleEndian
         return withUnsafeBytes(of: &littleEndian) { Array($0) }
     }
+    
+    public func convertToBalance(decimals: Int) -> Double {
+        Double(self) * pow(10, -Double(decimals))
+    }
+}
+
+extension Double {
+    public func toLamport(decimals: Int) -> UInt64 {
+        UInt64(self * pow(10, Double(decimals)))
+    }
 }
