@@ -104,10 +104,11 @@ public extension SolanaSDK {
             userDestination: PublicKey,
             amount: UInt64,
             minAmountIn: UInt64
-        ) {
+        ) throws {
+            guard let poolAuthority = pool.authority else {throw SolanaSDK.Error.other("pool authority is not valid")}
             let instruction = TokenSwapProgram.swapInstruction(
                 tokenSwapAccount: pool.address,
-                authority: pool.authority,
+                authority: poolAuthority,
                 userSource: userSource,
                 poolSource: pool.swapData.tokenAccountA,
                 poolDestination: pool.swapData.tokenAccountB,

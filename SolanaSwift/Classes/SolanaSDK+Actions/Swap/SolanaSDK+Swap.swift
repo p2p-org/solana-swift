@@ -61,25 +61,16 @@ extension SolanaSDK {
             }
             .flatMap {params in
                 guard let pool = pool,
-                      let tokenABalance = UInt64(pool.tokenABalance?.amount ?? ""),
+                      let poolAuthority = pool.authority,
+                      let estimatedAmount = pool.estimatedAmount(forInputAmount: amount),
                       let tokenBBalance = UInt64(pool.tokenBBalance?.amount ?? "")
-                else {return .error(Error.other("Balance amount is not valid"))}
+                else {return .error(Error.other("Swap pool is not valid"))}
                 // get variables
                 let tokenAInfo      = params[0] as! AccountInfo
                 let minimumBalanceForRentExemption
                                     = params[1] as! UInt64
                 
-                // calculate mintAmountIn
-                let estimatedAmount = Self.calculateSwapEstimatedAmount(
-                    tokenABalance: tokenABalance,
-                    tokenBBalance:  tokenBBalance,
-                    inputAmount: amount
-                )
-                
-                let minAmountIn = Self.calculateSwapMinimumReceiveAmount(
-                    estimatedAmount: estimatedAmount,
-                    slippage: slippage
-                )
+                let minAmountIn = pool.minimumReceiveAmount(estimatedAmount: estimatedAmount, slippage: slippage)
                 
                 // find account
                 var source = source
@@ -123,12 +114,12 @@ extension SolanaSDK {
                 transaction.approve(
                     tokenProgramId: .tokenProgramId,
                     account: source,
-                    delegate: pool.authority,
+                    delegate: poolAuthority,
                     owner: owner.publicKey,
                     amount: amount
                 )
                 
-                transaction.swap(
+                try transaction.swap(
                     swapProgramId: self.network.swapProgramId,
                     pool: pool,
                     userSource: source,
@@ -159,21 +150,6 @@ extension SolanaSDK {
     }
     
     // MARK: - Helpers
-    public static func calculateSwapEstimatedAmount(
-        tokenABalance: UInt64,
-        tokenBBalance: UInt64,
-        inputAmount: UInt64
-    ) -> UInt64 {
-        UInt64(BInt(tokenBBalance) * BInt(inputAmount) / (BInt(tokenABalance) + BInt(inputAmount)))
-    }
-    
-    public static func calculateSwapMinimumReceiveAmount(
-        estimatedAmount: UInt64,
-        slippage: Double
-    ) -> UInt64 {
-        UInt64(Float64(estimatedAmount) * Float64(1 - slippage / 100))
-    }
-    
     private func getAccountInfoData(account: String, tokenProgramId: PublicKey) -> Single<AccountInfo> {
         getAccountInfo(account: account, decodedTo: AccountInfo.self)
             .map {

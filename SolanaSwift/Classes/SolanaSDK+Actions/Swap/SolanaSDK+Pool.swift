@@ -47,13 +47,12 @@ extension SolanaSDK {
                 guard let tokenAInfo = mintDatas[0] as? Mint,
                       let tokenBInfo = mintDatas[1] as? Mint,
                       let poolTokenMint = mintDatas[2] as? Mint,
-                      let authority = poolTokenMint.mintAuthority,
                       let tokenABalance = mintDatas[3] as? TokenAccountBalance,
                       let tokenBBalance = mintDatas[4] as? TokenAccountBalance
                 else {
                     throw Error.other("Invalid pool")
                 }
-                return Pool(address: address, tokenAInfo: tokenAInfo, tokenBInfo: tokenBInfo, poolTokenMint: poolTokenMint, authority: authority, swapData: swapData, tokenABalance: tokenABalance, tokenBBalance: tokenBBalance)
+                return Pool(address: address, tokenAInfo: tokenAInfo, tokenBInfo: tokenBInfo, poolTokenMint: poolTokenMint, swapData: swapData, tokenABalance: tokenABalance, tokenBBalance: tokenBBalance)
             }
     }
     
