@@ -8,7 +8,28 @@
 import Foundation
 
 public extension SolanaSDK {
-    enum Error: Swift.Error {
+    enum Error: Swift.Error, Equatable {
+        public static func == (lhs: SolanaSDK.Error, rhs: SolanaSDK.Error) -> Bool {
+            switch (lhs, rhs) {
+            case (.unauthorized, .unauthorized):
+                return true
+            case (.notFound, .notFound):
+                return true
+            case (.invalidRequest(let rs1), .invalidRequest(let rs2)):
+                return rs1 == rs2
+            case (.invalidResponse(let rs1), .invalidResponse(let rs2)):
+                return rs1.code == rs2.code
+            case (.socket(let er1), .socket(let er2)):
+                return er1.localizedDescription == er2.localizedDescription
+            case (.other(let rs1), .other(let rs2)):
+                return rs1 == rs2
+            case (.unknown, .unknown):
+                return true
+            default:
+                return false
+            }
+        }
+        
         case unauthorized
         case notFound
         

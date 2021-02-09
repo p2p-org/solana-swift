@@ -15,7 +15,7 @@ public extension SolanaSDK {
 		return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
             .map {
                 if let value = $0.value {return value}
-                throw Error.other("Invalid account info")
+                throw Error.invalidResponse(ResponseError(code: nil, message: "Invalid account info", data: nil))
             }
 	}
 	func getBalance(account: String, commitment: Commitment? = nil) -> Single<UInt64> {
@@ -110,7 +110,7 @@ public extension SolanaSDK {
             .map {$0.blockhash}
             .map { recentBlockhash in
                 if recentBlockhash == nil {
-                    throw Error.other("Could not retrieve recent blockhash")
+                    throw Error.invalidRequest(reason: "Blockhash not found")
                 }
                 return recentBlockhash!
             }
@@ -142,7 +142,7 @@ public extension SolanaSDK {
 		(request(parameters: [pubkey, RequestConfiguration(commitment: commitment)]) as Single<Rpc<TokenAccountBalance>>)
             .map {
                 if UInt64($0.value.amount) == nil {
-                    throw Error.other("Invalid amount")
+                    throw Error.invalidResponse(ResponseError(code: nil, message: "Could not retrieve balance", data: nil))
                 }
                 return $0.value
             }
@@ -177,6 +177,32 @@ public extension SolanaSDK {
 	}
 	internal func sendTransaction(serializedTransaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<TransactionID> {
 		request(parameters: [serializedTransaction, configs])
+            .catchError { error in
+                // Modify error message
+                if let error = error as? Error {
+                    switch error {
+                    case .invalidResponse(let response) where response.message != nil:
+                        var message = response.message
+                        if let readableMessage = response.data?.logs
+                            .first(where: {$0.contains("Error:")})?
+                            .components(separatedBy: "Error: ")
+                            .last
+                        {
+                            message = readableMessage
+                        } else if let readableMessage = response.message?
+                            .components(separatedBy: "Transaction simulation failed: ")
+                            .last
+                        {
+                            message = readableMessage
+                        }
+                        
+                        return .error(Error.invalidResponse(ResponseError(code: response.code, message: message, data: response.data)))
+                    default:
+                        break
+                    }
+                }
+                return .error(error)
+            }
 	}
 	func simulateTransaction(transaction: String, configs: RequestConfiguration? = nil) -> Single<Transaction.Status> {
 		(request(parameters: [transaction, configs]) as Single<Rpc<Transaction.Status>>)

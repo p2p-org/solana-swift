@@ -59,7 +59,7 @@ public class SolanaSDK {
                     // Print
                     guard (200..<300).contains(response.statusCode) else {
                         // Decode errror
-                        throw Error.invalidResponse(ResponseError(code: response.statusCode, message: nil))
+                        throw Error.invalidResponse(ResponseError(code: response.statusCode, message: nil, data: nil))
                     }
                     let response = try JSONDecoder().decode(Response<T>.self, from: data)
                     if let result = response.result {

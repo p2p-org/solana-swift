@@ -26,10 +26,15 @@ public extension SolanaSDK {
         public let result: T?
         public let subscription: UInt64?
     }
-	struct ResponseError: Codable {
+	struct ResponseError: Decodable {
 		public let code: Int?
 		public let message: String?
+        public let data: ResponseErrorData?
 	}
+    struct ResponseErrorData: Decodable {
+        // public let err: ResponseErrorDataError
+        public let logs: [String]
+    }
 	struct Rpc<T: Decodable>: Decodable {
 		public let context: Context
 		public let value: T

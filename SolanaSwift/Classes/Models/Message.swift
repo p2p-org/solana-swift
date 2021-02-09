@@ -30,7 +30,7 @@ public extension SolanaSDK {
         
         public mutating func serialize() throws -> [UInt8] {
             guard let string = recentBlockhash
-            else {throw Error.other("recentBlockhash required")}
+            else {throw Error.invalidRequest(reason: "Blockhash not found")}
             
             guard let programInstructions = programInstructions,
                   programInstructions.count > 0 else {
