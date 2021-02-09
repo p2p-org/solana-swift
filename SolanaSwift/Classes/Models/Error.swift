@@ -34,7 +34,7 @@ public extension SolanaSDK {
         case notFound
         
         // Invalid Requests
-        case invalidRequest(reason: String)
+        case invalidRequest(reason: String? = nil)
         
         // Invalid responses
         case invalidResponse(ResponseError)
