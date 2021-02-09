@@ -15,7 +15,7 @@ extension SolanaSDK {
 
     public func createTokenAccount(mintAddress: String) -> Single<(signature: String, newPubkey: String)> {
         guard let payer = self.accountStorage.account else {
-            return .error(Error.publicKeyNotFound)
+            return .error(Error.unauthorized)
         }
 
         var newAccount: Account!

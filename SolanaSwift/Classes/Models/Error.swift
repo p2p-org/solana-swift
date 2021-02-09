@@ -8,14 +8,21 @@
 import Foundation
 
 public extension SolanaSDK {
-    enum Error: LocalizedError {
-        case accountNotFound
-        case publicKeyNotFound
-        case invalidURL
-        case invalidStatusCode(code: Int)
-        case responseError(ResponseError)
-        case other(String)
+    enum Error: Swift.Error {
+        case unauthorized
+        case notFound
+        
+        // Invalid Requests
+        case invalidRequest(reason: String)
+        
+        // Invalid responses
+        case invalidResponse(ResponseError)
+        
+        // Socket error
         case socket(Swift.Error)
+        
+        // Other
+        case other(String)
         case unknown
     }
 }

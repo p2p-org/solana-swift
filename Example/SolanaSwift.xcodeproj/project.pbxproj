@@ -24,6 +24,7 @@
 		BCB58327255CE0AA00B10F65 /* RestAPITokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB58326255CE0AA00B10F65 /* RestAPITokenProgramTests.swift */; };
 		BCBBE23E25650A1700533F6B /* RegexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBBE23D25650A1700533F6B /* RegexTests.swift */; };
 		BCC49C1225BE864200D4D336 /* EncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCC49C1125BE864200D4D336 /* EncodingTests.swift */; };
+		BCEF161A25D232B700DFE931 /* ErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCEF161925D232B700DFE931 /* ErrorTests.swift */; };
 		E6DDE50635D3D9571A63FE4D /* Pods_SolanaSwift_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8C40B5C5D42F5F26B6E4DA /* Pods_SolanaSwift_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -141,6 +142,7 @@
 		BCB58326255CE0AA00B10F65 /* RestAPITokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITokenProgramTests.swift; sourceTree = "<group>"; };
 		BCBBE23D25650A1700533F6B /* RegexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegexTests.swift; sourceTree = "<group>"; };
 		BCC49C1125BE864200D4D336 /* EncodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingTests.swift; sourceTree = "<group>"; };
+		BCEF161925D232B700DFE931 /* ErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -282,6 +284,7 @@
 			isa = PBXGroup;
 			children = (
 				BCBBE23D25650A1700533F6B /* RegexTests.swift */,
+				BCEF161925D232B700DFE931 /* ErrorTests.swift */,
 			);
 			name = OtherTests;
 			sourceTree = "<group>";
@@ -527,6 +530,7 @@
 				BC81A2A425BE624300664A2C /* SystemProgramTests.swift in Sources */,
 				BC23AEC3254928870029FF0B /* RestAPIAccountTests.swift in Sources */,
 				BC4F6F1A25B80FD2002BA313 /* TokenSwapProgramTests.swift in Sources */,
+				BCEF161A25D232B700DFE931 /* ErrorTests.swift in Sources */,
 				BC1ABC4E255CC075002FCE65 /* DecodingTests.swift in Sources */,
 				BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */,
 				BC2EC2DF25552EC1006EEDA5 /* AccountTests.swift in Sources */,

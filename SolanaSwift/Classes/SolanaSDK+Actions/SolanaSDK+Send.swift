@@ -15,7 +15,7 @@ extension SolanaSDK {
         amount: UInt64
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
-            return .error(Error.publicKeyNotFound)
+            return .error(Error.unauthorized)
         }
         
         do {

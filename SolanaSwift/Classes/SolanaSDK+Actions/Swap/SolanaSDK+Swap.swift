@@ -21,7 +21,7 @@ extension SolanaSDK {
     ) -> Single<TransactionID> {
         // verify account
         guard let owner = account ?? accountStorage.account
-        else {return .error(Error.accountNotFound)}
+        else {return .error(Error.unauthorized)}
         
         // reuse variables
         var pool = pool

@@ -11,7 +11,7 @@ import RxSwift
 extension SolanaSDK {
     public func getTokensInfo(account: String? = nil) -> Single<[Token]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
-            return .error(Error.accountNotFound)
+            return .error(Error.unauthorized)
         }
         let memcmp = EncodableWrapper(
             wrapped:

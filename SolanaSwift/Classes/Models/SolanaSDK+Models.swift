@@ -26,7 +26,7 @@ public extension SolanaSDK {
         public let result: T?
         public let subscription: UInt64?
     }
-	struct ResponseError: Decodable {
+	struct ResponseError: Codable {
 		public let code: Int?
 		public let message: String?
 	}

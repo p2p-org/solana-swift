@@ -36,7 +36,7 @@ public class SolanaSDK {
         parameters: [Encodable?] = []
     ) -> Single<T>{
         guard let url = URL(string: endpoint + path) else {
-            return .error(Error.invalidURL)
+            return .error(Error.invalidRequest(reason: "Invalid URL"))
         }
         let params = parameters.compactMap {$0}
         
@@ -59,14 +59,14 @@ public class SolanaSDK {
                     // Print
                     guard (200..<300).contains(response.statusCode) else {
                         // Decode errror
-                        throw Error.invalidStatusCode(code: response.statusCode)
+                        throw Error.invalidResponse(ResponseError(code: response.statusCode, message: nil))
                     }
                     let response = try JSONDecoder().decode(Response<T>.self, from: data)
                     if let result = response.result {
                         return result
                     }
                     if let error = response.error {
-                        throw Error.responseError(error)
+                        throw Error.invalidResponse(error)
                     }
                     throw Error.unknown
                 }
