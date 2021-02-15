@@ -27,6 +27,6 @@ extension UInt64 {
 
 extension Double {
     public func toLamport(decimals: Int) -> UInt64 {
-        UInt64(self * pow(10, Double(decimals)))
+        UInt64((self * pow(10, Double(decimals))).rounded())
     }
 }
