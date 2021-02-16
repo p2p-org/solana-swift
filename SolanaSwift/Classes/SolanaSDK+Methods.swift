@@ -214,4 +214,23 @@ public extension SolanaSDK {
 	func validatorExit() -> Single<Bool> {
 		request()
 	}
+    
+    // MARK: - Additional methods
+    func getMintData(
+        mintAddress: PublicKey,
+        programId: PublicKey = .tokenProgramId
+    ) -> Single<Mint> {
+        getAccountInfo(account: mintAddress.base58EncodedString, decodedTo: Mint.self)
+            .map {
+                if $0.owner != programId.base58EncodedString {
+                    throw Error.other("Invalid mint owner")
+                }
+                
+                if let data = $0.data.value {
+                    return data
+                }
+                
+                throw Error.other("Invalid data")
+            }
+    }
 }
