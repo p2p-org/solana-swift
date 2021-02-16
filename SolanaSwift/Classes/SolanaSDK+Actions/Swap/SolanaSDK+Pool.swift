@@ -32,11 +32,11 @@ extension SolanaSDK {
     
     func getPoolInfo(address: PublicKey, swapData: TokenSwapInfo) -> Single<Pool> {
         Single.zip([
-            self.getMintData(mintAddress: swapData.mintA, programId: PublicKey.tokenProgramId)
+            self.getMintData(mintAddress: swapData.mintA)
                 .map {$0 as Any},
-            self.getMintData(mintAddress: swapData.mintB, programId: PublicKey.tokenProgramId)
+            self.getMintData(mintAddress: swapData.mintB)
                 .map {$0 as Any},
-            self.getMintData(mintAddress: swapData.tokenPool, programId: PublicKey.tokenProgramId)
+            self.getMintData(mintAddress: swapData.tokenPool)
                 .map {$0 as Any},
             self.getTokenAccountBalance(pubkey: swapData.tokenAccountA.base58EncodedString)
                 .map {$0 as Any},
@@ -53,24 +53,6 @@ extension SolanaSDK {
                     throw Error.other("Invalid pool")
                 }
                 return Pool(address: address, tokenAInfo: tokenAInfo, tokenBInfo: tokenBInfo, poolTokenMint: poolTokenMint, swapData: swapData, tokenABalance: tokenABalance, tokenBBalance: tokenBBalance)
-            }
-    }
-    
-    private func getMintData(
-        mintAddress: PublicKey,
-        programId: PublicKey
-    ) -> Single<Mint> {
-        getAccountInfo(account: mintAddress.base58EncodedString, decodedTo: Mint.self)
-            .map {
-                if $0.owner != programId.base58EncodedString {
-                    throw Error.other("Invalid mint owner")
-                }
-                
-                if let data = $0.data.value {
-                    return data
-                }
-                
-                throw Error.other("Invalid data")
             }
     }
 }

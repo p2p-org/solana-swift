@@ -21,11 +21,36 @@ extension SolanaSDK {
         do {
             let fromPublicKey = try PublicKey(string: fromPublicKey)
             let toPublicKey = try PublicKey(string: toPublicKey)
-            return createSendTransaction(from: fromPublicKey, to: toPublicKey, amount: amount, signer: account)
-                .flatMap {self.sendTransaction(serializedTransaction: $0)}
+            
+            // Send SOL
+            if fromPublicKey == account.publicKey {
+                return sendSOL(account: account, from: fromPublicKey, to: toPublicKey, amount: amount)
+            }
+                
+            // Send Tokens
+            return sendSPLTokens(account: account, from: fromPublicKey, to: toPublicKey, amount: amount)
         } catch {
             return .error(error)
         }
+    }
+    
+    private func sendSOL(
+        account: SolanaSDK.Account,
+        from fromPublicKey: PublicKey,
+        to toPublicKey: PublicKey,
+        amount: UInt64
+    ) -> Single<TransactionID> {
+        createSendTransaction(from: fromPublicKey, to: toPublicKey, amount: amount, signer: account)
+            .flatMap {self.sendTransaction(serializedTransaction: $0)}
+    }
+    
+    private func sendSPLTokens(
+        account: SolanaSDK.Account,
+        from fromPublicKey: PublicKey,
+        to toPublicKey: PublicKey,
+        amount: UInt64
+    ) -> Single<TransactionID> {
+        fatalError()
     }
     
     public func createSendTransaction(
