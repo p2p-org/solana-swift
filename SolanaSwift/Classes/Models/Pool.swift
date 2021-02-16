@@ -29,6 +29,14 @@ extension SolanaSDK {
             return UInt64(BInt(tokenBBalance) * BInt(inputAmount) / (BInt(tokenABalance) + BInt(inputAmount)))
         }
         
+        public func inputAmount(forEstimatedAmount estimatedAmount: UInt64) -> UInt64?
+        {
+            guard let tokenABalance = tokenABalance?.amountInUInt64,
+                  let tokenBBalance = tokenBBalance?.amountInUInt64
+            else {return nil}
+            return UInt64(BInt(estimatedAmount) * BInt(tokenABalance) / (BInt(tokenBBalance) - BInt(estimatedAmount)))
+        }
+        
         public func minimumReceiveAmount(
             estimatedAmount: UInt64,
             slippage: Double
