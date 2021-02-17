@@ -36,8 +36,7 @@ extension SolanaSDK {
                 )
             )
             
-            return serializeTransaction(transaction, signers: [account])
-                .flatMap {self.sendTransaction(serializedTransaction: $0)}
+            return serializeAndSend(transaction: transaction, signers: [account])
         } catch {
             return .error(error)
         }
@@ -50,6 +49,7 @@ extension SolanaSDK {
         - Parameter amount: amount to send
     */
     public func sendSPLTokens(
+        mintAddress: String,
         from fromPublicKey: String,
         to toPublicKey: String,
         amount: UInt64
@@ -58,24 +58,32 @@ extension SolanaSDK {
             return .error(Error.unauthorized)
         }
         
-        do {
-            let fromPublicKey = try PublicKey(string: fromPublicKey)
-            let toPublicKey = try PublicKey(string: toPublicKey)
-            
-            var transaction = Transaction()
-            transaction.message.add(
-                instruction: TokenProgram.transferInstruction(
-                    tokenProgramId: .tokenProgramId,
-                    source: fromPublicKey,
-                    destination: toPublicKey,
-                    owner: account.publicKey,
-                    amount: amount
+        return getAccountInfo(
+            account: toPublicKey,
+            decodedTo: SolanaSDK.AccountInfo.self
+        )
+            .map {$0.data.value?.mint.base58EncodedString}
+            .map {toTokenMint -> String in
+                if mintAddress != toTokenMint {
+                    throw Error.other("The address is not valid")
+                }
+                return mintAddress
+            }
+            .flatMap {_ in
+                let fromPublicKey = try PublicKey(string: fromPublicKey)
+                let toPublicKey = try PublicKey(string: toPublicKey)
+                
+                var transaction = Transaction()
+                transaction.message.add(
+                    instruction: TokenProgram.transferInstruction(
+                        tokenProgramId: .tokenProgramId,
+                        source: fromPublicKey,
+                        destination: toPublicKey,
+                        owner: account.publicKey,
+                        amount: amount
+                    )
                 )
-            )
-            return serializeTransaction(transaction, signers: [account])
-                .flatMap {self.sendTransaction(serializedTransaction: $0)}
-        } catch {
-            return .error(error)
-        }
+                return self.serializeAndSend(transaction: transaction, signers: [account])
+            }
     }
 }

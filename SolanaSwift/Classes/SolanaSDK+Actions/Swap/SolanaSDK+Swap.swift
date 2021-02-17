@@ -144,9 +144,8 @@ extension SolanaSDK {
                     transaction.closeAccount(closingAccount, destination: owner.publicKey, owner: owner.publicKey)
                 }
                 
-                return self.serializeTransaction(transaction, signers: signers)
+                return self.serializeAndSend(transaction: transaction, signers: signers)
             }
-            .flatMap {self.sendTransaction(serializedTransaction: $0)}
     }
     
     // MARK: - Helpers

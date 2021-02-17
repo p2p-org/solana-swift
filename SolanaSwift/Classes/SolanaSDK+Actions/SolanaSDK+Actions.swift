@@ -9,6 +9,30 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
+    func serializeAndSend(
+        transaction: Transaction,
+        recentBlockhash: String? = nil,
+        signers: [Account]
+    ) -> Single<String> {
+        let maxAttemps = 3
+        var numberOfTries = 0
+        return serializeTransaction(
+            transaction,
+            recentBlockhash: recentBlockhash,
+            signers: signers
+        )
+            .flatMap {self.sendTransaction(serializedTransaction: $0)}
+            .catchError {error in
+                if (error as? Error) == Error.other("Blockhash not found"),
+                   numberOfTries <= 3
+                {
+                    numberOfTries += 1
+                    return self.serializeAndSend(transaction: transaction, signers: signers)
+                }
+                throw error
+            }
+    }
+    
     func serializeTransaction(
         _ transaction: Transaction,
         recentBlockhash: String? = nil,

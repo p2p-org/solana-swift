@@ -46,10 +46,11 @@ extension SolanaSDK {
                 transaction.message.add(instruction: initializeAccountInstruction)
                 
                 // serialize transaction
-                return self.serializeTransaction(transaction, recentBlockhash: recentBlockhash, signers: [payer, newAccount])
-            }
-            .flatMap {
-                self.sendTransaction(serializedTransaction: $0)
+                return self.serializeAndSend(
+                    transaction: transaction,
+                    recentBlockhash: recentBlockhash,
+                    signers: [payer, newAccount]
+                )
                     .map {($0, newAccount.publicKey.base58EncodedString)}
             }
     }
