@@ -6,8 +6,6 @@ Solana-blockchain client, written in pure swift.
 [![License](https://img.shields.io/cocoapods/l/SolanaSwift.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Platform](https://img.shields.io/cocoapods/p/SolanaSwift.svg?style=flat)](https://cocoapods.org/pods/SolanaSwift)
 
-![Image of Yaktocat](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/b89ca268-71c2-4603-8128-a56c89bf5d14/1200x628_solana_%281%29.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20201111%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20201111T121728Z&X-Amz-Expires=86400&X-Amz-Signature=ca8faa5e0e3a3deab1f6291d1af3ba7f0361bfd2db23ba3357d81b0fc912bc78&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%221200x628_solana_%281%29.jpg%22)
-
 ## Features
 - [x] Key pairs generation
 - [x] Networking with POST methods for comunicating with solana-based networking system
