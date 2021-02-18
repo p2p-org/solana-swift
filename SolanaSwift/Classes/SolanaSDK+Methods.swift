@@ -18,8 +18,11 @@ public extension SolanaSDK {
                 throw Error.invalidResponse(ResponseError(code: nil, message: "Invalid account info", data: nil))
             }
 	}
-	func getBalance(account: String, commitment: Commitment? = nil) -> Single<UInt64> {
-		(request(parameters: [account, RequestConfiguration(commitment: commitment)]) as Single<Rpc<UInt64>>)
+	func getBalance(account: String? = nil, commitment: Commitment? = nil) -> Single<UInt64> {
+        guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString
+        else {return .error(Error.unauthorized)}
+        
+		return (request(parameters: [account, RequestConfiguration(commitment: commitment)]) as Single<Rpc<UInt64>>)
 			.map {$0.value}
 	}
 	func getBlockCommitment(block: String) -> Single<BlockCommitment> {
