@@ -24,7 +24,7 @@ extension SolanaSDK {
             .flatMap {self.sendTransaction(serializedTransaction: $0)}
             .catchError {error in
                 if (error as? Error) == Error.other("Blockhash not found"),
-                   numberOfTries <= 3
+                   numberOfTries <= maxAttemps
                 {
                     numberOfTries += 1
                     return self.serializeAndSend(transaction: transaction, signers: signers)
