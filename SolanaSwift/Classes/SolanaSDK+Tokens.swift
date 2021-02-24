@@ -10,31 +10,7 @@ import RxSwift
 
 extension SolanaSDK {
     public func getTokensInfo(account: String? = nil) -> Single<[Token]> {
-        guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
-            return .error(Error.unauthorized)
-        }
-        let memcmp = EncodableWrapper(
-            wrapped:
-                ["offset": EncodableWrapper(wrapped: 32),
-                 "bytes": EncodableWrapper(wrapped: account)]
-        )
-        let configs = RequestConfiguration(commitment: "recent", encoding: "base64", dataSlice: nil, filters: [
-            ["memcmp": memcmp],
-            ["dataSize": .init(wrapped: 165)]
-        ])
-        
-        return getProgramAccounts(
-            publicKey: PublicKey.tokenProgramId.base58EncodedString,
-            configs: configs,
-            decodedTo: AccountInfo.self
-        )
-            .map {
-                $0.compactMap {
-                    $0.account.data.value != nil ?
-                        Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: self.network)
-                        : nil
-                }
-            }
+        getAllSPLTokens(account: account)
             .flatMap { tokens in
                 var unfilledTokens = [Token]()
                 
@@ -64,6 +40,33 @@ extension SolanaSDK {
                 
                 // if all decimals isn't missing
                 return .just(tokens)
+            }
+    }
+    
+    func getAllSPLTokens(account: String? = nil) -> Single<[Token]> {
+        guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
+            return .error(Error.unauthorized)
+        }
+        let memcmp = EncodableWrapper(
+            wrapped:
+                ["offset": EncodableWrapper(wrapped: 32),
+                 "bytes": EncodableWrapper(wrapped: account)]
+        )
+        let configs = RequestConfiguration(commitment: "recent", encoding: "base64", dataSlice: nil, filters: [
+            ["memcmp": memcmp],
+            ["dataSize": .init(wrapped: 165)]
+        ])
+        return getProgramAccounts(
+            publicKey: PublicKey.tokenProgramId.base58EncodedString,
+            configs: configs,
+            decodedTo: AccountInfo.self
+        )
+            .map {
+                $0.compactMap {
+                    $0.account.data.value != nil ?
+                        Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: self.network)
+                        : nil
+                }
             }
     }
 }

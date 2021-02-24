@@ -45,31 +45,28 @@ extension SolanaSDK {
     /**
         send SPLTokens to another account.
      
-        - Parameter to: publicKey to send to
+        - Parameter to: publicKey to send to, it may be splToken PublicKey or SOL address
         - Parameter amount: amount to send
     */
     public func sendSPLTokens(
         mintAddress: String,
         from fromPublicKey: String,
-        to toPublicKey: String,
+        to destinationAddress: String,
         amount: UInt64
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
         }
         
-        return getAccountInfo(
-            account: toPublicKey,
-            decodedTo: SolanaSDK.AccountInfo.self
+        return findSPLToken(
+            mintAddress: mintAddress,
+            destinationAddress: destinationAddress
         )
-            .map {$0.data.value?.mint.base58EncodedString}
-            .map {toTokenMint -> String in
-                if mintAddress != toTokenMint {
-                    throw Error.other("The address is not valid")
+            .flatMap {toPublicKey in
+                if fromPublicKey == toPublicKey {
+                    throw Error.other("You can not send tokens to yourself")
                 }
-                return mintAddress
-            }
-            .flatMap {_ in
+                
                 let fromPublicKey = try PublicKey(string: fromPublicKey)
                 let toPublicKey = try PublicKey(string: toPublicKey)
                 
@@ -84,6 +81,29 @@ extension SolanaSDK {
                     )
                 )
                 return self.serializeAndSend(transaction: transaction, signers: [account])
+            }
+    }
+//    throw Error.other("The address is not valid")
+    
+    // MARK: - Helpers
+    private func findSPLToken(
+        mintAddress: String,
+        destinationAddress: String
+    ) -> Single<String> {
+        getAccountInfo(
+            account: destinationAddress,
+            decodedTo: SolanaSDK.AccountInfo.self
+        )
+            .map {$0.data.value?.mint.base58EncodedString}
+            .flatMap {toTokenMint in
+                // if destination address is already a SPLToken address
+                if mintAddress == toTokenMint {
+                    return .just(destinationAddress)
+                }
+                
+                // if destination address is SOL address
+                throw Error.other("The address is not valid")
+//                return getAllSPLTokens(account: destinationAddress)
             }
     }
 }
