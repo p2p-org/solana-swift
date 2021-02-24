@@ -29,4 +29,7 @@ class InMemoryAccountStorage: SolanaSDKAccountStorage {
     var account: SolanaSDK.Account? {
         _account
     }
+    func clear() {
+        _account = nil
+    }
 }
