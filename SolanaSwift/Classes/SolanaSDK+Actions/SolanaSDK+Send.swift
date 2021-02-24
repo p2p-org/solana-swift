@@ -27,6 +27,10 @@ extension SolanaSDK {
             let fromPublicKey = account.publicKey
             let toPublicKey = try PublicKey(string: toPublicKey)
             
+            if fromPublicKey == toPublicKey {
+                throw Error.other("You can not send tokens to yourself")
+            }
+            
             var transaction = Transaction()
             transaction.message.add(
                 instruction: SystemProgram.transferInstruction(
@@ -45,31 +49,28 @@ extension SolanaSDK {
     /**
         send SPLTokens to another account.
      
-        - Parameter to: publicKey to send to
+        - Parameter to: publicKey to send to, it may be splToken PublicKey or SOL address
         - Parameter amount: amount to send
     */
     public func sendSPLTokens(
         mintAddress: String,
         from fromPublicKey: String,
-        to toPublicKey: String,
+        to destinationAddress: String,
         amount: UInt64
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
         }
         
-        return getAccountInfo(
-            account: toPublicKey,
-            decodedTo: SolanaSDK.AccountInfo.self
+        return findDestinationPublicKey(
+            mintAddress: mintAddress,
+            destinationAddress: destinationAddress
         )
-            .map {$0.data.value?.mint.base58EncodedString}
-            .map {toTokenMint -> String in
-                if mintAddress != toTokenMint {
-                    throw Error.other("The address is not valid")
+            .flatMap {toPublicKey in
+                if fromPublicKey == toPublicKey {
+                    throw Error.other("You can not send tokens to yourself")
                 }
-                return mintAddress
-            }
-            .flatMap {_ in
+                
                 let fromPublicKey = try PublicKey(string: fromPublicKey)
                 let toPublicKey = try PublicKey(string: toPublicKey)
                 
@@ -85,5 +86,41 @@ extension SolanaSDK {
                 )
                 return self.serializeAndSend(transaction: transaction, signers: [account])
             }
+    }
+    
+    // MARK: - Helpers
+    private func findDestinationPublicKey(
+        mintAddress: String,
+        destinationAddress: String
+    ) -> Single<String> {
+        getAccountInfo(
+            account: destinationAddress,
+            decodedTo: SolanaSDK.AccountInfo.self
+        )
+            .map {$0.data.value?.mint.base58EncodedString}
+            .flatMap {toTokenMint -> Single<String?> in
+                // detect if destination address is already a SPLToken address
+                if mintAddress == toTokenMint {
+                    return .just(destinationAddress)
+                }
+                
+                // detect if destination address is a SOL address
+                return self.findSPLTokenWithMintAddress(mintAddress, fromAccountWithAddress: destinationAddress)
+            }
+            .map {
+                if $0 == nil {
+                    throw Error.other("The address is not valid")
+                }
+                return $0!
+            }
+    }
+    
+    private func findSPLTokenWithMintAddress(
+        _ mintAddress: String,
+        fromAccountWithAddress account: String
+    ) -> Single<String?> {
+        getAllSPLTokens(account: account)
+            .map {$0.first(where: {$0.mintAddress == mintAddress})}
+            .map {$0?.pubkey}
     }
 }
