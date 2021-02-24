@@ -27,6 +27,10 @@ extension SolanaSDK {
             let fromPublicKey = account.publicKey
             let toPublicKey = try PublicKey(string: toPublicKey)
             
+            if fromPublicKey == toPublicKey {
+                throw Error.other("You can not send tokens to yourself")
+            }
+            
             var transaction = Transaction()
             transaction.message.add(
                 instruction: SystemProgram.transferInstruction(
@@ -58,7 +62,7 @@ extension SolanaSDK {
             return .error(Error.unauthorized)
         }
         
-        return findSPLToken(
+        return findDestinationPublicKey(
             mintAddress: mintAddress,
             destinationAddress: destinationAddress
         )
@@ -83,10 +87,9 @@ extension SolanaSDK {
                 return self.serializeAndSend(transaction: transaction, signers: [account])
             }
     }
-//    throw Error.other("The address is not valid")
     
     // MARK: - Helpers
-    private func findSPLToken(
+    private func findDestinationPublicKey(
         mintAddress: String,
         destinationAddress: String
     ) -> Single<String> {
@@ -95,15 +98,29 @@ extension SolanaSDK {
             decodedTo: SolanaSDK.AccountInfo.self
         )
             .map {$0.data.value?.mint.base58EncodedString}
-            .flatMap {toTokenMint in
-                // if destination address is already a SPLToken address
+            .flatMap {toTokenMint -> Single<String?> in
+                // detect if destination address is already a SPLToken address
                 if mintAddress == toTokenMint {
                     return .just(destinationAddress)
                 }
                 
-                // if destination address is SOL address
-                throw Error.other("The address is not valid")
-//                return getAllSPLTokens(account: destinationAddress)
+                // detect if destination address is a SOL address
+                return self.findSPLTokenWithMintAddress(mintAddress, fromAccountWithAddress: destinationAddress)
             }
+            .map {
+                if $0 == nil {
+                    throw Error.other("The address is not valid")
+                }
+                return $0!
+            }
+    }
+    
+    private func findSPLTokenWithMintAddress(
+        _ mintAddress: String,
+        fromAccountWithAddress account: String
+    ) -> Single<String?> {
+        getAllSPLTokens(account: account)
+            .map {$0.first(where: {$0.mintAddress == mintAddress})}
+            .map {$0?.pubkey}
     }
 }
