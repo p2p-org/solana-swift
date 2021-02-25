@@ -57,8 +57,8 @@ public extension SolanaSDK.Account {
         }
         
         public let publicKey: SolanaSDK.PublicKey
-        public let isSigner: Bool
-        public let isWritable: Bool
+        public var isSigner: Bool
+        public var isWritable: Bool
         
         public init(publicKey: SolanaSDK.PublicKey, isSigner: Bool, isWritable: Bool) {
             self.publicKey = publicKey

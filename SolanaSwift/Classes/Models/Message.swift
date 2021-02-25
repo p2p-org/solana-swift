@@ -39,7 +39,11 @@ public extension SolanaSDK {
             
             let recentBlockhash = Base58.decode(string)
             
-            accountKeys = accountKeys.sorted(by: <)
+            accountKeys = accountKeys.sorted(by: <=)
+            var feePayer = accountKeys.removeFirst()
+            feePayer.isSigner = true
+            feePayer.isWritable = true
+            accountKeys.insert(feePayer, at: 0)
             
             let accountKeysSize = accountKeys.count
             let accountAddressesLength = Data.encodeLength(UInt(accountKeysSize))
