@@ -12,7 +12,8 @@ extension SolanaSDK {
     func serializeAndSend(
         transaction: Transaction,
         recentBlockhash: String? = nil,
-        signers: [Account]
+        signers: [Account],
+        isSimulation: Bool
     ) -> Single<String> {
         let maxAttemps = 3
         var numberOfTries = 0
@@ -21,13 +22,25 @@ extension SolanaSDK {
             recentBlockhash: recentBlockhash,
             signers: signers
         )
-            .flatMap {self.sendTransaction(serializedTransaction: $0)}
-            .catchError {error in
+            .flatMap {
+                if isSimulation {
+                    return self.simulateTransaction(transaction: $0)
+                        .map {result -> String in
+                            if result.err != nil {
+                                throw Error.other("Simulation error")
+                            }
+                            return ""
+                        }
+                } else {
+                    return self.sendTransaction(serializedTransaction: $0)
+                }
+            }
+            .catch {error in
                 if (error as? Error) == Error.other("Blockhash not found"),
                    numberOfTries <= maxAttemps
                 {
                     numberOfTries += 1
-                    return self.serializeAndSend(transaction: transaction, signers: signers)
+                    return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation)
                 }
                 throw error
             }

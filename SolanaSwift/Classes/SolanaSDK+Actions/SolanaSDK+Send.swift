@@ -17,7 +17,8 @@ extension SolanaSDK {
     */
     public func sendSOL(
         to toPublicKey: String,
-        amount: UInt64
+        amount: UInt64,
+        isSimulation: Bool = false
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
@@ -40,7 +41,7 @@ extension SolanaSDK {
                 )
             )
             
-            return serializeAndSend(transaction: transaction, signers: [account])
+            return serializeAndSend(transaction: transaction, signers: [account], isSimulation: isSimulation)
         } catch {
             return .error(error)
         }
@@ -56,7 +57,8 @@ extension SolanaSDK {
         mintAddress: String,
         from fromPublicKey: String,
         to destinationAddress: String,
-        amount: UInt64
+        amount: UInt64,
+        isSimulation: Bool = false
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
@@ -84,7 +86,7 @@ extension SolanaSDK {
                         amount: amount
                     )
                 )
-                return self.serializeAndSend(transaction: transaction, signers: [account])
+                return self.serializeAndSend(transaction: transaction, signers: [account], isSimulation: isSimulation)
             }
     }
     

@@ -13,7 +13,10 @@ extension SolanaSDK {
         getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
     }
 
-    public func createTokenAccount(mintAddress: String) -> Single<(signature: String, newPubkey: String)> {
+    public func createTokenAccount(
+        mintAddress: String,
+        isSimulation: Bool = false
+    ) -> Single<(signature: String, newPubkey: String)> {
         guard let payer = self.accountStorage.account else {
             return .error(Error.unauthorized)
         }
@@ -49,7 +52,8 @@ extension SolanaSDK {
                 return self.serializeAndSend(
                     transaction: transaction,
                     recentBlockhash: recentBlockhash,
-                    signers: [payer, newAccount]
+                    signers: [payer, newAccount],
+                    isSimulation: isSimulation
                 )
                     .map {($0, newAccount.publicKey.base58EncodedString)}
             }

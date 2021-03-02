@@ -17,7 +17,8 @@ extension SolanaSDK {
         destination: PublicKey? = nil,
         destinationMint: PublicKey,
         slippage: Double,
-        amount: UInt64
+        amount: UInt64,
+        isSimulation: Bool = false
     ) -> Single<TransactionID> {
         // verify account
         guard let owner = account ?? accountStorage.account
@@ -144,7 +145,7 @@ extension SolanaSDK {
                     transaction.closeAccount(closingAccount, destination: owner.publicKey, owner: owner.publicKey)
                 }
                 
-                return self.serializeAndSend(transaction: transaction, signers: signers)
+                return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation)
             }
     }
     
