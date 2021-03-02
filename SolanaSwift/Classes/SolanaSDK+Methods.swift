@@ -207,7 +207,7 @@ public extension SolanaSDK {
                 return .error(error)
             }
 	}
-	func simulateTransaction(transaction: String, configs: RequestConfiguration? = nil) -> Single<Transaction.Status> {
+	func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<Transaction.Status> {
 		(request(parameters: [transaction, configs]) as Single<Rpc<Transaction.Status>>)
 			.map {$0.value}
 	}
