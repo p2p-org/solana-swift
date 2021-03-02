@@ -113,7 +113,7 @@ public extension SolanaSDK {
             .map {$0.blockhash}
             .map { recentBlockhash in
                 if recentBlockhash == nil {
-                    throw Error.invalidRequest(reason: "Blockhash not found")
+                    throw Error.other("Blockhash not found")
                 }
                 return recentBlockhash!
             }
