@@ -28,7 +28,7 @@ public extension SolanaSDK {
             programInstructions!.append(instruction)
         }
         
-        public mutating func serialize() throws -> [UInt8] {
+        public mutating func serialize(accountsModifier: (([Account.Meta]) -> [Account.Meta])? = nil) throws -> [UInt8] {
             guard let string = recentBlockhash
             else {throw Error.invalidRequest(reason: "Blockhash not found")}
             
@@ -39,7 +39,17 @@ public extension SolanaSDK {
             
             let recentBlockhash = Base58.decode(string)
             
-            accountKeys.sort()
+            let accountsModifier = accountsModifier ?? {accounts in
+                var accounts = accounts
+                accounts.sort { lhs, rhs in
+                    if lhs.isSigner != rhs.isSigner {return lhs.isSigner}
+                    if lhs.isWritable != rhs.isWritable {return lhs.isWritable}
+                    return false
+                }
+                return accounts
+            }
+                
+            accountKeys = accountsModifier(accountKeys)
             
             let accountKeysSize = accountKeys.count
             let accountAddressesLength = Data.encodeLength(UInt(accountKeysSize))

@@ -13,14 +13,16 @@ extension SolanaSDK {
         transaction: Transaction,
         recentBlockhash: String? = nil,
         signers: [Account],
-        isSimulation: Bool
+        isSimulation: Bool,
+        accountsModifier: (([Account.Meta]) -> [Account.Meta])? = nil
     ) -> Single<String> {
         let maxAttemps = 3
         var numberOfTries = 0
         return serializeTransaction(
             transaction,
             recentBlockhash: recentBlockhash,
-            signers: signers
+            signers: signers,
+            accountsModifier: accountsModifier
         )
             .flatMap {
                 if isSimulation {
@@ -35,12 +37,12 @@ extension SolanaSDK {
                     return self.sendTransaction(serializedTransaction: $0)
                 }
             }
-            .catch {error in
+            .catchError {error in
                 if (error as? Error) == Error.other("Blockhash not found"),
                    numberOfTries <= maxAttemps
                 {
                     numberOfTries += 1
-                    return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation)
+                    return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation, accountsModifier: accountsModifier)
                 }
                 throw error
             }
@@ -49,7 +51,8 @@ extension SolanaSDK {
     func serializeTransaction(
         _ transaction: Transaction,
         recentBlockhash: String? = nil,
-        signers: [Account]
+        signers: [Account],
+        accountsModifier: (([Account.Meta]) -> [Account.Meta])? = nil
     ) -> Single<String> {
         // get recentBlockhash
         let getRecentBlockhashRequest: Single<String>
@@ -64,8 +67,8 @@ extension SolanaSDK {
             .map {recentBlockhash -> String in
                 var transaction = transaction
                 transaction.message.recentBlockhash = recentBlockhash
-                try transaction.sign(signers: signers)
-                guard let serializedTransaction = try transaction.serialize().toBase64() else {
+                try transaction.sign(signers: signers, accountsModifier: accountsModifier)
+                guard let serializedTransaction = try transaction.serialize(accountsModifier: accountsModifier).toBase64() else {
                     throw Error.other("Could not serialize transaction")
                 }
                 return serializedTransaction

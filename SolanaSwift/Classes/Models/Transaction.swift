@@ -29,8 +29,8 @@ public extension SolanaSDK {
             signatures = []
         }
         
-        public mutating func sign(signers: [Account]) throws {
-            let serializedMessage = try message.serialize()
+        public mutating func sign(signers: [Account], accountsModifier: (([Account.Meta]) -> [Account.Meta])? = nil) throws {
+            let serializedMessage = try message.serialize(accountsModifier: accountsModifier)
             for signer in signers {
                 let data = try NaclSign.signDetached(message: Data(serializedMessage), secretKey: signer.secretKey).bytes
                 signatures.append(contentsOf: data)
@@ -38,8 +38,8 @@ public extension SolanaSDK {
             signaturesLength = signers.count
         }
         
-        public mutating func serialize() throws -> [UInt8] {
-            let serializedMessage = try message.serialize()
+        public mutating func serialize(accountsModifier: (([Account.Meta]) -> [Account.Meta])? = nil) throws -> [UInt8] {
+            let serializedMessage = try message.serialize(accountsModifier: accountsModifier)
             
             let signaturesLength = Data.encodeLength(UInt(self.signaturesLength ?? 1))
             
