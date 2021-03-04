@@ -47,5 +47,17 @@ public extension SolanaSDK {
                 data: [Index.transfer, lamports]
             )
         }
+        
+        public static func assertOwnerInstruction(
+            destinationAccount: PublicKey
+        ) -> TransactionInstruction {
+            TransactionInstruction(
+                keys: [
+                    Account.Meta(publicKey: destinationAccount, isSigner: false, isWritable: false)
+                ],
+                programId: .ownerValidationProgramId,
+                data: [PublicKey.programId]
+            )
+        }
     }
 }
