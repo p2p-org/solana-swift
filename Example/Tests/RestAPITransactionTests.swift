@@ -50,8 +50,8 @@ class RestAPITransactionTests: RestAPITests {
     func testSendSPLToken() throws {
         // USDC
         let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-        let source = "GZeXMgHoWipWsXqtpTbY7GbYQbuR13Zt7f1UFkbW3Qn3"
-        let destination = "F1gbs5ez1i8JNYuZwCAQTFGWmE3NSr6tXhrfkLWDDdQM"
+        let source = "4xHqPn7FXiG7VAeo6pLsbMJQQPpTgSrJL6JAjKA4w3J7"
+        let destination = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
         
         _ = try solanaSDK.sendSPLTokens(
             mintAddress: mintAddress,
