@@ -15,6 +15,12 @@ extension SolanaSDK {
                 .mainnetBeta: """
                 [
                   {
+                    "mintAddress": "So11111111111111111111111111111111111111112",
+                    "name": "Wrapped Solana",
+                    "symbol": "WSOL",
+                    "icon": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x476c5E26a75bd202a9683ffD34359C0CC15be0fF/logo.png"
+                  },
+                  {
                     "mintAddress": "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt",
                     "name": "Serum",
                     "symbol": "SRM",
