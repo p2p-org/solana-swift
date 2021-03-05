@@ -16,6 +16,11 @@ public extension SolanaSDK {
         public let icon: String?
         public var lamports: UInt64?
         public var decimals: Int?
+        let liquidity: Bool?
+        
+        public var isLiquidity: Bool {
+            liquidity == true
+        }
         
         public init(
             name: String,
@@ -24,7 +29,8 @@ public extension SolanaSDK {
             symbol: String,
             icon: String?,
             lamports: UInt64?,
-            decimals: Int?
+            decimals: Int?,
+            isLiquidity: Bool? = nil
         ) {
             self.name = name
             self.mintAddress = mintAddress
@@ -33,25 +39,23 @@ public extension SolanaSDK {
             self.icon = icon
             self.lamports = lamports
             self.decimals = decimals
+            self.liquidity = isLiquidity
         }
         
-        public init?(accountInfo: AccountInfo, pubkey: String, in network: Network) {
+        public init(accountInfo: AccountInfo, pubkey: String, in network: Network) {
             guard let supportedTokens = Self.getSupportedTokens(network: network)
             else {
-                return nil
+                fatalError()
             }
-            
             
             if let token = supportedTokens.first(where: {$0.mintAddress == accountInfo.mint.base58EncodedString}) {
                 self = token
                 self.lamports = accountInfo.lamports
                 self.pubkey = pubkey
                 self.decimals = nil
-                return
+            } else {
+                self = Token(name: accountInfo.mint.base58EncodedString, mintAddress: accountInfo.mint.base58EncodedString, pubkey: pubkey, symbol: "", icon: nil, lamports: accountInfo.lamports, decimals: nil, isLiquidity: true)
             }
-            
-            print("unsupported token: \(accountInfo.mint.base58EncodedString)")
-            return nil
         }
         
         public static func getSupportedTokens(network: Network) -> [Self]? {

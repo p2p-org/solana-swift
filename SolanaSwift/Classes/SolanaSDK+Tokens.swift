@@ -62,11 +62,10 @@ extension SolanaSDK {
             decodedTo: AccountInfo.self
         )
             .map {
-                $0.compactMap {
-                    $0.account.data.value != nil ?
-                        Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: self.network)
-                        : nil
-                }
+                $0.compactMap {$0.account.data.value != nil ? $0: nil}
+            }
+            .map {
+                $0.map {Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: self.network)}
             }
     }
 }
