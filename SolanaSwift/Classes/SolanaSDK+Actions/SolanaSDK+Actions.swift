@@ -31,7 +31,7 @@ extension SolanaSDK {
                             if result.err != nil {
                                 throw Error.other("Simulation error")
                             }
-                            return ""
+                            return "<simulated transaction id>"
                         }
                 } else {
                     return self.sendTransaction(serializedTransaction: $0)
