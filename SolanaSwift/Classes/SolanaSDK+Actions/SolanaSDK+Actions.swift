@@ -38,11 +38,23 @@ extension SolanaSDK {
                 }
             }
             .catchError {error in
-                if (error as? Error) == Error.other("Blockhash not found"),
-                   numberOfTries <= maxAttemps
+                if numberOfTries <= maxAttemps,
+                   let error = error as? SolanaSDK.Error
                 {
-                    numberOfTries += 1
-                    return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation, accountsModifier: accountsModifier)
+                    var shouldRetry = false
+                    switch error {
+                    case .other(let message) where message == "Blockhash not found":
+                        shouldRetry = true
+                    case .invalidResponse(let response) where response.message == "Blockhash not found":
+                        shouldRetry = true
+                    default:
+                        break
+                    }
+                    
+                    if shouldRetry {
+                        numberOfTries += 1
+                        return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation, accountsModifier: accountsModifier)
+                    }
                 }
                 throw error
             }
