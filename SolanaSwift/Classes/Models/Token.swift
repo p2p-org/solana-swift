@@ -43,12 +43,9 @@ public extension SolanaSDK {
         }
         
         public init(accountInfo: AccountInfo, pubkey: String, in network: Network) {
-            guard let supportedTokens = Self.getSupportedTokens(network: network)
-            else {
-                fatalError()
-            }
+            let supportedTokens = Self.getSupportedTokens(network: network)
             
-            if let token = supportedTokens.first(where: {$0.mintAddress == accountInfo.mint.base58EncodedString}) {
+            if let token = supportedTokens?.first(where: {$0.mintAddress == accountInfo.mint.base58EncodedString}) {
                 self = token
                 self.lamports = accountInfo.lamports
                 self.pubkey = pubkey
@@ -64,7 +61,13 @@ public extension SolanaSDK {
             else {
                 return nil
             }
-            return try? JSONDecoder().decode([SolanaSDK.Token].self, from: data)
+            do {
+                let tokens = try JSONDecoder().decode([SolanaSDK.Token].self, from: data)
+                return tokens
+            } catch {
+                print(error)
+                return nil
+            }
         }
     }
 }
