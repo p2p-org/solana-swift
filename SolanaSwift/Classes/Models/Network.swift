@@ -12,7 +12,6 @@ extension SolanaSDK {
         case mainnetBeta = "mainnet-beta"
         case devnet = "devnet"
         case testnet = "testnet"
-        case localnet = "localnet"
         
         public var swapProgramId: PublicKey {
             switch self {
@@ -22,8 +21,6 @@ extension SolanaSDK {
                 return try! SolanaSDK.PublicKey(string: "E7G3NKPwVcuPXjqL11J2ZZWBVRsocb6Lu3nK5BrRwBNd")
             case .testnet:
                 return try! SolanaSDK.PublicKey(string: "FmgrCQX1JJSAkJEk8fiL85Cgnh7g3DS1rmakEjP1eCyL")
-            default:
-                fatalError("Unsupported network")
             }
         }
         
