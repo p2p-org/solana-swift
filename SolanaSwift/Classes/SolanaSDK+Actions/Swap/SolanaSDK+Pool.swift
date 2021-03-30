@@ -17,15 +17,31 @@ extension SolanaSDK {
     
     func getPools(swapProgramId: String) -> Single<[Pool]> {
         getProgramAccounts(publicKey: swapProgramId, decodedTo: TokenSwapInfo.self)
+            .map { programs -> [(address: String, swapData: TokenSwapInfo)] in
+                programs.compactMap {program in
+                    guard let swapData = program.account.data.value else {
+                        return nil
+                    }
+                    guard swapData.mintA.base58EncodedString != "11111111111111111111111111111111",
+                          swapData.mintB.base58EncodedString != "11111111111111111111111111111111",
+                          swapData.tokenPool.base58EncodedString != "11111111111111111111111111111111"
+                    else {return nil}
+                    return (address: program.pubkey, swapData: swapData)
+                }
+            }
+//            .do(onSuccess: {programs in
+//                var programs = programs.map {$0.swapData}
+//                Logger.log(message: String(data: try JSONEncoder().encode(programs), encoding: .utf8)!, event: .response)
+//                
+//            })
             .flatMap {
                 Single.zip(
-                    try $0.filter {$0.account.data.value != nil}
-                        .compactMap {
-                            self.getPoolInfo(
-                                address: try PublicKey(string: $0.pubkey),
-                                swapData: $0.account.data.value!
-                            )
-                        }
+                    try $0.compactMap {
+                        self.getPoolInfo(
+                            address: try PublicKey(string: $0.address),
+                            swapData: $0.swapData
+                        )
+                    }
                 )
             }
     }

@@ -10,6 +10,7 @@ import Foundation
 extension SolanaSDK {
     public struct TokenSwapInfo: BufferLayout, Equatable, Hashable, Encodable {
         // MARK: - Properties
+        public let version: UInt8
         public let isInitialized: Bool
         public let nonce: UInt8
         public let tokenProgramId: PublicKey
@@ -19,7 +20,6 @@ extension SolanaSDK {
         public var mintA: PublicKey
         public var mintB: PublicKey
         public let feeAccount: PublicKey
-        public let curveType: UInt8
         public let tradeFeeNumerator: UInt64
         public let tradeFeeDenominator: UInt64
         public let ownerTradeFeeNumerator: UInt64
@@ -28,11 +28,14 @@ extension SolanaSDK {
         public let ownerWithdrawFeeDenominator: UInt64
         public let hostFeeNumerator: UInt64
         public let hostFeeDenominator: UInt64
+        public let curveType: UInt8
+        public let payer: PublicKey
         
         
         // MARK: - Initializer
         public init?(_ keys: [String: [UInt8]]) {
-            guard let isInitialized = keys["isInitialized"]?.first,
+            guard let version = keys["version"]?.first,
+                  let isInitialized = keys["isInitialized"]?.first,
                   let nonce = keys["nonce"]?.first,
                   let tokenProgramId = try? PublicKey(bytes: keys["tokenProgramId"]),
                   let tokenAccountA = try? PublicKey(bytes: keys["tokenAccountA"]),
@@ -41,7 +44,6 @@ extension SolanaSDK {
                   let mintA = try? PublicKey(bytes: keys["mintA"]),
                   let mintB = try? PublicKey(bytes: keys["mintB"]),
                   let feeAccount = try? PublicKey(bytes: keys["feeAccount"]),
-                  let curveType = keys["curveType"]?.first,
                   let tradeFeeNumerator = keys["tradeFeeNumerator"]?.toUInt64(),
                   let tradeFeeDenominator = keys["tradeFeeDenominator"]?.toUInt64(),
                   let ownerTradeFeeNumerator = keys["ownerTradeFeeNumerator"]?.toUInt64(),
@@ -49,10 +51,13 @@ extension SolanaSDK {
                   let ownerWithdrawFeeNumerator = keys["ownerWithdrawFeeNumerator"]?.toUInt64(),
                   let ownerWithdrawFeeDenominator = keys["ownerWithdrawFeeDenominator"]?.toUInt64(),
                   let hostFeeNumerator = keys["hostFeeNumerator"]?.toUInt64(),
-                  let hostFeeDenominator = keys["hostFeeDenominator"]?.toUInt64()
+                  let hostFeeDenominator = keys["hostFeeDenominator"]?.toUInt64(),
+                  let curveType = keys["curveType"]?.first,
+                  let payer = try? PublicKey(bytes: keys["payer"])
             else {
                 return nil
             }
+            self.version = version
             self.isInitialized = isInitialized == 1
             self.nonce = nonce
             self.tokenProgramId = tokenProgramId
@@ -62,7 +67,6 @@ extension SolanaSDK {
             self.mintA = mintA
             self.mintB = mintB
             self.feeAccount = feeAccount
-            self.curveType = curveType
             self.tradeFeeNumerator = tradeFeeNumerator
             self.tradeFeeDenominator = tradeFeeDenominator
             self.ownerTradeFeeNumerator = ownerTradeFeeNumerator
@@ -71,11 +75,14 @@ extension SolanaSDK {
             self.ownerWithdrawFeeDenominator = ownerWithdrawFeeDenominator
             self.hostFeeNumerator = hostFeeNumerator
             self.hostFeeDenominator = hostFeeDenominator
+            self.curveType = curveType
+            self.payer = payer
         }
         
         // MARK: - Layout
         public static func layout()  -> [(key: String?, length: Int)] {
             [
+                (key: "version", length: 1),
                 (key: "isInitialized", length: 1),
                 (key: "nonce", length: 1),
                 (key: "tokenProgramId", length: PublicKey.LENGTH),
@@ -85,7 +92,6 @@ extension SolanaSDK {
                 (key: "mintA", length: PublicKey.LENGTH),
                 (key: "mintB", length: PublicKey.LENGTH),
                 (key: "feeAccount", length: PublicKey.LENGTH),
-                (key: "curveType", length: 1),
                 (key: "tradeFeeNumerator", length: 8),
                 (key: "tradeFeeDenominator", length: 8),
                 (key: "ownerTradeFeeNumerator", length: 8),
@@ -93,7 +99,9 @@ extension SolanaSDK {
                 (key: "ownerWithdrawFeeNumerator", length: 8),
                 (key: "ownerWithdrawFeeDenominator", length: 8),
                 (key: "hostFeeNumerator", length: 8),
-                (key: "hostFeeDenominator", length: 8)
+                (key: "hostFeeDenominator", length: 8),
+                (key: "curveType", length: 1),
+                (key: "payer", length: PublicKey.LENGTH),
             ]
         }
     }
