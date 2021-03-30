@@ -37,6 +37,7 @@ public extension SolanaSDK {
             var keys = [
                 Account.Meta(publicKey: tokenSwapAccount, isSigner: false, isWritable: false),
                 Account.Meta(publicKey: authority, isSigner: false, isWritable: false),
+                Account.Meta(publicKey: userTransferAuthority, isSigner: true, isWritable: false),
                 Account.Meta(publicKey: userSource, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: poolSource, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: poolDestination, isSigner: false, isWritable: true),
