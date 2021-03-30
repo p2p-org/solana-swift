@@ -49,7 +49,7 @@ public extension SolanaSDK {
 }
 
 public extension SolanaSDK.Account {
-    struct Meta: Codable {
+    struct Meta: Codable, Comparable, Equatable {
         public let publicKey: SolanaSDK.PublicKey
         public var isSigner: Bool
         public var isWritable: Bool
@@ -66,6 +66,17 @@ public extension SolanaSDK.Account {
             publicKey = try SolanaSDK.PublicKey(string: string)
             isSigner = false
             isWritable = false
+        }
+        
+        public static func < (lhs: SolanaSDK.Account.Meta, rhs: SolanaSDK.Account.Meta) -> Bool {
+            if lhs.isSigner == rhs.isSigner {
+                if lhs.isWritable == rhs.isWritable {
+                    return true
+                }
+                return lhs.isWritable
+            } else {
+                return lhs.isSigner
+            }
         }
     }
 }

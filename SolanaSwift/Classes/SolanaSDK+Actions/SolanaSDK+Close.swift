@@ -22,18 +22,7 @@ extension SolanaSDK {
             
             var transaction = Transaction()
             transaction.closeAccount(tokenPubkey, destination: account.publicKey, owner: account.publicKey)
-            return serializeAndSend(transaction: transaction, signers: [account], isSimulation: isSimulation) { (keys) -> [Account.Meta] in
-                var accountKeys: [Account.Meta] = keys.sorted { (lhs, rhs) -> Bool in
-                    if lhs.isSigner != rhs.isSigner {return !lhs.isSigner}
-                    if lhs.isWritable != rhs.isWritable {return !lhs.isWritable}
-                    return false
-                }.reversed()
-                var feePayer = accountKeys.removeFirst()
-                feePayer.isSigner = true
-                feePayer.isWritable = true
-                accountKeys.insert(feePayer, at: 0)
-                return accountKeys
-            }
+            return serializeAndSend(transaction: transaction, signers: [account], isSimulation: isSimulation)
         } catch {
             return .error(error)
         }
