@@ -16,6 +16,7 @@ class TokenSwapProgramTests: XCTestCase {
         let instruction = SolanaSDK.TokenSwapProgram.swapInstruction(
             tokenSwapAccount: publicKey,
             authority: publicKey,
+            userTransferAuthority: publicKey,
             userSource: publicKey,
             poolSource: publicKey,
             poolDestination: publicKey,
