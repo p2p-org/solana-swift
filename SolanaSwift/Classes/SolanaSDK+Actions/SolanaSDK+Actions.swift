@@ -13,16 +13,14 @@ extension SolanaSDK {
         transaction: Transaction,
         recentBlockhash: String? = nil,
         signers: [Account],
-        isSimulation: Bool,
-        accountsModifier: (([Account.Meta]) -> [Account.Meta])? = nil
+        isSimulation: Bool
     ) -> Single<String> {
         let maxAttemps = 3
         var numberOfTries = 0
         return serializeTransaction(
             transaction,
             recentBlockhash: recentBlockhash,
-            signers: signers,
-            accountsModifier: accountsModifier
+            signers: signers
         )
             .flatMap {
                 if isSimulation {
@@ -53,7 +51,7 @@ extension SolanaSDK {
                     
                     if shouldRetry {
                         numberOfTries += 1
-                        return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation, accountsModifier: accountsModifier)
+                        return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation)
                     }
                 }
                 throw error
@@ -64,7 +62,7 @@ extension SolanaSDK {
         _ transaction: Transaction,
         recentBlockhash: String? = nil,
         signers: [Account],
-        accountsModifier: (([Account.Meta]) -> [Account.Meta])? = nil
+        feePayer: PublicKey? = nil
     ) -> Single<String> {
         // get recentBlockhash
         let getRecentBlockhashRequest: Single<String>
@@ -74,13 +72,18 @@ extension SolanaSDK {
             getRecentBlockhashRequest = getRecentBlockhash()
         }
         
+        guard let feePayer = feePayer ?? accountStorage.account?.publicKey else {
+            return .error(Error.invalidRequest(reason: "Fee-payer not found"))
+        }
+        
         // serialize transaction
         return getRecentBlockhashRequest
             .map {recentBlockhash -> String in
                 var transaction = transaction
                 transaction.message.recentBlockhash = recentBlockhash
-                try transaction.sign(signers: signers, accountsModifier: accountsModifier)
-                guard let serializedTransaction = try transaction.serialize(accountsModifier: accountsModifier).toBase64() else {
+                transaction.message.feePayer = feePayer
+                try transaction.sign(signers: signers)
+                guard let serializedTransaction = try transaction.serialize().toBase64() else {
                     throw Error.other("Could not serialize transaction")
                 }
                 return serializedTransaction

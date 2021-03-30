@@ -25,7 +25,7 @@ class RestAPITransactionTests: RestAPITests {
     }
     
     func testCloseAccount() throws {
-        let token = "BdbcJv1RTrbybDK4VkxoSNSSdnWgzi4GNo2WhEAeUai5"
+        let token = "FK1PFgU39iYdvC1faHj6KHufNdQdTs7fkEK9bJhsHwWs"
         
         _ = try solanaSDK.closeTokenAccount(
             tokenPubkey: token,
@@ -50,14 +50,14 @@ class RestAPITransactionTests: RestAPITests {
     func testSendSPLToken() throws {
         // USDC
         let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-        let source = "4xHqPn7FXiG7VAeo6pLsbMJQQPpTgSrJL6JAjKA4w3J7"
+        let source = "Wb9uEKqNcmSQh1WRnt1tYWyfKL8iPpr7fxbNzRTYvXA"
         let destination = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
         
         _ = try solanaSDK.sendSPLTokens(
             mintAddress: mintAddress,
             from: source,
             to: destination,
-            amount: Double(0.4).toLamport(decimals: 6),
+            amount: Double(0.05).toLamport(decimals: 6),
             isSimulation: true
         ).toBlocking().first()
     }

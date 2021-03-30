@@ -16,6 +16,7 @@ public extension SolanaSDK {
         public var accountKeys = [Account.Meta]()
         public var instructions = [Transaction.Instruction]()
         private(set) var programInstructions: [TransactionInstruction]?
+        public var feePayer: PublicKey?
         
         public init() {}
         
@@ -28,7 +29,7 @@ public extension SolanaSDK {
             programInstructions!.append(instruction)
         }
         
-        public mutating func serialize(accountsModifier: (([Account.Meta]) -> [Account.Meta])? = nil) throws -> [UInt8] {
+        public mutating func serialize() throws -> [UInt8] {
             guard let string = recentBlockhash
             else {throw Error.invalidRequest(reason: "Blockhash not found")}
             
@@ -37,20 +38,17 @@ public extension SolanaSDK {
                 throw Error.other("No instructions provided")
             }
             
+            guard let feePayer = feePayer else {
+                throw Error.other("Feepayer not found")
+            }
+            
             let recentBlockhash = Base58.decode(string)
             
-            let accountsModifier = accountsModifier ?? {accounts in
-                var accounts = accounts
-                accounts.sort { lhs, rhs in
-                    if lhs.isSigner != rhs.isSigner {return lhs.isSigner}
-                    if lhs.isWritable != rhs.isWritable {return lhs.isWritable}
-                    return false
-                }
-                return accounts
-            }
-                
-            accountKeys = accountsModifier(accountKeys)
+            accountKeys.sort(by: <)
             
+            let feePayerAccount = Account.Meta(publicKey: feePayer, isSigner: true, isWritable: true)
+            accountKeys.removeAll(where: {$0.publicKey == feePayer})
+            accountKeys.insert(feePayerAccount, at: 0)
             let accountKeysSize = accountKeys.count
             let accountAddressesLength = Data.encodeLength(UInt(accountKeysSize))
             
