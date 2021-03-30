@@ -79,7 +79,13 @@ extension SolanaSDK {
                 
                 // form transaction
                 var transaction = Transaction()
+                
+                // form signers
                 var signers = [owner]
+                
+                // add userTransferAuthority
+                let userTransferAuthority = try Account(network: self.network)
+                signers.append(userTransferAuthority)
                 
                 // create fromToken if it is native
                 if tokenAInfo.isNative {
@@ -115,7 +121,7 @@ extension SolanaSDK {
                 transaction.approve(
                     tokenProgramId: .tokenProgramId,
                     account: source,
-                    delegate: poolAuthority,
+                    delegate: userTransferAuthority.publicKey,
                     owner: owner.publicKey,
                     amount: amount
                 )
@@ -123,6 +129,7 @@ extension SolanaSDK {
                 try transaction.swap(
                     swapProgramId: self.network.swapProgramId,
                     pool: pool,
+                    userTransferAuthority: userTransferAuthority.publicKey,
                     userSource: source,
                     userDestination: destination!,
                     amount: amount,

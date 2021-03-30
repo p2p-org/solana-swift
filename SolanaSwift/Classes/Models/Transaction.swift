@@ -100,6 +100,7 @@ public extension SolanaSDK {
         mutating func swap(
             swapProgramId: PublicKey,
             pool: Pool,
+            userTransferAuthority: PublicKey,
             userSource: PublicKey,
             userDestination: PublicKey,
             amount: UInt64,
@@ -109,6 +110,7 @@ public extension SolanaSDK {
             let instruction = TokenSwapProgram.swapInstruction(
                 tokenSwapAccount: pool.address,
                 authority: poolAuthority,
+                userTransferAuthority: userTransferAuthority,
                 userSource: userSource,
                 poolSource: pool.swapData.tokenAccountA,
                 poolDestination: pool.swapData.tokenAccountB,

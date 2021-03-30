@@ -21,6 +21,7 @@ public extension SolanaSDK {
         public static func swapInstruction(
             tokenSwapAccount: PublicKey,
             authority: PublicKey,
+            userTransferAuthority: PublicKey,
             userSource: PublicKey,
             poolSource: PublicKey,
             poolDestination: PublicKey,
