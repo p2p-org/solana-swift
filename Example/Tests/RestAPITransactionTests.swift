@@ -61,5 +61,22 @@ class RestAPITransactionTests: RestAPITests {
             isSimulation: true
         ).toBlocking().first()
     }
+    
+    func testSwapToken() throws {
+        let source = try SolanaSDK.PublicKey(string: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        let sourceMint = SolanaSDK.PublicKey.wrappedSOLMint
+        let destination = try SolanaSDK.PublicKey(string: "Wb9uEKqNcmSQh1WRnt1tYWyfKL8iPpr7fxbNzRTYvXA")
+        let destinationMint = try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+        
+        _ = try solanaSDK.swap(
+            source: source,
+            sourceMint: sourceMint,
+            destination: destination,
+            destinationMint: destinationMint,
+            slippage: 0.5,
+            amount: 0.001.toLamport(decimals: 9),
+            isSimulation: true
+        ).toBlocking().first()
+    }
 }
 
