@@ -130,11 +130,12 @@ extension SolanaSDK {
                 )
                 
                 // TODO: - Host fee
+                var hostFeeAccount: Account?
                 
                 // swap
                 instructions.append(
                     TokenSwapProgram.swapInstruction(
-                        tokenSwapAccount: pool.address,
+                        tokenSwap: pool.address,
                         authority: poolAuthority,
                         userTransferAuthority: userTransferAuthority.publicKey,
                         userSource: source,
@@ -143,9 +144,9 @@ extension SolanaSDK {
                         userDestination: destination!,
                         poolMint: pool.swapData.tokenPool,
                         feeAccount: pool.swapData.feeAccount,
-                        hostFeeAccount: pool.swapData.feeAccount,
-                        tokenProgramId: .tokenProgramId,
+                        hostFeeAccount: hostFeeAccount?.publicKey,
                         swapProgramId: self.network.swapProgramId,
+                        tokenProgramId: .tokenProgramId,
                         amountIn: amount,
                         minimumAmountOut: minAmountIn
                     )
