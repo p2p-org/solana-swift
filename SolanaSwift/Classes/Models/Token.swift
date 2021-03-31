@@ -9,7 +9,6 @@ import Foundation
 
 public extension SolanaSDK {
     struct Token: Decodable, Hashable {
-        public let name: String
         public let mintAddress: String
         public var pubkey: String?
         public let symbol: String
@@ -17,6 +16,7 @@ public extension SolanaSDK {
         public var lamports: UInt64?
         public var decimals: Int?
         let liquidity: Bool?
+        public var wrappedBy: String?
         
         public var isLiquidity: Bool {
             liquidity == true
@@ -30,9 +30,9 @@ public extension SolanaSDK {
             icon: String?,
             lamports: UInt64?,
             decimals: Int?,
-            isLiquidity: Bool? = nil
+            isLiquidity: Bool? = nil,
+            wrappedBy: String?
         ) {
-            self.name = name
             self.mintAddress = mintAddress
             self.pubkey = pubkey
             self.symbol = symbol
@@ -40,6 +40,7 @@ public extension SolanaSDK {
             self.lamports = lamports
             self.decimals = decimals
             self.liquidity = isLiquidity
+            self.wrappedBy = wrappedBy
         }
         
         public init(accountInfo: AccountInfo, pubkey: String, in network: Network) {
@@ -51,7 +52,7 @@ public extension SolanaSDK {
                 self.pubkey = pubkey
                 self.decimals = nil
             } else {
-                self = Token(name: accountInfo.mint.base58EncodedString, mintAddress: accountInfo.mint.base58EncodedString, pubkey: pubkey, symbol: "", icon: nil, lamports: accountInfo.lamports, decimals: nil, isLiquidity: true)
+                self = Token(name: accountInfo.mint.base58EncodedString, mintAddress: accountInfo.mint.base58EncodedString, pubkey: pubkey, symbol: "", icon: nil, lamports: accountInfo.lamports, decimals: nil, isLiquidity: true, wrappedBy: nil)
             }
         }
         
