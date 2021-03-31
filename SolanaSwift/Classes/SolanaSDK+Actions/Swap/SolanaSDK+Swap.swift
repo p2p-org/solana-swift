@@ -189,15 +189,12 @@ extension SolanaSDK {
             SystemProgram.createAccountInstruction(
                 from: fromAccount,
                 toNewPubkey: newAccount.publicKey,
-                lamports: amount + minimumBalanceForRentExemption,
-                space: UInt64(AccountInfo.BUFFER_LENGTH),
-                programPubkey: .tokenProgramId
+                lamports: amount + minimumBalanceForRentExemption
             )
         )
         
         instructions.append(
             TokenProgram.initializeAccountInstruction(
-                programId: .tokenProgramId,
                 account: newAccount.publicKey,
                 mint: .wrappedSOLMint,
                 owner: payer
@@ -206,7 +203,6 @@ extension SolanaSDK {
         
         cleanupInstructions.append(
             TokenProgram.closeAccountInstruction(
-                tokenProgramId: .tokenProgramId,
                 account: newAccount.publicKey,
                 destination: payer,
                 owner: payer
@@ -232,15 +228,12 @@ extension SolanaSDK {
             SystemProgram.createAccountInstruction(
                 from: owner,
                 toNewPubkey: newAccount.publicKey,
-                lamports: minimumBalanceForRentExemption,
-                space: UInt64(AccountInfo.BUFFER_LENGTH),
-                programPubkey: .tokenProgramId
+                lamports: minimumBalanceForRentExemption
             )
         )
         
         instructions.append(
             TokenProgram.initializeAccountInstruction(
-                programId: .tokenProgramId,
                 account: newAccount.publicKey,
                 mint: mint,
                 owner: owner
@@ -250,7 +243,6 @@ extension SolanaSDK {
         if mint == .wrappedSOLMint {
             cleanupInstructions.append(
                 TokenProgram.closeAccountInstruction(
-                    tokenProgramId: .tokenProgramId,
                     account: newAccount.publicKey,
                     destination: owner,
                     owner: owner
