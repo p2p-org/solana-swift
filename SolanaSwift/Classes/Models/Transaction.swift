@@ -129,6 +129,14 @@ public extension SolanaSDK {
             message.add(instruction: closeInstruction)
         }
         
+        public mutating func add(instruction: TransactionInstruction) {
+            message.add(instruction: instruction)
+        }
+        
+        public mutating func add(instructions: [TransactionInstruction]) {
+            instructions.forEach {message.add(instruction: $0)}
+        }
+        
         public mutating func set(recentBlockhash: String) {
             message.recentBlockhash = recentBlockhash
         }
