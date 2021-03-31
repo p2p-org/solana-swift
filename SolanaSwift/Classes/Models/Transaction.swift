@@ -11,7 +11,7 @@ import TweetNacl
 public extension SolanaSDK {
     struct Transaction: Decodable {
         public var signatures: [UInt8]
-        public var message: Message
+        public private(set) var message: Message
         public var signaturesLength: Int? = 0
         
         enum CodingKeys: String, CodingKey {
@@ -127,6 +127,14 @@ public extension SolanaSDK {
         mutating func closeAccount(_ account: PublicKey, destination: PublicKey, owner: PublicKey) {
             let closeInstruction = TokenProgram.closeAccountInstruction(tokenProgramId: .tokenProgramId, account: account, destination: destination, owner: owner)
             message.add(instruction: closeInstruction)
+        }
+        
+        public mutating func set(recentBlockhash: String) {
+            message.recentBlockhash = recentBlockhash
+        }
+        
+        public mutating func set(feePayer: PublicKey) {
+            message.feePayer = feePayer
         }
     }
 }
