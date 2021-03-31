@@ -55,9 +55,7 @@ public extension SolanaSDK {
         }
         
         public mutating func add(instructions: [TransactionInstruction]) {
-            for instruction in instructions {
-                message.add(instruction: instruction)
-            }
+            instructions.forEach {message.add(instruction: $0)}
         }
         
         public mutating func set(recentBlockhash: String) {

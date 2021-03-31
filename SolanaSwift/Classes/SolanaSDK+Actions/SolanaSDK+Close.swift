@@ -23,7 +23,6 @@ extension SolanaSDK {
             var transaction = Transaction()
             transaction.add(instruction:
                 TokenProgram.closeAccountInstruction(
-                    tokenProgramId: .tokenProgramId,
                     account: tokenPubkey,
                     destination: account.publicKey,
                     owner: account.publicKey

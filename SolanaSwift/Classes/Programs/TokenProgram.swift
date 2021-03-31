@@ -120,7 +120,7 @@ public extension SolanaSDK {
         }
         
         public static func closeAccountInstruction(
-            tokenProgramId: PublicKey,
+            tokenProgramId: PublicKey = .tokenProgramId,
             account: PublicKey,
             destination: PublicKey,
             owner: PublicKey
