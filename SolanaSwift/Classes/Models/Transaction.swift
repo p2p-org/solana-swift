@@ -50,85 +50,14 @@ public extension SolanaSDK {
             return data.bytes
         }
         
-        mutating func createAndInitializeAccount(
-            ownerPubkey: PublicKey,
-            mint: PublicKey,
-            balance: UInt64,
-            inNetwork network: Network
-        ) throws -> Account {
-            let newAccount = try Account(network: network)
-            let newAccountPubkey = newAccount.publicKey
-            
-            let createAccountInstruction = SystemProgram.createAccountInstruction(
-                from: ownerPubkey,
-                toNewPubkey: newAccountPubkey,
-                lamports: balance,
-                space: UInt64(AccountInfo.BUFFER_LENGTH),
-                programPubkey: .tokenProgramId
-            )
-            
-            let initializeAccountInstruction = TokenProgram.initializeAccountInstruction(
-                programId: .tokenProgramId,
-                account: newAccountPubkey,
-                mint: mint,
-                owner: ownerPubkey
-            )
-            
-            message.add(instruction: createAccountInstruction)
-            message.add(instruction: initializeAccountInstruction)
-            
-            return newAccount
-        }
-        
-        mutating func approve(
-            tokenProgramId: PublicKey,
-            account: PublicKey,
-            delegate: PublicKey,
-            owner: PublicKey,
-            amount: UInt64
-        ) {
-            let approveInstruction = TokenProgram.approveInstruction(
-                tokenProgramId: .tokenProgramId,
-                account: account,
-                delegate: delegate,
-                owner: owner,
-                amount: amount
-            )
-            message.add(instruction: approveInstruction)
-        }
-        
-        mutating func swap(
-            swapProgramId: PublicKey,
-            pool: Pool,
-            userTransferAuthority: PublicKey,
-            userSource: PublicKey,
-            userDestination: PublicKey,
-            amount: UInt64,
-            minAmountIn: UInt64
-        ) throws {
-            guard let poolAuthority = pool.authority else {throw SolanaSDK.Error.other("pool authority is not valid")}
-            let instruction = TokenSwapProgram.swapInstruction(
-                tokenSwapAccount: pool.address,
-                authority: poolAuthority,
-                userTransferAuthority: userTransferAuthority,
-                userSource: userSource,
-                poolSource: pool.swapData.tokenAccountA,
-                poolDestination: pool.swapData.tokenAccountB,
-                userDestination: userDestination,
-                poolMint: pool.swapData.tokenPool,
-                feeAccount: pool.swapData.feeAccount,
-                hostFeeAccount: pool.swapData.feeAccount,
-                tokenProgramId: .tokenProgramId,
-                swapProgramId: swapProgramId,
-                amountIn: amount,
-                minimumAmountOut: minAmountIn
-            )
+        public mutating func add(instruction: TransactionInstruction) {
             message.add(instruction: instruction)
         }
         
-        mutating func closeAccount(_ account: PublicKey, destination: PublicKey, owner: PublicKey) {
-            let closeInstruction = TokenProgram.closeAccountInstruction(tokenProgramId: .tokenProgramId, account: account, destination: destination, owner: owner)
-            message.add(instruction: closeInstruction)
+        public mutating func add(instructions: [TransactionInstruction]) {
+            for instruction in instructions {
+                message.add(instruction: instruction)
+            }
         }
     }
 }

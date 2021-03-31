@@ -21,7 +21,14 @@ extension SolanaSDK {
             let tokenPubkey = try PublicKey(string: tokenPubkey)
             
             var transaction = Transaction()
-            transaction.closeAccount(tokenPubkey, destination: account.publicKey, owner: account.publicKey)
+            transaction.add(instruction:
+                TokenProgram.closeAccountInstruction(
+                    tokenProgramId: .tokenProgramId,
+                    account: tokenPubkey,
+                    destination: account.publicKey,
+                    owner: account.publicKey
+                )
+            )
             return serializeAndSend(transaction: transaction, signers: [account], isSimulation: isSimulation)
         } catch {
             return .error(error)
