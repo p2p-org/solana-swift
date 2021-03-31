@@ -33,7 +33,7 @@ extension SolanaSDK {
             }
             
             var transaction = Transaction()
-            transaction.message.add(
+            transaction.add(
                 instruction: SystemProgram.transferInstruction(
                     from: fromPublicKey,
                     to: toPublicKey,
@@ -79,7 +79,7 @@ extension SolanaSDK {
                     let toPublicKey = try PublicKey(string: toPublicKey)
                     
                     var transaction = Transaction()
-                    transaction.message.add(
+                    transaction.add(
                         instruction: TokenProgram.transferInstruction(
                             tokenProgramId: .tokenProgramId,
                             source: fromPublicKey,
@@ -185,10 +185,10 @@ extension SolanaSDK {
                 
                 // forming transaction
                 var transaction = Transaction()
-                transaction.message.add(instruction: assertOwnerInstruction)
-                transaction.message.add(instruction: createAccountInstruction)
-                transaction.message.add(instruction: initializeAccountInstruction)
-                transaction.message.add(instruction: transferInstruction)
+                transaction.add(instruction: assertOwnerInstruction)
+                transaction.add(instruction: createAccountInstruction)
+                transaction.add(instruction: initializeAccountInstruction)
+                transaction.add(instruction: transferInstruction)
                 
                 return self.serializeAndSend(
                     transaction: transaction,

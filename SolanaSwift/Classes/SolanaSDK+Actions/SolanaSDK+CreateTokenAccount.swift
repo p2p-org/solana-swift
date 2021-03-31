@@ -45,8 +45,8 @@ extension SolanaSDK {
                 
                 // forming transaction
                 var transaction = Transaction()
-                transaction.message.add(instruction: createAccountInstruction)
-                transaction.message.add(instruction: initializeAccountInstruction)
+                transaction.add(instruction: createAccountInstruction)
+                transaction.add(instruction: initializeAccountInstruction)
                 
                 // serialize transaction
                 return self.serializeAndSend(

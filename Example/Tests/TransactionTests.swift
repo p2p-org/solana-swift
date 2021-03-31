@@ -38,8 +38,8 @@ class TransactionTests: XCTestCase {
         let signer = try SolanaSDK.Account(secretKey: Data(Base58.decode("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")))
         
         var transaction = SolanaSDK.Transaction()
-        transaction.message.add(instruction: SolanaSDK.SystemProgram.transferInstruction(from: fromPublicKey, to: toPublicKey, lamports: lamports))
-        transaction.message.recentBlockhash = "Eit7RCyhUixAe2hGBS8oqnw59QK3kgMMjfLME5bm9wRn"
+        transaction.add(instruction: SolanaSDK.SystemProgram.transferInstruction(from: fromPublicKey, to: toPublicKey, lamports: lamports))
+        transaction.set(recentBlockhash: "Eit7RCyhUixAe2hGBS8oqnw59QK3kgMMjfLME5bm9wRn")
         try transaction.sign(signers: [signer])
         let serializedTransaction = try transaction.serialize().toBase64()!
         
