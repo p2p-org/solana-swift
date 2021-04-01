@@ -44,7 +44,18 @@ public extension SolanaSDK {
             
             let recentBlockhash = Base58.decode(string)
             
-            accountKeys.sort(by: <)
+            let accountsModifier: ([Account.Meta]) -> [Account.Meta] = {accounts in
+                var accounts = accounts
+                accounts.sort { lhs, rhs in
+                    if lhs.isSigner != rhs.isSigner {return lhs.isSigner}
+                    if lhs.isWritable != rhs.isWritable {return lhs.isWritable}
+                    return false
+                }
+                return accounts
+            }
+
+            accountKeys = accountsModifier(accountKeys)
+
             
             let feePayerAccount = Account.Meta(publicKey: feePayer, isSigner: true, isWritable: true)
             accountKeys.removeAll(where: {$0.publicKey == feePayer})
