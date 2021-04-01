@@ -13,6 +13,7 @@ import SolanaSwift
 class RestAPITransactionTests: RestAPITests {
     override var network: SolanaSDK.Network {.mainnetBeta}
     
+    
     // MARK: - Create and close
     func testCreateTokenAccount() throws {
         // USDC
@@ -20,45 +21,45 @@ class RestAPITransactionTests: RestAPITests {
         
         _ = try solanaSDK.createTokenAccount(
             mintAddress: mintAddress,
-            isSimulation: true
+            isSimulation: false
         ).toBlocking().first()
     }
     
     func testCloseAccount() throws {
-        let token = "HQUpLCSUuvowaKs4pbfub63VA3K4UpKR8mxSHDTRvPhK"
+        let token = "A1U5SFrvMQYBAWKD8nYWWYqMQJMDma6tvBSFVibk1bbS"
         
         _ = try solanaSDK.closeTokenAccount(
             tokenPubkey: token,
-            isSimulation: true
+            isSimulation: false
         ).toBlocking().first()
     }
     
     // MARK: - Send
     func testSendSOL() throws {
-        let toPublicKey = "F5Ju1iFZ8yf1iTB1YcHVG23rcgm2ubBtiL6nZSyVvnEW"
+        let toPublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
         
         let balance = try solanaSDK.getBalance().toBlocking().first()
         XCTAssertNotNil(balance)
         
         _ = try solanaSDK.sendSOL(
             to: toPublicKey,
-            amount: balance!/2,
-            isSimulation: true
+            amount: balance!/10,
+            isSimulation: false
         ).toBlocking().first()
     }
     
     func testSendSPLToken() throws {
         // USDC
-        let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-        let source = "Wb9uEKqNcmSQh1WRnt1tYWyfKL8iPpr7fxbNzRTYvXA"
-        let destination = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
+        let mintAddress = "BXXkv6z8ykpG1yuvUDPgh732wzVHB69RnB9YgSYh3itW"
+        let source = "7EAxe1FCinZJU6RjPJVTmTgXAbDceFhsCe3Gg1nRZZjn"
+        let destination = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
         
         _ = try solanaSDK.sendSPLTokens(
             mintAddress: mintAddress,
             from: source,
             to: destination,
-            amount: Double(0.05).toLamport(decimals: 6),
-            isSimulation: true
+            amount: Double(0.001466).toLamport(decimals: 6),
+            isSimulation: false
         ).toBlocking().first()
     }
     

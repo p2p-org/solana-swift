@@ -12,7 +12,7 @@ extension SolanaSDK.Network {
     var testAccount: String {
         switch self {
         case .mainnetBeta:
-            return "miracle pizza supply useful steak border same again youth silver access hundred"
+            return "promote ignore inmate coast excess candy vanish erosion palm oxygen build powder"
         case .devnet:
             return "galaxy lend nose glow equip student way hockey step dismiss expect silent"
         default:
