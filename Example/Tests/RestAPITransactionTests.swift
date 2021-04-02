@@ -26,7 +26,7 @@ class RestAPITransactionTests: RestAPITests {
     }
     
     func testCloseAccount() throws {
-        let token = "3YuhjsaohzpzEYAsonBQakYDj3VFWimhDn7bci8ERKTh"
+        let token = "AWgmNoaiXh2GuKQa89dpqE6k23ae4uTmF9ym6USRhVWB"
         
         _ = try solanaSDK.closeTokenAccount(
             tokenPubkey: token,
