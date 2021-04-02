@@ -24,7 +24,11 @@ public extension Data {
         return len
     }
     
-    static func encodeLength(_ len: UInt) -> Data {
+    static func encodeLength(_ len: Int) -> Data {
+        encodeLength(UInt(len))
+    }
+    
+    private static func encodeLength(_ len: UInt) -> Data {
         var rem_len = len
         var bytes = Data()
         while true {

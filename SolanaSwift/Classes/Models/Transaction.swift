@@ -41,7 +41,7 @@ public extension SolanaSDK {
         public mutating func serialize() throws -> [UInt8] {
             let serializedMessage = try message.serialize()
             
-            let signaturesLength = Data.encodeLength(UInt(self.signaturesLength ?? 1))
+            let signaturesLength = Data.encodeLength(self.signaturesLength ?? 1)
             
             var data = Data(capacity: signaturesLength.count + signatures.count + serializedMessage.count)
             data.append(signaturesLength)

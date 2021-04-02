@@ -10,8 +10,8 @@ import TweetNacl
 
 public extension SolanaSDK {
     struct Transaction2 {
-        var signatures = [Signature]()
-        let feePayer: Account
+        private var signatures = [Signature]()
+        let feePayer: PublicKey
         var instructions = [TransactionInstruction]()
         let recentBlockhash: String
 //        TODO: nonceInfo
@@ -39,14 +39,36 @@ public extension SolanaSDK {
             try partialSign(message: message, signers: signers)
         }
         
-        mutating func serialize() throws -> Data {
-            try compile().serialize()
+        mutating func serialize(
+            requiredAllSignatures: Bool = true,
+            verifySignatures: Bool = true
+        ) throws -> Data {
+            // message
+            let serializedMessage = try serializeMessage()
+            
+            // verification
+            if verifySignatures && _verifySignatures(serializedMessage: serializedMessage, requiredAllSignatures: requiredAllSignatures)
+            {
+                throw Error.invalidRequest(reason: "Signature verification failed")
+            }
+            
+            return _serialize(serializedMessage: serializedMessage)
         }
         
+        
+        // MARK: - Helpers
         mutating func addSignature(_ signature: Signature) throws {
             let _ = try compile() // Ensure signatures array is populated
             
             try _addSignature(signature)
+        }
+        
+        mutating func serializeMessage() throws -> Data {
+            try compile().serialize()
+        }
+        
+        mutating func verifySignatures() throws -> Bool {
+            try _verifySignatures(serializedMessage: try serializeMessage(), requiredAllSignatures: true)
         }
         
         // MARK: - Signing
@@ -135,9 +157,9 @@ public extension SolanaSDK {
             })
             
             // move fee payer to front
-            accountMetas.removeAll(where: {$0.publicKey == feePayer.publicKey})
+            accountMetas.removeAll(where: {$0.publicKey == feePayer})
             accountMetas.insert(
-                Account.Meta(publicKey: feePayer.publicKey, isSigner: true, isWritable: true),
+                Account.Meta(publicKey: feePayer, isSigner: true, isWritable: true),
                 at: 0
             )
             
@@ -189,6 +211,46 @@ public extension SolanaSDK {
                 recentBlockhash: recentBlockhash,
                 programInstructions: instructions
             )
+        }
+        
+        // MARK: - Verifying
+        private mutating func _verifySignatures(
+            serializedMessage: Data,
+            requiredAllSignatures: Bool
+        ) -> Bool {
+            for signature in signatures {
+                if signature.signature == nil {
+                    if requiredAllSignatures {
+                        return false
+                    }
+                } else {
+                    if (try? NaclSign.signDetachedVerify(message: serializedMessage, sig: signature.signature!, publicKey: signature.publicKey.data)) != true
+                    {
+                        return false
+                    }
+                }
+            }
+            return true
+        }
+        
+        // MARK: - Serializing
+        private mutating func _serialize(serializedMessage: Data) -> Data {
+            // signature length
+            let encodedSignatureLength = Data.encodeLength(signatures.count)
+            
+            // signature data
+            let signaturesData = signatures.reduce(Data(), {result, signature in
+                var data = result
+                data.append(signature.signature!)
+                return data
+            })
+            
+            // transaction length
+            var data = Data(capacity: encodedSignatureLength.count + signaturesData.count + serializedMessage.count)
+            data.append(encodedSignatureLength)
+            data.append(signaturesData)
+            data.append(serializedMessage)
+            return data
         }
     }
 }

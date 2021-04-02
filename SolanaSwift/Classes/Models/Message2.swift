@@ -126,7 +126,7 @@ extension SolanaSDK {
         }
         
         private func encodeLength(_ length: Int) -> Data {
-            Data.encodeLength(UInt(length))
+            Data.encodeLength(length)
         }
     }
 }
