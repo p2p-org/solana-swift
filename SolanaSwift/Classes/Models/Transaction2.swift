@@ -55,7 +55,7 @@ public extension SolanaSDK {
             
             for signer in signers {
                 let data = try NaclSign.signDetached(message: signData, secretKey: signer.secretKey)
-                _addSignature(try Signature(signature: data, publicKey: signer.publicKey))
+                try _addSignature(Signature(signature: data, publicKey: signer.publicKey))
             }
         }
         
@@ -65,7 +65,6 @@ public extension SolanaSDK {
                   let index = signatures.firstIndex(where: {$0.publicKey == signature.publicKey})
             else {
                 throw Error.other("Signer not valid: \(signature.publicKey.base58EncodedString)")
-                return
             }
             
             signatures[index] = signature
