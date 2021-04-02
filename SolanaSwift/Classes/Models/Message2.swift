@@ -15,7 +15,7 @@ extension SolanaSDK {
         // MARK: - Properties
         var accountKeys: [Account.Meta]
         var recentBlockhash: String
-        var instructions: [Transaction.Instruction]
+//        var instructions: [Transaction.Instruction]
         var programInstructions: [TransactionInstruction]
         
         func serialize() throws -> Data {
@@ -79,9 +79,13 @@ extension SolanaSDK {
             // construct data
             var data = Data(capacity: keyCount.count + accountKeys.count * PublicKey.LENGTH)
             
+            // sort
+            let signedKeys = accountKeys.filter {$0.isSigner}
+            let unsignedKeys = accountKeys.filter {!$0.isSigner}
+            let accountKeys = signedKeys + unsignedKeys
+            
             // append data
             data.append(keyCount)
-            
             for meta in accountKeys {
                 data.append(meta.publicKey.data)
             }
