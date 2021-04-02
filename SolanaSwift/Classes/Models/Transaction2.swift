@@ -48,7 +48,7 @@ public extension SolanaSDK {
         
         mutating func serialize(
             requiredAllSignatures: Bool = true,
-            verifySignatures: Bool = true
+            verifySignatures: Bool = false
         ) throws -> Data {
             // message
             let serializedMessage = try serializeMessage()
@@ -243,14 +243,20 @@ public extension SolanaSDK {
         // MARK: - Serializing
         private mutating func _serialize(serializedMessage: Data) -> Data {
             // signature length
-            let encodedSignatureLength = Data.encodeLength(signatures.count)
+            var signaturesLength = signatures.count
             
             // signature data
             let signaturesData = signatures.reduce(Data(), {result, signature in
                 var data = result
-                data.append(signature.signature!)
+                if let signature = signature.signature {
+                    data.append(signature)
+                } else {
+                    signaturesLength -= 1
+                }
                 return data
             })
+            
+            let encodedSignatureLength = Data.encodeLength(signaturesLength)
             
             // transaction length
             var data = Data(capacity: encodedSignatureLength.count + signaturesData.count + serializedMessage.count)
