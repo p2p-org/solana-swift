@@ -46,7 +46,7 @@ extension SolanaSDK {
             var result = Data(capacity: 17) // FIXME: - capacity
             result.append(0x2) // program index
             let keyIndeces = [UInt8]([0, 1])
-            result.append(Data.encodeLength(UInt(keyIndeces.count))) // key size
+            result.append(Data.encodeLength(keyIndeces.count)) // key size
             result.append(contentsOf: keyIndeces) // keyIndeces
             result.append(UInt8(12))   // FIXME transfer data size
             

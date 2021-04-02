@@ -111,9 +111,9 @@ extension SolanaSDK {
                 
                 let compiledInstruction = CompiledInstruction(
                     programIdIndex: UInt8(try accountKeys.index(ofElementWithPublicKey: instruction.programId)),
-                    keyIndicesCount: [UInt8](Data.encodeLength(UInt(keysSize))),
+                    keyIndicesCount: [UInt8](Data.encodeLength(keysSize)),
                     keyIndices: [UInt8](keyIndices),
-                    dataLength: [UInt8](Data.encodeLength(UInt(instruction.data.count))),
+                    dataLength: [UInt8](Data.encodeLength(instruction.data.count)),
                     data: instruction.data
                 )
                 

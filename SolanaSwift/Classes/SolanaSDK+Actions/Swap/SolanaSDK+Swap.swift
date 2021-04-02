@@ -159,12 +159,11 @@ extension SolanaSDK {
                     )
                 )
                 
-                // form transaction
-                var transaction = Transaction()
-                transaction.add(instructions: instructions)
-                transaction.add(instructions: cleanupInstructions)
-                
-                return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation)
+                return self.serializeAndSend(
+                    instructions: instructions + cleanupInstructions,
+                    signers: signers,
+                    isSimulation: isSimulation
+                )
             }
     }
     

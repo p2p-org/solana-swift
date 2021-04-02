@@ -44,13 +44,14 @@ extension SolanaSDK {
                 )
                 
                 // forming transaction
-                var transaction = Transaction()
-                transaction.add(instruction: createAccountInstruction)
-                transaction.add(instruction: initializeAccountInstruction)
+                let instructions = [
+                    createAccountInstruction,
+                    initializeAccountInstruction
+                ]
                 
                 // serialize transaction
                 return self.serializeAndSend(
-                    transaction: transaction,
+                    instructions: instructions,
                     recentBlockhash: recentBlockhash,
                     signers: [payer, newAccount],
                     isSimulation: isSimulation
