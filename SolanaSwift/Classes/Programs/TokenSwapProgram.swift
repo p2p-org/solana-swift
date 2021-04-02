@@ -19,8 +19,9 @@ public extension SolanaSDK {
         
         // MARK: - Swap
         public static func swapInstruction(
-            tokenSwapAccount: PublicKey,
+            tokenSwap: PublicKey,
             authority: PublicKey,
+            userTransferAuthority: PublicKey,
             userSource: PublicKey,
             poolSource: PublicKey,
             poolDestination: PublicKey,
@@ -28,14 +29,15 @@ public extension SolanaSDK {
             poolMint: PublicKey,
             feeAccount: PublicKey,
             hostFeeAccount: PublicKey?,
-            tokenProgramId: PublicKey,
             swapProgramId: PublicKey,
+            tokenProgramId: PublicKey,
             amountIn: UInt64,
             minimumAmountOut: UInt64
         ) -> TransactionInstruction {
             var keys = [
-                Account.Meta(publicKey: tokenSwapAccount, isSigner: false, isWritable: false),
+                Account.Meta(publicKey: tokenSwap, isSigner: false, isWritable: false),
                 Account.Meta(publicKey: authority, isSigner: false, isWritable: false),
+                Account.Meta(publicKey: userTransferAuthority, isSigner: true, isWritable: false),
                 Account.Meta(publicKey: userSource, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: poolSource, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: poolDestination, isSigner: false, isWritable: true),

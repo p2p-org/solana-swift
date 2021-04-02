@@ -61,7 +61,7 @@ public extension SolanaSDK {
             accountKeys.removeAll(where: {$0.publicKey == feePayer})
             accountKeys.insert(feePayerAccount, at: 0)
             let accountKeysSize = accountKeys.count
-            let accountAddressesLength = Data.encodeLength(UInt(accountKeysSize))
+            let accountAddressesLength = Data.encodeLength(accountKeysSize)
             
             var compiledInstructionsLength: Int = 0
             var compiledInstructions = [CompiledInstruction]()
@@ -77,9 +77,9 @@ public extension SolanaSDK {
                 
                 let compiledInstruction = CompiledInstruction(
                     programIdIndex: UInt8(try findAccountIndex(publicKey: instruction.programId)),
-                    keyIndicesCount: [UInt8](Data.encodeLength(UInt(keysSize))),
+                    keyIndicesCount: [UInt8](Data.encodeLength(keysSize)),
                     keyIndices: [UInt8](keyIndices),
-                    dataLength: [UInt8](Data.encodeLength(UInt(instruction.data.count))),
+                    dataLength: [UInt8](Data.encodeLength(instruction.data.count)),
                     data: instruction.data
                 )
                 
@@ -87,7 +87,7 @@ public extension SolanaSDK {
                 compiledInstructionsLength += compiledInstruction.length
             }
             
-            let instructionsLength = Data.encodeLength(UInt(compiledInstructions.count)).bytes
+            let instructionsLength = Data.encodeLength(compiledInstructions.count).bytes
             
             let bufferSize: Int = Message.Header.LENGTH + Message.RECENT_BLOCK_HASH_LENGT + accountAddressesLength.count + Int(accountKeysSize) * PublicKey.LENGTH + instructionsLength.count + compiledInstructionsLength
             

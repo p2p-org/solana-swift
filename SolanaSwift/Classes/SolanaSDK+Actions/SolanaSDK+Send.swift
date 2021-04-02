@@ -32,16 +32,17 @@ extension SolanaSDK {
                 throw Error.other("You can not send tokens to yourself")
             }
             
-            var transaction = Transaction()
-            transaction.add(
-                instruction: SystemProgram.transferInstruction(
-                    from: fromPublicKey,
-                    to: toPublicKey,
-                    lamports: amount
-                )
+            let instruction = SystemProgram.transferInstruction(
+                from: fromPublicKey,
+                to: toPublicKey,
+                lamports: amount
             )
             
-            return serializeAndSend(transaction: transaction, signers: [account], isSimulation: isSimulation)
+            return serializeAndSend(
+                instructions: [instruction],
+                signers: [account],
+                isSimulation: isSimulation
+            )
         } catch {
             return .error(error)
         }
@@ -78,17 +79,15 @@ extension SolanaSDK {
                     let fromPublicKey = try PublicKey(string: fromPublicKey)
                     let toPublicKey = try PublicKey(string: toPublicKey)
                     
-                    var transaction = Transaction()
-                    transaction.add(
-                        instruction: TokenProgram.transferInstruction(
-                            tokenProgramId: .tokenProgramId,
-                            source: fromPublicKey,
-                            destination: toPublicKey,
-                            owner: account.publicKey,
-                            amount: amount
-                        )
+                    let instruction = TokenProgram.transferInstruction(
+                        tokenProgramId: .tokenProgramId,
+                        source: fromPublicKey,
+                        destination: toPublicKey,
+                        owner: account.publicKey,
+                        amount: amount
                     )
-                    return self.serializeAndSend(transaction: transaction, signers: [account], isSimulation: isSimulation)
+                    
+                    return self.serializeAndSend(instructions: [instruction], signers: [account], isSimulation: isSimulation)
                 }
                 
                 // If the recipient does not have a wallet with such a wrapped token, first we create one at the sender's expense, and then we credit the tokens to the corresponding account.
@@ -184,14 +183,15 @@ extension SolanaSDK {
                 )
                 
                 // forming transaction
-                var transaction = Transaction()
-                transaction.add(instruction: assertOwnerInstruction)
-                transaction.add(instruction: createAccountInstruction)
-                transaction.add(instruction: initializeAccountInstruction)
-                transaction.add(instruction: transferInstruction)
+                let instructions = [
+                    assertOwnerInstruction,
+                    createAccountInstruction,
+                    initializeAccountInstruction,
+                    transferInstruction
+                ]
                 
                 return self.serializeAndSend(
-                    transaction: transaction,
+                    instructions: instructions,
                     recentBlockhash: recentBlockhash,
                     signers: [payer, newAccount],
                     isSimulation: isSimulation

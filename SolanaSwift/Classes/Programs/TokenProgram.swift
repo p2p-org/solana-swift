@@ -86,15 +86,32 @@ public extension SolanaSDK {
             account: PublicKey,
             delegate: PublicKey,
             owner: PublicKey,
+            multiSigners: [Account] = [],
             amount: UInt64
         ) -> TransactionInstruction {
+            var keys = [
+                Account.Meta(publicKey: account, isSigner: false, isWritable: true),
+                Account.Meta(publicKey: delegate, isSigner: false, isWritable: false)
+            ]
             
-            TransactionInstruction(
-                keys: [
-                    Account.Meta(publicKey: account, isSigner: false, isWritable: true),
-                    Account.Meta(publicKey: delegate, isSigner: false, isWritable: false),
-                    Account.Meta(publicKey: owner, isSigner: true, isWritable: true)
-                ],
+            if multiSigners.isEmpty {
+                keys.append(
+                    Account.Meta(publicKey: owner, isSigner: true, isWritable: false)
+                )
+            } else {
+                keys.append(
+                    Account.Meta(publicKey: owner, isSigner: false, isWritable: false)
+                )
+                
+                for signer in multiSigners {
+                    keys.append(
+                        Account.Meta(publicKey: signer.publicKey, isSigner: true, isWritable: false)
+                    )
+                }
+            }
+            
+            return TransactionInstruction(
+                keys: keys,
                 programId: tokenProgramId,
                 data: [Index.approve, amount]
             )

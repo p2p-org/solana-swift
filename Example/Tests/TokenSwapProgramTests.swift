@@ -14,8 +14,9 @@ class TokenSwapProgramTests: XCTestCase {
     
     func testSwapInstruction() throws {
         let instruction = SolanaSDK.TokenSwapProgram.swapInstruction(
-            tokenSwapAccount: publicKey,
+            tokenSwap: publicKey,
             authority: publicKey,
+            userTransferAuthority: publicKey,
             userSource: publicKey,
             poolSource: publicKey,
             poolDestination: publicKey,
@@ -23,8 +24,8 @@ class TokenSwapProgramTests: XCTestCase {
             poolMint: publicKey,
             feeAccount: publicKey,
             hostFeeAccount: publicKey,
-            tokenProgramId: publicKey,
             swapProgramId: publicKey,
+            tokenProgramId: publicKey,
             amountIn: 100000,
             minimumAmountOut: 0
         )

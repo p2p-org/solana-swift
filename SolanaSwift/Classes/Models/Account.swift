@@ -49,7 +49,7 @@ public extension SolanaSDK {
 }
 
 public extension SolanaSDK.Account {
-    struct Meta: Codable {
+    struct Meta: Codable, CustomDebugStringConvertible {
         public let publicKey: SolanaSDK.PublicKey
         public var isSigner: Bool
         public var isWritable: Bool
@@ -66,6 +66,10 @@ public extension SolanaSDK.Account {
             publicKey = try SolanaSDK.PublicKey(string: string)
             isSigner = false
             isWritable = false
+        }
+        
+        public var debugDescription: String {
+            "{\"publicKey\": \"\(publicKey.base58EncodedString)\", \"isSigner\": \(isSigner), \"isWritable\": \(isWritable)}"
         }
     }
 }

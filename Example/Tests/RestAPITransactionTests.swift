@@ -21,16 +21,16 @@ class RestAPITransactionTests: RestAPITests {
         
         _ = try solanaSDK.createTokenAccount(
             mintAddress: mintAddress,
-            isSimulation: false
+            isSimulation: true
         ).toBlocking().first()
     }
     
     func testCloseAccount() throws {
-        let token = "A1U5SFrvMQYBAWKD8nYWWYqMQJMDma6tvBSFVibk1bbS"
+        let token = "3YuhjsaohzpzEYAsonBQakYDj3VFWimhDn7bci8ERKTh"
         
         _ = try solanaSDK.closeTokenAccount(
             tokenPubkey: token,
-            isSimulation: false
+            isSimulation: true
         ).toBlocking().first()
     }
     
@@ -50,27 +50,29 @@ class RestAPITransactionTests: RestAPITests {
     
     func testSendSPLToken() throws {
         // USDC
-        let mintAddress = "BXXkv6z8ykpG1yuvUDPgh732wzVHB69RnB9YgSYh3itW"
-        let source = "7EAxe1FCinZJU6RjPJVTmTgXAbDceFhsCe3Gg1nRZZjn"
+        let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        let source = "DjY1uZozQTPz9c6WsjpPC3jXWp7u98KzyuyQTRzcGHFk"
         let destination = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
         
         _ = try solanaSDK.sendSPLTokens(
             mintAddress: mintAddress,
             from: source,
             to: destination,
-            amount: Double(0.001466).toLamport(decimals: 6),
-            isSimulation: false
+            amount: Double(0.001).toLamport(decimals: 6),
+            isSimulation: true
         ).toBlocking().first()
     }
     
     func testSwapToken() throws {
-        let source = try SolanaSDK.PublicKey(string: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        let source = try SolanaSDK.PublicKey(string: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm")
         let sourceMint = SolanaSDK.PublicKey.wrappedSOLMint
         let destinationMint = try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+        let destination = try SolanaSDK.PublicKey(string: "C3enVPXBvpx7AWGZkqhn7xCcoxCrDCZy9hZ1e5qyoWo6")
         
         _ = try solanaSDK.swap(
             source: source,
             sourceMint: sourceMint,
+            destination: destination,
             destinationMint: destinationMint,
             slippage: 0.5,
             amount: 0.001.toLamport(decimals: 9),

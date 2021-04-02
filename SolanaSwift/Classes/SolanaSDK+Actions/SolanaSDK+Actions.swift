@@ -10,7 +10,7 @@ import RxSwift
 
 extension SolanaSDK {
     func serializeAndSend(
-        transaction: Transaction,
+        instructions: [TransactionInstruction],
         recentBlockhash: String? = nil,
         signers: [Account],
         isSimulation: Bool
@@ -18,7 +18,7 @@ extension SolanaSDK {
         let maxAttemps = 3
         var numberOfTries = 0
         return serializeTransaction(
-            transaction,
+            instructions: instructions,
             recentBlockhash: recentBlockhash,
             signers: signers
         )
@@ -51,7 +51,7 @@ extension SolanaSDK {
                     
                     if shouldRetry {
                         numberOfTries += 1
-                        return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation)
+                        return self.serializeAndSend(instructions: instructions, signers: signers, isSimulation: isSimulation)
                     }
                 }
                 throw error
@@ -59,7 +59,7 @@ extension SolanaSDK {
     }
     
     func serializeTransaction(
-        _ transaction: Transaction,
+        instructions: [TransactionInstruction],
         recentBlockhash: String? = nil,
         signers: [Account],
         feePayer: PublicKey? = nil
@@ -79,11 +79,13 @@ extension SolanaSDK {
         // serialize transaction
         return getRecentBlockhashRequest
             .map {recentBlockhash -> String in
-                var transaction = transaction
-                transaction.set(recentBlockhash: recentBlockhash)
-                transaction.set(feePayer: feePayer)
+                var transaction = Transaction2(
+                    feePayer: feePayer,
+                    instructions: instructions,
+                    recentBlockhash: recentBlockhash
+                )
                 try transaction.sign(signers: signers)
-                guard let serializedTransaction = try transaction.serialize().toBase64() else {
+                guard let serializedTransaction = try transaction.serialize().bytes.toBase64() else {
                     throw Error.other("Could not serialize transaction")
                 }
                 return serializedTransaction

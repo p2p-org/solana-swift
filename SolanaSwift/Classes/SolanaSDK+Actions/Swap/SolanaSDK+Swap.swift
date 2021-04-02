@@ -77,20 +77,27 @@ extension SolanaSDK {
                 var source = source
                 var destination = destination
                 
-                // form transaction
-                var transaction = Transaction()
-                var signers = [owner]
+                // add userTransferAuthority
+                let userTransferAuthority = try Account(network: self.network)
+                
+                // form signers
+                var signers = [owner, userTransferAuthority]
+                
+                // form instructions
+                var instructions = [TransactionInstruction]()
+                var cleanupInstructions = [TransactionInstruction]()
                 
                 // create fromToken if it is native
                 if tokenAInfo.isNative {
-                    let newAccount = try transaction.createAndInitializeAccount(
-                        ownerPubkey: owner.publicKey,
-                        mint: sourceMint,
-                        balance: amount + minimumBalanceForRentExemption,
-                        inNetwork: self.network
+                    let newAccount = try self.createWrappedSolAccount(
+                        fromAccount: source,
+                        amount: amount,
+                        payer: owner.publicKey,
+                        instructions: &instructions,
+                        cleanupInstructions: &cleanupInstructions,
+                        signers: &signers,
+                        minimumBalanceForRentExemption: minimumBalanceForRentExemption
                     )
-                    
-                    signers.append(newAccount)
                     
                     source = newAccount.publicKey
                 }
@@ -99,53 +106,64 @@ extension SolanaSDK {
                 let isMintBWSOL = destinationMint == .wrappedSOLMint
                 if destination == nil || isMintBWSOL {
                     // create toToken if it doesn't exist
-                    let newAccount = try transaction.createAndInitializeAccount(
-                        ownerPubkey: owner.publicKey,
+                    let newAccount = try self.createAccountByMint(
+                        owner: owner.publicKey,
                         mint: destinationMint,
-                        balance: minimumBalanceForRentExemption,
-                        inNetwork: self.network
+                        instructions: &instructions,
+                        cleanupInstructions: &cleanupInstructions,
+                        signers: &signers,
+                        minimumBalanceForRentExemption: minimumBalanceForRentExemption
                     )
-                    
-                    signers.append(newAccount)
                     
                     destination = newAccount.publicKey
                 }
                 
-                // approve and swap
-                transaction.approve(
-                    tokenProgramId: .tokenProgramId,
-                    account: source,
-                    delegate: poolAuthority,
-                    owner: owner.publicKey,
-                    amount: amount
+                // approve
+                instructions.append(
+                    TokenProgram.approveInstruction(
+                        tokenProgramId: .tokenProgramId,
+                        account: source,
+                        delegate: userTransferAuthority.publicKey,
+                        owner: owner.publicKey,
+                        amount: amount
+                    )
                 )
                 
-                try transaction.swap(
-                    swapProgramId: self.network.swapProgramId,
-                    pool: pool,
-                    userSource: source,
-                    userDestination: destination!,
-                    amount: amount,
-                    minAmountIn: minAmountIn
+                // TODO: - Host fee
+//                let hostFeeAccount = try self.createAccountByMint(
+//                    owner: .swapHostFeeAddress,
+//                    mint: pool.swapData.tokenPool,
+//                    instructions: &instructions,
+//                    cleanupInstructions: &cleanupInstructions,
+//                    signers: &signers,
+//                    minimumBalanceForRentExemption: minimumBalanceForRentExemption
+//                )
+                
+                // swap
+                instructions.append(
+                    TokenSwapProgram.swapInstruction(
+                        tokenSwap: pool.address,
+                        authority: poolAuthority,
+                        userTransferAuthority: userTransferAuthority.publicKey,
+                        userSource: source,
+                        poolSource: pool.swapData.tokenAccountA,
+                        poolDestination: pool.swapData.tokenAccountB,
+                        userDestination: destination!,
+                        poolMint: pool.swapData.tokenPool,
+                        feeAccount: pool.swapData.feeAccount,
+                        hostFeeAccount: nil,
+                        swapProgramId: self.network.swapProgramId,
+                        tokenProgramId: .tokenProgramId,
+                        amountIn: amount,
+                        minimumAmountOut: minAmountIn
+                    )
                 )
                 
-                // close redundant account
-                let isNeedCloseAccount = tokenAInfo.isNative || isMintBWSOL
-                var closingAccount: PublicKey!
-                
-                if tokenAInfo.isNative {
-                    closingAccount = source
-                } else if isMintBWSOL {
-                    closingAccount = destination
-                }
-                
-                if isNeedCloseAccount,
-                   let closingAccount = closingAccount
-                {
-                    transaction.closeAccount(closingAccount, destination: owner.publicKey, owner: owner.publicKey)
-                }
-                
-                return self.serializeAndSend(transaction: transaction, signers: signers, isSimulation: isSimulation)
+                return self.serializeAndSend(
+                    instructions: instructions + cleanupInstructions,
+                    signers: signers,
+                    isSimulation: isSimulation
+                )
             }
     }
     
@@ -161,5 +179,85 @@ extension SolanaSDK {
                 }
                 throw Error.other("Invalid data")
             }
+    }
+    
+    private func createWrappedSolAccount(
+        fromAccount: PublicKey,
+        amount: UInt64,
+        payer: PublicKey,
+        instructions: inout [TransactionInstruction],
+        cleanupInstructions: inout [TransactionInstruction],
+        signers: inout [Account],
+        minimumBalanceForRentExemption: UInt64
+    ) throws -> Account {
+        let newAccount = try Account(network: network)
+        
+        instructions.append(
+            SystemProgram.createAccountInstruction(
+                from: fromAccount,
+                toNewPubkey: newAccount.publicKey,
+                lamports: amount + minimumBalanceForRentExemption
+            )
+        )
+        
+        instructions.append(
+            TokenProgram.initializeAccountInstruction(
+                account: newAccount.publicKey,
+                mint: .wrappedSOLMint,
+                owner: payer
+            )
+        )
+        
+        cleanupInstructions.append(
+            TokenProgram.closeAccountInstruction(
+                account: newAccount.publicKey,
+                destination: payer,
+                owner: payer
+            )
+        )
+        
+        signers.append(newAccount)
+        
+        return newAccount
+    }
+    
+    private func createAccountByMint(
+        owner: PublicKey,
+        mint: PublicKey,
+        instructions: inout [TransactionInstruction],
+        cleanupInstructions: inout [TransactionInstruction],
+        signers: inout [Account],
+        minimumBalanceForRentExemption: UInt64
+    ) throws -> Account {
+        let newAccount = try Account(network: network)
+        
+        instructions.append(
+            SystemProgram.createAccountInstruction(
+                from: owner,
+                toNewPubkey: newAccount.publicKey,
+                lamports: minimumBalanceForRentExemption
+            )
+        )
+        
+        instructions.append(
+            TokenProgram.initializeAccountInstruction(
+                account: newAccount.publicKey,
+                mint: mint,
+                owner: owner
+            )
+        )
+        
+        if mint == .wrappedSOLMint {
+            cleanupInstructions.append(
+                TokenProgram.closeAccountInstruction(
+                    account: newAccount.publicKey,
+                    destination: owner,
+                    owner: owner
+                )
+            )
+        }
+        
+        signers.append(newAccount)
+        return newAccount
     }
 }
