@@ -130,7 +130,14 @@ extension SolanaSDK {
                 )
                 
                 // TODO: - Host fee
-                var hostFeeAccount: Account?
+                let hostFeeAccount = try self.createAccountByMint(
+                    owner: .swapHostFeeAddress,
+                    mint: pool.swapData.tokenPool,
+                    instructions: &instructions,
+                    cleanupInstructions: &cleanupInstructions,
+                    signers: &signers,
+                    minimumBalanceForRentExemption: minimumBalanceForRentExemption
+                )
                 
                 // swap
                 instructions.append(
@@ -144,7 +151,7 @@ extension SolanaSDK {
                         userDestination: destination!,
                         poolMint: pool.swapData.tokenPool,
                         feeAccount: pool.swapData.feeAccount,
-                        hostFeeAccount: hostFeeAccount?.publicKey,
+                        hostFeeAccount: hostFeeAccount.publicKey,
                         swapProgramId: self.network.swapProgramId,
                         tokenProgramId: .tokenProgramId,
                         amountIn: amount,

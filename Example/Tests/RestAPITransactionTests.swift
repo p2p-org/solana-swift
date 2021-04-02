@@ -64,7 +64,7 @@ class RestAPITransactionTests: RestAPITests {
     }
     
     func testSwapToken() throws {
-        let source = try SolanaSDK.PublicKey(string: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        let source = try SolanaSDK.PublicKey(string: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm")
         let sourceMint = SolanaSDK.PublicKey.wrappedSOLMint
         let destinationMint = try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
         
