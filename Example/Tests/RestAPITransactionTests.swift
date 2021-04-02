@@ -21,12 +21,12 @@ class RestAPITransactionTests: RestAPITests {
         
         _ = try solanaSDK.createTokenAccount(
             mintAddress: mintAddress,
-            isSimulation: false
+            isSimulation: true
         ).toBlocking().first()
     }
     
     func testCloseAccount() throws {
-        let token = "A1U5SFrvMQYBAWKD8nYWWYqMQJMDma6tvBSFVibk1bbS"
+        let token = "4RFq2wRmzWoJBuwCSs3k2LUVzbaePsZmZ3qp7AovtYRr"
         
         _ = try solanaSDK.closeTokenAccount(
             tokenPubkey: token,

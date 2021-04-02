@@ -47,17 +47,17 @@ public extension SolanaSDK {
         }
         
         mutating func serialize(
-//            requiredAllSignatures: Bool = true,
-//            verifySignatures: Bool = true
+            requiredAllSignatures: Bool = true,
+            verifySignatures: Bool = true
         ) throws -> Data {
             // message
             let serializedMessage = try serializeMessage()
             
             // verification
-//            if verifySignatures && _verifySignatures(serializedMessage: serializedMessage, requiredAllSignatures: requiredAllSignatures)
-//            {
-//                throw Error.invalidRequest(reason: "Signature verification failed")
-//            }
+            if verifySignatures && !_verifySignatures(serializedMessage: serializedMessage, requiredAllSignatures: requiredAllSignatures)
+            {
+                throw Error.invalidRequest(reason: "Signature verification failed")
+            }
             
             return _serialize(serializedMessage: serializedMessage)
         }
