@@ -16,7 +16,7 @@ public extension SolanaSDK {
         let recentBlockhash: String
 //        TODO: nonceInfo
         
-        // MARK: - Helpers
+        // MARK: - Methods
         mutating func sign(signers: [Account]) throws {
             guard signers.count > 0 else {throw Error.invalidRequest(reason: "No signers")}
             
@@ -36,13 +36,42 @@ public extension SolanaSDK {
             // construct message
             let message = try compile()
             
-            
+            try partialSign(message: message, signers: signers)
         }
         
         mutating func serialize() throws -> Data {
             try compile().serialize()
         }
         
+        mutating func addSignature(_ signature: Signature) throws {
+            let _ = try compile() // Ensure signatures array is populated
+            
+            try _addSignature(signature)
+        }
+        
+        // MARK: - Signing
+        private mutating func partialSign(message: Message2, signers: [Account]) throws {
+            let signData = try message.serialize()
+            
+            for signer in signers {
+                let data = try NaclSign.signDetached(message: signData, secretKey: signer.secretKey)
+                _addSignature(try Signature(signature: data, publicKey: signer.publicKey))
+            }
+        }
+        
+        private mutating func _addSignature(_ signature: Signature) throws {
+            guard let data = signature.signature,
+                  data.count == 64,
+                  let index = signatures.firstIndex(where: {$0.publicKey == signature.publicKey})
+            else {
+                throw Error.other("Signer not valid: \(signature.publicKey.base58EncodedString)")
+                return
+            }
+            
+            signatures[index] = signature
+        }
+        
+        // MARK: - Compiling
         private mutating func compile() throws -> Message2 {
             let message = try compileMessage()
             let signedKeys = message.accountKeys.filter {$0.isSigner}
