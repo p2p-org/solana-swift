@@ -79,7 +79,7 @@ extension SolanaSDK {
         // serialize transaction
         return getRecentBlockhashRequest
             .map {recentBlockhash -> String in
-                var transaction = Transaction2(
+                var transaction = Transaction(
                     feePayer: feePayer,
                     instructions: instructions,
                     recentBlockhash: recentBlockhash

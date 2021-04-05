@@ -1,5 +1,5 @@
 //
-//  Message.swift
+//  ConfirmedTransactionMessage.swift
 //  SolanaSwift
 //
 //  Created by Chung Tran on 11/6/20.
@@ -7,44 +7,44 @@
 
 import Foundation
 
-public extension SolanaSDK {
+public extension SolanaSDK.ConfirmedTransaction {
     struct Message: Decodable {
         private static let RECENT_BLOCK_HASH_LENGT = 32
         
         public var header = Header()
         public var recentBlockhash: String?
-        public var accountKeys = [Account.Meta]()
-        public var instructions = [Transaction.Instruction]()
-        private(set) var programInstructions: [TransactionInstruction]?
-        public var feePayer: PublicKey?
+        public var accountKeys = [SolanaSDK.Account.Meta]()
+        public var instructions = [SolanaSDK.ConfirmedTransaction.Instruction]()
+        private(set) var programInstructions: [SolanaSDK.TransactionInstruction]?
+        public var feePayer: SolanaSDK.PublicKey?
         
         public init() {}
         
-        public mutating func add(instruction: TransactionInstruction) {
+        public mutating func add(instruction: SolanaSDK.TransactionInstruction) {
             accountKeys.appendWritable(contentsOf: instruction.keys)
-            accountKeys.appendWritable(Account.Meta(publicKey: instruction.programId, isSigner: false, isWritable: false))
+            accountKeys.appendWritable(SolanaSDK.Account.Meta(publicKey: instruction.programId, isSigner: false, isWritable: false))
             if programInstructions == nil {
-                programInstructions = [TransactionInstruction]()
+                programInstructions = [SolanaSDK.TransactionInstruction]()
             }
             programInstructions!.append(instruction)
         }
         
         public mutating func serialize() throws -> [UInt8] {
             guard let string = recentBlockhash
-            else {throw Error.invalidRequest(reason: "Blockhash not found")}
+            else {throw SolanaSDK.Error.invalidRequest(reason: "Blockhash not found")}
             
             guard let programInstructions = programInstructions,
                   programInstructions.count > 0 else {
-                throw Error.other("No instructions provided")
+                throw SolanaSDK.Error.other("No instructions provided")
             }
             
             guard let feePayer = feePayer else {
-                throw Error.other("Feepayer not found")
+                throw SolanaSDK.Error.other("Feepayer not found")
             }
             
             let recentBlockhash = Base58.decode(string)
             
-            let accountsModifier: ([Account.Meta]) -> [Account.Meta] = {accounts in
+            let accountsModifier: ([SolanaSDK.Account.Meta]) -> [SolanaSDK.Account.Meta] = {accounts in
                 var accounts = accounts
                 accounts.sort { lhs, rhs in
                     if lhs.isSigner != rhs.isSigner {return lhs.isSigner}
@@ -57,7 +57,7 @@ public extension SolanaSDK {
             accountKeys = accountsModifier(accountKeys)
 
             
-            let feePayerAccount = Account.Meta(publicKey: feePayer, isSigner: true, isWritable: true)
+            let feePayerAccount = SolanaSDK.Account.Meta(publicKey: feePayer, isSigner: true, isWritable: true)
             accountKeys.removeAll(where: {$0.publicKey == feePayer})
             accountKeys.insert(feePayerAccount, at: 0)
             let accountKeysSize = accountKeys.count
@@ -89,11 +89,11 @@ public extension SolanaSDK {
             
             let instructionsLength = Data.encodeLength(compiledInstructions.count).bytes
             
-            let bufferSize: Int = Message.Header.LENGTH + Message.RECENT_BLOCK_HASH_LENGT + accountAddressesLength.count + Int(accountKeysSize) * PublicKey.LENGTH + instructionsLength.count + compiledInstructionsLength
+            let bufferSize: Int = Header.LENGTH + Message.RECENT_BLOCK_HASH_LENGT + accountAddressesLength.count + Int(accountKeysSize) * SolanaSDK.PublicKey.LENGTH + instructionsLength.count + compiledInstructionsLength
             
             var data = Data(capacity: bufferSize)
             
-            var accountKeysBuff = Data(capacity: accountKeysSize * PublicKey.LENGTH)
+            var accountKeysBuff = Data(capacity: accountKeysSize * SolanaSDK.PublicKey.LENGTH)
             
             header = Header()
             
@@ -129,15 +129,15 @@ public extension SolanaSDK {
             return data.bytes
         }
         
-        private func findAccountIndex(publicKey: PublicKey) throws -> Int {
+        private func findAccountIndex(publicKey: SolanaSDK.PublicKey) throws -> Int {
             guard let index = accountKeys.firstIndex(where: {$0.publicKey == publicKey})
-            else {throw Error.other("Could not found accountIndex")}
+            else {throw SolanaSDK.Error.other("Could not found accountIndex")}
             return index
         }
     }
 }
 
-extension SolanaSDK.Message {
+extension SolanaSDK.ConfirmedTransaction.Message {
     public struct Header: Decodable {
         static let LENGTH = 3
         // TODO:

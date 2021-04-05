@@ -57,7 +57,7 @@ public extension SolanaSDK {
 		public let blockhash: String
 		public let previousBlockhash: String
 		public let parentSlot: UInt64
-		public let transactions: [Transaction.Info]
+		public let transactions: [ConfirmedTransaction.Info]
 		public let rewards: [Reward]
 		public let blockTime: UInt64?
 	}
@@ -139,7 +139,7 @@ public extension SolanaSDK {
 	struct SignatureStatus: Decodable {
 		public let slot: UInt64
 		public let confirmations: UInt64?
-		public let err: Transaction.Error?
+		public let err: ConfirmedTransaction.Error?
 	}
 	struct StakeActivation: Decodable {
 		public let active: UInt64

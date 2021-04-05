@@ -9,7 +9,7 @@ import Foundation
 import TweetNacl
 
 public extension SolanaSDK {
-    struct Transaction: Decodable {
+    struct ConfirmedTransaction: Decodable {
         public var signatures: [UInt8]
         public private(set) var message: Message
         public var signaturesLength: Int? = 0
@@ -68,7 +68,7 @@ public extension SolanaSDK {
     }
 }
 
-public extension SolanaSDK.Transaction {
+public extension SolanaSDK.ConfirmedTransaction {
     struct Instruction: Decodable {
         public let accounts: [UInt64]?
         public let programIdIndex: UInt32?
@@ -88,7 +88,7 @@ public extension SolanaSDK.Transaction {
     
     struct Info: Decodable {
         public let meta: Meta?
-        public let transaction: SolanaSDK.Transaction
+        public let transaction: SolanaSDK.ConfirmedTransaction
         public let slot: UInt64?
     }
     
