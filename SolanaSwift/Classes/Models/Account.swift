@@ -54,18 +54,23 @@ public extension SolanaSDK.Account {
         public var isSigner: Bool
         public var isWritable: Bool
         
+        // MARK: - Decodable
+        enum CodingKeys: String, CodingKey {
+            case publicKey, isSigner, isWritable
+        }
+        
+        public init(from decoder: Decoder) throws {
+            let values = try decoder.container(keyedBy: CodingKeys.self)
+            publicKey = try SolanaSDK.PublicKey(string: try values.decode(String.self, forKey: .publicKey))
+            isSigner = try values.decode(Bool.self, forKey: .isSigner)
+            isWritable = try values.decode(Bool.self, forKey: .isWritable)
+        }
+        
+        // Initializers
         public init(publicKey: SolanaSDK.PublicKey, isSigner: Bool, isWritable: Bool) {
             self.publicKey = publicKey
             self.isSigner = isSigner
             self.isWritable = isWritable
-        }
-    
-        public init(from decoder: Decoder) throws {
-            let value = try decoder.singleValueContainer()
-            let string = try value.decode(String.self)
-            publicKey = try SolanaSDK.PublicKey(string: string)
-            isSigner = false
-            isWritable = false
         }
         
         public var debugDescription: String {

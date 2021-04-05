@@ -10,69 +10,52 @@ import TweetNacl
 
 public extension SolanaSDK {
     struct ConfirmedTransaction: Decodable {
-        public var signatures: [UInt8]
-        public private(set) var message: Message
-        public var signaturesLength: Int? = 0
-        
-        enum CodingKeys: String, CodingKey {
-            case message, signatures
-        }
-        public init(from decoder: Decoder) throws {
-            let values = try decoder.container(keyedBy: CodingKeys.self)
-            message = try values.decode(Message.self, forKey: .message)
-            let strings = try values.decode([String].self, forKey: .signatures)
-            signatures = strings.compactMap {UInt8($0)}
-        }
-        
-        public init() {
-            message = Message()
-            signatures = []
-        }
-        
-        public mutating func sign(signers: [Account]) throws {
-            let serializedMessage = try message.serialize()
-            for signer in signers {
-                let data = try NaclSign.signDetached(message: Data(serializedMessage), secretKey: signer.secretKey).bytes
-                signatures.append(contentsOf: data)
-            }
-            signaturesLength = signers.count
-        }
-        
-        public mutating func serialize() throws -> [UInt8] {
-            let serializedMessage = try message.serialize()
-            
-            let signaturesLength = Data.encodeLength(self.signaturesLength ?? 1)
-            
-            var data = Data(capacity: signaturesLength.count + signatures.count + serializedMessage.count)
-            data.append(signaturesLength)
-            data.append(contentsOf: signatures)
-            data.append(contentsOf: serializedMessage)
-            return data.bytes
-        }
-        
-        public mutating func add(instruction: TransactionInstruction) {
-            message.add(instruction: instruction)
-        }
-        
-        public mutating func add(instructions: [TransactionInstruction]) {
-            instructions.forEach {message.add(instruction: $0)}
-        }
-        
-        public mutating func set(recentBlockhash: String) {
-            message.recentBlockhash = recentBlockhash
-        }
-        
-        public mutating func set(feePayer: PublicKey) {
-            message.feePayer = feePayer
-        }
+        let message: Message
+        let signatures: [String]
     }
 }
 
 public extension SolanaSDK.ConfirmedTransaction {
+    struct Message: Decodable {
+        let accountKeys: [SolanaSDK.Account.Meta]
+        let instructions: [Instruction]
+        let recentBlockhash: String
+    }
+    
     struct Instruction: Decodable {
-        public let accounts: [UInt64]?
-        public let programIdIndex: UInt32?
-        public let data: String?
+        struct Parsed: Decodable {
+            struct Info: Decodable {
+                let owner: String
+                let source: String?
+                let account: String?
+                
+                // create account
+                let lamports: UInt64?
+                let newAccount: String?
+                let space: UInt64?
+                
+                // initialize account
+                let mint: String?
+                let rentSysvar: String?
+                
+                // approve
+                let amount: String?
+                let delegate: String?
+                
+                // close
+                let destination: String?
+            }
+            let info: Info
+            let type: String // createAccount, initializeAccount, approve, closeAccount
+        }
+        
+        let program: String?
+        let programId: String
+        let parsed: Parsed?
+        
+        // swap
+        let data: String?
+        let accounts: [String]?
     }
     
     struct Error: Decodable, Hashable {
