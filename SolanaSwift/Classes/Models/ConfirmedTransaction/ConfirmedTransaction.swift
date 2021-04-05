@@ -17,45 +17,13 @@ public extension SolanaSDK {
 
 public extension SolanaSDK.ConfirmedTransaction {
     struct Message: Decodable {
-        let accountKeys: [SolanaSDK.Account.Meta]
+        public let accountKeys: [SolanaSDK.Account.Meta]
         let instructions: [Instruction]
-        let recentBlockhash: String
-    }
-    
-    struct Instruction: Decodable {
-        struct Parsed: Decodable {
-            struct Info: Decodable {
-                let owner: String
-                let source: String?
-                let account: String?
-                
-                // create account
-                let lamports: UInt64?
-                let newAccount: String?
-                let space: UInt64?
-                
-                // initialize account
-                let mint: String?
-                let rentSysvar: String?
-                
-                // approve
-                let amount: String?
-                let delegate: String?
-                
-                // close
-                let destination: String?
-            }
-            let info: Info
-            let type: String // createAccount, initializeAccount, approve, closeAccount
-        }
+        public let recentBlockhash: String
         
-        let program: String?
-        let programId: String
-        let parsed: Parsed?
-        
-        // swap
-        let data: String?
-        let accounts: [String]?
+//        public var parsedInstructions: [SolanaSDKInstructionType] {
+//
+//        }
     }
     
     struct Error: Decodable, Hashable {
@@ -92,5 +60,43 @@ public extension SolanaSDK.ConfirmedTransaction {
     struct Status: Decodable {
         public let err: Error?
         public let logs: [String]
+    }
+}
+
+extension SolanaSDK.ConfirmedTransaction.Message {
+    struct Instruction: Decodable {
+        struct Parsed: Decodable {
+            struct Info: Decodable {
+                let owner: String
+                let source: String?
+                let account: String?
+                
+                // create account
+                let lamports: UInt64?
+                let newAccount: String?
+                let space: UInt64?
+                
+                // initialize account
+                let mint: String?
+                let rentSysvar: String?
+                
+                // approve
+                let amount: String?
+                let delegate: String?
+                
+                // close
+                let destination: String?
+            }
+            let info: Info
+            let type: String // createAccount, initializeAccount, approve, closeAccount
+        }
+        
+        let program: String?
+        let programId: String
+        let parsed: Parsed?
+        
+        // swap
+        let data: String?
+        let accounts: [String]?
     }
 }
