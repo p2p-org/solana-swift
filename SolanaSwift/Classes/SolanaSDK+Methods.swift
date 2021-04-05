@@ -50,10 +50,10 @@ public extension SolanaSDK {
 	func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) -> Single<[String]> {
 		request(parameters: [account, startSlot, endSlot])
 	}
-	func getConfirmedSignaturesForAddress2(account: String, configs: RequestConfiguration? = nil) -> Single<[ConfirmedTransaction.SignatureInfo]> {
+	func getConfirmedSignaturesForAddress2(account: String, configs: RequestConfiguration? = nil) -> Single<[SignatureInfo]> {
 		request(parameters: [account, configs])
 	}
-	func getConfirmedTransaction(transactionSignature: String) -> Single<ConfirmedTransaction.Info> {
+	func getConfirmedTransaction(transactionSignature: String) -> Single<ConfirmedTransaction> {
         request(parameters: [transactionSignature, "jsonParsed"])
 	}
 	func getEpochInfo(commitment: Commitment? = nil) -> Single<EpochInfo> {
@@ -207,8 +207,8 @@ public extension SolanaSDK {
                 return .error(error)
             }
 	}
-	func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<ConfirmedTransaction.Status> {
-		(request(parameters: [transaction, configs]) as Single<Rpc<ConfirmedTransaction.Status>>)
+	func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<TransactionStatus> {
+		(request(parameters: [transaction, configs]) as Single<Rpc<TransactionStatus>>)
 			.map {$0.value}
 	}
 	func setLogFilter(filter: String) -> Single<String?> {

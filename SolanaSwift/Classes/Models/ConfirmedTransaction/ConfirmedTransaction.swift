@@ -25,42 +25,6 @@ public extension SolanaSDK.ConfirmedTransaction {
 //
 //        }
     }
-    
-    struct Error: Decodable, Hashable {
-        
-    }
-    
-    struct Meta: Decodable {
-        public let err: Error?
-        public let fee: UInt64
-        public let preBalances: [UInt64]
-        public let postBalances: [UInt64]
-    }
-    
-    struct Info: Decodable {
-        public let meta: Meta?
-        public let transaction: SolanaSDK.ConfirmedTransaction
-        public let slot: UInt64?
-    }
-    
-    struct SignatureInfo: Decodable, Hashable {
-        public let signature: String
-        public let slot: UInt64?
-        public let err: Error?
-        public let memo: String?
-        
-        public init(signature: String) {
-            self.signature = signature
-            self.slot = nil
-            self.err = nil
-            self.memo = nil
-        }
-    }
-    
-    struct Status: Decodable {
-        public let err: Error?
-        public let logs: [String]
-    }
 }
 
 extension SolanaSDK.ConfirmedTransaction.Message {
