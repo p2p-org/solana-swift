@@ -49,21 +49,21 @@ public extension SolanaSDK {
 }
 
 public extension SolanaSDK.Account {
-    struct Meta: Codable, CustomDebugStringConvertible {
+    struct Meta: Decodable, CustomDebugStringConvertible {
         public let publicKey: SolanaSDK.PublicKey
         public var isSigner: Bool
         public var isWritable: Bool
         
         // MARK: - Decodable
         enum CodingKeys: String, CodingKey {
-            case publicKey, isSigner, isWritable
+            case pubkey, signer, writable
         }
         
         public init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
-            publicKey = try SolanaSDK.PublicKey(string: try values.decode(String.self, forKey: .publicKey))
-            isSigner = try values.decode(Bool.self, forKey: .isSigner)
-            isWritable = try values.decode(Bool.self, forKey: .isWritable)
+            publicKey = try SolanaSDK.PublicKey(string: try values.decode(String.self, forKey: .pubkey))
+            isSigner = try values.decode(Bool.self, forKey: .signer)
+            isWritable = try values.decode(Bool.self, forKey: .writable)
         }
         
         // Initializers

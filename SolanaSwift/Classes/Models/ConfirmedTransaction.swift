@@ -30,6 +30,10 @@ public extension SolanaSDK.ConfirmedTransaction {
 extension SolanaSDK.ConfirmedTransaction.Message {
     struct Instruction: Decodable {
         struct Parsed: Decodable {
+            enum InstructionType: String, Decodable {
+                case createAccount, initializeAccount, approve, closeAccount, swap
+            }
+            
             struct Info: Decodable {
                 let owner: String
                 let source: String?
@@ -52,7 +56,7 @@ extension SolanaSDK.ConfirmedTransaction.Message {
                 let destination: String?
             }
             let info: Info
-            let type: String // createAccount, initializeAccount, approve, closeAccount
+            let type: InstructionType
         }
         
         let program: String?

@@ -3,8 +3,6 @@
 //  SolanaSwift
 //
 //  Created by Chung Tran on 10/27/20.
-//
-// NOTE: THIS FILE IS GENERATED FROM APIGEN PACKAGE, DO NOT MAKE CHANGES DIRECTLY INTO IT, PLEASE EDIT MODELS.JSON AND modelsGen.js TO MAKE CHANGES (IN ../APIGen FOLDER)
 
 import Foundation
 import RxSwift
@@ -136,11 +134,43 @@ public extension SolanaSDK {
 		public let samplePeriodSecs: UInt
 		public let slot: UInt64
 	}
+    struct SignatureInfo: Decodable, Hashable {
+        public let signature: String
+        public let slot: UInt64?
+        public let err: TransactionError?
+        public let memo: String?
+        
+        public init(signature: String) {
+            self.signature = signature
+            self.slot = nil
+            self.err = nil
+            self.memo = nil
+        }
+    }
 	struct SignatureStatus: Decodable {
 		public let slot: UInt64
 		public let confirmations: UInt64?
 		public let err: TransactionError?
 	}
+    struct TransactionInfo: Decodable {
+        public let blockTime: UInt64?
+        public let meta: TransactionMeta?
+        public let transaction: SolanaSDK.ConfirmedTransaction
+        public let slot: UInt64?
+    }
+    struct TransactionMeta: Decodable {
+        public let err: TransactionError?
+        public let fee: UInt64
+        public let preBalances: [UInt64]
+        public let postBalances: [UInt64]
+    }
+    struct TransactionError: Decodable, Hashable {
+        
+    }
+    struct TransactionStatus: Decodable {
+        public let err: TransactionError?
+        public let logs: [String]
+    }
 	struct StakeActivation: Decodable {
 		public let active: UInt64
 		public let inactive: UInt64

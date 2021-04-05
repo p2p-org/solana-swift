@@ -53,7 +53,7 @@ public extension SolanaSDK {
 	func getConfirmedSignaturesForAddress2(account: String, configs: RequestConfiguration? = nil) -> Single<[SignatureInfo]> {
 		request(parameters: [account, configs])
 	}
-	func getConfirmedTransaction(transactionSignature: String) -> Single<ConfirmedTransaction> {
+	func getConfirmedTransaction(transactionSignature: String) -> Single<TransactionInfo> {
         request(parameters: [transactionSignature, "jsonParsed"])
 	}
 	func getEpochInfo(commitment: Commitment? = nil) -> Single<EpochInfo> {
