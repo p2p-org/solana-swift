@@ -18,26 +18,23 @@ public extension SolanaSDK {
 public extension SolanaSDK.ConfirmedTransaction {
     struct Message: Decodable {
         public let accountKeys: [SolanaSDK.Account.Meta]
-        let instructions: [Instruction]
+        let instructions: [SolanaSDK.ParsedInstruction]
         public let recentBlockhash: String
-        
-//        public var parsedInstructions: [SolanaSDKInstructionType] {
-//
-//        }
     }
 }
 
-extension SolanaSDK.ConfirmedTransaction.Message {
-    struct Instruction: Decodable {
+extension SolanaSDK {
+    struct ParsedInstruction: Decodable {
         struct Parsed: Decodable {
             enum InstructionType: String, Decodable {
-                case createAccount, initializeAccount, approve, closeAccount, swap
+                case createAccount, initializeAccount, approve, closeAccount, swap, transfer
             }
             
             struct Info: Decodable {
-                let owner: String
-                let source: String?
+                let owner: String?
                 let account: String?
+                let source: String?
+                let destination: String?
                 
                 // create account
                 let lamports: UInt64?
@@ -52,8 +49,8 @@ extension SolanaSDK.ConfirmedTransaction.Message {
                 let amount: String?
                 let delegate: String?
                 
-                // close
-                let destination: String?
+                // transfer
+                let authority: String?
             }
             let info: Info
             let type: InstructionType

@@ -18,5 +18,9 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         
         XCTAssertEqual(confirmedTransaction.blockTime, 1617564245)
         XCTAssertEqual(confirmedTransaction.slot, 72208574)
+        XCTAssertEqual(confirmedTransaction.transaction.message.instructions[0].parsed?.type, .createAccount)
+        XCTAssertEqual(confirmedTransaction.transaction.message.instructions[1].parsed?.type, .initializeAccount)
+        XCTAssertEqual(confirmedTransaction.transaction.message.instructions[2].parsed?.type, .approve)
+        XCTAssertEqual(confirmedTransaction.transaction.message.instructions[4].parsed?.type, .closeAccount)
     }
 }

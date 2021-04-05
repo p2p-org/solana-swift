@@ -160,12 +160,25 @@ public extension SolanaSDK {
     }
     struct TransactionMeta: Decodable {
         public let err: TransactionError?
-        public let fee: UInt64
-        public let preBalances: [UInt64]
-        public let postBalances: [UInt64]
+        public let fee: UInt64?
+        public let innerInstructions: [InnerInstruction]?
+        public let logMessages: [String]?
+        public let postBalances: [UInt64]?
+        public let postTokenBalances: [TokenBalance]?
+        public let preBalances: [UInt64]?
+        public let preTokenBalances: [TokenBalance]?
     }
     struct TransactionError: Decodable, Hashable {
         
+    }
+    struct InnerInstruction: Decodable {
+        let index: UInt32
+        let instructions: [ParsedInstruction]
+    }
+    struct TokenBalance: Decodable {
+        let accountIndex: UInt64
+        let mint: String
+        let uiTokenAmount: TokenAccountBalance
     }
     struct TransactionStatus: Decodable {
         public let err: TransactionError?
@@ -186,6 +199,7 @@ public extension SolanaSDK {
 		public let uiAmount: Float64?
 		public let amount: String
 		public let decimals: UInt8?
+        public let uiAmountString: String?
         
         public var amountInUInt64: UInt64? {
             return UInt64(amount)
