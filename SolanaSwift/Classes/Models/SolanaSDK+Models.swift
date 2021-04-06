@@ -9,6 +9,8 @@ import RxSwift
 
 public extension SolanaSDK {
     typealias TransactionID = String
+    typealias Lamports = UInt64
+    typealias Decimals = UInt8
     
 	struct Response<T: Decodable>: Decodable {
 		public let jsonrpc: String

@@ -12,6 +12,16 @@ protocol SolanaSDKTransactionType {
 }
 
 public extension SolanaSDK {
+    struct CreateAccountTransaction: SolanaSDKTransactionType {
+        let fee: Double? // in SOL
+        let mint: PublicKey?
+        let newAccount: PublicKey?
+        
+        static var empty: Self {
+            CreateAccountTransaction(fee: nil, mint: nil, newAccount: nil)
+        }
+    }
+    
     struct SwapTransaction: SolanaSDKTransactionType {
         // source
         let source: PublicKey?

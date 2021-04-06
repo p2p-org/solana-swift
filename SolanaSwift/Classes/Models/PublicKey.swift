@@ -23,8 +23,8 @@ public extension SolanaSDK {
             try self.init(string: string)
         }
         
-        public init(string: String) throws {
-            guard string.utf8.count >= SolanaSDK.PublicKey.LENGTH
+        public init(string: String?) throws {
+            guard let string = string, string.utf8.count >= SolanaSDK.PublicKey.LENGTH
             else {
                 throw Error.other("Invalid public key input")
             }

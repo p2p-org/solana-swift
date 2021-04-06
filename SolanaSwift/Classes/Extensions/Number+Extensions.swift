@@ -22,6 +22,11 @@ extension UInt64 {
     
     public func convertToBalance(decimals: Int?) -> Double {
         guard let decimals = decimals else {return 0}
+        return convertToBalance(decimals: UInt8(decimals))
+    }
+    
+    public func convertToBalance(decimals: UInt8?) -> Double {
+        guard let decimals = decimals else {return 0}
         return Double(self) * pow(10, -Double(decimals))
     }
 }

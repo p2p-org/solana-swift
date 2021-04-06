@@ -17,6 +17,7 @@
 		BC3F719A261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3F7199261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift */; };
 		BC3F71D0261AF25600DFDFD0 /* SwapTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC3F71CF261AF25600DFDFD0 /* SwapTransaction.json */; };
 		BC4F6F1A25B80FD2002BA313 /* TokenSwapProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4F6F1925B80FD2002BA313 /* TokenSwapProgramTests.swift */; };
+		BC54A944261C09B90083A127 /* CreateAccountTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC54A943261C09B90083A127 /* CreateAccountTransaction.json */; };
 		BC631ED525B96DD500138948 /* RestAPITokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC631ED425B96DD500138948 /* RestAPITokenTests.swift */; };
 		BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */; };
 		BC81A2A425BE624300664A2C /* SystemProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2A325BE624300664A2C /* SystemProgramTests.swift */; };
@@ -135,6 +136,7 @@
 		BC3F7199261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingConfirmedTransactionTests.swift; sourceTree = "<group>"; };
 		BC3F71CF261AF25600DFDFD0 /* SwapTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SwapTransaction.json; sourceTree = "<group>"; };
 		BC4F6F1925B80FD2002BA313 /* TokenSwapProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSwapProgramTests.swift; sourceTree = "<group>"; };
+		BC54A943261C09B90083A127 /* CreateAccountTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CreateAccountTransaction.json; sourceTree = "<group>"; };
 		BC631ED425B96DD500138948 /* RestAPITokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITokenTests.swift; sourceTree = "<group>"; };
 		BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2A325BE624300664A2C /* SystemProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemProgramTests.swift; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 			children = (
 				607FACEA1AFB9204008FA782 /* Info.plist */,
 				BC3F71CF261AF25600DFDFD0 /* SwapTransaction.json */,
+				BC54A943261C09B90083A127 /* CreateAccountTransaction.json */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -443,6 +446,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC54A944261C09B90083A127 /* CreateAccountTransaction.json in Resources */,
 				BC3F71D0261AF25600DFDFD0 /* SwapTransaction.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -27,10 +27,8 @@ extension SolanaSDK {
             // get data
             let innerInstructions = transactionInfo.meta?.innerInstructions
             let instructions = transactionInfo.transaction.message.instructions
-            let preBalances = transactionInfo.meta?.preBalances
-            let preTokenBalances = transactionInfo.meta?.preTokenBalances
             
-            // swap
+            // swap (un-parsed type)
             if let instructionIndex = getSwapInstructionIndex(instructions: instructions)
             {
                 let instruction = instructions[instructionIndex]
@@ -38,7 +36,40 @@ extension SolanaSDK {
                     .map {$0 as SolanaSDKTransactionType}
             }
             
+            // parsed types
+            if let instruction = instructions.first,
+               let type = instruction.parsed?.type
+            {
+                switch type {
+                case .createAccount:
+                    // create account
+                    return parseCreateAccountTransaction(
+                        instruction: instruction,
+                        initializeAccountInstruction: instructions.last
+                    )
+                        .map {$0 as SolanaSDKTransactionType}
+                default:
+                    return .error(Error.unknown)
+                }
+            }
+            
             return .error(Error.unknown)
+        }
+        
+        // MARK: - Create account
+        private func parseCreateAccountTransaction(
+            instruction: ParsedInstruction,
+            initializeAccountInstruction: ParsedInstruction?
+        ) -> Single<CreateAccountTransaction>
+        {
+            let info = instruction.parsed?.info
+            let initializeAccountInfo = initializeAccountInstruction?.parsed?.info
+            
+            let fee = info?.lamports?.convertToBalance(decimals: Decimals.SOL)
+            let mint = try? PublicKey(string: initializeAccountInfo?.mint)
+            let newAccount = try? PublicKey(string: info?.newAccount)
+            
+            return .just(.init(fee: fee, mint: mint, newAccount: newAccount))
         }
         
         // MARK: - Swap
@@ -126,8 +157,9 @@ extension SolanaSDK {
         }
         
         // MARK: - Helpers
-        private func getAccountInfo(account: String, retryWithAccount retryAccount: String? = nil) -> Single<AccountInfo?> {
-            solanaSDK.getAccountInfo(
+        private func getAccountInfo(account: String?, retryWithAccount retryAccount: String? = nil) -> Single<AccountInfo?> {
+            guard let account = account else {return .just(nil)}
+            return solanaSDK.getAccountInfo(
                 account: account,
                 decodedTo: AccountInfo.self
             )
