@@ -56,6 +56,12 @@ extension SolanaSDK {
                         preTokenBalance: transactionInfo.meta?.preTokenBalances?.first
                     )
                         .map {$0 as SolanaSDKTransactionType}
+                case .transfer:
+                    // send, receive
+                    return parseTransferTransaction(
+                        instruction: instruction
+                    )
+                        .map {$0 as SolanaSDKTransactionType}
                 default:
                     break
                 }
@@ -97,6 +103,31 @@ extension SolanaSDK {
             let reimbursedAmount = reimbursedAmountLamports?.convertToBalance(decimals: Decimals.SOL)
             let mint = try? PublicKey(string: preTokenBalance?.mint)
             return .just(CloseAccountTransaction(reimbursedAmount: reimbursedAmount, mint: mint))
+        }
+        
+        // MARK: - Transfer
+        private func parseTransferTransaction(
+            instruction: ParsedInstruction
+        ) -> Single<TransferTransaction>
+        {
+            var mint: PublicKey?
+            let source = try? PublicKey(string: instruction.parsed?.info.source)
+            let destination = try? PublicKey(string: instruction.parsed?.info.destination)
+            let lamports = instruction.parsed?.info.lamports
+            
+            return getAccountInfo(account: source?.base58EncodedString)
+                .flatMap { info -> Single<Decimals?> in
+                    mint = info?.mint
+                    return self.getDecimals(mintAddress: mint)
+                }
+                .map { decimals -> TransferTransaction in
+                    TransferTransaction(
+                        mint: mint,
+                        source: source,
+                        destination: destination,
+                        amount: lamports?.convertToBalance(decimals: decimals)
+                    )
+                }
         }
         
         // MARK: - Swap
@@ -159,7 +190,7 @@ extension SolanaSDK {
             var destinationAccountInfo: AccountInfo?
             // get token account info
             return Single.zip(requests)
-                .flatMap { params -> Single<[Int?]> in
+                .flatMap { params -> Single<[Decimals?]> in
                     // get source, destination account info
                     sourceAccountInfo = params[0]
                     destinationAccountInfo = params[1]
@@ -209,10 +240,9 @@ extension SolanaSDK {
                 .catchAndReturn(nil)
         }
         
-        private func getDecimals(mintAddress: PublicKey?) -> Single<Int?> {
+        private func getDecimals(mintAddress: PublicKey?) -> Single<Decimals?> {
             getMintData(mintAddress)
                 .map {$0?.decimals}
-                .map {Int($0 ?? 0)}
         }
     }
 }

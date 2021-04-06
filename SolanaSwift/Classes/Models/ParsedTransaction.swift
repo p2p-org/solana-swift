@@ -27,6 +27,13 @@ public extension SolanaSDK {
         let mint: PublicKey?
     }
     
+    struct TransferTransaction: SolanaSDKTransactionType {
+        let mint: PublicKey?
+        let source: PublicKey?
+        let destination: PublicKey?
+        let amount: Double?
+    }
+    
     struct SwapTransaction: SolanaSDKTransactionType {
         // source
         let source: PublicKey?
