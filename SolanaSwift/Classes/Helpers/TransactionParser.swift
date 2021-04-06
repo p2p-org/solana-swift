@@ -15,11 +15,13 @@ protocol SolanaSDKTransactionParserType {
 extension SolanaSDK {
     struct TransactionParser: SolanaSDKTransactionParserType {
         // MARK: - Properties
-        let solanaSDK: SolanaSDK
+        private let solanaSDK: SolanaSDK
+        private let supportedTokens: [Token]
         
         // MARK: - Initializers
         init(solanaSDK: SolanaSDK) {
             self.solanaSDK = solanaSDK
+            supportedTokens = Token.getSupportedTokens(network: solanaSDK.network) ?? []
         }
         
         // MARK: - Methods
@@ -82,10 +84,9 @@ extension SolanaSDK {
             let initializeAccountInfo = initializeAccountInstruction?.parsed?.info
             
             let fee = info?.lamports?.convertToBalance(decimals: Decimals.SOL)
-            let mint = try? PublicKey(string: initializeAccountInfo?.mint)
-            let newAccount = try? PublicKey(string: info?.newAccount)
-            
-            return .just(CreateAccountTransaction(fee: fee, mint: mint, newAccount: newAccount))
+            var token = supportedTokens.first(where: {$0.mintAddress == initializeAccountInfo?.mint})
+            token?.pubkey = info?.newAccount
+            return .just(CreateAccountTransaction(fee: fee, newToken: token))
         }
         
         // MARK: - Close account
@@ -101,8 +102,9 @@ extension SolanaSDK {
             }
             
             let reimbursedAmount = reimbursedAmountLamports?.convertToBalance(decimals: Decimals.SOL)
-            let mint = try? PublicKey(string: preTokenBalance?.mint)
-            return .just(CloseAccountTransaction(reimbursedAmount: reimbursedAmount, mint: mint))
+            let token = supportedTokens.first(where: {$0.mintAddress == preTokenBalance?.mint})
+            
+            return .just(CloseAccountTransaction(reimbursedAmount: reimbursedAmount, closedToken: token))
         }
         
         // MARK: - Transfer

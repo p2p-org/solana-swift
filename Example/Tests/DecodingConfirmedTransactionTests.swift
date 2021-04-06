@@ -45,8 +45,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
             .toBlocking().first() as! SolanaSDK.CreateAccountTransaction
         
         XCTAssertEqual(transaction.fee, 0.00203928)
-        XCTAssertEqual(transaction.mint?.base58EncodedString, "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk")
-        XCTAssertEqual(transaction.newAccount?.base58EncodedString, "8jpWBKSoU7SXz9gJPJS53TEXXuWcg1frXLEdnfomxLwZ")
+        XCTAssertEqual(transaction.newToken?.symbol, "ETH")
+        XCTAssertEqual(transaction.newToken?.pubkey, "8jpWBKSoU7SXz9gJPJS53TEXXuWcg1frXLEdnfomxLwZ")
     }
     
     func testDecodingCloseAccountTransaction() throws {
@@ -56,7 +56,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
             .toBlocking().first() as! SolanaSDK.CloseAccountTransaction
         
         XCTAssertEqual(transaction.reimbursedAmount, 0.00203928)
-        XCTAssertEqual(transaction.mint?.base58EncodedString, "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk")
+        XCTAssertEqual(transaction.closedToken?.symbol, "ETH")
     }
     
     func testDecodingSendSOLTransaction() throws {
