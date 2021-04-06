@@ -20,8 +20,9 @@ extension UInt64 {
         return withUnsafeBytes(of: &littleEndian) { Array($0) }
     }
     
-    public func convertToBalance(decimals: Int) -> Double {
-        Double(self) * pow(10, -Double(decimals))
+    public func convertToBalance(decimals: Int?) -> Double {
+        guard let decimals = decimals else {return 0}
+        return Double(self) * pow(10, -Double(decimals))
     }
 }
 

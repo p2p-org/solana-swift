@@ -11,16 +11,30 @@ import XCTest
 @testable import SolanaSwift
 
 class DecodingConfirmedTransactionTests: XCTestCase {
-    func testDecodingConfirmedTransaction() throws {
-        let path = Bundle(for: Self.self).path(forResource: "ConfirmedTransaction", ofType: "json")
+    var solanaSDK: SolanaSDK!
+    var network = SolanaSDK.Network.mainnetBeta
+    
+    override func setUpWithError() throws {
+        solanaSDK = SolanaSDK(network: network, accountStorage: InMemoryAccountStorage())
+        let account = try SolanaSDK.Account(phrase: network.testAccount.components(separatedBy: " "), network: network)
+        try solanaSDK.accountStorage.save(account)
+    }
+    
+    func testDecodingSwapTransaction() throws {
+        let path = Bundle(for: Self.self).path(forResource: "SwapTransaction", ofType: "json")
         let data = try Data(contentsOf: .init(fileURLWithPath: path!))
-        let confirmedTransaction = try JSONDecoder().decode(SolanaSDK.TransactionInfo.self, from: data)
+        let transactionInfo = try JSONDecoder().decode(SolanaSDK.TransactionInfo.self, from: data)
         
-        XCTAssertEqual(confirmedTransaction.blockTime, 1617564245)
-        XCTAssertEqual(confirmedTransaction.slot, 72208574)
-        XCTAssertEqual(confirmedTransaction.transaction.message.instructions[0].parsed?.type, .createAccount)
-        XCTAssertEqual(confirmedTransaction.transaction.message.instructions[1].parsed?.type, .initializeAccount)
-        XCTAssertEqual(confirmedTransaction.transaction.message.instructions[2].parsed?.type, .approve)
-        XCTAssertEqual(confirmedTransaction.transaction.message.instructions[4].parsed?.type, .closeAccount)
+        let parser = SolanaSDK.TransactionParser(solanaSDK: solanaSDK)
+        let transaction = try parser.parse(transactionInfo: transactionInfo)
+            .toBlocking().first() as! SolanaSDK.SwapTransaction
+        
+        XCTAssertEqual(transaction.source?.base58EncodedString, "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua")
+        XCTAssertEqual(transaction.sourceInfo?.mint.base58EncodedString, "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt")
+        XCTAssertEqual(transaction.sourceAmount, 0.001)
+        
+        XCTAssertEqual(transaction.destination?.base58EncodedString, "GYALxPybCjyv7N3DjpPQG3tH6M52UPLZ9eRyP5A7CXhW")
+        XCTAssertEqual(transaction.destinationInfo?.mint.base58EncodedString, "So11111111111111111111111111111111111111112")
+        XCTAssertEqual(transaction.destinationAmount, 0.000364885)
     }
 }
