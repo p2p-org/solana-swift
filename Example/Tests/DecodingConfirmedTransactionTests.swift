@@ -29,12 +29,12 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transaction = try parser.parse(transactionInfo: transactionInfo)
             .toBlocking().first() as! SolanaSDK.SwapTransaction
         
-        XCTAssertEqual(transaction.source?.base58EncodedString, "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua")
-        XCTAssertEqual(transaction.sourceInfo?.mint.base58EncodedString, "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt")
+        XCTAssertEqual(transaction.source?.symbol, "SRM")
+        XCTAssertEqual(transaction.source?.pubkey, "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua")
         XCTAssertEqual(transaction.sourceAmount, 0.001)
         
-        XCTAssertEqual(transaction.destination?.base58EncodedString, "GYALxPybCjyv7N3DjpPQG3tH6M52UPLZ9eRyP5A7CXhW")
-        XCTAssertEqual(transaction.destinationInfo?.mint.base58EncodedString, "So11111111111111111111111111111111111111112")
+        XCTAssertEqual(transaction.destination?.symbol, "WSOL")
+        XCTAssertEqual(transaction.destination?.pubkey, "GYALxPybCjyv7N3DjpPQG3tH6M52UPLZ9eRyP5A7CXhW")
         XCTAssertEqual(transaction.destinationAmount, 0.000364885)
     }
     

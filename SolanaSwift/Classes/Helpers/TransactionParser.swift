@@ -172,30 +172,38 @@ extension SolanaSDK {
             var requests = [Single<AccountInfo?>]()
             
             // get source
-            var source: PublicKey?
+            var sourcePubkey: PublicKey?
             if let sourceString = sourceInfo?.source {
-                source = try? PublicKey(string: sourceString)
+                sourcePubkey = try? PublicKey(string: sourceString)
                 requests.append(
                     getAccountInfo(account: sourceString, retryWithAccount: sourceInfo?.destination)
                 )
             }
             
-            var destination: PublicKey?
+            var destinationPubkey: PublicKey?
             if let destinationString = destinationInfo?.destination {
-                destination = try? PublicKey(string: destinationString)
+                destinationPubkey = try? PublicKey(string: destinationString)
                 requests.append(
                     getAccountInfo(account: destinationString, retryWithAccount: destinationInfo?.source)
                 )
             }
             
-            var sourceAccountInfo: AccountInfo?
-            var destinationAccountInfo: AccountInfo?
+            var source: Token?
+            var destination: Token?
+            
             // get token account info
             return Single.zip(requests)
                 .flatMap { params -> Single<[Decimals?]> in
                     // get source, destination account info
-                    sourceAccountInfo = params[0]
-                    destinationAccountInfo = params[1]
+                    let sourceAccountInfo = params[0]
+                    let destinationAccountInfo = params[1]
+                    
+                    // update token
+                    source = supportedTokens.first(where: {$0.mintAddress == sourceAccountInfo?.mint.base58EncodedString})
+                    source?.pubkey = sourcePubkey?.base58EncodedString
+                    
+                    destination = supportedTokens.first(where: {$0.mintAddress == destinationAccountInfo?.mint.base58EncodedString})
+                    destination?.pubkey = destinationPubkey?.base58EncodedString
                     
                     // get decimals
                     return Single.zip([
@@ -204,15 +212,22 @@ extension SolanaSDK {
                     ])
                 }
                 .map {decimals -> SwapTransaction in
+                    // get decimals
                     let sourceDecimals = decimals[0]
                     let destinationDecimals = decimals[1]
                     
+                    // update token
+                    source?.decimals = Int(sourceDecimals ?? 0)
+                    destination?.decimals = Int(destinationDecimals ?? 0)
+                    
+                    // update amount
                     let sourceAmount = UInt64(sourceInfo?.amount ?? "0")?.convertToBalance(decimals: sourceDecimals)
                     let destinationAmount = UInt64(destinationInfo?.amount ?? "0")?.convertToBalance(decimals: destinationDecimals)
                     
-                    return SwapTransaction(source: source, sourceInfo: sourceAccountInfo, sourceAmount: sourceAmount, destination: destination, destinationInfo: destinationAccountInfo, destinationAmount: destinationAmount)
+                    // construct SwapInstruction
+                    return SwapTransaction(source: source, sourceAmount: sourceAmount, destination: destination, destinationAmount: destinationAmount)
                 }
-                .catchAndReturn(SolanaSDK.SwapTransaction(source: source, sourceInfo: sourceAccountInfo, sourceAmount: nil, destination: destination, destinationInfo: destinationAccountInfo, destinationAmount: nil))
+                .catchAndReturn(SolanaSDK.SwapTransaction(source: source, sourceAmount: nil, destination: destination, destinationAmount: nil))
             
         }
         

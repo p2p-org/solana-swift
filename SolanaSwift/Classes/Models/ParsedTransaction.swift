@@ -35,17 +35,15 @@ public extension SolanaSDK {
     
     struct SwapTransaction: SolanaSDKTransactionType {
         // source
-        let source: PublicKey?
-        let sourceInfo: AccountInfo?
+        let source: Token?
         let sourceAmount: Double?
         
         // destination
-        let destination: PublicKey?
-        let destinationInfo: AccountInfo?
+        let destination: Token?
         let destinationAmount: Double?
         
         static var empty: Self {
-            SwapTransaction(source: nil, sourceInfo: nil, sourceAmount: nil, destination: nil, destinationInfo: nil, destinationAmount: nil)
+            SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil)
         }
     }
 }
