@@ -112,24 +112,55 @@ extension SolanaSDK {
             instruction: ParsedInstruction
         ) -> Single<TransferTransaction>
         {
-            var mint: PublicKey?
-            let source = try? PublicKey(string: instruction.parsed?.info.source)
-            let destination = try? PublicKey(string: instruction.parsed?.info.destination)
+            var source: Token?
+            var destination: Token?
+            
+            let sourcePubkey = instruction.parsed?.info.source
+            let destinationPubkey = instruction.parsed?.info.destination
+            
             let lamports = instruction.parsed?.info.lamports
             
-            return getAccountInfo(account: source?.base58EncodedString)
-                .flatMap { info -> Single<Decimals?> in
-                    mint = info?.mint
-                    return self.getDecimals(mintAddress: mint)
-                }
-                .map { decimals -> TransferTransaction in
+            // SOL to SOL
+            if instruction.programId == PublicKey.programId.base58EncodedString {
+                source = supportedTokens.first(where: {$0.mintAddress.isEmpty})
+                source?.pubkey = sourcePubkey
+                source?.decimals = Int(Decimals.SOL)
+                
+                destination = supportedTokens.first(where: {$0.mintAddress.isEmpty})
+                destination?.pubkey = destinationPubkey
+                destination?.decimals = Int(Decimals.SOL)
+                
+                return .just(
                     TransferTransaction(
-                        mint: mint,
                         source: source,
                         destination: destination,
-                        amount: lamports?.convertToBalance(decimals: decimals)
+                        amount: lamports?.convertToBalance(decimals: source?.decimals)
                     )
-                }
+                )
+            } else {
+                return getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
+                    .flatMap { info -> Single<Decimals?> in
+                        // update source
+                        source = supportedTokens.first(where: {$0.mintAddress == info?.mint.base58EncodedString})
+                        source?.pubkey = sourcePubkey
+                        
+                        // update destination
+                        destination = supportedTokens.first(where: {$0.mintAddress == info?.mint.base58EncodedString})
+                        destination?.pubkey = destinationPubkey
+                        
+                        return self.getDecimals(mintAddress: info?.mint)
+                    }
+                    .map { decimals -> TransferTransaction in
+                        source?.decimals = Int(decimals ?? 0)
+                        destination?.decimals = Int(decimals ?? 0)
+                        
+                        return TransferTransaction(
+                            source: source,
+                            destination: destination,
+                            amount: lamports?.convertToBalance(decimals: decimals)
+                        )
+                    }
+            }
         }
         
         // MARK: - Swap

@@ -65,10 +65,9 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transaction = try parser.parse(transactionInfo: transactionInfo)
             .toBlocking().first() as! SolanaSDK.TransferTransaction
         
-//        XCTAssertEqual(transaction.mint, SolanaSDK.PublicKey.wrappedSOLMint)
-        XCTAssertEqual(transaction.source?.base58EncodedString, "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm")
-        XCTAssertEqual(transaction.destination?.base58EncodedString, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
-//        XCTAssertEqual(transaction.amount, 0.01)
+        XCTAssertEqual(transaction.source?.symbol, "SOL")
+        XCTAssertEqual(transaction.destination?.symbol, "SOL")
+        XCTAssertEqual(transaction.amount, 0.01)
     }
     
     private func transactionInfoFromJSONFileName(_ name: String) throws -> SolanaSDK.TransactionInfo
