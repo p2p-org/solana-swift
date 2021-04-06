@@ -49,6 +49,16 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.newAccount?.base58EncodedString, "8jpWBKSoU7SXz9gJPJS53TEXXuWcg1frXLEdnfomxLwZ")
     }
     
+    func testDecodingCloseAccountTransaction() throws {
+        let transactionInfo = try transactionInfoFromJSONFileName("CloseAccountTransaction")
+        
+        let transaction = try parser.parse(transactionInfo: transactionInfo)
+            .toBlocking().first() as! SolanaSDK.CloseAccountTransaction
+        
+        XCTAssertEqual(transaction.reimbursedAmount, 0.00203928)
+        XCTAssertEqual(transaction.mint?.base58EncodedString, "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk")
+    }
+    
     private func transactionInfoFromJSONFileName(_ name: String) throws -> SolanaSDK.TransactionInfo
     {
         let path = Bundle(for: Self.self).path(forResource: name, ofType: "json")

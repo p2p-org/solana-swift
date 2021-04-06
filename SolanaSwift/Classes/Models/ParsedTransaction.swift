@@ -22,6 +22,11 @@ public extension SolanaSDK {
         }
     }
     
+    struct CloseAccountTransaction: SolanaSDKTransactionType {
+        let reimbursedAmount: Double?
+        let mint: PublicKey?
+    }
+    
     struct SwapTransaction: SolanaSDKTransactionType {
         // source
         let source: PublicKey?

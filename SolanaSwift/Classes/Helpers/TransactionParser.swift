@@ -36,7 +36,7 @@ extension SolanaSDK {
                     .map {$0 as SolanaSDKTransactionType}
             }
             
-            // parsed types
+            // create/close account
             if let instruction = instructions.first,
                let type = instruction.parsed?.type
             {
@@ -48,10 +48,20 @@ extension SolanaSDK {
                         initializeAccountInstruction: instructions.last
                     )
                         .map {$0 as SolanaSDKTransactionType}
+                    
+                case .closeAccount:
+                    // close account
+                    return parseCloseAccountTransaction(
+                        preBalances: transactionInfo.meta?.preBalances,
+                        preTokenBalance: transactionInfo.meta?.preTokenBalances?.first
+                    )
+                        .map {$0 as SolanaSDKTransactionType}
                 default:
-                    return .error(Error.unknown)
+                    break
                 }
             }
+            
+            // 
             
             return .error(Error.unknown)
         }
@@ -69,7 +79,24 @@ extension SolanaSDK {
             let mint = try? PublicKey(string: initializeAccountInfo?.mint)
             let newAccount = try? PublicKey(string: info?.newAccount)
             
-            return .just(.init(fee: fee, mint: mint, newAccount: newAccount))
+            return .just(CreateAccountTransaction(fee: fee, mint: mint, newAccount: newAccount))
+        }
+        
+        // MARK: - Close account
+        private func parseCloseAccountTransaction(
+            preBalances: [Lamports]?,
+            preTokenBalance: TokenBalance?
+        ) -> Single<CloseAccountTransaction>
+        {
+            var reimbursedAmountLamports: Lamports?
+            
+            if (preBalances?.count ?? 0) > 1 {
+                reimbursedAmountLamports = preBalances![1]
+            }
+            
+            let reimbursedAmount = reimbursedAmountLamports?.convertToBalance(decimals: Decimals.SOL)
+            let mint = try? PublicKey(string: preTokenBalance?.mint)
+            return .just(CloseAccountTransaction(reimbursedAmount: reimbursedAmount, mint: mint))
         }
         
         // MARK: - Swap
