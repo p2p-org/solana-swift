@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 public protocol SolanaSDKTransactionParserType {
-    func parse(signature: String, transactionInfo: SolanaSDK.TransactionInfo) -> Single<SolanaSDKTransactionType>
+    func parse(signature: String, transactionInfo: SolanaSDK.TransactionInfo) -> Single<SolanaSDK.AnyTransaction>
 }
 
 public extension SolanaSDK {
@@ -25,7 +25,7 @@ public extension SolanaSDK {
         }
         
         // MARK: - Methods
-        public func parse(signature: String, transactionInfo: TransactionInfo) -> Single<SolanaSDKTransactionType> {
+        public func parse(signature: String, transactionInfo: TransactionInfo) -> Single<AnyTransaction> {
             // get data
             let innerInstructions = transactionInfo.meta?.innerInstructions
             let instructions = transactionInfo.transaction.message.instructions
@@ -35,12 +35,13 @@ public extension SolanaSDK {
             {
                 let instruction = instructions[instructionIndex]
                 return parseSwapTransaction(
-                    signature: signature,
                     index: instructionIndex,
                     instruction: instruction,
                     innerInstructions: innerInstructions
                 )
-                    .map {$0 as SolanaSDKTransactionType}
+                    .map {
+                        AnyTransaction(signature: signature, value: $0)
+                    }
             }
             
             // create account
@@ -49,11 +50,12 @@ public extension SolanaSDK {
                instructions.last?.parsed?.type == .initializeAccount
             {
                 return parseCreateAccountTransaction(
-                    signature: signature,
                     instruction: instructions[0],
                     initializeAccountInstruction: instructions.last
                 )
-                    .map {$0 as SolanaSDKTransactionType}
+                    .map {
+                        AnyTransaction(signature: signature, value: $0)
+                    }
             }
             
             // close account
@@ -61,11 +63,12 @@ public extension SolanaSDK {
                instructions.first?.parsed?.type == .closeAccount
             {
                 return parseCloseAccountTransaction(
-                    signature: signature,
                     preBalances: transactionInfo.meta?.preBalances,
                     preTokenBalance: transactionInfo.meta?.preTokenBalances?.first
                 )
-                    .map {$0 as SolanaSDKTransactionType}
+                    .map {
+                        AnyTransaction(signature: signature, value: $0)
+                    }
             }
             
             // transfer
@@ -74,19 +77,21 @@ public extension SolanaSDK {
                let instruction = instructions.last
             {
                 return parseTransferTransaction(
-                    signature: signature,
                     instruction: instruction,
                     postTokenBalances: transactionInfo.meta?.postTokenBalances ?? []
                 )
-                    .map {$0 as SolanaSDKTransactionType}
+                    .map {
+                        AnyTransaction(signature: signature, value: $0)
+                    }
             }
             
-            return .just(EmptyTransaction(signature: signature))
+            return .just(
+                AnyTransaction(signature: signature, value: nil)
+            )
         }
         
         // MARK: - Create account
         private func parseCreateAccountTransaction(
-            signature: String,
             instruction: ParsedInstruction,
             initializeAccountInstruction: ParsedInstruction?
         ) -> Single<CreateAccountTransaction>
@@ -99,7 +104,6 @@ public extension SolanaSDK {
             token?.pubkey = info?.newAccount
             return .just(
                 CreateAccountTransaction(
-                    signature: signature,
                     fee: fee,
                     newToken: token
                 )
@@ -108,7 +112,6 @@ public extension SolanaSDK {
         
         // MARK: - Close account
         private func parseCloseAccountTransaction(
-            signature: String,
             preBalances: [Lamports]?,
             preTokenBalance: TokenBalance?
         ) -> Single<CloseAccountTransaction>
@@ -124,7 +127,6 @@ public extension SolanaSDK {
             
             return .just(
                 CloseAccountTransaction(
-                    signature: signature,
                     reimbursedAmount: reimbursedAmount,
                     closedToken: token
                 )
@@ -133,7 +135,6 @@ public extension SolanaSDK {
         
         // MARK: - Transfer
         private func parseTransferTransaction(
-            signature: String,
             instruction: ParsedInstruction,
             postTokenBalances: [TokenBalance]
         ) -> Single<TransferTransaction>
@@ -158,7 +159,6 @@ public extension SolanaSDK {
                 
                 return .just(
                     TransferTransaction(
-                        signature: signature,
                         source: source,
                         destination: destination,
                         amount: lamports?.convertToBalance(decimals: source?.decimals)
@@ -203,7 +203,6 @@ public extension SolanaSDK {
                         destination?.decimals = Int(decimals ?? 0)
                         
                         return TransferTransaction(
-                            signature: signature,
                             source: source,
                             destination: destination,
                             amount: lamports?.convertToBalance(decimals: decimals)
@@ -211,7 +210,6 @@ public extension SolanaSDK {
                     }
                     .catchAndReturn(
                         TransferTransaction(
-                            signature: signature,
                             source: source,
                             destination: destination,
                             amount: nil
@@ -233,7 +231,6 @@ public extension SolanaSDK {
         }
         
         private func parseSwapTransaction(
-            signature: String,
             index: Int,
             instruction: ParsedInstruction,
             innerInstructions: [InnerInstruction]?
@@ -315,7 +312,6 @@ public extension SolanaSDK {
                     
                     // construct SwapInstruction
                     return SwapTransaction(
-                        signature: signature,
                         source: source,
                         sourceAmount: sourceAmount,
                         destination: destination,
@@ -324,7 +320,6 @@ public extension SolanaSDK {
                 }
                 .catchAndReturn(
                     SolanaSDK.SwapTransaction(
-                        signature: signature,
                         source: source,
                         sourceAmount: nil,
                         destination: destination,

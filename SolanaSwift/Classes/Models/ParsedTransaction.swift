@@ -7,40 +7,33 @@
 
 import Foundation
 
-public protocol SolanaSDKTransactionType {
-    var signature: String {get}
-}
-
 public extension SolanaSDK {
-    struct CreateAccountTransaction: SolanaSDKTransactionType {
-        public let signature: String
-        
+    struct AnyTransaction: Hashable {
+        let signature: String
+        let value: AnyHashable?
+    }
+    
+    struct CreateAccountTransaction: Hashable {
         let fee: Double? // in SOL
         let newToken: Token?
         
         static var empty: Self {
-            CreateAccountTransaction(signature: "", fee: nil, newToken: nil)
+            CreateAccountTransaction(fee: nil, newToken: nil)
         }
     }
     
-    struct CloseAccountTransaction: SolanaSDKTransactionType {
-        public let signature: String
-        
+    struct CloseAccountTransaction: Hashable {
         let reimbursedAmount: Double?
         let closedToken: Token?
     }
     
-    struct TransferTransaction: SolanaSDKTransactionType {
-        public let signature: String
-        
+    struct TransferTransaction: Hashable {
         let source: Token?
         let destination: Token?
         let amount: Double?
     }
     
-    struct SwapTransaction: SolanaSDKTransactionType {
-        public let signature: String
-        
+    struct SwapTransaction: Hashable {
         // source
         let source: Token?
         let sourceAmount: Double?
@@ -50,20 +43,7 @@ public extension SolanaSDK {
         let destinationAmount: Double?
         
         static var empty: Self {
-            SwapTransaction(signature: "", source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil)
-        }
-    }
-    
-    struct EmptyTransaction: SolanaSDKTransactionType {
-        private var id: String
-        public let signature: String
-        init(signature: String) {
-            self.signature = signature
-            if signature.isEmpty {
-                id = UUID().uuidString
-            } else {
-                id = signature
-            }
+            SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil)
         }
     }
 }
