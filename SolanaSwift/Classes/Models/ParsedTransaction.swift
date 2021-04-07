@@ -7,32 +7,40 @@
 
 import Foundation
 
-protocol SolanaSDKTransactionType {
-    
+public protocol SolanaSDKTransactionType {
+    var signature: String {get}
 }
 
 public extension SolanaSDK {
     struct CreateAccountTransaction: SolanaSDKTransactionType {
+        public let signature: String
+        
         let fee: Double? // in SOL
         let newToken: Token?
         
         static var empty: Self {
-            CreateAccountTransaction(fee: nil, newToken: nil)
+            CreateAccountTransaction(signature: "", fee: nil, newToken: nil)
         }
     }
     
     struct CloseAccountTransaction: SolanaSDKTransactionType {
+        public let signature: String
+        
         let reimbursedAmount: Double?
         let closedToken: Token?
     }
     
     struct TransferTransaction: SolanaSDKTransactionType {
+        public let signature: String
+        
         let source: Token?
         let destination: Token?
         let amount: Double?
     }
     
     struct SwapTransaction: SolanaSDKTransactionType {
+        public let signature: String
+        
         // source
         let source: Token?
         let sourceAmount: Double?
@@ -42,7 +50,20 @@ public extension SolanaSDK {
         let destinationAmount: Double?
         
         static var empty: Self {
-            SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil)
+            SwapTransaction(signature: "", source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil)
+        }
+    }
+    
+    struct EmptyTransaction: SolanaSDKTransactionType {
+        private var id: String
+        public let signature: String
+        init(signature: String) {
+            self.signature = signature
+            if signature.isEmpty {
+                id = UUID().uuidString
+            } else {
+                id = signature
+            }
         }
     }
 }
