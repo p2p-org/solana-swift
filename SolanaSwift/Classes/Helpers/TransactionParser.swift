@@ -61,7 +61,8 @@ extension SolanaSDK {
                 case .transfer:
                     // send, receive
                     return parseTransferTransaction(
-                        instruction: instruction
+                        instruction: instruction,
+                        postTokenBalances: transactionInfo.meta?.postTokenBalances ?? []
                     )
                         .map {$0 as SolanaSDKTransactionType}
                 default:
@@ -109,7 +110,8 @@ extension SolanaSDK {
         
         // MARK: - Transfer
         private func parseTransferTransaction(
-            instruction: ParsedInstruction
+            instruction: ParsedInstruction,
+            postTokenBalances: [TokenBalance]
         ) -> Single<TransferTransaction>
         {
             var source: Token?
@@ -118,7 +120,7 @@ extension SolanaSDK {
             let sourcePubkey = instruction.parsed?.info.source
             let destinationPubkey = instruction.parsed?.info.destination
             
-            let lamports = instruction.parsed?.info.lamports
+            let lamports = instruction.parsed?.info.lamports ?? UInt64(instruction.parsed?.info.amount ?? "0")
             
             // SOL to SOL
             if instruction.programId == PublicKey.programId.base58EncodedString {
@@ -138,17 +140,38 @@ extension SolanaSDK {
                     )
                 )
             } else {
-                return getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
-                    .flatMap { info -> Single<Decimals?> in
-                        // update source
-                        source = supportedTokens.first(where: {$0.mintAddress == info?.mint.base58EncodedString})
-                        source?.pubkey = sourcePubkey
-                        
-                        // update destination
-                        destination = supportedTokens.first(where: {$0.mintAddress == info?.mint.base58EncodedString})
-                        destination?.pubkey = destinationPubkey
-                        
-                        return self.getDecimals(mintAddress: info?.mint)
+                // SPL to SPL token
+                var mintRequest: Single<String?>
+                
+                if let tokenBalance = postTokenBalances.first(where: {!$0.mint.isEmpty})
+                {
+                    source = supportedTokens.first(where: {$0.mintAddress == tokenBalance.mint})
+                    source?.pubkey = sourcePubkey
+                    
+                    destination = supportedTokens.first(where: {$0.mintAddress == tokenBalance.mint})
+                    destination?.pubkey = destinationPubkey
+                    
+                    mintRequest = .just(tokenBalance.mint)
+                } else {
+                    mintRequest = getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
+                        .map { info in
+                            // update source
+                            source = supportedTokens.first(where: {$0.mintAddress == info?.mint.base58EncodedString})
+                            source?.pubkey = sourcePubkey
+                            
+                            // update destination
+                            destination = supportedTokens.first(where: {$0.mintAddress == info?.mint.base58EncodedString})
+                            destination?.pubkey = destinationPubkey
+                            
+                            return info?.mint.base58EncodedString
+                        }
+                }
+                return mintRequest
+                    .flatMap { mint -> Single<Decimals?> in
+                        guard let mint = try? PublicKey(string: mint) else {
+                            return .just(nil)
+                        }
+                        return self.getDecimals(mintAddress: mint)
                     }
                     .map { decimals -> TransferTransaction in
                         source?.decimals = Int(decimals ?? 0)

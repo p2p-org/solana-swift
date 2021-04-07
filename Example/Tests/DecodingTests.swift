@@ -18,8 +18,8 @@ class DecodingTests: XCTestCase {
     
     func testDecodingMainnetBetaTokens() throws {
         let tokens = SolanaSDK.Token.getSupportedTokens(network: .mainnetBeta)
-        XCTAssertEqual(tokens?.count, 25)
-        XCTAssertEqual(tokens?.first!.mintAddress, "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt")
+        XCTAssertEqual(tokens?.count, 27)
+        XCTAssertEqual(tokens?.first!.symbol, "SOL")
     }
 
     func testDecodingProgramAccountFromBase64() throws {

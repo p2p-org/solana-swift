@@ -21,6 +21,8 @@
 		BC54A96F261C1B560083A127 /* CloseAccountTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC54A96E261C1B560083A127 /* CloseAccountTransaction.json */; };
 		BC54A974261C1E430083A127 /* SendSOLTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC54A973261C1E430083A127 /* SendSOLTransaction.json */; };
 		BC631ED525B96DD500138948 /* RestAPITokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC631ED425B96DD500138948 /* RestAPITokenTests.swift */; };
+		BC65DF9F261D5B3300E436C7 /* SendSPLToSOLTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC65DF9E261D5B3300E436C7 /* SendSPLToSOLTransaction.json */; };
+		BC65DFAE261D5D4300E436C7 /* SendSPLToSPLTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */; };
 		BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */; };
 		BC81A2A425BE624300664A2C /* SystemProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2A325BE624300664A2C /* SystemProgramTests.swift */; };
 		BC81A2AB25BE628700664A2C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2AA25BE628700664A2C /* Constants.swift */; };
@@ -142,6 +144,8 @@
 		BC54A96E261C1B560083A127 /* CloseAccountTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CloseAccountTransaction.json; sourceTree = "<group>"; };
 		BC54A973261C1E430083A127 /* SendSOLTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSOLTransaction.json; sourceTree = "<group>"; };
 		BC631ED425B96DD500138948 /* RestAPITokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITokenTests.swift; sourceTree = "<group>"; };
+		BC65DF9E261D5B3300E436C7 /* SendSPLToSOLTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSPLToSOLTransaction.json; sourceTree = "<group>"; };
+		BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSPLToSPLTransaction.json; sourceTree = "<group>"; };
 		BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2A325BE624300664A2C /* SystemProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2AA25BE628700664A2C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -214,6 +218,8 @@
 				BC54A943261C09B90083A127 /* CreateAccountTransaction.json */,
 				BC54A96E261C1B560083A127 /* CloseAccountTransaction.json */,
 				BC54A973261C1E430083A127 /* SendSOLTransaction.json */,
+				BC65DF9E261D5B3300E436C7 /* SendSPLToSOLTransaction.json */,
+				BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -452,8 +458,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC65DF9F261D5B3300E436C7 /* SendSPLToSOLTransaction.json in Resources */,
 				BC54A944261C09B90083A127 /* CreateAccountTransaction.json in Resources */,
 				BC54A974261C1E430083A127 /* SendSOLTransaction.json in Resources */,
+				BC65DFAE261D5D4300E436C7 /* SendSPLToSPLTransaction.json in Resources */,
 				BC3F71D0261AF25600DFDFD0 /* SwapTransaction.json in Resources */,
 				BC54A96F261C1B560083A127 /* CloseAccountTransaction.json in Resources */,
 			);
