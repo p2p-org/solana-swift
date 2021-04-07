@@ -10,7 +10,7 @@ import TweetNacl
 
 public extension SolanaSDK {
     struct ConfirmedTransaction: Decodable {
-        let message: Message
+        public let message: Message
         let signatures: [String]
     }
 }
@@ -18,12 +18,12 @@ public extension SolanaSDK {
 public extension SolanaSDK.ConfirmedTransaction {
     struct Message: Decodable {
         public let accountKeys: [SolanaSDK.Account.Meta]
-        let instructions: [SolanaSDK.ParsedInstruction]
+        public let instructions: [SolanaSDK.ParsedInstruction]
         public let recentBlockhash: String
     }
 }
 
-extension SolanaSDK {
+public extension SolanaSDK {
     struct ParsedInstruction: Decodable {
         struct Parsed: Decodable {
             enum InstructionType: String, Decodable {
@@ -61,7 +61,7 @@ extension SolanaSDK {
         let parsed: Parsed?
         
         // swap
-        let data: String?
+        public let data: String?
         let accounts: [String]?
     }
 }
