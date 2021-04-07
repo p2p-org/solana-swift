@@ -38,39 +38,40 @@ extension SolanaSDK {
                     .map {$0 as SolanaSDKTransactionType}
             }
             
-            // create/close account
-            if let instruction = instructions.first,
-               let type = instruction.parsed?.type
+            // create account
+            if instructions.count == 2,
+               instructions.first?.parsed?.type == .createAccount,
+               instructions.last?.parsed?.type == .initializeAccount
             {
-                switch type {
-                case .createAccount:
-                    // create account
-                    return parseCreateAccountTransaction(
-                        instruction: instruction,
-                        initializeAccountInstruction: instructions.last
-                    )
-                        .map {$0 as SolanaSDKTransactionType}
-                    
-                case .closeAccount:
-                    // close account
-                    return parseCloseAccountTransaction(
-                        preBalances: transactionInfo.meta?.preBalances,
-                        preTokenBalance: transactionInfo.meta?.preTokenBalances?.first
-                    )
-                        .map {$0 as SolanaSDKTransactionType}
-                case .transfer:
-                    // send, receive
-                    return parseTransferTransaction(
-                        instruction: instruction,
-                        postTokenBalances: transactionInfo.meta?.postTokenBalances ?? []
-                    )
-                        .map {$0 as SolanaSDKTransactionType}
-                default:
-                    break
-                }
+                return parseCreateAccountTransaction(
+                    instruction: instructions[0],
+                    initializeAccountInstruction: instructions.last
+                )
+                    .map {$0 as SolanaSDKTransactionType}
             }
             
-            // 
+            // close account
+            if instructions.count == 1,
+               instructions.first?.parsed?.type == .closeAccount
+            {
+                return parseCloseAccountTransaction(
+                    preBalances: transactionInfo.meta?.preBalances,
+                    preTokenBalance: transactionInfo.meta?.preTokenBalances?.first
+                )
+                    .map {$0 as SolanaSDKTransactionType}
+            }
+            
+            // transfer
+            if instructions.count == 1 || instructions.count == 4,
+               instructions.last?.parsed?.type == .transfer,
+               let instruction = instructions.last
+            {
+                return parseTransferTransaction(
+                    instruction: instruction,
+                    postTokenBalances: transactionInfo.meta?.postTokenBalances ?? []
+                )
+                    .map {$0 as SolanaSDKTransactionType}
+            }
             
             return .error(Error.unknown)
         }
