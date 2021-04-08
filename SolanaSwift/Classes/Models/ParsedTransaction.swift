@@ -40,12 +40,12 @@ public extension SolanaSDK {
     
     struct SwapTransaction: Hashable {
         // source
-        let source: Token?
-        let sourceAmount: Double?
+        public let source: Token?
+        public let sourceAmount: Double?
         
         // destination
-        let destination: Token?
-        let destinationAmount: Double?
+        public let destination: Token?
+        public let destinationAmount: Double?
         
         static var empty: Self {
             SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil)
