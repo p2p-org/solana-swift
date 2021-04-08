@@ -19,8 +19,8 @@ public extension SolanaSDK {
     }
     
     struct CreateAccountTransaction: Hashable {
-        let fee: Double? // in SOL
-        let newToken: Token?
+        public let fee: Double? // in SOL
+        public let newToken: Token?
         
         static var empty: Self {
             CreateAccountTransaction(fee: nil, newToken: nil)
@@ -28,14 +28,14 @@ public extension SolanaSDK {
     }
     
     struct CloseAccountTransaction: Hashable {
-        let reimbursedAmount: Double?
-        let closedToken: Token?
+        public let reimbursedAmount: Double?
+        public let closedToken: Token?
     }
     
     struct TransferTransaction: Hashable {
-        let source: Token?
-        let destination: Token?
-        let amount: Double?
+        public let source: Token?
+        public let destination: Token?
+        public let amount: Double?
     }
     
     struct SwapTransaction: Hashable {
