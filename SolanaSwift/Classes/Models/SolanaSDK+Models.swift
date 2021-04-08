@@ -3,14 +3,14 @@
 //  SolanaSwift
 //
 //  Created by Chung Tran on 10/27/20.
-//
-// NOTE: THIS FILE IS GENERATED FROM APIGEN PACKAGE, DO NOT MAKE CHANGES DIRECTLY INTO IT, PLEASE EDIT MODELS.JSON AND modelsGen.js TO MAKE CHANGES (IN ../APIGen FOLDER)
 
 import Foundation
 import RxSwift
 
 public extension SolanaSDK {
     typealias TransactionID = String
+    typealias Lamports = UInt64
+    typealias Decimals = UInt8
     
 	struct Response<T: Decodable>: Decodable {
 		public let jsonrpc: String
@@ -57,7 +57,7 @@ public extension SolanaSDK {
 		public let blockhash: String
 		public let previousBlockhash: String
 		public let parentSlot: UInt64
-		public let transactions: [Transaction.Info]
+		public let transactions: [TransactionInfo]
 		public let rewards: [Reward]
 		public let blockTime: UInt64?
 	}
@@ -136,11 +136,56 @@ public extension SolanaSDK {
 		public let samplePeriodSecs: UInt
 		public let slot: UInt64
 	}
+    struct SignatureInfo: Decodable, Hashable {
+        public let signature: String
+        public let slot: UInt64?
+        public let err: TransactionError?
+        public let memo: String?
+        
+        public init(signature: String) {
+            self.signature = signature
+            self.slot = nil
+            self.err = nil
+            self.memo = nil
+        }
+    }
 	struct SignatureStatus: Decodable {
 		public let slot: UInt64
 		public let confirmations: UInt64?
-		public let err: Transaction.Error?
+		public let err: TransactionError?
 	}
+    struct TransactionInfo: Decodable {
+        public let blockTime: UInt64?
+        public let meta: TransactionMeta?
+        public let transaction: SolanaSDK.ConfirmedTransaction
+        public let slot: UInt64?
+    }
+    struct TransactionMeta: Decodable {
+        public let err: TransactionError?
+        public let fee: UInt64?
+        public let innerInstructions: [InnerInstruction]?
+        public let logMessages: [String]?
+        public let postBalances: [UInt64]?
+        public let postTokenBalances: [TokenBalance]?
+        public let preBalances: [UInt64]?
+        public let preTokenBalances: [TokenBalance]?
+    }
+    struct TransactionError: Decodable, Hashable {
+        
+    }
+    struct InnerInstruction: Decodable {
+        let index: UInt32
+        let instructions: [ParsedInstruction]
+    }
+    struct TokenBalance: Decodable {
+        let accountIndex: UInt64
+        let mint: String
+        let uiTokenAmount: TokenAccountBalance
+    }
+    struct TransactionStatus: Decodable {
+        public let err: TransactionError?
+        public let logs: [String]
+    }
 	struct StakeActivation: Decodable {
 		public let active: UInt64
 		public let inactive: UInt64
@@ -156,6 +201,7 @@ public extension SolanaSDK {
 		public let uiAmount: Float64?
 		public let amount: String
 		public let decimals: UInt8?
+        public let uiAmountString: String?
         
         public var amountInUInt64: UInt64? {
             return UInt64(amount)

@@ -7,16 +7,16 @@
 
 import Foundation
 
-extension SolanaSDK {
-    struct Message2 {
+extension SolanaSDK.Transaction {
+    struct Message {
         // MARK: - Constants
         private static let RECENT_BLOCK_HASH_LENGTH = 32
         
         // MARK: - Properties
-        var accountKeys: [Account.Meta]
+        var accountKeys: [SolanaSDK.Account.Meta]
         var recentBlockhash: String
 //        var instructions: [Transaction.Instruction]
-        var programInstructions: [TransactionInstruction]
+        var programInstructions: [SolanaSDK.TransactionInstruction]
         
         func serialize() throws -> Data {
             // Header
@@ -77,7 +77,7 @@ extension SolanaSDK {
             let keyCount = encodeLength(accountKeys.count)
             
             // construct data
-            var data = Data(capacity: keyCount.count + accountKeys.count * PublicKey.LENGTH)
+            var data = Data(capacity: keyCount.count + accountKeys.count * SolanaSDK.PublicKey.LENGTH)
             
             // sort
             let signedKeys = accountKeys.filter {$0.isSigner}
@@ -131,7 +131,7 @@ extension SolanaSDK {
     }
 }
 
-extension SolanaSDK.Message2 {
+extension SolanaSDK.Transaction.Message {
     // MARK: - Nested type
     public struct Header: Decodable {
         static let LENGTH = 3

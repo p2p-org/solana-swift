@@ -15,6 +15,10 @@ extension SolanaSDK {
                 .mainnetBeta: """
                 [
                   {
+                    "mintAddress": "",
+                    "symbol": "SOL"
+                  },
+                  {
                     "mintAddress": "So11111111111111111111111111111111111111112",
                     "symbol": "WSOL",
                     "wrappedBy": "FTX"

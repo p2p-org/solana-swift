@@ -8,15 +8,15 @@
 import Foundation
 import TweetNacl
 
-public extension SolanaSDK {
-    struct Transaction2 {
+extension SolanaSDK {
+    struct Transaction {
         private var signatures = [Signature]()
         let feePayer: PublicKey
         var instructions = [TransactionInstruction]()
         let recentBlockhash: String
 //        TODO: nonceInfo
         
-        init(signatures: [SolanaSDK.Transaction2.Signature] = [Signature](), feePayer: SolanaSDK.PublicKey, instructions: [SolanaSDK.TransactionInstruction] = [TransactionInstruction](), recentBlockhash: String) {
+        init(signatures: [SolanaSDK.Transaction.Signature] = [Signature](), feePayer: SolanaSDK.PublicKey, instructions: [SolanaSDK.TransactionInstruction] = [TransactionInstruction](), recentBlockhash: String) {
             self.signatures = signatures
             self.feePayer = feePayer
             self.instructions = instructions
@@ -79,7 +79,7 @@ public extension SolanaSDK {
         }
         
         // MARK: - Signing
-        private mutating func partialSign(message: Message2, signers: [Account]) throws {
+        private mutating func partialSign(message: Message, signers: [Account]) throws {
             let signData = try message.serialize()
             
             for signer in signers {
@@ -100,7 +100,7 @@ public extension SolanaSDK {
         }
         
         // MARK: - Compiling
-        private mutating func compile() throws -> Message2 {
+        private mutating func compile() throws -> Message {
             let message = try compileMessage()
             let signedKeys = message.accountKeys.filter {$0.isSigner}
             
@@ -121,7 +121,7 @@ public extension SolanaSDK {
             return message
         }
         
-        private func compileMessage() throws -> Message2 {
+        private func compileMessage() throws -> Message {
             // verify instructions
             guard instructions.count > 0 else {
                 throw Error.other("No instructions provided")
@@ -185,7 +185,7 @@ public extension SolanaSDK {
             }
             
             // header
-            var header = Message2.Header()
+            var header = Message.Header()
             
             var signedKeys = [Account.Meta]()
             var unsignedKeys = [Account.Meta]()
@@ -213,7 +213,7 @@ public extension SolanaSDK {
             
             accountMetas = signedKeys + unsignedKeys
             
-            return Message2(
+            return Message(
                 accountKeys: accountMetas,
                 recentBlockhash: recentBlockhash,
                 programInstructions: instructions
@@ -268,7 +268,7 @@ public extension SolanaSDK {
     }
 }
 
-extension SolanaSDK.Transaction2 {
+extension SolanaSDK.Transaction {
     struct Signature {
         var signature: Data?
         var publicKey: SolanaSDK.PublicKey
