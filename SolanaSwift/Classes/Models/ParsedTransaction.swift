@@ -9,6 +9,11 @@ import Foundation
 
 public extension SolanaSDK {
     struct AnyTransaction: Hashable {
+        public init(signature: String, value: AnyHashable?) {
+            self.signature = signature
+            self.value = value
+        }
+        
         public let signature: String
         public let value: AnyHashable?
     }

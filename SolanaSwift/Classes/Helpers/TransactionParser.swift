@@ -46,8 +46,8 @@ public extension SolanaSDK {
             
             // create account
             if instructions.count == 2,
-               instructions.first?.parsed?.type == .createAccount,
-               instructions.last?.parsed?.type == .initializeAccount
+               instructions.first?.parsed?.type == "createAccount",
+               instructions.last?.parsed?.type == "initializeAccount"
             {
                 return parseCreateAccountTransaction(
                     instruction: instructions[0],
@@ -60,7 +60,7 @@ public extension SolanaSDK {
             
             // close account
             if instructions.count == 1,
-               instructions.first?.parsed?.type == .closeAccount
+               instructions.first?.parsed?.type == "closeAccount"
             {
                 return parseCloseAccountTransaction(
                     preBalances: transactionInfo.meta?.preBalances,
@@ -73,7 +73,7 @@ public extension SolanaSDK {
             
             // transfer
             if instructions.count == 1 || instructions.count == 4,
-               instructions.last?.parsed?.type == .transfer,
+               instructions.last?.parsed?.type == "transfer",
                let instruction = instructions.last
             {
                 return parseTransferTransaction(
@@ -246,7 +246,7 @@ public extension SolanaSDK {
             else { return .just(SwapTransaction.empty) }
             
             // get instructions
-            let transfersInstructions = swapInnerInstruction.instructions.filter {$0.parsed?.type == .transfer}
+            let transfersInstructions = swapInnerInstruction.instructions.filter {$0.parsed?.type == "transfer"}
             guard transfersInstructions.count >= 2 else {return .just(SwapTransaction.empty)}
             
             let sourceInstruction = transfersInstructions[0]
