@@ -16,6 +16,35 @@ public extension SolanaSDK {
         
         public let signature: String
         public let value: AnyHashable?
+        public var amountInFiat: Double?
+        
+        public var amount: Double {
+            switch value {
+            case let transaction as CreateAccountTransaction:
+                return -(transaction.fee ?? 0)
+            case let transaction as CloseAccountTransaction:
+                return transaction.reimbursedAmount ?? 0
+            case let transaction as TransferTransaction:
+                return transaction.amount ?? 0
+            case let transaction as SwapTransaction:
+                return transaction.destinationAmount ?? 0
+            default:
+                return 0
+            }
+        }
+        
+        public var symbol: String {
+            switch value {
+            case is CreateAccountTransaction, is CloseAccountTransaction:
+                return "SOL"
+            case let transaction as TransferTransaction:
+                return transaction.source?.symbol ?? transaction.destination?.symbol ?? ""
+            case let transaction as SwapTransaction:
+                return transaction.destination?.symbol ?? ""
+            default:
+                return ""
+            }
+        }
     }
     
     struct CreateAccountTransaction: Hashable {
