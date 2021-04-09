@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 public protocol SolanaSDKTransactionParserType {
-    func parse(signature: String, transactionInfo: SolanaSDK.TransactionInfo, myTokenPubkey: String?) -> Single<SolanaSDK.AnyTransaction>
+    func parse(signature: String, transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?) -> Single<SolanaSDK.AnyTransaction>
 }
 
 public extension SolanaSDK {
@@ -28,7 +28,7 @@ public extension SolanaSDK {
         public func parse(
             signature: String,
             transactionInfo: TransactionInfo,
-            myTokenPubkey: String?
+            myAccount: String?
         ) -> Single<AnyTransaction> {
             // get data
             let innerInstructions = transactionInfo.meta?.innerInstructions
@@ -41,7 +41,8 @@ public extension SolanaSDK {
                 return parseSwapTransaction(
                     index: instructionIndex,
                     instruction: instruction,
-                    innerInstructions: innerInstructions
+                    innerInstructions: innerInstructions,
+                    myAccount: myAccount
                 )
                     .map {
                         AnyTransaction(signature: signature, value: $0)
@@ -83,15 +84,8 @@ public extension SolanaSDK {
                 return parseTransferTransaction(
                     instruction: instruction,
                     postTokenBalances: transactionInfo.meta?.postTokenBalances ?? [],
-                    myTokenPubkey: myTokenPubkey
+                    myAccount: myAccount
                 )
-                    .map {
-                        var transaction = $0
-                        if transaction.transferType == .send {
-                            transaction.amount = -(transaction.amount ?? 0)
-                        }
-                        return transaction
-                    }
                     .map {
                         AnyTransaction(signature: signature, value: $0)
                     }
@@ -112,7 +106,7 @@ public extension SolanaSDK {
             let initializeAccountInfo = initializeAccountInstruction?.parsed?.info
             
             let fee = info?.lamports?.convertToBalance(decimals: Decimals.SOL)
-            var token = supportedTokens.first(where: {$0.mintAddress == initializeAccountInfo?.mint})
+            var token = getTokenWithMint(initializeAccountInfo?.mint)
             token?.pubkey = info?.newAccount
             return .just(
                 CreateAccountTransaction(
@@ -135,7 +129,7 @@ public extension SolanaSDK {
             }
             
             let reimbursedAmount = reimbursedAmountLamports?.convertToBalance(decimals: Decimals.SOL)
-            let token = supportedTokens.first(where: {$0.mintAddress == preTokenBalance?.mint})
+            let token = getTokenWithMint(preTokenBalance?.mint)
             
             return .just(
                 CloseAccountTransaction(
@@ -149,7 +143,7 @@ public extension SolanaSDK {
         private func parseTransferTransaction(
             instruction: ParsedInstruction,
             postTokenBalances: [TokenBalance],
-            myTokenPubkey: String?
+            myAccount: String?
         ) -> Single<TransferTransaction>
         {
             var source: Token?
@@ -162,11 +156,11 @@ public extension SolanaSDK {
             
             // SOL to SOL
             if instruction.programId == PublicKey.programId.base58EncodedString {
-                source = supportedTokens.first(where: {$0.mintAddress.isEmpty})
+                source = getSOLToken()
                 source?.pubkey = sourcePubkey
                 source?.decimals = Int(Decimals.SOL)
                 
-                destination = supportedTokens.first(where: {$0.mintAddress.isEmpty})
+                destination = getSOLToken()
                 destination?.pubkey = destinationPubkey
                 destination?.decimals = Int(Decimals.SOL)
                 
@@ -175,7 +169,7 @@ public extension SolanaSDK {
                         source: source,
                         destination: destination,
                         amount: lamports?.convertToBalance(decimals: source?.decimals),
-                        myTokenPubkey: myTokenPubkey
+                        myAccount: myAccount
                     )
                 )
             } else {
@@ -184,10 +178,10 @@ public extension SolanaSDK {
                 
                 if let tokenBalance = postTokenBalances.first(where: {!$0.mint.isEmpty})
                 {
-                    source = supportedTokens.first(where: {$0.mintAddress == tokenBalance.mint})
+                    source = getTokenWithMint(tokenBalance.mint)
                     source?.pubkey = sourcePubkey
                     
-                    destination = supportedTokens.first(where: {$0.mintAddress == tokenBalance.mint})
+                    destination = getTokenWithMint(tokenBalance.mint)
                     destination?.pubkey = destinationPubkey
                     
                     mintRequest = .just(tokenBalance.mint)
@@ -195,11 +189,11 @@ public extension SolanaSDK {
                     mintRequest = getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
                         .map { info in
                             // update source
-                            source = supportedTokens.first(where: {$0.mintAddress == info?.mint.base58EncodedString})
+                            source = getTokenWithMint(info?.mint.base58EncodedString)
                             source?.pubkey = sourcePubkey
                             
                             // update destination
-                            destination = supportedTokens.first(where: {$0.mintAddress == info?.mint.base58EncodedString})
+                            destination = getTokenWithMint(info?.mint.base58EncodedString)
                             destination?.pubkey = destinationPubkey
                             
                             return info?.mint.base58EncodedString
@@ -220,7 +214,7 @@ public extension SolanaSDK {
                             source: source,
                             destination: destination,
                             amount: lamports?.convertToBalance(decimals: decimals),
-                            myTokenPubkey: myTokenPubkey
+                            myAccount: myAccount
                         )
                     }
                     .catchAndReturn(
@@ -228,7 +222,7 @@ public extension SolanaSDK {
                             source: source,
                             destination: destination,
                             amount: nil,
-                            myTokenPubkey: myTokenPubkey
+                            myAccount: myAccount
                         )
                     )
             }
@@ -249,7 +243,8 @@ public extension SolanaSDK {
         private func parseSwapTransaction(
             index: Int,
             instruction: ParsedInstruction,
-            innerInstructions: [InnerInstruction]?
+            innerInstructions: [InnerInstruction]?,
+            myAccount: String?
         ) -> Single<SwapTransaction> {
             // get data
             guard let data = instruction.data else {return .just(SwapTransaction.empty)}
@@ -301,10 +296,10 @@ public extension SolanaSDK {
                     let destinationAccountInfo = params[1]
                     
                     // update token
-                    source = supportedTokens.first(where: {$0.mintAddress == sourceAccountInfo?.mint.base58EncodedString})
+                    source = getTokenWithMint(sourceAccountInfo?.mint.base58EncodedString)
                     source?.pubkey = sourcePubkey?.base58EncodedString
                     
-                    destination = supportedTokens.first(where: {$0.mintAddress == destinationAccountInfo?.mint.base58EncodedString})
+                    destination = getTokenWithMint(destinationAccountInfo?.mint.base58EncodedString)
                     destination?.pubkey = destinationPubkey?.base58EncodedString
                     
                     // get decimals
@@ -331,7 +326,8 @@ public extension SolanaSDK {
                         source: source,
                         sourceAmount: sourceAmount,
                         destination: destination,
-                        destinationAmount: destinationAmount
+                        destinationAmount: destinationAmount,
+                        myAccount: myAccount
                     )
                 }
                 .catchAndReturn(
@@ -339,12 +335,25 @@ public extension SolanaSDK {
                         source: source,
                         sourceAmount: nil,
                         destination: destination,
-                        destinationAmount: nil
+                        destinationAmount: nil,
+                        myAccount: myAccount
                     )
                 )
         }
         
         // MARK: - Helpers
+        private func getTokenWithMint(_ mint: String?) -> Token? {
+            guard var mint = mint else {return nil}
+            if mint == PublicKey.wrappedSOLMint.base58EncodedString {
+                mint = ""
+            }
+            return supportedTokens.first(where: {$0.mintAddress == mint})
+        }
+        
+        private func getSOLToken() -> Token {
+            supportedTokens.first(where: {$0.mintAddress.isEmpty})!
+        }
+        
         private func getAccountInfo(account: String?, retryWithAccount retryAccount: String? = nil) -> Single<AccountInfo?> {
             guard let account = account else {return .just(nil)}
             return solanaSDK.getAccountInfo(

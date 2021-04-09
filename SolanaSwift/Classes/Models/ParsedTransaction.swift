@@ -25,9 +25,17 @@ public extension SolanaSDK {
             case let transaction as CloseAccountTransaction:
                 return transaction.reimbursedAmount ?? 0
             case let transaction as TransferTransaction:
-                return transaction.amount ?? 0
+                var amount = transaction.amount ?? 0
+                if transaction.transferType == .send {
+                    amount = -amount
+                }
+                return amount
             case let transaction as SwapTransaction:
-                return transaction.destinationAmount ?? 0
+                var amount = transaction.destinationAmount ?? 0
+                if transaction.direction == .spend {
+                    amount = -amount
+                }
+                return amount
             default:
                 return 0
             }
@@ -40,7 +48,14 @@ public extension SolanaSDK {
             case let transaction as TransferTransaction:
                 return transaction.source?.symbol ?? transaction.destination?.symbol ?? ""
             case let transaction as SwapTransaction:
-                return transaction.destination?.symbol ?? ""
+                switch transaction.direction {
+                case .spend:
+                    return transaction.source?.symbol ?? ""
+                case .receive:
+                    return transaction.destination?.symbol ?? ""
+                default:
+                    return ""
+                }
             default:
                 return ""
             }
@@ -68,14 +83,15 @@ public extension SolanaSDK {
         
         public let source: Token?
         public let destination: Token?
-        public var amount: Double?
-        public let myTokenPubkey: String?
+        public let amount: Double?
+        
+        let myAccount: String?
         
         public var transferType: TransferType? {
-            if source?.pubkey == myTokenPubkey {
+            if source?.pubkey == myAccount {
                 return .send
             }
-            if destination?.pubkey == myTokenPubkey {
+            if destination?.pubkey == myAccount {
                 return .receive
             }
             return nil
@@ -83,6 +99,10 @@ public extension SolanaSDK {
     }
     
     struct SwapTransaction: Hashable {
+        public enum Direction {
+            case spend, receive
+        }
+        
         // source
         public let source: Token?
         public let sourceAmount: Double?
@@ -91,8 +111,20 @@ public extension SolanaSDK {
         public let destination: Token?
         public let destinationAmount: Double?
         
+        let myAccount: String?
+        
         static var empty: Self {
-            SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil)
+            SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil, myAccount: nil)
+        }
+        
+        public var direction: Direction? {
+            if myAccount == source?.pubkey {
+                return .spend
+            }
+            if myAccount == destination?.pubkey {
+                return .receive
+            }
+            return nil
         }
     }
 }
