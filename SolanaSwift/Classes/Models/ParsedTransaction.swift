@@ -111,17 +111,17 @@ public extension SolanaSDK {
         public let destination: Token?
         public let destinationAmount: Double?
         
-        let myAccount: String?
+        let myAccountSymbol: String?
         
         static var empty: Self {
-            SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil, myAccount: nil)
+            SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil, myAccountSymbol: nil)
         }
         
         public var direction: Direction? {
-            if myAccount == source?.pubkey {
+            if myAccountSymbol == source?.symbol {
                 return .spend
             }
-            if myAccount == destination?.pubkey {
+            if myAccountSymbol == destination?.symbol {
                 return .receive
             }
             return nil

@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 public protocol SolanaSDKTransactionParserType {
-    func parse(signature: String, transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?) -> Single<SolanaSDK.AnyTransaction>
+    func parse(signature: String, transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?) -> Single<SolanaSDK.AnyTransaction>
 }
 
 public extension SolanaSDK {
@@ -28,7 +28,8 @@ public extension SolanaSDK {
         public func parse(
             signature: String,
             transactionInfo: TransactionInfo,
-            myAccount: String?
+            myAccount: String?,
+            myAccountSymbol: String?
         ) -> Single<AnyTransaction> {
             // get data
             let innerInstructions = transactionInfo.meta?.innerInstructions
@@ -42,7 +43,7 @@ public extension SolanaSDK {
                     index: instructionIndex,
                     instruction: instruction,
                     innerInstructions: innerInstructions,
-                    myAccount: myAccount
+                    myAccountSymbol: myAccountSymbol
                 )
                     .map {
                         AnyTransaction(signature: signature, value: $0)
@@ -244,7 +245,7 @@ public extension SolanaSDK {
             index: Int,
             instruction: ParsedInstruction,
             innerInstructions: [InnerInstruction]?,
-            myAccount: String?
+            myAccountSymbol: String?
         ) -> Single<SwapTransaction> {
             // get data
             guard let data = instruction.data else {return .just(SwapTransaction.empty)}
@@ -327,7 +328,7 @@ public extension SolanaSDK {
                         sourceAmount: sourceAmount,
                         destination: destination,
                         destinationAmount: destinationAmount,
-                        myAccount: myAccount
+                        myAccountSymbol: myAccountSymbol
                     )
                 }
                 .catchAndReturn(
@@ -336,7 +337,7 @@ public extension SolanaSDK {
                         sourceAmount: nil,
                         destination: destination,
                         destinationAmount: nil,
-                        myAccount: myAccount
+                        myAccountSymbol: myAccountSymbol
                     )
                 )
         }
