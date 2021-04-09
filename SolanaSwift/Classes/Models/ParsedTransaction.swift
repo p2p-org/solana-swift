@@ -31,9 +31,14 @@ public extension SolanaSDK {
                 }
                 return amount
             case let transaction as SwapTransaction:
-                var amount = transaction.destinationAmount ?? 0
-                if transaction.direction == .spend {
-                    amount = -amount
+                var amount = 0.0
+                switch transaction.direction {
+                case .spend:
+                    amount = -(transaction.sourceAmount ?? 0)
+                case .receive:
+                    amount = transaction.destinationAmount ?? 0
+                default:
+                    break
                 }
                 return amount
             default:
