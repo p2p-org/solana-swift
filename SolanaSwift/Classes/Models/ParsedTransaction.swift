@@ -62,10 +62,24 @@ public extension SolanaSDK {
     }
     
     struct TransferTransaction: Hashable {
+        public enum TransferType {
+            case send, receive
+        }
+        
         public let source: Token?
         public let destination: Token?
         public let amount: Double?
         public let myTokenPubkey: String?
+        
+        public var transferType: TransferType? {
+            if source?.pubkey == myTokenPubkey {
+                return .send
+            }
+            if destination?.pubkey == myTokenPubkey {
+                return .receive
+            }
+            return nil
+        }
     }
     
     struct SwapTransaction: Hashable {
