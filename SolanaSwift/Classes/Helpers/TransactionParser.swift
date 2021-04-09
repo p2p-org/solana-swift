@@ -86,6 +86,13 @@ public extension SolanaSDK {
                     myTokenPubkey: myTokenPubkey
                 )
                     .map {
+                        var transaction = $0
+                        if transaction.transferType == .send {
+                            transaction.amount = -(transaction.amount ?? 0)
+                        }
+                        return transaction
+                    }
+                    .map {
                         AnyTransaction(signature: signature, value: $0)
                     }
             }

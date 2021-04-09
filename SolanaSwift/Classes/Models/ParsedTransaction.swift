@@ -68,7 +68,7 @@ public extension SolanaSDK {
         
         public let source: Token?
         public let destination: Token?
-        public let amount: Double?
+        public var amount: Double?
         public let myTokenPubkey: String?
         
         public var transferType: TransferType? {
