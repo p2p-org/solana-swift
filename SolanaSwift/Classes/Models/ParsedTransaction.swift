@@ -65,6 +65,7 @@ public extension SolanaSDK {
         public let source: Token?
         public let destination: Token?
         public let amount: Double?
+        public let myTokenPubkey: String?
     }
     
     struct SwapTransaction: Hashable {

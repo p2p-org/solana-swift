@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 public protocol SolanaSDKTransactionParserType {
-    func parse(signature: String, transactionInfo: SolanaSDK.TransactionInfo) -> Single<SolanaSDK.AnyTransaction>
+    func parse(signature: String, transactionInfo: SolanaSDK.TransactionInfo, myTokenPubkey: String?) -> Single<SolanaSDK.AnyTransaction>
 }
 
 public extension SolanaSDK {
@@ -25,7 +25,11 @@ public extension SolanaSDK {
         }
         
         // MARK: - Methods
-        public func parse(signature: String, transactionInfo: TransactionInfo) -> Single<AnyTransaction> {
+        public func parse(
+            signature: String,
+            transactionInfo: TransactionInfo,
+            myTokenPubkey: String?
+        ) -> Single<AnyTransaction> {
             // get data
             let innerInstructions = transactionInfo.meta?.innerInstructions
             let instructions = transactionInfo.transaction.message.instructions
@@ -78,7 +82,8 @@ public extension SolanaSDK {
             {
                 return parseTransferTransaction(
                     instruction: instruction,
-                    postTokenBalances: transactionInfo.meta?.postTokenBalances ?? []
+                    postTokenBalances: transactionInfo.meta?.postTokenBalances ?? [],
+                    myTokenPubkey: myTokenPubkey
                 )
                     .map {
                         AnyTransaction(signature: signature, value: $0)
@@ -136,7 +141,8 @@ public extension SolanaSDK {
         // MARK: - Transfer
         private func parseTransferTransaction(
             instruction: ParsedInstruction,
-            postTokenBalances: [TokenBalance]
+            postTokenBalances: [TokenBalance],
+            myTokenPubkey: String?
         ) -> Single<TransferTransaction>
         {
             var source: Token?
@@ -161,7 +167,8 @@ public extension SolanaSDK {
                     TransferTransaction(
                         source: source,
                         destination: destination,
-                        amount: lamports?.convertToBalance(decimals: source?.decimals)
+                        amount: lamports?.convertToBalance(decimals: source?.decimals),
+                        myTokenPubkey: myTokenPubkey
                     )
                 )
             } else {
@@ -205,14 +212,16 @@ public extension SolanaSDK {
                         return TransferTransaction(
                             source: source,
                             destination: destination,
-                            amount: lamports?.convertToBalance(decimals: decimals)
+                            amount: lamports?.convertToBalance(decimals: decimals),
+                            myTokenPubkey: myTokenPubkey
                         )
                     }
                     .catchAndReturn(
                         TransferTransaction(
                             source: source,
                             destination: destination,
-                            amount: nil
+                            amount: nil,
+                            myTokenPubkey: myTokenPubkey
                         )
                     )
             }
