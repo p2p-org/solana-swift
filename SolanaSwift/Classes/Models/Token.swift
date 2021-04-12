@@ -22,6 +22,11 @@ public extension SolanaSDK {
             liquidity == true
         }
         
+        public var shortPubkey: String? {
+            guard let pubkey = pubkey else {return nil}
+            return pubkey.prefix(4) + "..." + pubkey.suffix(4)
+        }
+        
         public init(
             name: String,
             mintAddress: String,
