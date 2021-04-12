@@ -67,6 +67,7 @@ public extension SolanaSDK {
                instructions.first?.parsed?.type == "closeAccount"
             {
                 single = parseCloseAccountTransaction(
+                    closedTokenPubkey: instructions.first?.parsed?.info.account,
                     preBalances: transactionInfo.meta?.preBalances,
                     preTokenBalance: transactionInfo.meta?.preTokenBalances?.first
                 )
@@ -119,6 +120,7 @@ public extension SolanaSDK {
         
         // MARK: - Close account
         private func parseCloseAccountTransaction(
+            closedTokenPubkey: String?,
             preBalances: [Lamports]?,
             preTokenBalance: TokenBalance?
         ) -> Single<CloseAccountTransaction>
@@ -130,7 +132,8 @@ public extension SolanaSDK {
             }
             
             let reimbursedAmount = reimbursedAmountLamports?.convertToBalance(decimals: Decimals.SOL)
-            let token = getTokenWithMint(preTokenBalance?.mint)
+            var token = getTokenWithMint(preTokenBalance?.mint)
+            token?.pubkey = closedTokenPubkey
             
             return .just(
                 CloseAccountTransaction(
