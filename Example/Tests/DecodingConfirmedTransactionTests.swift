@@ -27,7 +27,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transactionInfo = try transactionInfoFromJSONFileName("SwapTransaction")
         
         let myAccountSymbol = "SOL"
-        let transaction = try parser.parse(signature: "", transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: myAccountSymbol)
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: myAccountSymbol)
             .toBlocking().first()?.value as! SolanaSDK.SwapTransaction
         
         XCTAssertEqual(transaction.source?.symbol, "SRM")
@@ -41,7 +41,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     func testDecodingCreateAccountTransaction() throws {
         let transactionInfo = try transactionInfoFromJSONFileName("CreateAccountTransaction")
         
-        let transaction = try parser.parse(signature: "", transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: nil)
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: nil)
             .toBlocking().first()?.value as! SolanaSDK.CreateAccountTransaction
         
         XCTAssertEqual(transaction.fee, 0.00203928)
@@ -52,7 +52,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     func testDecodingCloseAccountTransaction() throws {
         let transactionInfo = try transactionInfoFromJSONFileName("CloseAccountTransaction")
         
-        let transaction = try parser.parse(signature: "", transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: nil)
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: nil)
             .toBlocking().first()?.value as! SolanaSDK.CloseAccountTransaction
         
         XCTAssertEqual(transaction.reimbursedAmount, 0.00203928)
@@ -63,7 +63,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transactionInfo = try transactionInfoFromJSONFileName("SendSOLTransaction")
         
         let myAccount = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
-        let transaction = try parser.parse(signature: "", transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
             .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction.source?.symbol, "SOL")
@@ -75,7 +75,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     func testDecodingSendSPLToSOLTransaction() throws {
         let transactionInfo = try transactionInfoFromJSONFileName("SendSPLToSOLTransaction")
         let myAccount = "22hXC9c4SGccwCkjtJwZ2VGRfhDYh9KSRCviD8bs4Xbg"
-        let transaction = try parser.parse(signature: "", transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
             .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction.source?.symbol, "USDT")
@@ -87,7 +87,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     func testDecodingSendSPLToSPLTransaction() throws {
         let transactionInfo = try transactionInfoFromJSONFileName("SendSPLToSPLTransaction")
         let myAccount = "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua"
-        let transaction = try parser.parse(signature: "", transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
             .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction.source?.symbol, "SRM")

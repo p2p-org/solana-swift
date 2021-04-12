@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 public protocol SolanaSDKTransactionParserType {
-    func parse(signature: String, transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?) -> Single<SolanaSDK.AnyTransaction>
+    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?) -> Single<SolanaSDK.AnyTransaction>
 }
 
 public extension SolanaSDK {
@@ -26,7 +26,6 @@ public extension SolanaSDK {
         
         // MARK: - Methods
         public func parse(
-            signature: String,
             transactionInfo: TransactionInfo,
             myAccount: String?,
             myAccountSymbol: String?
@@ -94,7 +93,7 @@ public extension SolanaSDK {
             
             return single
                 .map {
-                    AnyTransaction(signature: signature, value: $0)
+                    AnyTransaction(signature: nil, value: $0, slot: nil, blockTime: nil)
                 }
         }
         
