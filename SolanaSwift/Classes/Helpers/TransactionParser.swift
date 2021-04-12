@@ -35,66 +35,67 @@ public extension SolanaSDK {
             let innerInstructions = transactionInfo.meta?.innerInstructions
             let instructions = transactionInfo.transaction.message.instructions
             
+            // single
+            var single: Single<AnyHashable?>
+            
             // swap (un-parsed type)
             if let instructionIndex = getSwapInstructionIndex(instructions: instructions)
             {
                 let instruction = instructions[instructionIndex]
-                return parseSwapTransaction(
+                single = parseSwapTransaction(
                     index: instructionIndex,
                     instruction: instruction,
                     innerInstructions: innerInstructions,
                     myAccountSymbol: myAccountSymbol
                 )
-                    .map {
-                        AnyTransaction(signature: signature, value: $0)
-                    }
+                    .map {$0 as AnyHashable}
             }
             
             // create account
-            if instructions.count == 2,
+            else if instructions.count == 2,
                instructions.first?.parsed?.type == "createAccount",
                instructions.last?.parsed?.type == "initializeAccount"
             {
-                return parseCreateAccountTransaction(
+                single = parseCreateAccountTransaction(
                     instruction: instructions[0],
                     initializeAccountInstruction: instructions.last
                 )
-                    .map {
-                        AnyTransaction(signature: signature, value: $0)
-                    }
+                    .map {$0 as AnyHashable}
             }
             
             // close account
-            if instructions.count == 1,
+            else if instructions.count == 1,
                instructions.first?.parsed?.type == "closeAccount"
             {
-                return parseCloseAccountTransaction(
+                single = parseCloseAccountTransaction(
                     preBalances: transactionInfo.meta?.preBalances,
                     preTokenBalance: transactionInfo.meta?.preTokenBalances?.first
                 )
-                    .map {
-                        AnyTransaction(signature: signature, value: $0)
-                    }
+                    .map {$0 as AnyHashable}
             }
             
             // transfer
-            if instructions.count == 1 || instructions.count == 4,
+            else if instructions.count == 1 || instructions.count == 4,
                instructions.last?.parsed?.type == "transfer",
                let instruction = instructions.last
             {
-                return parseTransferTransaction(
+                single = parseTransferTransaction(
                     instruction: instruction,
                     postTokenBalances: transactionInfo.meta?.postTokenBalances ?? [],
                     myAccount: myAccount
                 )
-                    .map {
-                        AnyTransaction(signature: signature, value: $0)
-                    }
+                    .map {$0 as AnyHashable}
             }
             
-            return .just(
-                AnyTransaction(signature: signature, value: nil)
-            )
+            // unknown transaction
+            else {
+                single = .just(nil)
+            }
+            
+            return single
+                .map {
+                    AnyTransaction(signature: signature, value: $0)
+                }
         }
         
         // MARK: - Create account
