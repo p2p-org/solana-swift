@@ -32,17 +32,26 @@ extension SolanaSDK {
                 throw Error.other("You can not send tokens to yourself")
             }
             
-            let instruction = SystemProgram.transferInstruction(
-                from: fromPublicKey,
-                to: toPublicKey,
-                lamports: amount
-            )
-            
-            return serializeAndSend(
-                instructions: [instruction],
-                signers: [account],
-                isSimulation: isSimulation
-            )
+            // check
+            return getAccountInfo(account: toPublicKey.base58EncodedString, decodedTo: EmptyInfo.self)
+                .map {info -> Void in
+                    guard info.owner == PublicKey.programId.base58EncodedString
+                    else {throw Error.other("Invalid account info")}
+                    return
+                }
+                .flatMap {
+                    let instruction = SystemProgram.transferInstruction(
+                        from: fromPublicKey,
+                        to: toPublicKey,
+                        lamports: amount
+                    )
+                    
+                    return self.serializeAndSend(
+                        instructions: [instruction],
+                        signers: [account],
+                        isSimulation: isSimulation
+                    )
+                }
         } catch {
             return .error(error)
         }
