@@ -54,7 +54,10 @@ extension SolanaSDK {
             let feeRatio = Decimal(swapData.tradeFeeNumerator) / Decimal(swapData.tradeFeeDenominator)
             let invariant = BInt(tokenABalance) * BInt(tokenBBalance)
             let newFromAmountInPool = BInt(tokenABalance) + BInt(inputAmount)
-            let newToAmountInPool = invariant / newFromAmountInPool
+            var newToAmountInPool: BInt = 0
+            if newFromAmountInPool != 0 {
+                newToAmountInPool = invariant / newFromAmountInPool
+            }
             let grossToAmount = BInt(tokenBBalance) - newToAmountInPool
             
             let grossToAmountDecimal = Decimal(string: grossToAmount.asString(withBase: 10)) ?? 0
