@@ -52,6 +52,14 @@ extension SolanaSDK {
                         isSimulation: isSimulation
                     )
                 }
+                .catch {error in
+                    var error = error
+                    if error.localizedDescription == "Invalid param: WrongSize"
+                    {
+                        error = Error.other("Wrong wallet address")
+                    }
+                    throw error
+                }
         } catch {
             return .error(error)
         }
@@ -107,6 +115,14 @@ extension SolanaSDK {
                     amount: amount,
                     isSimulation: isSimulation
                 )
+            }
+            .catch {error in
+                var error = error
+                if error.localizedDescription == "Invalid param: WrongSize"
+                {
+                    error = Error.other("Wrong wallet address")
+                }
+                throw error
             }
     }
     
