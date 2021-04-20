@@ -26,7 +26,10 @@ extension SolanaSDK {
             guard let tokenABalance = tokenABalance?.amountInUInt64,
                   let tokenBBalance = tokenBBalance?.amountInUInt64
             else {return nil}
-            return UInt64(BInt(tokenBBalance) * BInt(inputAmount) / (BInt(tokenABalance) + BInt(inputAmount)))
+            let numerator = BInt(tokenBBalance) * BInt(inputAmount)
+            let denominator = BInt(tokenABalance) + BInt(inputAmount)
+            if denominator == 0 { return nil }
+            return UInt64(numerator / denominator)
         }
         
         public func inputAmount(forEstimatedAmount estimatedAmount: UInt64) -> UInt64?
@@ -34,7 +37,10 @@ extension SolanaSDK {
             guard let tokenABalance = tokenABalance?.amountInUInt64,
                   let tokenBBalance = tokenBBalance?.amountInUInt64
             else {return nil}
-            let value = BInt(estimatedAmount) * BInt(tokenABalance) / (BInt(tokenBBalance) - BInt(estimatedAmount))
+            let numerator = BInt(estimatedAmount) * BInt(tokenABalance)
+            let denominator = BInt(tokenBBalance) - BInt(estimatedAmount)
+            if denominator == 0 { return nil }
+            let value = numerator / denominator
             if value > 0 {return UInt64(value)}
             else {return nil}
         }
