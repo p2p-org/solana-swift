@@ -12,6 +12,12 @@ extension SolanaSDK {
     public func getSwapPools() -> Single<[Pool]> {
         if let pools = _swapPool {return .just(pools)}
         return getPools(swapProgramId: network.swapProgramId.base58EncodedString)
+            .map {
+                $0.filter {
+                    $0.tokenBBalance?.amountInUInt64 != 0 &&
+                        $0.tokenBBalance?.amountInUInt64 != 0
+                }
+            }
             .do(onSuccess: {self._swapPool = $0})
     }
     

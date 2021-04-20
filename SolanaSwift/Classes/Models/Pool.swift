@@ -34,7 +34,9 @@ extension SolanaSDK {
             guard let tokenABalance = tokenABalance?.amountInUInt64,
                   let tokenBBalance = tokenBBalance?.amountInUInt64
             else {return nil}
-            return UInt64(BInt(estimatedAmount) * BInt(tokenABalance) / (BInt(tokenBBalance) - BInt(estimatedAmount)))
+            let value = BInt(estimatedAmount) * BInt(tokenABalance) / (BInt(tokenBBalance) - BInt(estimatedAmount))
+            if value > 0 {return UInt64(value)}
+            else {return nil}
         }
         
         public func minimumReceiveAmount(
