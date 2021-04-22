@@ -30,11 +30,11 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: myAccountSymbol)
             .toBlocking().first()?.value as! SolanaSDK.SwapTransaction
         
-        XCTAssertEqual(transaction.source?.symbol, "SRM")
+        XCTAssertEqual(transaction.source?.token.symbol, "SRM")
         XCTAssertEqual(transaction.source?.pubkey, "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua")
         XCTAssertEqual(transaction.sourceAmount, 0.001)
         
-        XCTAssertEqual(transaction.destination?.symbol, myAccountSymbol)
+        XCTAssertEqual(transaction.destination?.token.symbol, myAccountSymbol)
         XCTAssertEqual(transaction.destinationAmount, 0.000364885)
     }
     
@@ -45,8 +45,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
             .toBlocking().first()?.value as! SolanaSDK.CreateAccountTransaction
         
         XCTAssertEqual(transaction.fee, 0.00203928)
-        XCTAssertEqual(transaction.newToken?.symbol, "ETH")
-        XCTAssertEqual(transaction.newToken?.pubkey, "8jpWBKSoU7SXz9gJPJS53TEXXuWcg1frXLEdnfomxLwZ")
+        XCTAssertEqual(transaction.newWallet?.token.symbol, "ETH")
+        XCTAssertEqual(transaction.newWallet?.pubkey, "8jpWBKSoU7SXz9gJPJS53TEXXuWcg1frXLEdnfomxLwZ")
     }
     
     func testDecodingCloseAccountTransaction() throws {
@@ -56,7 +56,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
             .toBlocking().first()?.value as! SolanaSDK.CloseAccountTransaction
         
         XCTAssertEqual(transaction.reimbursedAmount, 0.00203928)
-        XCTAssertEqual(transaction.closedToken?.symbol, "ETH")
+        XCTAssertEqual(transaction.closedWallet?.token.symbol, "ETH")
     }
     
     func testDecodingSendSOLTransaction() throws {
@@ -66,7 +66,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
             .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
         
-        XCTAssertEqual(transaction.source?.symbol, "SOL")
+        XCTAssertEqual(transaction.source?.token.symbol, "SOL")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.destination?.pubkey, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
         XCTAssertEqual(transaction.amount, 0.01)
@@ -78,7 +78,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
             .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
         
-        XCTAssertEqual(transaction.source?.symbol, "USDT")
+        XCTAssertEqual(transaction.source?.token.symbol, "wUSDT")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.destination?.pubkey, "GCmbXJRc6mfnNNbnh5ja2TwWFzVzBp8MovsrTciw1HeS")
         XCTAssertEqual(transaction.amount, 0.004325)
@@ -90,7 +90,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
             .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
         
-        XCTAssertEqual(transaction.source?.symbol, "SRM")
+        XCTAssertEqual(transaction.source?.token.symbol, "SRM")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.destination?.pubkey, "3YuhjsaohzpzEYAsonBQakYDj3VFWimhDn7bci8ERKTh")
         XCTAssertEqual(transaction.amount, 0.012111)

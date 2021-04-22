@@ -7,15 +7,15 @@
 //
 
 import XCTest
-import SolanaToken
+import SolanaSwift
 
 class SolanaTokensListParserTests: XCTestCase {
-    var parser: SolanaTokensListParser!
-    var list: [SolanaToken]!
+    var parser: SolanaSDK.TokensListParser!
+    var list: [SolanaSDK.Token]!
 
     override func setUpWithError() throws {
-        parser = SolanaTokensListParser()
-        list = try parser.parse()
+        parser = SolanaSDK.TokensListParser()
+        list = try parser.parse(network: SolanaSDK.Network.mainnetBeta.cluster)
     }
 
     override func tearDownWithError() throws {

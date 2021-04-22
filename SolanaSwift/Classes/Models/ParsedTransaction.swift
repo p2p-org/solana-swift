@@ -62,9 +62,9 @@ public extension SolanaSDK {
             case let transaction as SwapTransaction:
                 switch transaction.direction {
                 case .spend:
-                    return transaction.source?.symbol ?? ""
+                    return transaction.source?.token.symbol ?? ""
                 case .receive:
-                    return transaction.destination?.symbol ?? ""
+                    return transaction.destination?.token.symbol ?? ""
                 default:
                     return ""
                 }

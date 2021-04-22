@@ -320,10 +320,7 @@ public extension SolanaSDK {
         
         // MARK: - Helpers
         private func getTokenWithMint(_ mint: String?) -> Token {
-            guard var mint = mint else {return .unsupported(mint: nil)}
-            if mint == PublicKey.wrappedSOLMint.base58EncodedString {
-                mint = ""
-            }
+            guard let mint = mint else {return .unsupported(mint: nil)}
             return solanaSDK.supportedTokens.first(where: {$0.address == mint}) ?? .unsupported(mint: mint)
         }
         

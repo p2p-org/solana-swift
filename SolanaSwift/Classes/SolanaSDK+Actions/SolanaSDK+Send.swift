@@ -157,8 +157,8 @@ extension SolanaSDK {
         _ mintAddress: String,
         fromAccountWithAddress account: String
     ) -> Single<String?> {
-        getAllSPLTokens(account: account)
-            .map {$0.first(where: {$0.mintAddress == mintAddress})}
+        getTokenWallets(account: account)
+            .map {$0.first(where: {$0.token.address == mintAddress})}
             .map {$0?.pubkey}
     }
     
