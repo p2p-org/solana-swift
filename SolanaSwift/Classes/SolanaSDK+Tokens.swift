@@ -33,24 +33,8 @@ extension SolanaSDK {
             .map {$0.map {($0.pubkey, $0.account.data.value!)}}
             .map {
                 $0.map { (pubkey, accountInfo) in
-                    var token: Token
-                    
-                    if let supportedToken = self.supportedTokens.first(where: {$0.address == accountInfo.mint.base58EncodedString})
-                    {
-                        token = supportedToken
-                    } else {
-                        token = Token(
-                            _tags: [],
-                            chainId: 101,
-                            address: accountInfo.mint.base58EncodedString,
-                            symbol: "",
-                            name: "",
-                            decimals: 0,
-                            logoURI: nil,
-                            tags: [],
-                            extensions: nil
-                        )
-                    }
+                    let mintAddress = accountInfo.mint.base58EncodedString
+                    let token = self.supportedTokens.first(where: {$0.address == mintAddress}) ?? .unsupported(mint: mintAddress)
                     
                     return Wallet(
                         pubkey: pubkey,
