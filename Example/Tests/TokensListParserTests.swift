@@ -23,8 +23,8 @@ class SolanaTokensListParserTests: XCTestCase {
     }
 
     func testParsing() throws {
-        // List count must be equal to 401
-        XCTAssertEqual(list.count, 401)
+        // List count must be equal to 396 after removing duppicated items
+        XCTAssertEqual(list.count, 396)
         
         // Tags must be parsed
         XCTAssertEqual(list[2].tags.count, 2)

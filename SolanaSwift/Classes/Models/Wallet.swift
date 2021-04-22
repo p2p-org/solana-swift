@@ -9,13 +9,7 @@ import Foundation
 
 extension SolanaSDK {
     public struct Wallet: Hashable {
-        public init(pubkey: String? = nil, lamports: UInt64? = nil, token: SolanaSDK.Token, liquidity: Bool? = false) {
-            self.pubkey = pubkey
-            self.lamports = lamports
-            self.token = token
-            self.liquidity = liquidity
-        }
-        
+        // MARK: - Properties
         public var pubkey: String?
         public var lamports: UInt64?
         public var token: Token
@@ -25,6 +19,15 @@ extension SolanaSDK {
             liquidity == true
         }
         
+        // MARK: - Initializer
+        public init(pubkey: String? = nil, lamports: UInt64? = nil, token: SolanaSDK.Token, liquidity: Bool? = false) {
+            self.pubkey = pubkey
+            self.lamports = lamports
+            self.token = token
+            self.liquidity = liquidity
+        }
+        
+        // MARK: - Fabric methods
         public static func nativeSolana(
             pubkey: String?,
             lamport: UInt64?

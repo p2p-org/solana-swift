@@ -29,7 +29,13 @@ public extension SolanaSDK {
             }
             
             // return list with mapped tags
-            return list.tokens
+            return list.tokens.reduce([Token]()) { (result, token) -> [Token] in
+                var result = result
+                if !result.contains(where: {$0.address == token.address}) {
+                    result.append(token)
+                }
+                return result
+            }
         }
     }
 }
