@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC18C9E62631132E0054E624 /* TokensListParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC18C9E52631132E0054E624 /* TokensListParserTests.swift */; };
 		BC1ABC4E255CC075002FCE65 /* DecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC1ABC4D255CC075002FCE65 /* DecodingTests.swift */; };
 		BC23AEC2254928870029FF0B /* TransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBE254928870029FF0B /* TransactionTests.swift */; };
 		BC23AEC3254928870029FF0B /* RestAPIAccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBF254928870029FF0B /* RestAPIAccountTests.swift */; };
@@ -130,6 +131,7 @@
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		656EB490BFE125DA165A4E9A /* Pods-SolanaSwift_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SolanaSwift_Tests.release.xcconfig"; path = "Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		88E637D24AF2B058D65016C3 /* SolanaSwift.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = SolanaSwift.podspec; path = ../SolanaSwift.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		BC18C9E52631132E0054E624 /* TokensListParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensListParserTests.swift; sourceTree = "<group>"; };
 		BC1ABC4D255CC075002FCE65 /* DecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingTests.swift; sourceTree = "<group>"; };
 		BC23AE51254925F00029FF0B /* _Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = _Pods.xcodeproj; path = ../_Pods.xcodeproj; sourceTree = "<group>"; };
 		BC23AEBE254928870029FF0B /* TransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TransactionTests.swift; path = Tests/TransactionTests.swift; sourceTree = SOURCE_ROOT; };
@@ -203,6 +205,7 @@
 				BC81A2AA25BE628700664A2C /* Constants.swift */,
 				BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */,
 				BC23AEBE254928870029FF0B /* TransactionTests.swift */,
+				BC18C9D82631130B0054E624 /* TokensListParserTests */,
 				BCC49C2325BE86F600D4D336 /* CodableTests */,
 				BC631EC325B96D6700138948 /* ProgramsTests */,
 				BC2EC2C825552DE9006EEDA5 /* RestAPITests */,
@@ -244,6 +247,14 @@
 				BC23AE51254925F00029FF0B /* _Pods.xcodeproj */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BC18C9D82631130B0054E624 /* TokensListParserTests */ = {
+			isa = PBXGroup;
+			children = (
+				BC18C9E52631132E0054E624 /* TokensListParserTests.swift */,
+			);
+			name = TokensListParserTests;
 			sourceTree = "<group>";
 		};
 		BC23AE52254925F00029FF0B /* Products */ = {
@@ -566,6 +577,7 @@
 				BC1ABC4E255CC075002FCE65 /* DecodingTests.swift in Sources */,
 				BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */,
 				BC2EC2DF25552EC1006EEDA5 /* AccountTests.swift in Sources */,
+				BC18C9E62631132E0054E624 /* TokensListParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
