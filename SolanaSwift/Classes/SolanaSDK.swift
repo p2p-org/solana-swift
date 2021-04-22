@@ -22,11 +22,16 @@ public class SolanaSDK {
     public let accountStorage: SolanaSDKAccountStorage
     var endpoint: String {network.endpoint}
     var _swapPool: [Pool]?
+    public private(set) var supportedTokens = [Token]()
     
     // MARK: - Initializer
     public init(network: Network, accountStorage: SolanaSDKAccountStorage) {
         self.network = network
         self.accountStorage = accountStorage
+        
+        // get supported tokens
+        let parser = TokensListParser()
+        supportedTokens = (try? parser.parse(network: network.cluster)) ?? []
     }
      
     // MARK: - Helper

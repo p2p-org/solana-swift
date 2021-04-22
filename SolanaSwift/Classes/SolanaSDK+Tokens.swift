@@ -43,7 +43,7 @@ extension SolanaSDK {
             }
     }
     
-    func getAllSPLTokens(account: String? = nil) -> Single<[Token]> {
+    func getTokenWallets(account: String? = nil) -> Single<[Wallet]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.unauthorized)
         }
@@ -64,8 +64,35 @@ extension SolanaSDK {
             .map {
                 $0.compactMap {$0.account.data.value != nil ? $0: nil}
             }
+            .map {$0.map {($0.pubkey, $0.account.data.value!)}}
             .map {
-                $0.map {Token(accountInfo: $0.account.data.value!, pubkey: $0.pubkey, in: self.network)}
+                $0.map { (pubkey, accountInfo) in
+                    var token: Token
+                    
+                    if let supportedToken = self.supportedTokens.first(where: {$0.address == accountInfo.mint.base58EncodedString})
+                    {
+                        token = supportedToken
+                    } else {
+                        token = Token(
+                            _tags: [],
+                            chainId: 101,
+                            address: accountInfo.mint.base58EncodedString,
+                            symbol: "",
+                            name: "",
+                            decimals: 0,
+                            logoURI: nil,
+                            tags: [],
+                            extensions: nil
+                        )
+                    }
+                    
+                    return Wallet(
+                        pubkey: pubkey,
+                        lamports: accountInfo.lamports,
+                        token: token,
+                        liquidity: false
+                    )
+                }
             }
     }
 }
