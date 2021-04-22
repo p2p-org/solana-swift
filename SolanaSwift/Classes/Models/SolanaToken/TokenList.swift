@@ -23,7 +23,7 @@ extension SolanaSDK {
     }
 
     public struct Token: Hashable, Decodable {
-        public init(_tags: [String], chainId: Int, address: String, symbol: String, name: String, decimals: UInt, logoURI: String?, tags: [TokenTag] = [], extensions: TokenExtensions?) {
+        public init(_tags: [String], chainId: Int, address: String, symbol: String, name: String, decimals: UInt8, logoURI: String?, tags: [TokenTag] = [], extensions: TokenExtensions?) {
             self._tags = _tags
             self.chainId = chainId
             self.address = address
@@ -41,13 +41,29 @@ extension SolanaSDK {
         public let address: String
         public let symbol: String
         public let name: String
-        public let decimals: UInt
+        public let decimals: UInt8
         public let logoURI: String?
         public var tags: [TokenTag] = []
         public let extensions: TokenExtensions?
         
         enum CodingKeys: String, CodingKey {
             case chainId, address, symbol, name, decimals, logoURI, extensions, _tags = "tags"
+        }
+        
+        public static func unsupported(
+            mint: String?
+        ) -> Token {
+            Token(
+                _tags: [],
+                chainId: 101,
+                address: mint ?? "<undefined>",
+                symbol: "",
+                name: mint ?? "<undefined>",
+                decimals: 0,
+                logoURI: nil,
+                tags: [],
+                extensions: nil
+            )
         }
     }
 

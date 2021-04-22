@@ -58,7 +58,7 @@ public extension SolanaSDK {
             case is CreateAccountTransaction, is CloseAccountTransaction:
                 return "SOL"
             case let transaction as TransferTransaction:
-                return transaction.source?.symbol ?? transaction.destination?.symbol ?? ""
+                return transaction.source?.token.symbol ?? transaction.destination?.token.symbol ?? ""
             case let transaction as SwapTransaction:
                 switch transaction.direction {
                 case .spend:
@@ -76,16 +76,16 @@ public extension SolanaSDK {
     
     struct CreateAccountTransaction: Hashable {
         public let fee: Double? // in SOL
-        public let newToken: Token?
+        public let newWallet: Wallet?
         
         static var empty: Self {
-            CreateAccountTransaction(fee: nil, newToken: nil)
+            CreateAccountTransaction(fee: nil, newWallet: nil)
         }
     }
     
     struct CloseAccountTransaction: Hashable {
         public let reimbursedAmount: Double?
-        public let closedToken: Token?
+        public let closedWallet: Wallet?
     }
     
     struct TransferTransaction: Hashable {
@@ -93,8 +93,8 @@ public extension SolanaSDK {
             case send, receive
         }
         
-        public let source: Token?
-        public let destination: Token?
+        public let source: Wallet?
+        public let destination: Wallet?
         public let amount: Double?
         
         let myAccount: String?
@@ -116,11 +116,11 @@ public extension SolanaSDK {
         }
         
         // source
-        public let source: Token?
+        public let source: Wallet?
         public let sourceAmount: Double?
         
         // destination
-        public let destination: Token?
+        public let destination: Wallet?
         public let destinationAmount: Double?
         
         let myAccountSymbol: String?
@@ -130,10 +130,10 @@ public extension SolanaSDK {
         }
         
         public var direction: Direction? {
-            if myAccountSymbol == source?.symbol {
+            if myAccountSymbol == source?.token.symbol {
                 return .spend
             }
-            if myAccountSymbol == destination?.symbol {
+            if myAccountSymbol == destination?.token.symbol {
                 return .receive
             }
             return nil

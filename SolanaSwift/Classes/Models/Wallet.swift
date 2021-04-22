@@ -9,6 +9,13 @@ import Foundation
 
 extension SolanaSDK {
     public struct Wallet: Hashable {
+        public init(pubkey: String? = nil, lamports: UInt64? = nil, token: SolanaSDK.Token, liquidity: Bool? = false) {
+            self.pubkey = pubkey
+            self.lamports = lamports
+            self.token = token
+            self.liquidity = liquidity
+        }
+        
         public var pubkey: String?
         public var lamports: UInt64?
         public var token: Token

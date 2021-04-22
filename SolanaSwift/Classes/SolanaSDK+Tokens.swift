@@ -9,40 +9,6 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    public func getTokensInfo(account: String? = nil) -> Single<[Token]> {
-        getAllSPLTokens(account: account)
-            .flatMap { tokens in
-                var unfilledTokens = [Token]()
-                
-                // retrieve decimals if missing
-                for token in tokens where token.decimals == nil {
-                    unfilledTokens.append(token)
-                }
-                if unfilledTokens.count > 0 {
-                    return Single<UInt8>.zip(
-                        unfilledTokens.map {
-                            return self.getAccountInfo(account: $0.mintAddress, decodedTo: Mint.self)
-                                .map {$0.data.value?.decimals ?? 0}
-                        }
-                    )
-                    .map {
-                        var tokens = tokens
-                        for i in 0..<unfilledTokens.count {
-                            unfilledTokens[i].decimals = Int($0[i])
-                            if let index = tokens.firstIndex(where: {$0.pubkey == unfilledTokens[i].pubkey})
-                            {
-                                tokens[index] = unfilledTokens[i]
-                            }
-                        }
-                        return tokens
-                    }
-                }
-                
-                // if all decimals isn't missing
-                return .just(tokens)
-            }
-    }
-    
     func getTokenWallets(account: String? = nil) -> Single<[Wallet]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.unauthorized)

@@ -16,12 +16,10 @@ public extension SolanaSDK {
     struct TransactionParser: SolanaSDKTransactionParserType {
         // MARK: - Properties
         private let solanaSDK: SolanaSDK
-        private let supportedTokens: [Token]
         
         // MARK: - Initializers
         public init(solanaSDK: SolanaSDK) {
             self.solanaSDK = solanaSDK
-            supportedTokens = Token.getSupportedTokens(network: solanaSDK.network) ?? []
         }
         
         // MARK: - Methods
@@ -108,12 +106,16 @@ public extension SolanaSDK {
             let initializeAccountInfo = initializeAccountInstruction?.parsed?.info
             
             let fee = info?.lamports?.convertToBalance(decimals: Decimals.SOL)
-            var token = getTokenWithMint(initializeAccountInfo?.mint)
-            token?.pubkey = info?.newAccount
+            let token = getTokenWithMint(initializeAccountInfo?.mint)
+            
             return .just(
                 CreateAccountTransaction(
                     fee: fee,
-                    newToken: token
+                    newWallet: Wallet(
+                        pubkey: info?.newAccount,
+                        lamports: nil,
+                        token: token
+                    )
                 )
             )
         }
@@ -132,13 +134,16 @@ public extension SolanaSDK {
             }
             
             let reimbursedAmount = reimbursedAmountLamports?.convertToBalance(decimals: Decimals.SOL)
-            var token = getTokenWithMint(preTokenBalance?.mint)
-            token?.pubkey = closedTokenPubkey
+            let token = getTokenWithMint(preTokenBalance?.mint)
             
             return .just(
                 CloseAccountTransaction(
                     reimbursedAmount: reimbursedAmount,
-                    closedToken: token
+                    closedWallet: Wallet(
+                        pubkey: closedTokenPubkey,
+                        lamports: nil,
+                        token: token
+                    )
                 )
             )
         }
@@ -150,85 +155,63 @@ public extension SolanaSDK {
             myAccount: String?
         ) -> Single<TransferTransaction>
         {
-            var source: Token?
-            var destination: Token?
+            // construct wallets
+            var source: Wallet?
+            var destination: Wallet?
             
+            // get pubkeys
             let sourcePubkey = instruction.parsed?.info.source
             let destinationPubkey = instruction.parsed?.info.destination
             
+            // get lamports
             let lamports = instruction.parsed?.info.lamports ?? UInt64(instruction.parsed?.info.amount ?? "0")
             
             // SOL to SOL
             if instruction.programId == PublicKey.programId.base58EncodedString {
-                source = getSOLToken()
-                source?.pubkey = sourcePubkey
-                source?.decimals = Int(Decimals.SOL)
-                
-                destination = getSOLToken()
-                destination?.pubkey = destinationPubkey
-                destination?.decimals = Int(Decimals.SOL)
+                source = Wallet.nativeSolana(pubkey: sourcePubkey, lamport: nil)
+                destination = Wallet.nativeSolana(pubkey: destinationPubkey, lamport: nil)
                 
                 return .just(
                     TransferTransaction(
                         source: source,
                         destination: destination,
-                        amount: lamports?.convertToBalance(decimals: source?.decimals),
+                        amount: lamports?.convertToBalance(decimals: source!.token.decimals),
                         myAccount: myAccount
                     )
                 )
             } else {
                 // SPL to SPL token
-                var mintRequest: Single<String?>
-                
                 if let tokenBalance = postTokenBalances.first(where: {!$0.mint.isEmpty})
                 {
-                    source = getTokenWithMint(tokenBalance.mint)
-                    source?.pubkey = sourcePubkey
+                    let token = getTokenWithMint(tokenBalance.mint)
                     
-                    destination = getTokenWithMint(tokenBalance.mint)
-                    destination?.pubkey = destinationPubkey
+                    source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
+                    destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
                     
-                    mintRequest = .just(tokenBalance.mint)
-                } else {
-                    mintRequest = getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
-                        .map { info in
-                            // update source
-                            source = getTokenWithMint(info?.mint.base58EncodedString)
-                            source?.pubkey = sourcePubkey
-                            
-                            // update destination
-                            destination = getTokenWithMint(info?.mint.base58EncodedString)
-                            destination?.pubkey = destinationPubkey
-                            
-                            return info?.mint.base58EncodedString
-                        }
-                }
-                return mintRequest
-                    .flatMap { mint -> Single<Decimals?> in
-                        guard let mint = try? PublicKey(string: mint) else {
-                            return .just(nil)
-                        }
-                        return self.getDecimals(mintAddress: mint)
-                    }
-                    .map { decimals -> TransferTransaction in
-                        source?.decimals = Int(decimals ?? 0)
-                        destination?.decimals = Int(decimals ?? 0)
-                        
-                        return TransferTransaction(
-                            source: source,
-                            destination: destination,
-                            amount: lamports?.convertToBalance(decimals: decimals),
-                            myAccount: myAccount
-                        )
-                    }
-                    .catchAndReturn(
+                    return .just(
                         TransferTransaction(
                             source: source,
                             destination: destination,
-                            amount: nil,
+                            amount: lamports?.convertToBalance(decimals: source?.token.decimals),
                             myAccount: myAccount
                         )
                     )
+                } else {
+                    return getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
+                        .map { info in
+                            // update source
+                            let token = getTokenWithMint(info?.mint.base58EncodedString)
+                            source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
+                            destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
+                            
+                            return TransferTransaction(
+                                source: source,
+                                destination: destination,
+                                amount: lamports?.convertToBalance(decimals: source?.token.decimals),
+                                myAccount: myAccount
+                            )
+                        }
+                }
             }
         }
         
@@ -289,43 +272,33 @@ public extension SolanaSDK {
                 )
             }
             
-            var source: Token?
-            var destination: Token?
-            
             // get token account info
             return Single.zip(requests)
-                .flatMap { params -> Single<[Decimals?]> in
+                .map { params in
                     // get source, destination account info
                     let sourceAccountInfo = params[0]
                     let destinationAccountInfo = params[1]
                     
-                    // update token
-                    source = getTokenWithMint(sourceAccountInfo?.mint.base58EncodedString)
-                    source?.pubkey = sourcePubkey?.base58EncodedString
+                    // source
+                    let sourceToken = getTokenWithMint(sourceAccountInfo?.mint.base58EncodedString)
+                    let source = Wallet(
+                        pubkey: sourcePubkey?.base58EncodedString,
+                        lamports: sourceAccountInfo?.lamports,
+                        token: sourceToken
+                    )
                     
-                    destination = getTokenWithMint(destinationAccountInfo?.mint.base58EncodedString)
-                    destination?.pubkey = destinationPubkey?.base58EncodedString
+                    // destination
+                    let destinationToken = getTokenWithMint(destinationAccountInfo?.mint.base58EncodedString)
+                    let destination = Wallet(
+                        pubkey: destinationPubkey?.base58EncodedString,
+                        lamports: destinationAccountInfo?.lamports,
+                        token: destinationToken
+                    )
+                    
+                    let sourceAmount = UInt64(sourceInfo?.amount ?? "0")?.convertToBalance(decimals: source.token.decimals)
+                    let destinationAmount = UInt64(destinationInfo?.amount ?? "0")?.convertToBalance(decimals: destination.token.decimals)
                     
                     // get decimals
-                    return Single.zip([
-                        getDecimals(mintAddress: sourceAccountInfo?.mint),
-                        getDecimals(mintAddress: destinationAccountInfo?.mint)
-                    ])
-                }
-                .map {decimals -> SwapTransaction in
-                    // get decimals
-                    let sourceDecimals = decimals[0]
-                    let destinationDecimals = decimals[1]
-                    
-                    // update token
-                    source?.decimals = Int(sourceDecimals ?? 0)
-                    destination?.decimals = Int(destinationDecimals ?? 0)
-                    
-                    // update amount
-                    let sourceAmount = UInt64(sourceInfo?.amount ?? "0")?.convertToBalance(decimals: sourceDecimals)
-                    let destinationAmount = UInt64(destinationInfo?.amount ?? "0")?.convertToBalance(decimals: destinationDecimals)
-                    
-                    // construct SwapInstruction
                     return SwapTransaction(
                         source: source,
                         sourceAmount: sourceAmount,
@@ -336,9 +309,9 @@ public extension SolanaSDK {
                 }
                 .catchAndReturn(
                     SolanaSDK.SwapTransaction(
-                        source: source,
+                        source: nil,
                         sourceAmount: nil,
-                        destination: destination,
+                        destination: nil,
                         destinationAmount: nil,
                         myAccountSymbol: myAccountSymbol
                     )
@@ -346,16 +319,12 @@ public extension SolanaSDK {
         }
         
         // MARK: - Helpers
-        private func getTokenWithMint(_ mint: String?) -> Token? {
-            guard var mint = mint else {return nil}
+        private func getTokenWithMint(_ mint: String?) -> Token {
+            guard var mint = mint else {return .unsupported(mint: nil)}
             if mint == PublicKey.wrappedSOLMint.base58EncodedString {
                 mint = ""
             }
-            return supportedTokens.first(where: {$0.mintAddress == mint})
-        }
-        
-        private func getSOLToken() -> Token {
-            supportedTokens.first(where: {$0.mintAddress.isEmpty})!
+            return solanaSDK.supportedTokens.first(where: {$0.address == mint}) ?? .unsupported(mint: mint)
         }
         
         private func getAccountInfo(account: String?, retryWithAccount retryAccount: String? = nil) -> Single<AccountInfo?> {
@@ -374,18 +343,6 @@ public extension SolanaSDK {
                     }
                     return .just($0)
                 }
-        }
-        
-        private func getMintData(_ mint: PublicKey?) -> Single<Mint?> {
-            guard let mint = mint else {return .just(nil)}
-            return solanaSDK.getMintData(mintAddress: mint)
-                .map {$0 as Mint?}
-                .catchAndReturn(nil)
-        }
-        
-        private func getDecimals(mintAddress: PublicKey?) -> Single<Decimals?> {
-            getMintData(mintAddress)
-                .map {$0?.decimals}
         }
     }
 }
