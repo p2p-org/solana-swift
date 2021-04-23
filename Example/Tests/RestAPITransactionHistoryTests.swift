@@ -8,6 +8,7 @@
 
 import Foundation
 import XCTest
+import RxBlocking
 import SolanaSwift
 
 class RestAPITransactionHistoryTests: RestAPITests {

@@ -10,25 +10,6 @@ import XCTest
 import SolanaSwift
 
 class DecodingTests: XCTestCase {
-    func testDecodingDevnetTokens() throws {
-        let tokens = SolanaSDK.Token.getSupportedTokens(network: .devnet)
-        XCTAssertEqual(tokens?.count, 10)
-        XCTAssertEqual(tokens?.first!.mintAddress, "96oUA9Zu6hdpp9rv41b8Z6DqRyVQm1VMqVU4cBxQupNJ")
-    }
-    
-    func testDecodingMainnetBetaTokens() throws {
-        let tokens = SolanaSDK.Token.getSupportedTokens(network: .mainnetBeta)
-        XCTAssertEqual(tokens?.count, 27)
-        XCTAssertEqual(tokens?.first!.symbol, "SOL")
-    }
-
-    func testDecodingProgramAccountFromBase64() throws {
-        let string = #"{"account":{"data":["eFnw9lVnndMN5Jzwx+Sz868QyrMH/D9UqaOcluHkD19Q2GYJMr1ICu1igql4jNhnTngax15GTVqOAfyEWk/shOgDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","base64"],"executable":false,"lamports":2039280,"owner":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","rentEpoch":35},"pubkey":"94s94H8HNCSxvuduxuG16VybBp1YCpzxMV8x5o7RbPMT"}"#
-        let programAccount = try JSONDecoder().decode(SolanaSDK.ProgramAccount<SolanaSDK.AccountInfo>.self, from: string.data(using: .utf8)!)
-        let token = SolanaSDK.Token(accountInfo: programAccount.account.data.value!, pubkey: programAccount.pubkey, in: .devnet)
-        XCTAssertEqual(token.lamports, 1000)
-        XCTAssertEqual(token.mintAddress, "96oUA9Zu6hdpp9rv41b8Z6DqRyVQm1VMqVU4cBxQupNJ")
-    }
     
 //    func testDecodingProgramAccountFromParsedJSON() throws {
 //        let string = #"{"account":{"data":{"parsed":{"info":{"isNative":false,"mint":"2tQ2LU4Rw48fEGZpJMKxpDbY7UgFaK2rRYb8sn2WbbYY","owner":"6SazzPuqoXovicxirySZn6Rq25EvRJwSuoGCdKwdzEQK","state":"initialized","tokenAmount":{"amount":"1000","decimals":2,"uiAmount":10}},"type":"account"},"program":"spl-token","space":165},"executable":false,"lamports":2039280,"owner":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","rentEpoch":39},"pubkey":"Ho4gEVDQpUtpMAMB1yzMSY4QD1hXAmzokHKjFBE9cZAu"}"#
@@ -82,32 +63,5 @@ class DecodingTests: XCTestCase {
         
         
         XCTAssertEqual(true, accountInfo2?.isFrozen)
-    }
-    
-    func testDecodingSwapData() throws {
-        let string = #"["Af8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJtI5Id8QBhfDU9HbNjlM8tWzr5NFhnaIL7zaMrcQO6xAAMAAAAAAAAA6AMAAAAAAAABAAAAAAAAAOgDAAAAAAAAAAAAAAAAAAA=", "base64"]"#
-        
-        let publicKey = try SolanaSDK.PublicKey(string: "11111111111111111111111111111111")
-        
-        let info = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.TokenSwapInfo>.self, from: string.data(using: .utf8)!)
-        
-        XCTAssertTrue(info.value?.isInitialized == true)
-        XCTAssertEqual(255, info.value?.nonce)
-        XCTAssertEqual(publicKey, info.value?.tokenProgramId)
-        XCTAssertEqual(publicKey, info.value?.tokenAccountA)
-        XCTAssertEqual(publicKey, info.value?.tokenAccountB)
-        XCTAssertEqual(publicKey, info.value?.tokenPool)
-        XCTAssertEqual(publicKey, info.value?.mintA)
-        XCTAssertEqual(publicKey, info.value?.mintB)
-        XCTAssertEqual(publicKey, info.value?.feeAccount)
-        XCTAssertEqual(155, info.value?.curveType)
-        XCTAssertEqual(963515510526829640, info.value?.tradeFeeNumerator)
-        XCTAssertEqual(6254149569805567823, info.value?.tradeFeeDenominator)
-        XCTAssertEqual(13700189867744280270, info.value?.ownerTradeFeeNumerator)
-        XCTAssertEqual(50083033227356403, info.value?.ownerTradeFeeDenominator)
-        XCTAssertEqual(3, info.value?.ownerWithdrawFeeNumerator)
-        XCTAssertEqual(1000, info.value?.ownerWithdrawFeeDenominator)
-        XCTAssertEqual(1, info.value?.hostFeeNumerator)
-        XCTAssertEqual(1000, info.value?.hostFeeDenominator)
     }
 }
