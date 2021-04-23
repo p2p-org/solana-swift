@@ -32,7 +32,7 @@ extension SolanaSDK {
             var string = cluster + ".solana.com"
             if self == .mainnetBeta {
 //                string = "api." + string
-                string = "solana-api.projectserum.com"
+                string = "api.mainnet-beta.solana.com"
             }
             return "https://\(string)"
         }
