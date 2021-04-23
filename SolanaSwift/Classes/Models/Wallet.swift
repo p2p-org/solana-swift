@@ -57,7 +57,7 @@ extension SolanaSDK {
                     tags: [],
                     extensions: nil
                 ),
-                liquidity: true
+                liquidity: false
             )
         }
     }
