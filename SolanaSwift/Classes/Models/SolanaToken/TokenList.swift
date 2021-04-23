@@ -21,6 +21,10 @@ extension SolanaSDK {
         public var name: String
         public var description: String
     }
+    
+    public enum WrappingToken: String {
+        case sollet, wormhole
+    }
 
     public struct Token: Hashable, Decodable {
         public init(_tags: [String], chainId: Int, address: String, symbol: String, name: String, decimals: UInt8, logoURI: String?, tags: [TokenTag] = [], extensions: TokenExtensions?) {
@@ -64,6 +68,20 @@ extension SolanaSDK {
                 tags: [],
                 extensions: nil
             )
+        }
+        
+        public var wrappedBy: WrappingToken? {
+            if tags.contains(where: {$0.name == "wrapped-sollet"}) {
+                return .sollet
+            }
+            
+            if tags.contains(where: {$0.name == "wrapped"}) &&
+                tags.contains(where: {$0.name == "wormhole"})
+            {
+                return .wormhole
+            }
+            
+            return nil
         }
     }
 
