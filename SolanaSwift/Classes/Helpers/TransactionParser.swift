@@ -80,7 +80,8 @@ public extension SolanaSDK {
                 single = parseTransferTransaction(
                     instruction: instruction,
                     postTokenBalances: transactionInfo.meta?.postTokenBalances ?? [],
-                    myAccount: myAccount
+                    myAccount: myAccount,
+                    accountKeys: transactionInfo.transaction.message.accountKeys
                 )
                     .map {$0 as AnyHashable}
             }
@@ -152,7 +153,8 @@ public extension SolanaSDK {
         private func parseTransferTransaction(
             instruction: ParsedInstruction,
             postTokenBalances: [TokenBalance],
-            myAccount: String?
+            myAccount: String?,
+            accountKeys: [Account.Meta]
         ) -> Single<TransferTransaction>
         {
             // construct wallets
@@ -187,6 +189,21 @@ public extension SolanaSDK {
                     
                     source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
                     destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
+                    
+                    // if the wallet that is opening is SOL, then modify myAccount
+                    var myAccount = myAccount
+                    if sourcePubkey != myAccount && destinationPubkey != myAccount,
+                       accountKeys.count >= 4
+                    {
+                        // send
+                        if myAccount == accountKeys[0].publicKey.base58EncodedString {
+                            myAccount = sourcePubkey
+                        }
+                        
+                        if myAccount == accountKeys[3].publicKey.base58EncodedString {
+                            myAccount = destinationPubkey
+                        }
+                    }
                     
                     return .just(
                         TransferTransaction(
