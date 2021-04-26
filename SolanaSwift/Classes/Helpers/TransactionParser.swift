@@ -93,7 +93,7 @@ public extension SolanaSDK {
             
             return single
                 .map {
-                    AnyTransaction(signature: nil, value: $0, slot: nil, blockTime: nil, fee: transactionInfo.meta?.fee)
+                    AnyTransaction(signature: nil, value: $0, slot: nil, blockTime: nil, fee: transactionInfo.meta?.fee, blockhash: transactionInfo.transaction.message.recentBlockhash)
                 }
         }
         

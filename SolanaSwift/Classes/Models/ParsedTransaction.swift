@@ -9,13 +9,14 @@ import Foundation
 
 public extension SolanaSDK {
     struct AnyTransaction: Hashable {
-        public init(signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: UInt64?) {
+        public init(signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: UInt64?, blockhash: String?) {
             self.signature = signature
             self.value = value
             self.amountInFiat = amountInFiat
             self.slot = slot
             self.blockTime = blockTime
             self.fee = fee
+            self.blockhash = blockhash
         }
         
         public let signature: String?
@@ -24,6 +25,7 @@ public extension SolanaSDK {
         public let slot: UInt64?
         public let blockTime: Date?
         public let fee: UInt64?
+        public let blockhash: String?
         
         public var amount: Double {
             switch value {
