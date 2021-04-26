@@ -11,13 +11,16 @@ import XCTest
 @testable import SolanaSwift
 
 class DecodingConfirmedTransactionTests: XCTestCase {
+    let endpoint = SolanaSDK.APIEndPoint(
+        url: "https://api.mainnet-beta.solana.com",
+        network: .mainnetBeta
+    )
     var solanaSDK: SolanaSDK!
-    var network = SolanaSDK.Network.mainnetBeta
     var parser: SolanaSDK.TransactionParser!
     
     override func setUpWithError() throws {
-        solanaSDK = SolanaSDK(network: network, accountStorage: InMemoryAccountStorage())
-        let account = try SolanaSDK.Account(phrase: network.testAccount.components(separatedBy: " "), network: network)
+        solanaSDK = SolanaSDK(endpoint: endpoint, accountStorage: InMemoryAccountStorage())
+        let account = try SolanaSDK.Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network)
         try solanaSDK.accountStorage.save(account)
         
         parser = SolanaSDK.TransactionParser(solanaSDK: solanaSDK)

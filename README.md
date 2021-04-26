@@ -73,7 +73,7 @@ struct InMemoryAccountStorage: SolanaSDKAccountStorage {
 ```
 * Creating an instance of `SolanaSDK`:
 ```swift
-let solanaSDK = SolanaSDK(endpoint: <YOUR_API_ENDPOINT>, accountStorage: KeychainAccountStorage.shared)
+let solanaSDK = SolanaSDK(endpoint: <YOUR_API_ENDPOINT>, accountStorage: KeychainAccountStorage.shared) // endpoint example: https://api.mainnet-beta.solana.com
 ```
 * Creating an account:
 ```swift

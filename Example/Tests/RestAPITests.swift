@@ -9,13 +9,18 @@ import XCTest
 import SolanaSwift
 
 class RestAPITests: XCTestCase {
-    var network: SolanaSDK.Network {.mainnetBeta}
+    var endpoint: SolanaSDK.APIEndPoint {
+        .init(
+            url: "https://api.mainnet-beta.solana.com",
+            network: .mainnetBeta
+        )
+    }
     var solanaSDK: SolanaSDK!
     var account: SolanaSDK.Account {solanaSDK.accountStorage.account!}
 
     override func setUpWithError() throws {
-        solanaSDK = SolanaSDK(network: network, accountStorage: InMemoryAccountStorage())
-        let account = try SolanaSDK.Account(phrase: network.testAccount.components(separatedBy: " "), network: network)
+        solanaSDK = SolanaSDK(endpoint: endpoint, accountStorage: InMemoryAccountStorage())
+        let account = try SolanaSDK.Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network)
         try solanaSDK.accountStorage.save(account)
     }
     

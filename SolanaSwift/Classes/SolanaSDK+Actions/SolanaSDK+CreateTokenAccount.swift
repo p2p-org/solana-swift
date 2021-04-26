@@ -28,7 +28,7 @@ extension SolanaSDK {
                 let mintAddress = try PublicKey(string: mintAddress)
                 
                 // create new account for token
-                newAccount = try Account(network: self.network)
+                newAccount = try Account(network: self.endpoint.network)
                 
                 // instructions
                 let createAccountInstruction = SystemProgram.createAccountInstruction(

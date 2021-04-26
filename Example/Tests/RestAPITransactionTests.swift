@@ -11,9 +11,6 @@ import XCTest
 import SolanaSwift
 
 class RestAPITransactionTests: RestAPITests {
-    override var network: SolanaSDK.Network {.mainnetBeta}
-    
-    
     // MARK: - Create and close
     func testCreateTokenAccount() throws {
         // USDC

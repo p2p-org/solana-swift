@@ -238,7 +238,7 @@ public extension SolanaSDK {
         ) -> Int? {
             instructions.firstIndex(
                 where: {
-                    $0.programId == solanaSDK.network.swapProgramId.base58EncodedString /*swap v2*/ ||
+                    $0.programId == solanaSDK.endpoint.network.swapProgramId.base58EncodedString /*swap v2*/ ||
                         $0.programId == "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL" /*main old swap*/ ||
                         $0.programId == "DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1" /*main ocra*/
                 })

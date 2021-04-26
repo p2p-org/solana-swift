@@ -11,7 +11,7 @@ import RxSwift
 extension SolanaSDK {
     public func getSwapPools() -> Single<[Pool]> {
         if let pools = _swapPool {return .just(pools)}
-        return getPools(swapProgramId: network.swapProgramId.base58EncodedString)
+        return getPools(swapProgramId: endpoint.network.swapProgramId.base58EncodedString)
             .map {
                 $0.filter {
                     $0.tokenBBalance?.amountInUInt64 != 0 &&

@@ -78,7 +78,7 @@ extension SolanaSDK {
                 var destination = destination
                 
                 // add userTransferAuthority
-                let userTransferAuthority = try Account(network: self.network)
+                let userTransferAuthority = try Account(network: self.endpoint.network)
                 
                 // form signers
                 var signers = [owner, userTransferAuthority]
@@ -152,7 +152,7 @@ extension SolanaSDK {
                         poolMint: pool.swapData.tokenPool,
                         feeAccount: pool.swapData.feeAccount,
                         hostFeeAccount: nil,
-                        swapProgramId: self.network.swapProgramId,
+                        swapProgramId: self.endpoint.network.swapProgramId,
                         tokenProgramId: .tokenProgramId,
                         amountIn: amount,
                         minimumAmountOut: minAmountIn
@@ -190,7 +190,7 @@ extension SolanaSDK {
         signers: inout [Account],
         minimumBalanceForRentExemption: UInt64
     ) throws -> Account {
-        let newAccount = try Account(network: network)
+        let newAccount = try Account(network: endpoint.network)
         
         instructions.append(
             SystemProgram.createAccountInstruction(
@@ -229,7 +229,7 @@ extension SolanaSDK {
         signers: inout [Account],
         minimumBalanceForRentExemption: UInt64
     ) throws -> Account {
-        let newAccount = try Account(network: network)
+        let newAccount = try Account(network: endpoint.network)
         
         instructions.append(
             SystemProgram.createAccountInstruction(

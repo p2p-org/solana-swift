@@ -12,8 +12,6 @@ import RxBlocking
 import SolanaSwift
 
 class RestAPITransactionHistoryTests: RestAPITests {
-    override var network: SolanaSDK.Network {.mainnetBeta}
-    
     func testGetConfirmedSignaturesForAddress() throws {
         let result = try solanaSDK.getConfirmedSignaturesForAddress2(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", configs: SolanaSDK.RequestConfiguration(limit: 10)).toBlocking().first()
         XCTAssertEqual(result?.count, 10)

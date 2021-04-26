@@ -18,20 +18,19 @@ public protocol SolanaSDKAccountStorage {
 
 public class SolanaSDK {
     // MARK: - Properties
-    public let network: Network
     public let accountStorage: SolanaSDKAccountStorage
-    var endpoint: String {network.endpoint}
+    var endpoint: APIEndPoint
     var _swapPool: [Pool]?
     public private(set) var supportedTokens = [Token]()
     
     // MARK: - Initializer
-    public init(network: Network, accountStorage: SolanaSDKAccountStorage) {
-        self.network = network
+    public init(endpoint: APIEndPoint, accountStorage: SolanaSDKAccountStorage) {
+        self.endpoint = endpoint
         self.accountStorage = accountStorage
         
         // get supported tokens
         let parser = TokensListParser()
-        supportedTokens = (try? parser.parse(network: network.cluster)) ?? []
+        supportedTokens = (try? parser.parse(network: endpoint.network.cluster)) ?? []
     }
      
     // MARK: - Helper
@@ -41,7 +40,7 @@ public class SolanaSDK {
         bcMethod: String = #function,
         parameters: [Encodable?] = []
     ) -> Single<T>{
-        guard let url = URL(string: endpoint + path) else {
+        guard let url = URL(string: endpoint.url + path) else {
             return .error(Error.invalidRequest(reason: "Invalid URL"))
         }
         let params = parameters.compactMap {$0}

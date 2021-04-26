@@ -8,7 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
-    public enum Network: String, CaseIterable {
+    public enum Network: String, CaseIterable, Codable {
         case mainnetBeta = "mainnet-beta"
         case devnet = "devnet"
         case testnet = "testnet"
@@ -25,16 +25,5 @@ extension SolanaSDK {
         }
         
         public var cluster: String {rawValue}
-        
-        public var endpoint: String {
-            // FIXME: - Remove later
-            
-            var string = cluster + ".solana.com"
-            if self == .mainnetBeta {
-//                string = "api." + string
-                string = "api.mainnet-beta.solana.com"
-            }
-            return "https://\(string)"
-        }
     }
 }

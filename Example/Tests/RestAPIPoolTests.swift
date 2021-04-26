@@ -10,7 +10,6 @@ import XCTest
 import SolanaSwift
 
 class RestAPIPoolTests: RestAPITests {
-    override var network: SolanaSDK.Network {.mainnetBeta}
     func testGetPools() throws {
         let pools = try solanaSDK.getSwapPools().toBlocking().first()
         XCTAssertNotNil(pools)

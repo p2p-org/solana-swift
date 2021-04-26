@@ -188,7 +188,7 @@ extension SolanaSDK {
                 let sourceAddress = try PublicKey(string: sourceAddress)
                 
                 // create new account for token
-                newAccount = try Account(network: self.network)
+                newAccount = try Account(network: self.endpoint.network)
                 
                 // instructions
                 let assertOwnerInstruction = SystemProgram.assertOwnerInstruction(destinationAccount: destinationAccount)
