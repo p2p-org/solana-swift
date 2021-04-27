@@ -9,8 +9,11 @@ import Foundation
 import TweetNacl
 
 extension SolanaSDK.PublicKey {
+    // MARK: - Constants
     private static var maxSeedLength = 32
+    private static let gf1 = NaclLowLevel.gf([1])
     
+    // MARK: - Interface
     public static func findProgramAddress(
         seeds: [Data],
         programId: SolanaSDK.PublicKey = .splAssociatedTokenAccountProgramId
@@ -30,6 +33,7 @@ extension SolanaSDK.PublicKey {
         throw SolanaSDK.Error.notFound
     }
     
+    // MARK: - Helpers
     private static func createProgramAddress(
         seeds: [Data],
         programId: SolanaSDK.PublicKey
@@ -52,6 +56,16 @@ extension SolanaSDK.PublicKey {
     }
     
     private static func isOnCurve() {
+        var r = [[Float64]](repeating: NaclLowLevel.gf(), count: 4)
         
+        var t = NaclLowLevel.gf(),
+            chk = NaclLowLevel.gf(),
+            num = NaclLowLevel.gf(),
+            den = NaclLowLevel.gf(),
+            den2 = NaclLowLevel.gf(),
+            den4 = NaclLowLevel.gf(),
+            den6 = NaclLowLevel.gf()
+        
+        NaclLowLevel.set25519(r: &r[2], a: gf1)
     }
 }
