@@ -53,9 +53,14 @@ extension SolanaSDK.PublicKey {
         let hash = data.sha256()
         let publicKeyBytes = Bignum(number: hash.hexString, withBase: 16).data
         
+        // check it
+        if isOnCurve(publicKeyBytes: publicKeyBytes) {
+            throw SolanaSDK.Error.other("Invalid seeds, address must fall off the curve")
+        }
+        return try SolanaSDK.PublicKey(data: publicKeyBytes)
     }
     
-    private static func isOnCurve() {
+    private static func isOnCurve(publicKeyBytes: Data) -> Bool {
         var r = [[Float64]](repeating: NaclLowLevel.gf(), count: 4)
         
         var t = NaclLowLevel.gf(),
