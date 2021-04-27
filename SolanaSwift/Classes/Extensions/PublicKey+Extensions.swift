@@ -14,4 +14,5 @@ public extension SolanaSDK.PublicKey {
     static let wrappedSOLMint = try! SolanaSDK.PublicKey(string: "So11111111111111111111111111111111111111112")
     static let ownerValidationProgramId = try! SolanaSDK.PublicKey(string: "4MNPdKu9wFMvEeZBMt3Eipfs5ovVWTJb31pEXDJAAxX5")
     static let swapHostFeeAddress = try! SolanaSDK.PublicKey(string: "AHLwq66Cg3CuDJTFtwjPfwjJhifiv6rFwApQNKgX57Yg")
+    static let splAssociatedTokenAccountProgramId = try! SolanaSDK.PublicKey(string: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
 }
