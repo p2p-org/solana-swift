@@ -45,4 +45,18 @@ extension SolanaSDK {
                 }
             }
     }
+    
+    public static func findAssociatedTokenAddress(
+        walletAddress: PublicKey,
+        tokenMintAddress: PublicKey
+    ) throws -> PublicKey {
+        try AssociatedTokenProgram.findProgramAddress(
+            seeds: [
+                walletAddress.data,
+                PublicKey.tokenProgramId.data,
+                tokenMintAddress.data
+            ],
+            programId: .splAssociatedTokenAccountProgramId
+        ).0
+    }
 }

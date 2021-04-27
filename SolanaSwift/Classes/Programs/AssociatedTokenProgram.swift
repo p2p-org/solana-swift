@@ -12,7 +12,7 @@ import TweetNacl
 
 private extension Int {
     func toBool() -> Bool {
-        self > 0
+        self != 0
     }
 }
 
@@ -25,7 +25,7 @@ extension SolanaSDK {
         // MARK: - Interface
         public static func findProgramAddress(
             seeds: [Data],
-            programId: SolanaSDK.PublicKey = .splAssociatedTokenAccountProgramId
+            programId: SolanaSDK.PublicKey
         ) throws -> (SolanaSDK.PublicKey, UInt8) {
             for nonce in stride(from: UInt8(255), to: 0, by: -1) {
                 let seedsWithNonce = seeds + [Data([nonce])]
