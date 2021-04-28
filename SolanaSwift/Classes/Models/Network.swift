@@ -16,11 +16,11 @@ extension SolanaSDK {
         public var swapProgramId: PublicKey {
             switch self {
             case .mainnetBeta:
-                return try! SolanaSDK.PublicKey(string: "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8")
+                return try! SolanaSDK.PublicKey(string: "DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1")
             case .devnet:
-                return try! SolanaSDK.PublicKey(string: "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8")
+                return try! SolanaSDK.PublicKey(string: "DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1")
             case .testnet:
-                return try! SolanaSDK.PublicKey(string: "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8")
+                return try! SolanaSDK.PublicKey(string: "DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1")
             }
         }
         
