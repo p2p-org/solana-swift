@@ -46,7 +46,7 @@ extension SolanaSDK {
             }
     }
     
-    public static func findAssociatedTokenAddress(
+    static func findAssociatedTokenAddress(
         walletAddress: PublicKey,
         tokenMintAddress: PublicKey
     ) throws -> PublicKey {

@@ -23,7 +23,7 @@ extension SolanaSDK {
         private static let gf1 = NaclLowLevel.gf([1])
         
         // MARK: - Interface
-        public static func findProgramAddress(
+        static func findProgramAddress(
             seeds: [Data],
             programId: SolanaSDK.PublicKey
         ) throws -> (SolanaSDK.PublicKey, UInt8) {

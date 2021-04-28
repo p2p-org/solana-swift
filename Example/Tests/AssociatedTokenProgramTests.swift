@@ -8,7 +8,7 @@
 
 import Foundation
 import XCTest
-import SolanaSwift
+@testable import SolanaSwift
 
 class AssociatedTokenProgramTests: XCTestCase {
     func testFindAssociatedTokenAddress() throws {
@@ -17,5 +17,6 @@ class AssociatedTokenProgramTests: XCTestCase {
             tokenMintAddress: try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
         )
         
+        XCTAssertEqual(associatedTokenAddress.base58EncodedString, "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3")
     }
 }
