@@ -131,16 +131,30 @@ extension SolanaSDK {
                     return destinationAddress
                 }
                 
-                // detect if destination address is a SOL address or potential associated token
-                let owner = try PublicKey(string: destinationAddress)
-                let tokenMint = try PublicKey(string: mintAddress)
-                return try PublicKey.associatedTokenAddress(
-                    walletAddress: owner,
-                    tokenMintAddress: tokenMint
-                )
-                    .base58EncodedString
+                // detect if destination address is a SOL address
+                if info.owner == PublicKey.programId.base58EncodedString {
+                    let owner = try PublicKey(string: destinationAddress)
+                    let tokenMint = try PublicKey(string: mintAddress)
+                    return try PublicKey.associatedTokenAddress(
+                        walletAddress: owner,
+                        tokenMintAddress: tokenMint
+                    )
+                        .base58EncodedString
+                }
+                
+                // token is of another type
+                throw Error.invalidRequest(reason: "Wallet address is not valid")
             }
-            // destination maybe already an associated token account
-            .catchAndReturn(destinationAddress)
+            .catch {error in
+                // destination maybe already an associated token account
+                if let error = error as? Error,
+                   error == SolanaSDK.Error.invalidResponse(ResponseError(code: nil, message: "Invalid account info", data: nil))
+                {
+                    return .just(destinationAddress)
+                }
+                
+                // other error
+                throw error
+            }
     }
 }
