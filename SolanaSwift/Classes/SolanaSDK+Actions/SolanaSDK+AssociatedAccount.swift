@@ -10,20 +10,20 @@ import RxSwift
 
 extension SolanaSDK {
     public func createAssociatedTokenAccount(
-        account: Account? = nil,
+        for owner: PublicKey,
         tokenMint: PublicKey,
+        payer: Account? = nil,
         isSimulation: Bool = false
     ) -> Single<TransactionID> {
         // get account
-        guard let account = account ?? accountStorage.account else {
+        guard let payer = payer ?? accountStorage.account else {
             return .error(Error.unauthorized)
         }
-        
         
         // generate address
         do {
             let associatedAddress = try PublicKey.associatedTokenAddress(
-                walletAddress: account.publicKey,
+                walletAddress: owner,
                 tokenMintAddress: tokenMint
             )
             
@@ -34,14 +34,14 @@ extension SolanaSDK {
                     programId: .tokenProgramId,
                     mint: tokenMint,
                     associatedAccount: associatedAddress,
-                    owner: account.publicKey,
-                    payer: account.publicKey
+                    owner: owner,
+                    payer: payer.publicKey
                 )
             
             // send transaction
             return serializeAndSend(
                 instructions: [instruction],
-                signers: [account],
+                signers: [payer],
                 isSimulation: isSimulation
             )
             
