@@ -140,5 +140,7 @@ extension SolanaSDK {
                 )
                     .base58EncodedString
             }
+            // destination maybe already an associated token account
+            .catchAndReturn(destinationAddress)
     }
 }
