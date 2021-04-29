@@ -80,7 +80,11 @@ class RestAPITransactionTests: RestAPITests {
     func testCreateAssociatedAccount() throws {
         let tokenMintAddress = try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
         
+        // create associated token for other account
+        let owner = try SolanaSDK.PublicKey(string: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        
         _ = try solanaSDK.createAssociatedTokenAccount(
+            for: owner,
             tokenMint: tokenMintAddress,
             isSimulation: true
         ).toBlocking().first()
