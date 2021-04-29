@@ -77,17 +77,16 @@ class RestAPITransactionTests: RestAPITests {
         ).toBlocking().first()
     }
     
-    func testCreateAssociatedAccount() throws {
+    func testGetOrCreateAssociatedAccount() throws {
+        let walletAddress = try SolanaSDK.PublicKey(string: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
         let tokenMintAddress = try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
         
-        // create associated token for other account
-        let owner = try SolanaSDK.PublicKey(string: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
-        
-        _ = try solanaSDK.createAssociatedTokenAccount(
-            for: owner,
-            tokenMint: tokenMintAddress,
-            isSimulation: true
+        let address = try solanaSDK.getOrCreateAssociatedTokenAccount(
+            owner: walletAddress,
+            tokenMint: tokenMintAddress
         ).toBlocking().first()
+        
+        XCTAssertEqual(address?.base58EncodedString, "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3")
     }
 }
 
