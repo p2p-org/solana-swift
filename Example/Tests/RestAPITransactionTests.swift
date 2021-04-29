@@ -41,7 +41,7 @@ class RestAPITransactionTests: RestAPITests {
         _ = try solanaSDK.sendSOL(
             to: toPublicKey,
             amount: balance!/10,
-            isSimulation: false
+            isSimulation: true
         ).toBlocking().first()
     }
     
@@ -73,6 +73,15 @@ class RestAPITransactionTests: RestAPITests {
             destinationMint: destinationMint,
             slippage: 0.5,
             amount: 0.001.toLamport(decimals: 9),
+            isSimulation: true
+        ).toBlocking().first()
+    }
+    
+    func testCreateAssociatedAccount() throws {
+        let tokenMintAddress = try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+        
+        _ = try solanaSDK.createAssociatedTokenAccount(
+            tokenMint: tokenMintAddress,
             isSimulation: true
         ).toBlocking().first()
     }
