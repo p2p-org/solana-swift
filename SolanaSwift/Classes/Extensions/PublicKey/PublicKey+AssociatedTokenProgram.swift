@@ -20,7 +20,7 @@ private extension Int {
 }
 
 extension SolanaSDK.PublicKey {
-    static func associatedTokenAddress(
+    public static func associatedTokenAddress(
         walletAddress: SolanaSDK.PublicKey,
         tokenMintAddress: SolanaSDK.PublicKey
     ) throws -> SolanaSDK.PublicKey {
