@@ -25,10 +25,12 @@ extension SolanaSDK {
             account: associatedAddress.base58EncodedString,
             decodedTo: AccountInfo.self
         )
+            .map {$0 as BufferInfo<AccountInfo>?}
+            .catchAndReturn(nil)
             .flatMap {info in
                 // if associated token account has been created
-                if info.owner == PublicKey.tokenProgramId.base58EncodedString &&
-                    info.data.value != nil
+                if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
+                    info?.data.value != nil
                 {
                     return .just(associatedAddress)
                 }

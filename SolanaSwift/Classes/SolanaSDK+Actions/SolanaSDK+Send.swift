@@ -123,24 +123,22 @@ extension SolanaSDK {
             account: destinationAddress,
             decodedTo: SolanaSDK.AccountInfo.self
         )
-            .flatMap {info -> Single<String> in
+            .map {info in
                 let toTokenMint = info.data.value?.mint.base58EncodedString
                 
                 // detect if destination address is already a SPLToken address
                 if mintAddress == toTokenMint {
-                    return .just(destinationAddress)
+                    return destinationAddress
                 }
                 
-                // detect if destination address is a SOL address
-                if info.owner == PublicKey.programId.base58EncodedString {
-                    let owner = try PublicKey(string: destinationAddress)
-                    let tokenMint = try PublicKey(string: mintAddress)
-                    return self.getOrCreateAssociatedTokenAccount(owner: owner, tokenMint: tokenMint)
-                        .map {$0.base58EncodedString}
-                }
-                
-                // token is of another type
-                throw Error.invalidRequest(reason: "Wallet address is not valid")
+                // detect if destination address is a SOL address or potential associated token
+                let owner = try PublicKey(string: destinationAddress)
+                let tokenMint = try PublicKey(string: mintAddress)
+                return try PublicKey.associatedTokenAddress(
+                    walletAddress: owner,
+                    tokenMintAddress: tokenMint
+                )
+                    .base58EncodedString
             }
     }
 }
