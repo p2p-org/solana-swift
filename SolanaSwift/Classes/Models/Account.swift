@@ -28,7 +28,7 @@ public extension SolanaSDK {
             
             let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
             
-            guard let seed = try keychain.derivedKeychain(at: "m/501'/0'/0/0").privateKey else {
+            guard let seed = try keychain.derivedKeychain(at: "m/44'/501'/0/0").privateKey else {
                 throw Error.other("Could not derivate private key")
             }
             
