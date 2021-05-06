@@ -19,7 +19,8 @@ public extension SolanaSDK {
         ///   - phrase: secret phrase for an account, leave it empty for new account
         ///   - network: network in which account should be created
         /// - Throws: Error if the derivation is not successful
-//        public init(phrase: [String] = [], network: Network) throws {
+        public init(phrase: [String] = [], network: Network) throws {
+            fatalError()
 //            let mnemonic: Mnemonic
 //            var phrase = phrase.filter {!$0.isEmpty}
 //            if !phrase.isEmpty {
@@ -30,9 +31,9 @@ public extension SolanaSDK {
 //                phrase = mnemonic.phrase
 //            }
 //            self.phrase = phrase
-//            
+//
 //            let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
-//            
+//
 //            let derivationPath: DerivationPath
 //            if phrase.count == 12 {
 //                // deprecated derivation path
@@ -41,24 +42,25 @@ public extension SolanaSDK {
 //                // current derivation path
 //                derivationPath = .bip44
 //            }
-//            
+//
 //            guard let seed = try keychain.derivedKeychain(at: derivationPath.rawValue).privateKey else {
 //                throw Error.other("Could not derivate private key")
 //            }
-//            
+//
 //            let keys = try NaclSign.KeyPair.keyPair(fromSeed: seed)
-//            
+//
 //            self.publicKey = try PublicKey(data: keys.publicKey)
 //            self.secretKey = keys.secretKey
-//        }
-//        
-//        public init(secretKey: Data) throws {
+        }
+        
+        public init(secretKey: Data) throws {
+            fatalError()
 //            let keys = try NaclSign.KeyPair.keyPair(fromSecretKey: secretKey)
 //            self.publicKey = try PublicKey(data: keys.publicKey)
 //            self.secretKey = keys.secretKey
 //            let phrase = try Mnemonic.toMnemonic(secretKey.bytes)
 //            self.phrase = phrase
-//        }
+        }
     }
 }
 

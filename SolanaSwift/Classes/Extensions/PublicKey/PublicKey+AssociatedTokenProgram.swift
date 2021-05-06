@@ -71,7 +71,7 @@ extension SolanaSDK.PublicKey {
         
         // hash it
         let hash = data.sha256()
-        let publicKeyBytes = Bignum(number: hash.hexString, withBase: 16).data
+        let publicKeyBytes = BigNumber(hash).data
         
         // check it
         if isOnCurve(publicKeyBytes: publicKeyBytes).toBool() {

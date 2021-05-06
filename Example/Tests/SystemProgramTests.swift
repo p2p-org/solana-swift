@@ -25,6 +25,6 @@ class SystemProgramTests: XCTestCase {
     func testCreateAccountInstruction() throws {
         let instruction = SolanaSDK.SystemProgram.createAccountInstruction(from: SolanaSDK.PublicKey.programId, toNewPubkey: SolanaSDK.PublicKey.programId, lamports: 2039280, space: 165, programPubkey: SolanaSDK.PublicKey.programId)
         
-        XCTAssertEqual("11119os1e9qSs2u7TsThXqkBSRUo9x7kpbdqtNNbTeaxHGPdWbvoHsks9hpp6mb2ed1NeB", Base58.encode(instruction.data))
+        XCTAssertEqual("11119os1e9qSs2u7TsThXqkBSRUo9x7kpbdqtNNbTeaxHGPdWbvoHsks9hpp6mb2ed1NeB", Base58.encode(Data(instruction.data)))
     }
 }

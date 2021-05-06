@@ -30,7 +30,7 @@ class TokenSwapProgramTests: XCTestCase {
             minimumAmountOut: 0
         )
         
-        XCTAssertEqual(Base58.decode("tSBHVn49GSCW4DNB1EYv9M"), instruction.data)
+        XCTAssertEqual(Base58.decode("tSBHVn49GSCW4DNB1EYv9M")?.bytes, instruction.data)
     }
     
     func testDepositInstruction() throws {
@@ -50,7 +50,7 @@ class TokenSwapProgramTests: XCTestCase {
             maximumTokenB: 1038
         )
         
-        XCTAssertEqual(Base58.decode("22WQQtPPUknk68tx2dUGRL1Q4Vj2mkg6Hd"), instruction.data)
+        XCTAssertEqual(Base58.decode("22WQQtPPUknk68tx2dUGRL1Q4Vj2mkg6Hd")?.bytes, instruction.data)
     }
     
     func testWithdrawInstruction() throws {
@@ -71,6 +71,6 @@ class TokenSwapProgramTests: XCTestCase {
             minimumTokenB: 979
         )
         
-        XCTAssertEqual(Base58.decode("2aJyv2ixHWcYWoAKJkYMzSPwTrGUfnSR9R"), instruction.data)
+        XCTAssertEqual(Base58.decode("2aJyv2ixHWcYWoAKJkYMzSPwTrGUfnSR9R")?.bytes, instruction.data)
     }
 }

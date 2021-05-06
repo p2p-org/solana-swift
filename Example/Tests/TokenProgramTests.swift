@@ -19,26 +19,26 @@ class TokenProgramTests: XCTestCase {
     
     func testInitializeAccountInstruction() throws {
         let instruction = SolanaSDK.TokenProgram.initializeAccountInstruction(account: publicKey, mint: publicKey, owner: publicKey)
-        XCTAssertEqual("2", Base58.encode(instruction.data))
+        XCTAssertEqual("2", Base58.encode(Data(instruction.data)))
     }
     
     func testTransferInstruction() throws {
         let instruction = SolanaSDK.TokenProgram.transferInstruction(tokenProgramId: publicKey, source: publicKey, destination: publicKey, owner: publicKey, amount: 100)
-        XCTAssertEqual("3WBgs5fm8oDy", Base58.encode(instruction.data))
+        XCTAssertEqual("3WBgs5fm8oDy", Base58.encode(Data(instruction.data)))
     }
     
     func testApproveInstruction() throws {
         let instruction = SolanaSDK.TokenProgram.approveInstruction(tokenProgramId: publicKey, account: publicKey, delegate: publicKey, owner: publicKey, amount: 1000)
-        XCTAssertEqual("4d5tSvUuzUVM", Base58.encode(instruction.data))
+        XCTAssertEqual("4d5tSvUuzUVM", Base58.encode(Data(instruction.data)))
     }
     
     func testMintToInstruction() throws {
         let instruction = SolanaSDK.TokenProgram.mintToInstruction(tokenProgramId: publicKey, mint: publicKey, destination: publicKey, authority: publicKey, amount: 1000000000)
-        XCTAssertEqual("6AsKhot84V8s", Base58.encode(instruction.data))
+        XCTAssertEqual("6AsKhot84V8s", Base58.encode(Data(instruction.data)))
     }
     
     func testCloseAccountInstruction() throws {
         let instruction = SolanaSDK.TokenProgram.closeAccountInstruction(tokenProgramId: publicKey, account: publicKey, destination: publicKey, owner: publicKey)
-        XCTAssertEqual("A", Base58.encode(instruction.data))
+        XCTAssertEqual("A", Base58.encode(Data(instruction.data)))
     }
 }

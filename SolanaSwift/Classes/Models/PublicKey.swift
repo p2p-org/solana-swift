@@ -24,11 +24,12 @@ public extension SolanaSDK {
         }
         
         public init(string: String?) throws {
-            guard let string = string, string.utf8.count >= SolanaSDK.PublicKey.LENGTH
+            guard let string = string, string.utf8.count >= SolanaSDK.PublicKey.LENGTH,
+                  let bytes = Base58.decode(string)?.bytes
             else {
                 throw Error.other("Invalid public key input")
             }
-            let bytes = Base58.decode(string)
+            
             self.bytes = bytes
         }
         
@@ -47,7 +48,7 @@ public extension SolanaSDK {
         }
         
         public var base58EncodedString: String {
-            Base58.encode(bytes)
+            Base58.encode(data)
         }
         
         public var data: Data {

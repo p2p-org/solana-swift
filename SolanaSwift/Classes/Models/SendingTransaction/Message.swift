@@ -26,7 +26,7 @@ extension SolanaSDK.Transaction {
             let accountKeys = encodeAccountKeys()
             
             // RecentBlockHash
-            let recentBlockhash = encodeRecentBlockhash()
+            let recentBlockhash = try encodeRecentBlockhash()
             
             // Compiled instruction
             let compiledInstruction = try encodeInstructions()
@@ -92,8 +92,10 @@ extension SolanaSDK.Transaction {
             return data
         }
         
-        private func encodeRecentBlockhash() -> Data {
-            Data(Base58.decode(recentBlockhash))
+        private func encodeRecentBlockhash() throws -> Data {
+            guard let data = Base58.decode(recentBlockhash)
+            else {throw SolanaSDK.Error.other("Blockhash not found")}
+            return data
         }
         
         private func encodeInstructions() throws -> Data {

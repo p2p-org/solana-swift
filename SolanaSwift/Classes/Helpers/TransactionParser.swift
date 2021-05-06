@@ -255,7 +255,7 @@ public extension SolanaSDK {
             let buf = Base58.decode(data)
             
             // get instruction index
-            guard let instructionIndex = buf.first,
+            guard let instructionIndex = buf?.bytes.first,
                   instructionIndex == 1,
                   let swapInnerInstruction = innerInstructions?.first(where: {$0.index == index})
             else { return .just(SwapTransaction.empty) }
