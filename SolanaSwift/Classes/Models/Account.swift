@@ -19,8 +19,50 @@ public extension SolanaSDK {
         ///   - phrase: secret phrase for an account, leave it empty for new account
         ///   - network: network in which account should be created
         /// - Throws: Error if the derivation is not successful
-        public init(phrase: [String] = [], network: Network) throws {
-            fatalError()
+        public init(phrase: [String] = [], passphrase: String = "", network: Network) throws {
+            // get phrases
+            var phrase = phrase
+            if phrase.isEmpty {
+                phrase = Mnemonic.create(strength: .hight)
+                    .components(separatedBy: " ")
+            }
+            
+            let seed = Mnemonic.createSeed(
+                mnemonic: phrase.joined(separator: " "),
+                withPassphrase: passphrase
+            )
+            
+            // derivation
+            let privateKey: HDPrivateKey
+            if phrase.count == 12 {
+                // deprecated derivation
+                privateKey = HDPrivateKey(
+                    seed: seed,
+                    coin: .bitcoin
+                )
+                    .derived(at: .hardened(501))
+                    .derived(at: .hardened(0))
+                    .derived(at: .notHardened(0))
+                    .derived(at: .notHardened(0))
+                
+            } else {
+                // current derivation
+                privateKey = HDPrivateKey(
+                    seed: seed,
+                    coin: .bitcoin
+                )
+                    .derived(at: .hardened(44))
+                    .derived(at: .hardened(501))
+                    .derived(at: .hardened(0))
+                    .derived(at: .hardened(0))
+            }
+            
+            let keys = try NaclSign.KeyPair.keyPair(fromSeed: privateKey.raw)
+            self.publicKey = try PublicKey(data: keys.publicKey)
+            self.secretKey = keys.secretKey
+            self.phrase = phrase
+            
+//            fatalError()
 //            let mnemonic: Mnemonic
 //            var phrase = phrase.filter {!$0.isEmpty}
 //            if !phrase.isEmpty {
