@@ -21,14 +21,24 @@ public extension SolanaSDK {
             if !phrase.isEmpty {
                 mnemonic = try Mnemonic(phrase: phrase)
             } else {
-                mnemonic = Mnemonic()
+                // change from 12-words to 24-words (128 to 256)
+                mnemonic = Mnemonic(strength: 256)
                 phrase = mnemonic.phrase
             }
             self.phrase = phrase
             
             let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
             
-            guard let seed = try keychain.derivedKeychain(at: "m/44'/501'/0/0").privateKey else {
+            let derivationPath: DerivationPath
+            if phrase.count == 12 {
+                // deprecated derivation path
+                derivationPath = .deprecated
+            } else {
+                // current derivation path
+                derivationPath = .bip44
+            }
+            
+            guard let seed = try keychain.derivedKeychain(at: derivationPath.rawValue).privateKey else {
                 throw Error.other("Could not derivate private key")
             }
             
