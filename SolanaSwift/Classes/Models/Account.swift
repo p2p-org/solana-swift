@@ -15,6 +15,11 @@ public extension SolanaSDK {
         public let publicKey: PublicKey
         public let secretKey: Data
         
+        /// Create account with seed phrase
+        /// - Parameters:
+        ///   - phrase: secret phrase for an account, leave it empty for new account
+        ///   - network: network in which account should be created
+        /// - Throws: Error if the derivation is not successful
         public init(phrase: [String] = [], network: Network) throws {
             let mnemonic: Mnemonic
             var phrase = phrase.filter {!$0.isEmpty}
@@ -22,7 +27,7 @@ public extension SolanaSDK {
                 mnemonic = try Mnemonic(phrase: phrase)
             } else {
                 // change from 12-words to 24-words (128 to 256)
-                mnemonic = Mnemonic(strength: 256)
+                mnemonic = Mnemonic()
                 phrase = mnemonic.phrase
             }
             self.phrase = phrase

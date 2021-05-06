@@ -20,7 +20,7 @@ public class Mnemonic {
     public let phrase: [String]
     let passphrase: String
     
-    public init(strength: Int = 128, wordlist: [String] = Wordlists.english) {
+    public init(strength: Int = 256, wordlist: [String] = Wordlists.english) {
         precondition(strength % 32 == 0, "Invalid entropy")
         
         // 1.Random Bytes
