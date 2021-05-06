@@ -32,6 +32,7 @@ Solana-blockchain client, written in pure swift, which supports keypair generati
 
   s.source_files = 'SolanaSwift/Classes/**/*'
   s.swift_version = '5.0'
+  s.static_framework = true
   
   # s.resource_bundles = {
   #   'SolanaSwift' => ['SolanaSwift/Assets/*.png']
@@ -42,8 +43,12 @@ Solana-blockchain client, written in pure swift, which supports keypair generati
   # s.frameworks = 'UIKit', 'MapKit'
   s.dependency 'RxAlamofire'
   s.dependency 'TweetNacl'
-  s.dependency 'CryptoSwift'
-  s.dependency "ASKSecp256k1"
   s.dependency 'Starscream'
   s.dependency 'RxCocoa'
+  
+  s.subspec 'HDWalletKit' do |ss|
+      ss.source_files = 'HDWallet/HDWalletKit/**/*'
+      ss.dependency 'secp256k1.swift', '~> 0.1.4'
+      ss.dependency 'CryptoSwift', '~> 1.4.0'
+  end
 end
