@@ -8,6 +8,7 @@
 import Foundation
 import TweetNacl
 import CryptoSwift
+import Ed25519HDKeySwift
 
 public extension SolanaSDK {
     struct Account: Codable {
@@ -32,25 +33,31 @@ public extension SolanaSDK {
             }
             self.phrase = phrase
             
-            let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
-            
             let derivationPath: DerivationPath
             if phrase.count == 12 {
                 // deprecated derivation path
                 derivationPath = .deprecated
+                
+                let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
+                guard let seed = try keychain.derivedKeychain(at: derivationPath.rawValue).privateKey else {
+                    throw Error.other("Could not derivate private key")
+                }
+                
+                let keys = try NaclSign.KeyPair.keyPair(fromSeed: seed)
+                
+                self.publicKey = try PublicKey(data: keys.publicKey)
+                self.secretKey = keys.secretKey
+                
             } else {
                 // current derivation path
                 derivationPath = .bip44
+                
+                let keys = try Ed25519HDKey.derivePath(derivationPath.rawValue, seed: mnemonic.seed.toHexString())
+                
+                let keyPair = try NaclSign.KeyPair.keyPair(fromSeed: keys.key)
+                self.publicKey = try PublicKey(data: keyPair.publicKey)
+                self.secretKey = keyPair.secretKey
             }
-            
-            guard let seed = try keychain.derivedKeychain(at: derivationPath.rawValue).privateKey else {
-                throw Error.other("Could not derivate private key")
-            }
-            
-            let keys = try NaclSign.KeyPair.keyPair(fromSeed: seed)
-            
-            self.publicKey = try PublicKey(data: keys.publicKey)
-            self.secretKey = keys.secretKey
         }
         
         public init(secretKey: Data) throws {
