@@ -42,7 +42,7 @@ Solana-blockchain client, written in pure swift, which supports keypair generati
   # s.frameworks = 'UIKit', 'MapKit'
   s.dependency 'RxAlamofire'
   s.dependency 'TweetNacl'
-  s.dependency 'CryptoSwift'
+  s.dependency 'Ed25519HDKeySwift'
   s.dependency "ASKSecp256k1"
   s.dependency 'Starscream'
   s.dependency 'RxCocoa'
