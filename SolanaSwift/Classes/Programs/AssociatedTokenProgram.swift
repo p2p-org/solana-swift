@@ -12,8 +12,8 @@ extension SolanaSDK {
     struct AssociatedTokenProgram {
         // MARK: - Interface
         static func createAssociatedTokenAccountInstruction(
-            associatedProgramId: PublicKey,
-            programId: PublicKey,
+            associatedProgramId: PublicKey = .splAssociatedTokenAccountProgramId,
+            programId: PublicKey = .tokenProgramId,
             mint: PublicKey,
             associatedAccount: PublicKey,
             owner: PublicKey,
