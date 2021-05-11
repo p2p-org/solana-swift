@@ -84,7 +84,8 @@ extension SolanaSDK {
         
         return findDestinationPublicKey(
             mintAddress: mintAddress,
-            destinationAddress: destinationAddress
+            destinationAddress: destinationAddress,
+            isSimulation: isSimulation
         )
             .flatMap {toPublicKey in
                 if fromPublicKey == toPublicKey {
@@ -117,44 +118,37 @@ extension SolanaSDK {
     // MARK: - Helpers
     private func findDestinationPublicKey(
         mintAddress: String,
-        destinationAddress: String
+        destinationAddress: String,
+        isSimulation: Bool
     ) -> Single<String> {
         getAccountInfo(
             account: destinationAddress,
             decodedTo: SolanaSDK.AccountInfo.self
         )
-            .map {info in
+            .flatMap {info in
                 let toTokenMint = info.data.value?.mint.base58EncodedString
                 
                 // detect if destination address is already a SPLToken address
                 if mintAddress == toTokenMint {
-                    return destinationAddress
+                    return .just(destinationAddress)
                 }
                 
                 // detect if destination address is a SOL address
                 if info.owner == PublicKey.programId.base58EncodedString {
                     let owner = try PublicKey(string: destinationAddress)
                     let tokenMint = try PublicKey(string: mintAddress)
-                    return try PublicKey.associatedTokenAddress(
-                        walletAddress: owner,
-                        tokenMintAddress: tokenMint
+                    
+                    // create associated token address
+                    return self.getOrCreateAssociatedTokenAccount(
+                        owner: owner,
+                        tokenMint: tokenMint,
+                        isSimulation: isSimulation
                     )
-                        .base58EncodedString
+                        .map {$0.base58EncodedString}
                 }
                 
                 // token is of another type
                 throw Error.invalidRequest(reason: "Wallet address is not valid")
-            }
-            .catch {error in
-                // destination maybe already an associated token account
-                if let error = error as? Error,
-                   error == SolanaSDK.Error.invalidResponse(ResponseError(code: nil, message: "Invalid account info", data: nil))
-                {
-                    return .just(destinationAddress)
-                }
-                
-                // other error
-                throw error
             }
     }
 }
