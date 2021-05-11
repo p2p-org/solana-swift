@@ -13,7 +13,7 @@ extension SolanaSDK {
         owner: PublicKey,
         tokenMint: PublicKey,
         isSimulation: Bool = false
-    ) -> Single<PublicKey> {
+    ) -> Single<(transactionId: TransactionID?, associatedTokenAddress: PublicKey)> {
         guard let associatedAddress = try? PublicKey.associatedTokenAddress(
             walletAddress: owner,
             tokenMintAddress: tokenMint
@@ -33,7 +33,7 @@ extension SolanaSDK {
                 if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
                     info?.data.value != nil
                 {
-                    return .just(associatedAddress)
+                    return .just((transactionId: nil, associatedTokenAddress: associatedAddress))
                 }
                 
                 // if not, create one
@@ -42,7 +42,7 @@ extension SolanaSDK {
                     tokenMint: tokenMint,
                     isSimulation: isSimulation
                 )
-                    .map {_ in associatedAddress}
+                    .map {(transactionId: $0, associatedTokenAddress: associatedAddress)}
             }
     }
     
@@ -67,8 +67,6 @@ extension SolanaSDK {
             // create instruction
             let instruction = AssociatedTokenProgram
                 .createAssociatedTokenAccountInstruction(
-                    associatedProgramId: .splAssociatedTokenAccountProgramId,
-                    programId: .tokenProgramId,
                     mint: tokenMint,
                     associatedAccount: associatedAddress,
                     owner: owner,

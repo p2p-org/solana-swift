@@ -84,18 +84,69 @@ extension SolanaSDK {
         
         return findDestinationPublicKey(
             mintAddress: mintAddress,
-            destinationAddress: destinationAddress,
-            isSimulation: isSimulation
+            destinationAddress: destinationAddress
         )
-            .flatMap {toPublicKey in
+            .map { toPublicKey -> String in
                 if fromPublicKey == toPublicKey {
+                    throw Error.other("You can not send tokens to yourself")
+                }
+                return toPublicKey
+            }
+            .flatMap {toPublicKey -> Single<(associatedTokenAddress: PublicKey, registered: Bool)> in
+                let toPublicKey = try PublicKey(string: toPublicKey)
+                // if destination address is an SOL account address
+                if destinationAddress != toPublicKey.base58EncodedString {
+                    // check if associated address is already registered
+                    return self.getAccountInfo(
+                        account: toPublicKey.base58EncodedString,
+                        decodedTo: AccountInfo.self
+                    )
+                        .map {$0 as BufferInfo<AccountInfo>?}
+                        .catchAndReturn(nil)
+                        .flatMap {info in
+                            // if associated token account has been registered
+                            var registered = false
+                            if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
+                                info?.data.value != nil
+                            {
+                                registered = true
+                            }
+                            
+                            // if not, create one in next step
+                            return .just((associatedTokenAddress: toPublicKey, registered: registered))
+                        }
+                }
+                return .just((associatedTokenAddress: toPublicKey, registered: true))
+            }
+            .flatMap {result in
+                // get address
+                let toPublicKey = result.associatedTokenAddress
+                
+                // catch error
+                if fromPublicKey == toPublicKey.base58EncodedString {
                     throw Error.other("You can not send tokens to yourself")
                 }
                 
                 let fromPublicKey = try PublicKey(string: fromPublicKey)
-                let toPublicKey = try PublicKey(string: toPublicKey)
                 
-                let instruction = TokenProgram.transferInstruction(
+                var instructions = [TransactionInstruction]()
+                
+                // create associated token address
+                if !result.registered {
+                    let mint = try PublicKey(string: mintAddress)
+                    let owner = try PublicKey(string: destinationAddress)
+                    
+                    let createATokenInstruction = AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+                        mint: mint,
+                        associatedAccount: toPublicKey,
+                        owner: owner,
+                        payer: account.publicKey
+                    )
+                    instructions.append(createATokenInstruction)
+                }
+                
+                // send instruction
+                let sendInstruction = TokenProgram.transferInstruction(
                     tokenProgramId: .tokenProgramId,
                     source: fromPublicKey,
                     destination: toPublicKey,
@@ -103,7 +154,9 @@ extension SolanaSDK {
                     amount: amount
                 )
                 
-                return self.serializeAndSend(instructions: [instruction], signers: [account], isSimulation: isSimulation)
+                instructions.append(sendInstruction)
+                
+                return self.serializeAndSend(instructions: instructions, signers: [account], isSimulation: isSimulation)
             }
             .catch {error in
                 var error = error
@@ -118,8 +171,7 @@ extension SolanaSDK {
     // MARK: - Helpers
     private func findDestinationPublicKey(
         mintAddress: String,
-        destinationAddress: String,
-        isSimulation: Bool
+        destinationAddress: String
     ) -> Single<String> {
         getAccountInfo(
             account: destinationAddress,
@@ -139,12 +191,11 @@ extension SolanaSDK {
                     let tokenMint = try PublicKey(string: mintAddress)
                     
                     // create associated token address
-                    return self.getOrCreateAssociatedTokenAccount(
-                        owner: owner,
-                        tokenMint: tokenMint,
-                        isSimulation: isSimulation
+                    let address = try PublicKey.associatedTokenAddress(
+                        walletAddress: owner,
+                        tokenMintAddress: tokenMint
                     )
-                        .map {$0.base58EncodedString}
+                    return .just(address.base58EncodedString)
                 }
                 
                 // token is of another type

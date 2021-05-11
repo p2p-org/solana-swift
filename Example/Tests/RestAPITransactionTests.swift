@@ -79,11 +79,11 @@ class RestAPITransactionTests: RestAPITests {
     
     func testSendSPLTokenToSolAccountViaAToken() throws {
         let _ = try solanaSDK.sendSPLTokens(
-            mintAddress: "z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M",
-            from: "CWmbt88APtVCeQsKjk6eQZqyvxrGRoRnZvfvTgrJw26Y",
+            mintAddress: "MAPS41MDahZ9QdKXhVa4dWB9RuyfV4XqhyAZ8XcYepb",
+            from: "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd",
             to: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
             amount: 0.001.toLamport(decimals: 6),
-            isSimulation: false
+            isSimulation: true
         ).toBlocking().first()
     }
 }
