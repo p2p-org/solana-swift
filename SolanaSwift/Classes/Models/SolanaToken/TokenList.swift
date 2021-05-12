@@ -45,7 +45,7 @@ extension SolanaSDK {
         public let address: String
         public let symbol: String
         public let name: String
-        public let decimals: UInt8
+        public let decimals: Decimals
         public let logoURI: String?
         public var tags: [TokenTag] = []
         public let extensions: TokenExtensions?
