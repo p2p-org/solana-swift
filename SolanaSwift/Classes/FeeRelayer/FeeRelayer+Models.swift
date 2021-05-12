@@ -11,6 +11,8 @@ protocol SolanaFeeRelayerTransferParams: Encodable {
     var sender: String {get}
     var recipient: String {get}
     var amount: SolanaSDK.Lamports {get}
+    var signature: String {get set}
+    var blockhash: String {get set}
 }
 
 extension SolanaSDK.FeeRelayer {
@@ -18,11 +20,15 @@ extension SolanaSDK.FeeRelayer {
         let sender: String
         let recipient: String
         let amount: SolanaSDK.Lamports
+        var signature: String
+        var blockhash: String
         
         enum CodingKeys: String, CodingKey {
             case sender     =   "sender_pubkey"
             case recipient  =   "recipient_pubkey"
             case amount     =   "lamports"
+            case signature
+            case blockhash
         }
     }
     
@@ -33,6 +39,8 @@ extension SolanaSDK.FeeRelayer {
         let authority: String
         let amount: SolanaSDK.Lamports
         let decimals: SolanaSDK.Decimals
+        var signature: String
+        var blockhash: String
         
         enum CodingKeys: String, CodingKey {
             case sender         =   "sender_token_account_pubkey"
@@ -41,12 +49,8 @@ extension SolanaSDK.FeeRelayer {
             case authority      =   "authority_pubkey"
             case amount
             case decimals
+            case signature
+            case blockhash
         }
-    }
-    
-    struct InstructionsAndParams {
-        let instructions: [SolanaSDK.TransactionInstruction]
-        let transferParams: SolanaFeeRelayerTransferParams
-        let path: String
     }
 }

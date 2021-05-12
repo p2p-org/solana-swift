@@ -35,7 +35,7 @@ extension SolanaSDK {
                     return self.sendTransaction(serializedTransaction: $0)
                 }
             }
-            .catchError {error in
+            .catch {error in
                 if numberOfTries <= maxAttemps,
                    let error = error as? SolanaSDK.Error
                 {
