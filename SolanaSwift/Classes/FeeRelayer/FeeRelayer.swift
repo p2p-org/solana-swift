@@ -107,10 +107,11 @@ extension SolanaSDK {
         ///   - amount: amount in lamport
         /// - Returns: Transaction id
         public func transferSPLToken(
+            mintAddress: String,
             from source: String,
             to destination: String,
-            token: Token,
-            amount: SolanaSDK.Lamports
+            amount: Lamports,
+            decimals: Decimals
         ) -> Single<TransactionID> {
             guard let account = solanaAPIClient.accountStorage.account
             else {return .error(Error.unauthorized)}
@@ -143,10 +144,10 @@ extension SolanaSDK {
                         params: TransferSPLTokenParams(
                             sender: source,
                             recipient: destination,
-                            mintAddress: token.address,
+                            mintAddress: mintAddress,
                             authority: account.publicKey.base58EncodedString,
                             amount: amount,
-                            decimals: token.decimals,
+                            decimals: decimals,
                             signature: result.signature,
                             blockhash: result.blockhash
                         )
