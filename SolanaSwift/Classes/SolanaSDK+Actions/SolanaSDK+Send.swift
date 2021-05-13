@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    public typealias SPLTokenDestinationAddress = (destination: PublicKey, isRegistered: Bool)
+    public typealias SPLTokenDestinationAddress = (destination: PublicKey, isUnregisteredAsocciatedToken: Bool)
     /**
         send SOL to another account.
      
@@ -107,7 +107,7 @@ extension SolanaSDK {
                 var instructions = [TransactionInstruction]()
                 
                 // create associated token address
-                if !result.isRegistered {
+                if result.isUnregisteredAsocciatedToken {
                     let mint = try PublicKey(string: mintAddress)
                     let owner = try PublicKey(string: destinationAddress)
                     
@@ -188,20 +188,20 @@ extension SolanaSDK {
                         .map {$0 as BufferInfo<AccountInfo>?}
                         .catchAndReturn(nil)
                         .flatMap {info in
-                            var isRegistered = false
+                            var isUnregisteredAsocciatedToken = true
                             
                             // if associated token account has been registered
                             if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
                                 info?.data.value != nil
                             {
-                                isRegistered = true
+                                isUnregisteredAsocciatedToken = false
                             }
                             
                             // if not, create one in next step
-                            return .just((destination: toPublicKey, isRegistered: isRegistered))
+                            return .just((destination: toPublicKey, isUnregisteredAsocciatedToken: isUnregisteredAsocciatedToken))
                         }
                 }
-                return .just((destination: toPublicKey, isRegistered: true))
+                return .just((destination: toPublicKey, isUnregisteredAsocciatedToken: false))
             }
     }
 }

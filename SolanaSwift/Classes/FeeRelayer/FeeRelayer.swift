@@ -12,6 +12,10 @@ import RxAlamofire
 public protocol FeeRelayerSolanaAPIClient {
     var accountStorage: SolanaSDKAccountStorage {get}
     func getRecentBlockhash() -> Single<String>
+    func findSPLTokenDestinationAddress(
+        mintAddress: String,
+        destinationAddress: String
+    ) -> Single<SolanaSDK.SPLTokenDestinationAddress>
 }
 extension SolanaSDK: FeeRelayerSolanaAPIClient {
     public func getRecentBlockhash() -> Single<String> {
@@ -117,23 +121,40 @@ extension SolanaSDK {
             else {return .error(Error.unauthorized)}
             
             return Single.zip([
-                getFeePayerPubkey().map {$0.base58EncodedString},
-                solanaAPIClient.getRecentBlockhash()
+                getFeePayerPubkey().map {$0.base58EncodedString as Any},
+                solanaAPIClient.getRecentBlockhash().map {$0 as Any},
+                solanaAPIClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destination).map {$0 as Any}
             ])
                 .map { result -> (signature: String, blockhash: String) in
-                    let feePayer = result[0]
-                    let recentBlockhash = result[1]
+                    let feePayer = result[0] as! String
+                    let recentBlockhash = result[1] as! String
+                    let splTokenDestinationAddress = result[2] as! SPLTokenDestinationAddress
                     
-                    let instruction = TokenProgram.transferInstruction(
+                    var instructions = [TransactionInstruction]()
+                    
+                    if splTokenDestinationAddress.isUnregisteredAsocciatedToken
+                    {
+                        let createATokenInstruction = AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+                            mint: try PublicKey(string: mintAddress),
+                            associatedAccount: splTokenDestinationAddress.destination,
+                            owner: try PublicKey(string: destination),
+                            payer: try PublicKey(string: feePayer)
+                        )
+                        instructions.append(createATokenInstruction)
+                    }
+                    
+                    let transferInstruction = TokenProgram.transferInstruction(
                         tokenProgramId: .tokenProgramId,
                         source: try PublicKey(string: source),
                         destination: try PublicKey(string: destination),
                         owner: account.publicKey,
                         amount: amount
                     )
+                    instructions.append(transferInstruction)
+                    
                     let signature = try self.getSignature(
                         feePayer: feePayer,
-                        instructions: [instruction],
+                        instructions: instructions,
                         recentBlockhash: recentBlockhash
                     )
                     return (signature: Base58.encode(signature.bytes), blockhash: recentBlockhash)
