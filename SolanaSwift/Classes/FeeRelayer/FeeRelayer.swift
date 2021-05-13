@@ -143,12 +143,15 @@ extension SolanaSDK {
                         instructions.append(createATokenInstruction)
                     }
                     
-                    let transferInstruction = TokenProgram.transferInstruction(
-                        tokenProgramId: .tokenProgramId,
+                    let transferInstruction = TokenProgram.transferCheckedInstruction(
+                        programId: .tokenProgramId,
                         source: try PublicKey(string: source),
-                        destination: try PublicKey(string: destination),
+                        mint: try PublicKey(string: mintAddress),
+                        destination: splTokenDestinationAddress.destination,
                         owner: account.publicKey,
-                        amount: amount
+                        multiSigners: [],
+                        amount: amount,
+                        decimals: decimals
                     )
                     instructions.append(transferInstruction)
                     
