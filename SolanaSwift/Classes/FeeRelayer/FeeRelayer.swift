@@ -125,7 +125,7 @@ extension SolanaSDK {
                 solanaAPIClient.getRecentBlockhash().map {$0 as Any},
                 solanaAPIClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destination).map {$0 as Any}
             ])
-                .map { result -> (signature: String, blockhash: String) in
+                .map { result -> (signature: String, blockhash: String, realDestination: String) in
                     let feePayer = result[0] as! String
                     let recentBlockhash = result[1] as! String
                     let splTokenDestinationAddress = result[2] as! SPLTokenDestinationAddress
@@ -160,14 +160,14 @@ extension SolanaSDK {
                         instructions: instructions,
                         recentBlockhash: recentBlockhash
                     )
-                    return (signature: Base58.encode(signature.bytes), blockhash: recentBlockhash)
+                    return (signature: Base58.encode(signature.bytes), blockhash: recentBlockhash, realDestination: splTokenDestinationAddress.destination.base58EncodedString)
                 }
                 .flatMap {result in
                     self.sendTransaction(
                         path: transferTokenPath,
                         params: TransferSPLTokenParams(
                             sender: source,
-                            recipient: destination,
+                            recipient: result.realDestination,
                             mintAddress: mintAddress,
                             authority: account.publicKey.base58EncodedString,
                             amount: amount,
