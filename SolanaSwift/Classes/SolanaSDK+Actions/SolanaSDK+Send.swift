@@ -9,6 +9,7 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
+    public typealias SPLTokenDestinationAddress = (destination: PublicKey, isRegistered: Bool)
     /**
         send SOL to another account.
      
@@ -82,45 +83,19 @@ extension SolanaSDK {
             return .error(Error.unauthorized)
         }
         
-        return findDestinationPublicKey(
+        return findSPLTokenDestinationAddress(
             mintAddress: mintAddress,
             destinationAddress: destinationAddress
         )
-            .map { toPublicKey -> String in
-                if fromPublicKey == toPublicKey {
+            .map { result -> SPLTokenDestinationAddress in
+                if fromPublicKey == result.destination.base58EncodedString {
                     throw Error.other("You can not send tokens to yourself")
                 }
-                return toPublicKey
-            }
-            .flatMap {toPublicKey -> Single<(associatedTokenAddress: PublicKey, registered: Bool)> in
-                let toPublicKey = try PublicKey(string: toPublicKey)
-                // if destination address is an SOL account address
-                if destinationAddress != toPublicKey.base58EncodedString {
-                    // check if associated address is already registered
-                    return self.getAccountInfo(
-                        account: toPublicKey.base58EncodedString,
-                        decodedTo: AccountInfo.self
-                    )
-                        .map {$0 as BufferInfo<AccountInfo>?}
-                        .catchAndReturn(nil)
-                        .flatMap {info in
-                            // if associated token account has been registered
-                            var registered = false
-                            if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
-                                info?.data.value != nil
-                            {
-                                registered = true
-                            }
-                            
-                            // if not, create one in next step
-                            return .just((associatedTokenAddress: toPublicKey, registered: registered))
-                        }
-                }
-                return .just((associatedTokenAddress: toPublicKey, registered: true))
+                return result
             }
             .flatMap {result in
                 // get address
-                let toPublicKey = result.associatedTokenAddress
+                let toPublicKey = result.destination
                 
                 // catch error
                 if fromPublicKey == toPublicKey.base58EncodedString {
@@ -132,7 +107,7 @@ extension SolanaSDK {
                 var instructions = [TransactionInstruction]()
                 
                 // create associated token address
-                if !result.registered {
+                if !result.isRegistered {
                     let mint = try PublicKey(string: mintAddress)
                     let owner = try PublicKey(string: destinationAddress)
                     
@@ -169,20 +144,20 @@ extension SolanaSDK {
     }
     
     // MARK: - Helpers
-    private func findDestinationPublicKey(
+    public func findSPLTokenDestinationAddress(
         mintAddress: String,
         destinationAddress: String
-    ) -> Single<String> {
+    ) -> Single<SPLTokenDestinationAddress> {
         getAccountInfo(
             account: destinationAddress,
             decodedTo: SolanaSDK.AccountInfo.self
         )
-            .flatMap {info in
+            .map {info -> String in
                 let toTokenMint = info.data.value?.mint.base58EncodedString
                 
                 // detect if destination address is already a SPLToken address
                 if mintAddress == toTokenMint {
-                    return .just(destinationAddress)
+                    return destinationAddress
                 }
                 
                 // detect if destination address is a SOL address
@@ -195,11 +170,38 @@ extension SolanaSDK {
                         walletAddress: owner,
                         tokenMintAddress: tokenMint
                     )
-                    return .just(address.base58EncodedString)
+                    return address.base58EncodedString
                 }
                 
                 // token is of another type
                 throw Error.invalidRequest(reason: "Wallet address is not valid")
+            }
+            .flatMap {toPublicKey -> Single<SPLTokenDestinationAddress> in
+                let toPublicKey = try PublicKey(string: toPublicKey)
+                // if destination address is an SOL account address
+                if destinationAddress != toPublicKey.base58EncodedString {
+                    // check if associated address is already registered
+                    return self.getAccountInfo(
+                        account: toPublicKey.base58EncodedString,
+                        decodedTo: AccountInfo.self
+                    )
+                        .map {$0 as BufferInfo<AccountInfo>?}
+                        .catchAndReturn(nil)
+                        .flatMap {info in
+                            var isRegistered = false
+                            
+                            // if associated token account has been registered
+                            if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
+                                info?.data.value != nil
+                            {
+                                isRegistered = true
+                            }
+                            
+                            // if not, create one in next step
+                            return .just((destination: toPublicKey, isRegistered: isRegistered))
+                        }
+                }
+                return .just((destination: toPublicKey, isRegistered: true))
             }
     }
 }
