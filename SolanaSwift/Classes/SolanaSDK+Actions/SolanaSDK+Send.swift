@@ -10,15 +10,18 @@ import RxSwift
 
 extension SolanaSDK {
     public typealias SPLTokenDestinationAddress = (destination: PublicKey, isUnregisteredAsocciatedToken: Bool)
-    /**
-        send SOL to another account.
-     
-        - Parameter to: publicKey to send to
-        - Parameter amount: amount to send
-    */
+    
+    /// Send SOL to another account with or without fee
+    /// - Parameters:
+    ///   - toPublicKey: destination address
+    ///   - amount: amount to send
+    ///   - withoutFee: send without fee. if it's true, the transaction can not be a simulation
+    ///   - isSimulation: define if this is a simulation or real transaction
+    /// - Returns: transaction id
     public func sendSOL(
-        to toPublicKey: String,
+        to destination: String,
         amount: UInt64,
+        withoutFee: Bool = true,
         isSimulation: Bool = false
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
@@ -27,27 +30,36 @@ extension SolanaSDK {
         
         do {
             let fromPublicKey = account.publicKey
-            let toPublicKey = try PublicKey(string: toPublicKey)
             
-            if fromPublicKey == toPublicKey {
+            if fromPublicKey.base58EncodedString == destination {
                 throw Error.other("You can not send tokens to yourself")
             }
             
             // check
-            return getAccountInfo(account: toPublicKey.base58EncodedString, decodedTo: EmptyInfo.self)
+            return getAccountInfo(account: destination, decodedTo: EmptyInfo.self)
                 .map {info -> Void in
                     guard info.owner == PublicKey.programId.base58EncodedString
                     else {throw Error.other("Invalid account info")}
                     return
                 }
                 .flatMap {
+                    // real transaction without fee
+                    if !isSimulation && withoutFee {
+                        let feeRelayer = FeeRelayer(solanaAPIClient: self)
+                        return feeRelayer.transferSOL(
+                            to: destination,
+                            amount: amount
+                        )
+                    }
+                    
+                    // transaction with fee, can be a simulation
                     let instruction = SystemProgram.transferInstruction(
                         from: fromPublicKey,
-                        to: toPublicKey,
+                        to: try PublicKey(string: destination),
                         lamports: amount
                     )
                     
-                    return self.serializeAndSend(
+                    return self.serializeAndSendWithFee(
                         instructions: [instruction],
                         signers: [account],
                         isSimulation: isSimulation
@@ -66,21 +78,38 @@ extension SolanaSDK {
         }
     }
     
-    /**
-        send SPLTokens to another account.
-     
-        - Parameter to: publicKey to send to, it may be splToken PublicKey or SOL address
-        - Parameter amount: amount to send
-    */
+    /// Send SPLTokens to another account
+    /// - Parameters:
+    ///   - mintAddress: the mint address to define Token
+    ///   - fromPublicKey: source wallet address
+    ///   - destinationAddress: destination wallet address
+    ///   - amount: amount to send
+    ///   - withoutFee: send without fee. if it's true, the transaction can not be a simulation
+    ///   - isSimulation: define if this is a simulation or real transaction
+    /// - Returns: transaction id
     public func sendSPLTokens(
         mintAddress: String,
+        decimals: Decimals,
         from fromPublicKey: String,
         to destinationAddress: String,
         amount: UInt64,
+        withoutFee: Bool = true,
         isSimulation: Bool = false
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
+        }
+        
+        // real transaction without fee
+        if !isSimulation && withoutFee {
+            let feeRelayer = FeeRelayer(solanaAPIClient: self)
+            return feeRelayer.transferSPLToken(
+                mintAddress: mintAddress,
+                from: fromPublicKey,
+                to: destinationAddress,
+                amount: amount,
+                decimals: decimals
+            )
         }
         
         return findSPLTokenDestinationAddress(
@@ -131,7 +160,7 @@ extension SolanaSDK {
                 
                 instructions.append(sendInstruction)
                 
-                return self.serializeAndSend(instructions: instructions, signers: [account], isSimulation: isSimulation)
+                return self.serializeAndSendWithFee(instructions: instructions, signers: [account], isSimulation: isSimulation)
             }
             .catch {error in
                 var error = error

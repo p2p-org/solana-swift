@@ -159,7 +159,7 @@ extension SolanaSDK {
                     )
                 )
                 
-                return self.serializeAndSend(
+                return self.serializeAndSendWithFee(
                     instructions: instructions + cleanupInstructions,
                     signers: signers,
                     isSimulation: isSimulation
