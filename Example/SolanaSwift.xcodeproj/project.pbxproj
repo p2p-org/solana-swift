@@ -23,6 +23,7 @@
 		BC65DF9F261D5B3300E436C7 /* SendSPLToSOLTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC65DF9E261D5B3300E436C7 /* SendSPLToSOLTransaction.json */; };
 		BC65DFAE261D5D4300E436C7 /* SendSPLToSPLTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */; };
 		BC76B552263806100018A0FF /* AssociatedTokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */; };
+		BC7826D7264B876C0061F762 /* FeeRelayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC7826D6264B876C0061F762 /* FeeRelayerTests.swift */; };
 		BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */; };
 		BC81A2A425BE624300664A2C /* SystemProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2A325BE624300664A2C /* SystemProgramTests.swift */; };
 		BC81A2AB25BE628700664A2C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2AA25BE628700664A2C /* Constants.swift */; };
@@ -119,6 +120,13 @@
 			remoteGlobalIDString = 65841E5F08F2815D4026575B32E9C7CD;
 			remoteInfo = ASKSecp256k1;
 		};
+		BC7826D4264B87530061F762 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BD7CEAEABAA1E6C856FBC171E2EAED64;
+			remoteInfo = Ed25519HDKeySwift;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -147,6 +155,7 @@
 		BC65DF9E261D5B3300E436C7 /* SendSPLToSOLTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSPLToSOLTransaction.json; sourceTree = "<group>"; };
 		BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSPLToSPLTransaction.json; sourceTree = "<group>"; };
 		BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssociatedTokenProgramTests.swift; sourceTree = "<group>"; };
+		BC7826D6264B876C0061F762 /* FeeRelayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeRelayerTests.swift; sourceTree = "<group>"; };
 		BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2A325BE624300664A2C /* SystemProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2AA25BE628700664A2C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -203,6 +212,7 @@
 				BC81A2AA25BE628700664A2C /* Constants.swift */,
 				BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */,
 				BC23AEBE254928870029FF0B /* TransactionTests.swift */,
+				BC7826C6264B87530061F762 /* FeeRelayerTests */,
 				BC18C9D82631130B0054E624 /* TokensListParserTests */,
 				BCC49C2325BE86F600D4D336 /* CodableTests */,
 				BC631EC325B96D6700138948 /* ProgramsTests */,
@@ -261,6 +271,7 @@
 				BC23AE5F254925F10029FF0B /* Alamofire.framework */,
 				BC5FFECE256111AD002DB054 /* ASKSecp256k1.framework */,
 				BC23AE65254925F10029FF0B /* CryptoSwift.framework */,
+				BC7826D5264B87530061F762 /* Ed25519HDKeySwift.framework */,
 				BC23AE67254925F10029FF0B /* Pods_SolanaSwift_Tests.framework */,
 				BC23AE69254925F10029FF0B /* RxAlamofire.framework */,
 				BC23AE6B254925F10029FF0B /* RxBlocking.framework */,
@@ -295,6 +306,14 @@
 				BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */,
 			);
 			name = ProgramsTests;
+			sourceTree = "<group>";
+		};
+		BC7826C6264B87530061F762 /* FeeRelayerTests */ = {
+			isa = PBXGroup;
+			children = (
+				BC7826D6264B876C0061F762 /* FeeRelayerTests.swift */,
+			);
+			name = FeeRelayerTests;
 			sourceTree = "<group>";
 		};
 		BCC49C2325BE86F600D4D336 /* CodableTests */ = {
@@ -470,6 +489,13 @@
 			remoteRef = BC5FFECD256111AD002DB054 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		BC7826D5264B87530061F762 /* Ed25519HDKeySwift.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Ed25519HDKeySwift.framework;
+			remoteRef = BC7826D4264B87530061F762 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -569,6 +595,7 @@
 				BC23AEC2254928870029FF0B /* TransactionTests.swift in Sources */,
 				BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */,
 				BC81A2A425BE624300664A2C /* SystemProgramTests.swift in Sources */,
+				BC7826D7264B876C0061F762 /* FeeRelayerTests.swift in Sources */,
 				BCF5795A262ECD6C00E73226 /* PoolsAmountCalculationTests.swift in Sources */,
 				BC3F719A261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift in Sources */,
 				BC4F6F1A25B80FD2002BA313 /* TokenSwapProgramTests.swift in Sources */,

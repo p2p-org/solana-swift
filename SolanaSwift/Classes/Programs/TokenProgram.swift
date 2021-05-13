@@ -17,6 +17,7 @@ public extension SolanaSDK {
             static let approve: UInt8 = 4
             static let mintTo: UInt8 = 7
             static let closeAccount: UInt8 = 9
+            static let transferChecked: UInt8 = 12
         }
         
         // MARK: - Instructions
@@ -151,6 +152,38 @@ public extension SolanaSDK {
                 ],
                 programId: tokenProgramId,
                 data: [Index.closeAccount]
+            )
+        }
+        
+        public static func transferCheckedInstruction(
+            programId: PublicKey,
+            source: PublicKey,
+            mint: PublicKey,
+            destination: PublicKey,
+            owner: PublicKey,
+            multiSigners: [Account],
+            amount: Lamports,
+            decimals: Decimals
+        ) -> TransactionInstruction {
+            var keys = [
+                Account.Meta(publicKey: source, isSigner: false, isWritable: true),
+                Account.Meta(publicKey: mint, isSigner: false, isWritable: false),
+                Account.Meta(publicKey: destination, isSigner: false, isWritable: true)
+            ]
+            
+            if multiSigners.count == 0 {
+                keys.append(.init(publicKey: owner, isSigner: true, isWritable: false))
+            } else {
+                keys.append(.init(publicKey: owner, isSigner: false, isWritable: false))
+                multiSigners.forEach { signer in
+                    keys.append(.init(publicKey: signer.publicKey, isSigner: true, isWritable: false))
+                }
+            }
+            
+            return .init(
+                keys: keys,
+                programId: programId,
+                data: [Index.transferChecked, amount, decimals]
             )
         }
     }

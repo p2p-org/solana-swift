@@ -9,7 +9,14 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    func serializeAndSend(
+    /// Traditional sending without FeeRelayer
+    /// - Parameters:
+    ///   - instructions: transaction's instructions
+    ///   - recentBlockhash: recentBlockhash
+    ///   - signers: signers
+    ///   - isSimulation: define if this is a simulation or real transaction
+    /// - Returns: transaction id
+    func serializeAndSendWithFee(
         instructions: [TransactionInstruction],
         recentBlockhash: String? = nil,
         signers: [Account],
@@ -35,7 +42,7 @@ extension SolanaSDK {
                     return self.sendTransaction(serializedTransaction: $0)
                 }
             }
-            .catchError {error in
+            .catch {error in
                 if numberOfTries <= maxAttemps,
                    let error = error as? SolanaSDK.Error
                 {
@@ -51,14 +58,14 @@ extension SolanaSDK {
                     
                     if shouldRetry {
                         numberOfTries += 1
-                        return self.serializeAndSend(instructions: instructions, signers: signers, isSimulation: isSimulation)
+                        return self.serializeAndSendWithFee(instructions: instructions, signers: signers, isSimulation: isSimulation)
                     }
                 }
                 throw error
             }
     }
     
-    func serializeTransaction(
+    private func serializeTransaction(
         instructions: [TransactionInstruction],
         recentBlockhash: String? = nil,
         signers: [Account],

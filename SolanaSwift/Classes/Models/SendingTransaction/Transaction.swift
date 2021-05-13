@@ -78,6 +78,10 @@ extension SolanaSDK {
             _verifySignatures(serializedMessage: try serializeMessage(), requiredAllSignatures: true)
         }
         
+        func findSignature(pubkey: PublicKey) -> Signature? {
+            signatures.first(where: {$0.publicKey == pubkey})
+        }
+        
         // MARK: - Signing
         private mutating func partialSign(message: Message, signers: [Account]) throws {
             let signData = try message.serialize()

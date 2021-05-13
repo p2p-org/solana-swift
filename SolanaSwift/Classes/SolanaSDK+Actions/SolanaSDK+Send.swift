@@ -9,15 +9,19 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    /**
-        send SOL to another account.
-     
-        - Parameter to: publicKey to send to
-        - Parameter amount: amount to send
-    */
+    public typealias SPLTokenDestinationAddress = (destination: PublicKey, isUnregisteredAsocciatedToken: Bool)
+    
+    /// Send SOL to another account with or without fee
+    /// - Parameters:
+    ///   - toPublicKey: destination address
+    ///   - amount: amount to send
+    ///   - withoutFee: send without fee. if it's true, the transaction can not be a simulation
+    ///   - isSimulation: define if this is a simulation or real transaction
+    /// - Returns: transaction id
     public func sendSOL(
-        to toPublicKey: String,
+        to destination: String,
         amount: UInt64,
+        withoutFee: Bool = true,
         isSimulation: Bool = false
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
@@ -26,27 +30,36 @@ extension SolanaSDK {
         
         do {
             let fromPublicKey = account.publicKey
-            let toPublicKey = try PublicKey(string: toPublicKey)
             
-            if fromPublicKey == toPublicKey {
+            if fromPublicKey.base58EncodedString == destination {
                 throw Error.other("You can not send tokens to yourself")
             }
             
             // check
-            return getAccountInfo(account: toPublicKey.base58EncodedString, decodedTo: EmptyInfo.self)
+            return getAccountInfo(account: destination, decodedTo: EmptyInfo.self)
                 .map {info -> Void in
                     guard info.owner == PublicKey.programId.base58EncodedString
                     else {throw Error.other("Invalid account info")}
                     return
                 }
                 .flatMap {
+                    // real transaction without fee
+                    if !isSimulation && withoutFee {
+                        let feeRelayer = FeeRelayer(solanaAPIClient: self)
+                        return feeRelayer.transferSOL(
+                            to: destination,
+                            amount: amount
+                        )
+                    }
+                    
+                    // transaction with fee, can be a simulation
                     let instruction = SystemProgram.transferInstruction(
                         from: fromPublicKey,
-                        to: toPublicKey,
+                        to: try PublicKey(string: destination),
                         lamports: amount
                     )
                     
-                    return self.serializeAndSend(
+                    return self.serializeAndSendWithFee(
                         instructions: [instruction],
                         signers: [account],
                         isSimulation: isSimulation
@@ -65,62 +78,53 @@ extension SolanaSDK {
         }
     }
     
-    /**
-        send SPLTokens to another account.
-     
-        - Parameter to: publicKey to send to, it may be splToken PublicKey or SOL address
-        - Parameter amount: amount to send
-    */
+    /// Send SPLTokens to another account
+    /// - Parameters:
+    ///   - mintAddress: the mint address to define Token
+    ///   - fromPublicKey: source wallet address
+    ///   - destinationAddress: destination wallet address
+    ///   - amount: amount to send
+    ///   - withoutFee: send without fee. if it's true, the transaction can not be a simulation
+    ///   - isSimulation: define if this is a simulation or real transaction
+    /// - Returns: transaction id
     public func sendSPLTokens(
         mintAddress: String,
+        decimals: Decimals,
         from fromPublicKey: String,
         to destinationAddress: String,
         amount: UInt64,
+        withoutFee: Bool = true,
         isSimulation: Bool = false
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
         }
         
-        return findDestinationPublicKey(
+        // real transaction without fee
+        if !isSimulation && withoutFee {
+            let feeRelayer = FeeRelayer(solanaAPIClient: self)
+            return feeRelayer.transferSPLToken(
+                mintAddress: mintAddress,
+                from: fromPublicKey,
+                to: destinationAddress,
+                amount: amount,
+                decimals: decimals
+            )
+        }
+        
+        return findSPLTokenDestinationAddress(
             mintAddress: mintAddress,
             destinationAddress: destinationAddress
         )
-            .map { toPublicKey -> String in
-                if fromPublicKey == toPublicKey {
+            .map { result -> SPLTokenDestinationAddress in
+                if fromPublicKey == result.destination.base58EncodedString {
                     throw Error.other("You can not send tokens to yourself")
                 }
-                return toPublicKey
-            }
-            .flatMap {toPublicKey -> Single<(associatedTokenAddress: PublicKey, registered: Bool)> in
-                let toPublicKey = try PublicKey(string: toPublicKey)
-                // if destination address is an SOL account address
-                if destinationAddress != toPublicKey.base58EncodedString {
-                    // check if associated address is already registered
-                    return self.getAccountInfo(
-                        account: toPublicKey.base58EncodedString,
-                        decodedTo: AccountInfo.self
-                    )
-                        .map {$0 as BufferInfo<AccountInfo>?}
-                        .catchAndReturn(nil)
-                        .flatMap {info in
-                            // if associated token account has been registered
-                            var registered = false
-                            if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
-                                info?.data.value != nil
-                            {
-                                registered = true
-                            }
-                            
-                            // if not, create one in next step
-                            return .just((associatedTokenAddress: toPublicKey, registered: registered))
-                        }
-                }
-                return .just((associatedTokenAddress: toPublicKey, registered: true))
+                return result
             }
             .flatMap {result in
                 // get address
-                let toPublicKey = result.associatedTokenAddress
+                let toPublicKey = result.destination
                 
                 // catch error
                 if fromPublicKey == toPublicKey.base58EncodedString {
@@ -132,7 +136,7 @@ extension SolanaSDK {
                 var instructions = [TransactionInstruction]()
                 
                 // create associated token address
-                if !result.registered {
+                if result.isUnregisteredAsocciatedToken {
                     let mint = try PublicKey(string: mintAddress)
                     let owner = try PublicKey(string: destinationAddress)
                     
@@ -156,7 +160,7 @@ extension SolanaSDK {
                 
                 instructions.append(sendInstruction)
                 
-                return self.serializeAndSend(instructions: instructions, signers: [account], isSimulation: isSimulation)
+                return self.serializeAndSendWithFee(instructions: instructions, signers: [account], isSimulation: isSimulation)
             }
             .catch {error in
                 var error = error
@@ -169,20 +173,20 @@ extension SolanaSDK {
     }
     
     // MARK: - Helpers
-    private func findDestinationPublicKey(
+    public func findSPLTokenDestinationAddress(
         mintAddress: String,
         destinationAddress: String
-    ) -> Single<String> {
+    ) -> Single<SPLTokenDestinationAddress> {
         getAccountInfo(
             account: destinationAddress,
             decodedTo: SolanaSDK.AccountInfo.self
         )
-            .flatMap {info in
+            .map {info -> String in
                 let toTokenMint = info.data.value?.mint.base58EncodedString
                 
                 // detect if destination address is already a SPLToken address
                 if mintAddress == toTokenMint {
-                    return .just(destinationAddress)
+                    return destinationAddress
                 }
                 
                 // detect if destination address is a SOL address
@@ -195,11 +199,38 @@ extension SolanaSDK {
                         walletAddress: owner,
                         tokenMintAddress: tokenMint
                     )
-                    return .just(address.base58EncodedString)
+                    return address.base58EncodedString
                 }
                 
                 // token is of another type
                 throw Error.invalidRequest(reason: "Wallet address is not valid")
+            }
+            .flatMap {toPublicKey -> Single<SPLTokenDestinationAddress> in
+                let toPublicKey = try PublicKey(string: toPublicKey)
+                // if destination address is an SOL account address
+                if destinationAddress != toPublicKey.base58EncodedString {
+                    // check if associated address is already registered
+                    return self.getAccountInfo(
+                        account: toPublicKey.base58EncodedString,
+                        decodedTo: AccountInfo.self
+                    )
+                        .map {$0 as BufferInfo<AccountInfo>?}
+                        .catchAndReturn(nil)
+                        .flatMap {info in
+                            var isUnregisteredAsocciatedToken = true
+                            
+                            // if associated token account has been registered
+                            if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
+                                info?.data.value != nil
+                            {
+                                isUnregisteredAsocciatedToken = false
+                            }
+                            
+                            // if not, create one in next step
+                            return .just((destination: toPublicKey, isUnregisteredAsocciatedToken: isUnregisteredAsocciatedToken))
+                        }
+                }
+                return .just((destination: toPublicKey, isUnregisteredAsocciatedToken: false))
             }
     }
 }

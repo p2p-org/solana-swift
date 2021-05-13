@@ -32,7 +32,7 @@ class RestAPITransactionTests: RestAPITests {
     }
     
     // MARK: - Send
-    func testSendSOL() throws {
+    func testSendSOLWithFee() throws {
         let toPublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
         
         let balance = try solanaSDK.getBalance().toBlocking().first()
@@ -45,7 +45,16 @@ class RestAPITransactionTests: RestAPITests {
         ).toBlocking().first()
     }
     
-    func testSendSPLToken() throws {
+    func testSendSOLWithoutFee() throws {
+        let toPublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+        
+        _ = try solanaSDK.sendSOL(
+            to: toPublicKey,
+            amount: 0.001.toLamport(decimals: 9)
+        ).toBlocking().first()
+    }
+    
+    func testSendSPLTokenWithFee() throws {
         // USDC
         let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
         let source = "DjY1uZozQTPz9c6WsjpPC3jXWp7u98KzyuyQTRzcGHFk"
@@ -53,10 +62,26 @@ class RestAPITransactionTests: RestAPITests {
         
         _ = try solanaSDK.sendSPLTokens(
             mintAddress: mintAddress,
+            decimals: 6,
             from: source,
             to: destination,
             amount: Double(0.001).toLamport(decimals: 6),
             isSimulation: true
+        ).toBlocking().first()
+    }
+    
+    func testSendSPLTokenWithoutFee() throws {
+        // USDC
+        let mintAddress = "kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6"
+        let source = "93gmUv69EYA8V2jS8DRYxcpXHdX8bGQgq3Sef5EJMnDV"
+        let destination = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+        
+        _ = try solanaSDK.sendSPLTokens(
+            mintAddress: mintAddress,
+            decimals: 5,
+            from: source,
+            to: destination,
+            amount: Double(10).toLamport(decimals: 5)
         ).toBlocking().first()
     }
     
@@ -80,6 +105,7 @@ class RestAPITransactionTests: RestAPITests {
     func testSendSPLTokenToSolAccountViaAToken() throws {
         let _ = try solanaSDK.sendSPLTokens(
             mintAddress: "MAPS41MDahZ9QdKXhVa4dWB9RuyfV4XqhyAZ8XcYepb",
+            decimals: 6,
             from: "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd",
             to: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
             amount: 0.001.toLamport(decimals: 6),
