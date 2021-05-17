@@ -63,8 +63,8 @@ public extension SolanaSDK {
 	}
 	struct Reward: Decodable {
 		public let pubkey: String
-		public let lamports: Int64
-		public let postBalance: UInt64
+		public let lamports: Lamports
+		public let postBalance: Lamports
 		public let rewardType: String?
 	}
 	struct EpochInfo: Decodable {
@@ -88,13 +88,13 @@ public extension SolanaSDK {
 		public let lastValidSlot: UInt64?
 	}
 	struct FeeCalculator: Decodable {
-		public let lamportsPerSignature: UInt64
+		public let lamportsPerSignature: Lamports
 	}
 	struct FeeRateGovernor: Decodable {
 		public let burnPercent: UInt64
-		public let maxLamportsPerSignature: UInt64
-		public let minLamportsPerSignature: UInt64
-		public let targetLamportsPerSignature: UInt64
+		public let maxLamportsPerSignature: Lamports
+		public let minLamportsPerSignature: Lamports
+		public let targetLamportsPerSignature: Lamports
 		public let targetSignaturesPerSlot: UInt64
 	}
 	struct Identity: Decodable {
@@ -114,7 +114,7 @@ public extension SolanaSDK {
 		public let validator: Float64
 	}
 	struct LargestAccount: Decodable {
-		public let lamports: UInt64
+		public let lamports: Lamports
 		public let address: String
 	}
     struct ProgramAccount<T: BufferLayout>: Decodable {
@@ -123,7 +123,7 @@ public extension SolanaSDK {
 	}
     
     struct BufferInfo<T: BufferLayout>: Decodable {
-        public let lamports: UInt64
+        public let lamports: Lamports
         public let owner: String
         public let data: Buffer<T>
         public let executable: Bool
@@ -162,12 +162,12 @@ public extension SolanaSDK {
     }
     struct TransactionMeta: Decodable {
         public let err: TransactionError?
-        public let fee: UInt64?
+        public let fee: Lamports?
         public let innerInstructions: [InnerInstruction]?
         public let logMessages: [String]?
-        public let postBalances: [UInt64]?
+        public let postBalances: [Lamports]?
         public let postTokenBalances: [TokenBalance]?
-        public let preBalances: [UInt64]?
+        public let preBalances: [Lamports]?
         public let preTokenBalances: [TokenBalance]?
     }
     struct TransactionError: Decodable, Hashable {
@@ -192,10 +192,10 @@ public extension SolanaSDK {
 		public let state: String
 	}
 	struct Supply: Decodable {
-		public let circulating: UInt64
-		public let nonCirculating: UInt64
+		public let circulating: Lamports
+		public let nonCirculating: Lamports
 		public let nonCirculatingAccounts: [String]
-		public let total: UInt64
+		public let total: Lamports
 	}
     struct TokenAccountBalance: Codable, Equatable, Hashable {
         init(uiAmount: Float64?, amount: String, decimals: UInt8?, uiAmountString: String?) {
