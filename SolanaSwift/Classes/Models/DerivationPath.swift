@@ -8,8 +8,10 @@
 import Foundation
 
 extension SolanaSDK {
-    enum DerivationPath: String {
+    public enum DerivationPath: String {
         case deprecated     = "m/501'/0'/0/0"
         case bip44          = "m/44'/501'/0'/0'"
+        
+        public static var `default`: Self = .bip44
     }
 }
