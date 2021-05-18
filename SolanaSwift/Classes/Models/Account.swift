@@ -11,7 +11,7 @@ import CryptoSwift
 import Ed25519HDKeySwift
 
 public extension SolanaSDK {
-    struct Account: Codable {
+    struct Account: Codable, Hashable {
         public let phrase: [String]
         public let publicKey: PublicKey
         public let secretKey: Data
@@ -21,7 +21,7 @@ public extension SolanaSDK {
         ///   - phrase: secret phrase for an account, leave it empty for new account
         ///   - network: network in which account should be created
         /// - Throws: Error if the derivation is not successful
-        public init(phrase: [String] = [], network: Network, derivationPath: DerivationPath? = nil) throws {
+        public init(phrase: [String] = [], network: Network, derivationPath: DerivablePath? = nil) throws {
             let mnemonic: Mnemonic
             var phrase = phrase.filter {!$0.isEmpty}
             if !phrase.isEmpty {
