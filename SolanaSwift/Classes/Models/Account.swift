@@ -36,13 +36,13 @@ public extension SolanaSDK {
             var derivablePath = derivablePath
             if derivablePath == nil {
                 if phrase.count == 12 {
-                    derivablePath = .deprecated
+                    derivablePath = .init(type: .deprecated, walletIndex: 0, accountIndex: 0)
                 } else {
                     derivablePath = .default
                 }
             }
             
-            switch derivablePath {
+            switch derivablePath!.type {
             case .deprecated:
                 let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
                 guard let seed = try keychain.derivedKeychain(at: derivablePath!.rawValue).privateKey else {
