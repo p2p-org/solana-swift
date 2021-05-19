@@ -57,5 +57,10 @@ public extension SolanaSDK {
         public var description: String {
             base58EncodedString
         }
+        
+        public func short(numOfSymbolsRevealed: Int = 4) -> String {
+            let pubkey = base58EncodedString
+            return pubkey.prefix(numOfSymbolsRevealed) + "..." + pubkey.suffix(numOfSymbolsRevealed)
+        }
     }
 }
