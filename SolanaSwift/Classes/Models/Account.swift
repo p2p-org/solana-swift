@@ -11,7 +11,7 @@ import CryptoSwift
 import Ed25519HDKeySwift
 
 public extension SolanaSDK {
-    struct Account: Codable {
+    struct Account: Codable, Hashable {
         public let phrase: [String]
         public let publicKey: PublicKey
         public let secretKey: Data
@@ -21,7 +21,7 @@ public extension SolanaSDK {
         ///   - phrase: secret phrase for an account, leave it empty for new account
         ///   - network: network in which account should be created
         /// - Throws: Error if the derivation is not successful
-        public init(phrase: [String] = [], network: Network) throws {
+        public init(phrase: [String] = [], network: Network, derivablePath: DerivablePath? = nil) throws {
             let mnemonic: Mnemonic
             var phrase = phrase.filter {!$0.isEmpty}
             if !phrase.isEmpty {
@@ -33,13 +33,19 @@ public extension SolanaSDK {
             }
             self.phrase = phrase
             
-            let derivationPath: DerivationPath
-            if phrase.count == 12 {
-                // deprecated derivation path
-                derivationPath = .deprecated
-                
+            var derivablePath = derivablePath
+            if derivablePath == nil {
+                if phrase.count == 12 {
+                    derivablePath = .init(type: .deprecated, walletIndex: 0, accountIndex: 0)
+                } else {
+                    derivablePath = .default
+                }
+            }
+            
+            switch derivablePath!.type {
+            case .deprecated:
                 let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
-                guard let seed = try keychain.derivedKeychain(at: derivationPath.rawValue).privateKey else {
+                guard let seed = try keychain.derivedKeychain(at: derivablePath!.rawValue).privateKey else {
                     throw Error.other("Could not derivate private key")
                 }
                 
@@ -47,12 +53,8 @@ public extension SolanaSDK {
                 
                 self.publicKey = try PublicKey(data: keys.publicKey)
                 self.secretKey = keys.secretKey
-                
-            } else {
-                // current derivation path
-                derivationPath = .bip44
-                
-                let keys = try Ed25519HDKey.derivePath(derivationPath.rawValue, seed: mnemonic.seed.toHexString())
+            default:
+                let keys = try Ed25519HDKey.derivePath(derivablePath!.rawValue, seed: mnemonic.seed.toHexString())
                 
                 let keyPair = try NaclSign.KeyPair.keyPair(fromSeed: keys.key)
                 self.publicKey = try PublicKey(data: keyPair.publicKey)

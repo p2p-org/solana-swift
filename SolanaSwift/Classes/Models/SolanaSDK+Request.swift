@@ -17,7 +17,12 @@ extension SolanaSDK {
         }
     }
 
-    struct RequestAPI: Encodable {
+    public struct RequestAPI: Encodable {
+        public init(method: String, params: [Encodable]) {
+            self.method = method
+            self.params = params
+        }
+        
         public let id = UUID().uuidString
         public let method: String
         public let jsonrpc: String = "2.0"
