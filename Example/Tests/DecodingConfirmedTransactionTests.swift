@@ -99,6 +99,18 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.amount, 0.012111)
     }
     
+    func testDecodingSendTokenToNewAssociatedTokenAddress() throws {
+        let transactionInfo = try transactionInfoFromJSONFileName("SendTokenToNewAssociatedTokenAddress")
+        let myAccount = "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd"
+        
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: "MAPS")
+            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        
+        XCTAssertEqual(transaction.source?.token.symbol, "MAPS")
+        XCTAssertEqual(transaction.source?.pubkey, myAccount)
+        XCTAssertEqual(transaction.amount, 0.001)
+    }
+    
     private func transactionInfoFromJSONFileName(_ name: String) throws -> SolanaSDK.TransactionInfo
     {
         let path = Bundle(for: Self.self).path(forResource: name, ofType: "json")

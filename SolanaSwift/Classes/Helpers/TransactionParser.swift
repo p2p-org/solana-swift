@@ -73,7 +73,7 @@ public extension SolanaSDK {
             }
             
             // transfer
-            else if instructions.count == 1 || instructions.count == 4,
+            else if instructions.count == 1 || instructions.count == 4 || instructions.count == 2,
                instructions.last?.parsed?.type == "transfer",
                let instruction = instructions.last
             {
