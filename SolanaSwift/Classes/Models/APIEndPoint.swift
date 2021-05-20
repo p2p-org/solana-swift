@@ -27,5 +27,9 @@ extension SolanaSDK {
                 .init(url: "https://testnet.solana.com", network: .testnet)
             ]
         }
+        
+        public static var dataHubUrl: String {
+            "https://solana--mainnet--rpc.datahub.figment.io/apikey/d600d6ae197bd6951a84f353f25555d0"
+        }
     }
 }

@@ -54,15 +54,15 @@ extension SolanaSDK {
     
     func getPoolInfo(address: PublicKey, swapData: TokenSwapInfo) -> Single<Pool> {
         Single.zip([
-            self.getMintData(mintAddress: swapData.mintA)
+            self.getMintData(usingDataHub: true, mintAddress: swapData.mintA)
                 .map {$0 as Any},
-            self.getMintData(mintAddress: swapData.mintB)
+            self.getMintData(usingDataHub: true, mintAddress: swapData.mintB)
                 .map {$0 as Any},
-            self.getMintData(mintAddress: swapData.tokenPool)
+            self.getMintData(usingDataHub: true, mintAddress: swapData.tokenPool)
                 .map {$0 as Any},
-            self.getTokenAccountBalance(pubkey: swapData.tokenAccountA.base58EncodedString)
+            self.getTokenAccountBalance(usingDataHub: true, pubkey: swapData.tokenAccountA.base58EncodedString)
                 .map {$0 as Any},
-            self.getTokenAccountBalance(pubkey: swapData.tokenAccountB.base58EncodedString)
+            self.getTokenAccountBalance(usingDataHub: true, pubkey: swapData.tokenAccountB.base58EncodedString)
                 .map {$0 as Any},
         ])
             .map { mintDatas in

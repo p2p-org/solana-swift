@@ -10,9 +10,9 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-    func getAccountInfo<T: BufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
+    func getAccountInfo<T: BufferLayout>(usingDataHub: Bool = false, account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
         let configs = RequestConfiguration(encoding: "base64")
-		return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
+        return (request(usingDataHub: usingDataHub, parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
             .map {
                 if let value = $0.value {return value}
                 throw Error.invalidResponse(ResponseError(code: nil, message: "Invalid account info", data: nil))
@@ -141,7 +141,7 @@ public extension SolanaSDK {
 	func getTransactionCount(commitment: Commitment? = nil) -> Single<UInt64> {
 		request(parameters: [RequestConfiguration(commitment: commitment)])
 	}
-	func getTokenAccountBalance(pubkey: String, commitment: Commitment? = nil) -> Single<TokenAccountBalance> {
+	func getTokenAccountBalance(usingDataHub: Bool = false, pubkey: String, commitment: Commitment? = nil) -> Single<TokenAccountBalance> {
 		(request(parameters: [pubkey, RequestConfiguration(commitment: commitment)]) as Single<Rpc<TokenAccountBalance>>)
             .map {
                 if UInt64($0.value.amount) == nil {
@@ -220,10 +220,11 @@ public extension SolanaSDK {
     
     // MARK: - Additional methods
     func getMintData(
+        usingDataHub: Bool = false,
         mintAddress: PublicKey,
         programId: PublicKey = .tokenProgramId
     ) -> Single<Mint> {
-        getAccountInfo(account: mintAddress.base58EncodedString, decodedTo: Mint.self)
+        getAccountInfo(usingDataHub: usingDataHub, account: mintAddress.base58EncodedString, decodedTo: Mint.self)
             .map {
                 if $0.owner != programId.base58EncodedString {
                     throw Error.other("Invalid mint owner")
