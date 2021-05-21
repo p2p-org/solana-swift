@@ -30,7 +30,7 @@ extension SolanaSDK {
                     .init(publicKey: .sysvarRent, isSigner: false, isWritable: false)
                 ],
                 programId: associatedProgramId,
-                data: [UInt8(0)]
+                data: []
             )
         }
     }
