@@ -38,7 +38,7 @@ extension SolanaSDK {
         }
         
         // MARK: - Methods
-        /// get fee payer for free transaction
+        /// Get fee payer for free transaction
         /// - Returns: Account's public key that is responsible for paying fee
         public func getFeePayerPubkey() -> Single<PublicKey>
         {
@@ -126,12 +126,15 @@ extension SolanaSDK {
                 solanaAPIClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destination).map {$0 as Any}
             ])
                 .map { result -> (signature: String, blockhash: String, realDestination: String) in
+                    // get result of asynchronous requests
                     let feePayer = result[0] as! String
                     let recentBlockhash = result[1] as! String
                     let splTokenDestinationAddress = result[2] as! SPLTokenDestinationAddress
                     
+                    // form instructions
                     var instructions = [TransactionInstruction]()
                     
+                    // form register instruction for registering associated token if it has not been registered yet
                     if splTokenDestinationAddress.isUnregisteredAsocciatedToken
                     {
                         let createATokenInstruction = AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
@@ -143,6 +146,7 @@ extension SolanaSDK {
                         instructions.append(createATokenInstruction)
                     }
                     
+                    // form transfer instruction
                     let transferInstruction = TokenProgram.transferCheckedInstruction(
                         programId: .tokenProgramId,
                         source: try PublicKey(string: source),
@@ -155,12 +159,22 @@ extension SolanaSDK {
                     )
                     instructions.append(transferInstruction)
                     
+                    // get signature from instructions
                     let signature = try self.getSignature(
                         feePayer: feePayer,
                         instructions: instructions,
                         recentBlockhash: recentBlockhash
                     )
-                    return (signature: Base58.encode(signature.bytes), blockhash: recentBlockhash, realDestination: splTokenDestinationAddress.destination.base58EncodedString)
+                    
+                    // get real destination: if associated token has been registered, then send token to this address, if not, send token to SOL account address
+                    var realDestination = destination
+                    if !splTokenDestinationAddress.isUnregisteredAsocciatedToken
+                    {
+                        realDestination = splTokenDestinationAddress.destination.base58EncodedString
+                    }
+                    
+                    // send result to catcher
+                    return (signature: Base58.encode(signature.bytes), blockhash: recentBlockhash, realDestination: realDestination)
                 }
                 .flatMap {result in
                     self.sendTransaction(
@@ -180,6 +194,13 @@ extension SolanaSDK {
         }
         
         // MARK: - Helpers
+        /// Get signature from formed instructions
+        /// - Parameters:
+        ///   - feePayer: the feepayer gotten from getFeePayerPubkey
+        ///   - instructions: instructions to get signature from
+        ///   - recentBlockhash: recentBlockhash retrieved from server
+        /// - Throws: error if signature not found
+        /// - Returns: signature
         private func getSignature(
             feePayer: String,
             instructions: [TransactionInstruction],
@@ -198,6 +219,11 @@ extension SolanaSDK {
             return signature
         }
         
+        /// Send transaction to fee relayer
+        /// - Parameters:
+        ///   - path: additional path for request
+        ///   - params: request's parameters
+        /// - Returns: transaction id
         private func sendTransaction(
             path: String,
             params: SolanaFeeRelayerTransferParams

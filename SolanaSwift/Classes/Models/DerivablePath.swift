@@ -11,9 +11,9 @@ extension SolanaSDK {
     public struct DerivablePath: Hashable {
         // MARK: - Nested type
         public enum DerivableType: String, CaseIterable {
-            case deprecated
-            case bip44
             case bip44Change
+            case bip44
+            case deprecated
             
             var prefix: String {
                 switch self {

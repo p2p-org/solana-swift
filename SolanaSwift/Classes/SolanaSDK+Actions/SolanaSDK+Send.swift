@@ -42,6 +42,13 @@ extension SolanaSDK {
                     else {throw Error.other("Invalid account info")}
                     return
                 }
+                .catch { error in
+                    if error.readableDescription == "Could not retrieve account info" {
+                        // let request through
+                        return .just(())
+                    }
+                    throw error
+                }
                 .flatMap {
                     // real transaction without fee
                     if !isSimulation && withoutFee {
