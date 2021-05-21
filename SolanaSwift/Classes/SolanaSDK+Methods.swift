@@ -14,8 +14,10 @@ public extension SolanaSDK {
         let configs = RequestConfiguration(encoding: "base64")
 		return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
             .map {
-                if let value = $0.value {return value}
-                throw Error.invalidResponse(ResponseError(code: nil, message: "Invalid account info", data: nil))
+                guard let value = $0.value else {
+                    throw Error.other("Could not retrieve account info")
+                }
+                return value
             }
 	}
 	func getBalance(account: String? = nil, commitment: Commitment? = nil) -> Single<UInt64> {
