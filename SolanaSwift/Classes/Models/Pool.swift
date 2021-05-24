@@ -21,68 +21,90 @@ extension SolanaSDK {
             poolTokenMint.mintAuthority
         }
         
-        public func estimatedAmount(forInputAmount inputAmount: UInt64) -> UInt64?
-        {
+        // MARK: - Calculations
+        public func estimatedAmount(
+            forInputAmount inputAmount: Lamports,
+            includeFees: Bool
+        ) -> Lamports? {
             guard let tokenABalance = tokenABalance?.amountInUInt64,
                   let tokenBBalance = tokenBBalance?.amountInUInt64
             else {return nil}
-            let numerator = BInt(tokenBBalance) * BInt(inputAmount)
-            let denominator = BInt(tokenABalance) + BInt(inputAmount)
-            if denominator == 0 { return nil }
-            return UInt64(numerator / denominator)
+            
+            let i = BInt(inputAmount)
+            
+            let b = BInt(tokenBBalance)
+            let a = BInt(tokenABalance)
+            let d = BInt(swapData.tradeFeeDenominator)
+            let n = includeFees ? BInt(swapData.tradeFeeNumerator) : 0
+            
+            let numerator = b * i * (d - n)
+            let denominator = (a + i) * d
+            
+            if denominator == 0 {
+                return nil
+            }
+            
+            return Lamports(numerator / denominator)
         }
         
-        public func inputAmount(forEstimatedAmount estimatedAmount: UInt64) -> UInt64?
-        {
+        public func inputAmount(
+            forEstimatedAmount estimatedAmount: Lamports,
+            includeFees: Bool
+        ) -> Lamports? {
             guard let tokenABalance = tokenABalance?.amountInUInt64,
                   let tokenBBalance = tokenBBalance?.amountInUInt64
             else {return nil}
-            let numerator = BInt(estimatedAmount) * BInt(tokenABalance)
-            let denominator = BInt(tokenBBalance) - BInt(estimatedAmount)
-            if denominator == 0 { return nil }
-            let value = numerator / denominator
-            if value > 0 {return UInt64(value)}
-            else {return nil}
+            
+            let e = BInt(estimatedAmount)
+            
+            let b = BInt(tokenBBalance)
+            let a = BInt(tokenABalance)
+            let d = BInt(swapData.tradeFeeDenominator)
+            let n = includeFees ? BInt(swapData.tradeFeeNumerator) : 0
+            
+            let numerator = e * a * d
+            let denominator = b * (d - n) - e * d
+            
+            return Lamports(numerator / denominator)
         }
         
         public func minimumReceiveAmount(
-            estimatedAmount: UInt64,
+            estimatedAmount: Lamports,
             slippage: Double
-        ) -> UInt64 {
-            UInt64(Float64(estimatedAmount) * Float64(1 - slippage))
-        }
-        
-        public func amountInOtherToken(
-            forInputAmount inputAmount: UInt64,
-            includeFees: Bool
-        ) -> Decimal? {
-            guard let tokenABalance = tokenABalance?.amountInUInt64,
-                  let tokenBBalance = tokenBBalance?.amountInUInt64
-            else {return nil}
-            let feeRatio = Decimal(swapData.tradeFeeNumerator) / Decimal(swapData.tradeFeeDenominator)
-            let invariant = BInt(tokenABalance) * BInt(tokenBBalance)
-            let newFromAmountInPool = BInt(tokenABalance) + BInt(inputAmount)
-            var newToAmountInPool: BInt = 0
-            if newFromAmountInPool != 0 {
-                newToAmountInPool = invariant / newFromAmountInPool
-            }
-            let grossToAmount = BInt(tokenBBalance) - newToAmountInPool
-            
-            let grossToAmountDecimal = Decimal(string: grossToAmount.asString(withBase: 10)) ?? 0
-            
-            let fees = includeFees ? grossToAmountDecimal * feeRatio: Decimal(0)
-            return grossToAmountDecimal - fees
+        ) -> Lamports {
+            Lamports(Float64(estimatedAmount) * Float64(1 - slippage))
         }
         
         public func fee(forInputAmount inputAmount: UInt64) -> Double? {
-            guard let swappedAmountWithFee = amountInOtherToken(forInputAmount: inputAmount, includeFees: true),
-                  let swappedAmountWithoutFee = amountInOtherToken(forInputAmount: inputAmount, includeFees: false)
-            else {
+            guard let tokenABalance = tokenABalance?.amountInUInt64,
+                  let tokenBBalance = tokenBBalance?.amountInUInt64
+            else {return nil}
+            
+            let i = BInt(inputAmount)
+            
+            let b = BInt(tokenBBalance)
+            let a = BInt(tokenABalance)
+            let d = BInt(swapData.tradeFeeDenominator)
+            let n = BInt(swapData.tradeFeeNumerator)
+            
+            let numerator = b * i * n
+            let denominator = (a + i) * d
+            
+            if denominator == 0 {
                 return nil
             }
-            let fee = swappedAmountWithoutFee - swappedAmountWithFee
-            let feeInDouble = NSDecimalNumber(decimal:fee).doubleValue
-            return feeInDouble * pow(10, -Double(tokenBInfo.decimals))
+            
+            return Lamports(numerator / denominator).convertToBalance(decimals: tokenBInfo.decimals)
+        }
+        
+        // MARK: - Helpers
+        var reversedPool: Pool {
+            var pool = self
+            Swift.swap(&pool.swapData.tokenAccountA, &pool.swapData.tokenAccountB)
+            Swift.swap(&pool.swapData.mintA, &pool.swapData.mintB)
+            Swift.swap(&pool.tokenABalance, &pool.tokenBBalance)
+            Swift.swap(&pool.tokenAInfo, &pool.tokenBInfo)
+            return pool
         }
     }
 }
@@ -95,13 +117,9 @@ extension Array where Element == SolanaSDK.Pool {
                 ($0.swapData.mintB.base58EncodedString == sourceMint && $0.swapData.mintA.base58EncodedString == destinationMint)
         })
         .map { pool in
-            var pool = pool
             if (pool.swapData.mintB.base58EncodedString == sourceMint && pool.swapData.mintA.base58EncodedString == destinationMint)
             {
-                swap(&pool.swapData.tokenAccountA, &pool.swapData.tokenAccountB)
-                swap(&pool.swapData.mintA, &pool.swapData.mintB)
-                swap(&pool.tokenABalance, &pool.tokenBBalance)
-                swap(&pool.tokenAInfo, &pool.tokenBInfo)
+                return pool.reversedPool
             }
             return pool
         }
