@@ -212,6 +212,15 @@ extension SolanaSDK {
                 // token is of another type
                 throw Error.invalidRequest(reason: "Wallet address is not valid")
             }
+            .catch { error in
+                // let request through if result of getAccountInfo is null (it may be a new SOL address)
+                if error.readableDescription == "Could not retrieve account info" {
+                    return .just(destinationAddress)
+                }
+                
+                // throw another error
+                throw error
+            }
             .flatMap {toPublicKey -> Single<SPLTokenDestinationAddress> in
                 let toPublicKey = try PublicKey(string: toPublicKey)
                 // if destination address is an SOL account address
