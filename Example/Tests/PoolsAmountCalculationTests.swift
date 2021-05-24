@@ -80,16 +80,12 @@ class PoolsAmountCalculationTests: XCTestCase {
     }
     
     func testAmountCalculation() throws {
-        // 1 SOL (A) = 5.366003 SRM (B)
-        let originalInputAmount: UInt64 = 1.toLamport(decimals: pool.tokenAInfo.decimals)
-        let estimatedAmount = pool.estimatedAmount(forInputAmount: originalInputAmount, includeFees: true)
+        let inputAmount: Double = 1
+        let expectedEstimatedAmount = 5.352587
         
-        XCTAssertEqual(estimatedAmount?.convertToBalance(decimals: 6), 5.352587)
+        let originalInputAmount: UInt64 = inputAmount.toLamport(decimals: pool.tokenAInfo.decimals)
+        let estimatedAmountResult = pool.estimatedAmount(forInputAmount: originalInputAmount, includeFees: true)
         
-        // 5.352587 SRM (B) = 1 SOL (A)
-    
-        let inputAmountNeeded = pool.inputAmount(forEstimatedAmount: estimatedAmount!, includeFees: true)
-        
-        XCTAssertEqual(inputAmountNeeded?.convertToBalance(decimals: 9).rounded(.up), 1)
+        XCTAssertEqual(estimatedAmountResult?.convertToBalance(decimals: 6), expectedEstimatedAmount)
     }
 }
