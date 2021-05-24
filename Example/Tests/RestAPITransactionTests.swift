@@ -107,7 +107,7 @@ class RestAPITransactionTests: RestAPITests {
             mintAddress: "MAPS41MDahZ9QdKXhVa4dWB9RuyfV4XqhyAZ8XcYepb",
             decimals: 6,
             from: "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd",
-            to: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
+            to: "J2EzmHcwZP4CUQwt9yUBgPS7JcMyJYCqw2WGVB5LTW6P",
             amount: 0.001.toLamport(decimals: 6),
             isSimulation: true
         ).toBlocking().first()
