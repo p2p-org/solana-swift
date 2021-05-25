@@ -63,7 +63,7 @@ extension SolanaSDK {
             .flatMap {params in
                 guard let pool = pool,
                       let poolAuthority = pool.authority,
-                      let estimatedAmount = pool.estimatedAmount(forInputAmount: amount),
+                      let estimatedAmount = pool.estimatedAmount(forInputAmount: amount, includeFees: true),
                       let tokenBBalance = UInt64(pool.tokenBBalance?.amount ?? "")
                 else {return .error(Error.other("Swap pool is not valid"))}
                 // get variables

@@ -43,7 +43,7 @@ extension SolanaSDK {
                     return
                 }
                 .catch { error in
-                    if error.readableDescription == "Could not retrieve account info" {
+                    if (error as? Error) == Error.other("Could not retrieve account info") {
                         // let request through
                         return .just(())
                     }
@@ -123,12 +123,6 @@ extension SolanaSDK {
             mintAddress: mintAddress,
             destinationAddress: destinationAddress
         )
-            .map { result -> SPLTokenDestinationAddress in
-                if fromPublicKey == result.destination.base58EncodedString {
-                    throw Error.other("You can not send tokens to yourself")
-                }
-                return result
-            }
             .flatMap {result in
                 // get address
                 let toPublicKey = result.destination
@@ -214,8 +208,16 @@ extension SolanaSDK {
             }
             .catch { error in
                 // let request through if result of getAccountInfo is null (it may be a new SOL address)
-                if error.readableDescription == "Could not retrieve account info" {
-                    return .just(destinationAddress)
+                if (error as? Error) == Error.other("Could not retrieve account info") {
+                    let owner = try PublicKey(string: destinationAddress)
+                    let tokenMint = try PublicKey(string: mintAddress)
+                    
+                    // create associated token address
+                    let address = try PublicKey.associatedTokenAddress(
+                        walletAddress: owner,
+                        tokenMintAddress: tokenMint
+                    )
+                    return .just(address.base58EncodedString)
                 }
                 
                 // throw another error

@@ -47,6 +47,9 @@ public extension SolanaSDK {
                 
                 // transfer
                 let authority: String?
+                
+                // transferChecked
+                let tokenAmount: TokenAccountBalance?
             }
             let info: Info
             let type: String?

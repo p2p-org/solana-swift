@@ -74,7 +74,7 @@ public extension SolanaSDK {
             
             // transfer
             else if instructions.count == 1 || instructions.count == 4 || instructions.count == 2,
-               instructions.last?.parsed?.type == "transfer",
+               instructions.last?.parsed?.type == "transfer" || instructions.last?.parsed?.type == "transferChecked",
                let instruction = instructions.last
             {
                 single = parseTransferTransaction(
@@ -166,7 +166,7 @@ public extension SolanaSDK {
             let destinationPubkey = instruction.parsed?.info.destination
             
             // get lamports
-            let lamports = instruction.parsed?.info.lamports ?? UInt64(instruction.parsed?.info.amount ?? "0")
+            let lamports = instruction.parsed?.info.lamports ?? UInt64(instruction.parsed?.info.amount ?? instruction.parsed?.info.tokenAmount?.amount ?? "0")
             
             // SOL to SOL
             if instruction.programId == PublicKey.programId.base58EncodedString {
@@ -238,9 +238,9 @@ public extension SolanaSDK {
         ) -> Int? {
             instructions.firstIndex(
                 where: {
-                    $0.programId == solanaSDK.endpoint.network.swapProgramId.base58EncodedString /*swap v2*/ ||
-                        $0.programId == "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL" /*main old swap*/ ||
-                        $0.programId == "DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1" /*main ocra*/
+                    $0.programId == solanaSDK.endpoint.network.swapProgramId.base58EncodedString /*swap ocra*/ ||
+                        $0.programId == "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL" /*main deprecated*/ ||
+                        $0.programId == "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8" /*main deprecated*/
                 })
         }
         
