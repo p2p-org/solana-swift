@@ -35,17 +35,47 @@ public extension SolanaSDK {
             // single
             var single: Single<AnyHashable?>
             
-            // swap (un-parsed type)
+            // swap, liquidity (un-parsed type)
             if let instructionIndex = getSwapInstructionIndex(instructions: instructions)
             {
-                let instruction = instructions[instructionIndex]
-                single = parseSwapTransaction(
-                    index: instructionIndex,
-                    instruction: instruction,
-                    innerInstructions: innerInstructions,
-                    myAccountSymbol: myAccountSymbol
-                )
-                    .map {$0 as AnyHashable}
+                let checkingInnerInstructions = innerInstructions?.first?.instructions
+                // swap
+                if checkingInnerInstructions?.count == 2,
+                   checkingInnerInstructions![0].parsed?.type == "transfer",
+                   checkingInnerInstructions![1].parsed?.type == "transfer"
+                {
+                    let instruction = instructions[instructionIndex]
+                    single = parseSwapTransaction(
+                        index: instructionIndex,
+                        instruction: instruction,
+                        innerInstructions: innerInstructions,
+                        myAccountSymbol: myAccountSymbol
+                    )
+                        .map {$0 as AnyHashable}
+                }
+                
+                // Later: provide liquidity to pool (unsupported yet)
+                else if checkingInnerInstructions?.count == 3,
+                        checkingInnerInstructions![0].parsed?.type == "transfer",
+                        checkingInnerInstructions![1].parsed?.type == "transfer",
+                        checkingInnerInstructions![2].parsed?.type == "mintTo"
+                {
+                    single = .just(nil)
+                }
+                
+                // Later: burn?
+                else if checkingInnerInstructions?.count == 3,
+                        checkingInnerInstructions![0].parsed?.type == "burn",
+                        checkingInnerInstructions![1].parsed?.type == "transfer",
+                        checkingInnerInstructions![2].parsed?.type == "transfer"
+                {
+                    single = .just(nil)
+                }
+                
+                // unsupported
+                else {
+                    single = .just(nil)
+                }
             }
             
             // create account
@@ -236,6 +266,7 @@ public extension SolanaSDK {
         private func getSwapInstructionIndex(
             instructions: [ParsedInstruction]
         ) -> Int? {
+            // ignore liqu
             instructions.firstIndex(
                 where: {
                     $0.programId == solanaSDK.endpoint.network.swapProgramId.base58EncodedString /*swap ocra*/ ||

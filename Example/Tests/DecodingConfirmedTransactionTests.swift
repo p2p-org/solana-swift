@@ -121,6 +121,28 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction2.amount, 0.001)
     }
     
+    func testDecodingProvideLiquidityToPoolTransaction() throws {
+        // transfer type
+        let transactionInfo = try transactionInfoFromJSONFileName("ProvideLiquidityToPoolTransaction")
+        let myAccount = "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd"
+        
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
+            .toBlocking().first()!
+        
+        XCTAssertNil(transaction.value)
+    }
+    
+    func testDecodingBurnLiquidityInPoolTransaction() throws {
+        // transfer type
+        let transactionInfo = try transactionInfoFromJSONFileName("BurnLiquidityInPoolTransaction")
+        let myAccount = "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd"
+        
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
+            .toBlocking().first()!
+        
+        XCTAssertNil(transaction.value)
+    }
+    
     private func transactionInfoFromJSONFileName(_ name: String) throws -> SolanaSDK.TransactionInfo
     {
         let path = Bundle(for: Self.self).path(forResource: name, ofType: "json")
