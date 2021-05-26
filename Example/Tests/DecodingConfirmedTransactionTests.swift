@@ -73,6 +73,21 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.destination?.pubkey, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
         XCTAssertEqual(transaction.amount, 0.01)
+        XCTAssertEqual(transaction.wasPaidByP2POrg, false)
+    }
+    
+    func testDecodingSendSOLTransactionPaidByP2PORG() throws {
+        let transactionInfo = try transactionInfoFromJSONFileName("SendSOLTransactionPaidByP2PORG")
+        
+        let myAccount = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil)
+            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        
+        XCTAssertEqual(transaction.source?.token.symbol, "SOL")
+        XCTAssertEqual(transaction.source?.pubkey, myAccount)
+        XCTAssertEqual(transaction.destination?.pubkey, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        XCTAssertEqual(transaction.amount, 0.00001)
+        XCTAssertEqual(transaction.wasPaidByP2POrg, true)
     }
     
     func testDecodingSendSPLToSOLTransaction() throws {

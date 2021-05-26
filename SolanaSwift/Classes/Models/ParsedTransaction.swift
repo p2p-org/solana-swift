@@ -98,6 +98,7 @@ public extension SolanaSDK {
         public let source: Wallet?
         public let destination: Wallet?
         public let amount: Double?
+        public var wasPaidByP2POrg: Bool = false
         
         let myAccount: String?
         

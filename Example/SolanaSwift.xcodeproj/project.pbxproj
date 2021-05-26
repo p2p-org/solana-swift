@@ -26,6 +26,7 @@
 		BC65DFAE261D5D4300E436C7 /* SendSPLToSPLTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */; };
 		BC6D01FE265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC6D01FD265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json */; };
 		BC6D020F265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC6D020E265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json */; };
+		BC6D0212265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json in Resources */ = {isa = PBXBuildFile; fileRef = BC6D0211265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json */; };
 		BC76B552263806100018A0FF /* AssociatedTokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */; };
 		BC7826D7264B876C0061F762 /* FeeRelayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC7826D6264B876C0061F762 /* FeeRelayerTests.swift */; };
 		BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */; };
@@ -162,6 +163,7 @@
 		BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSPLToSPLTransaction.json; sourceTree = "<group>"; };
 		BC6D01FD265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ProvideLiquidityToPoolTransaction.json; sourceTree = "<group>"; };
 		BC6D020E265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = BurnLiquidityInPoolTransaction.json; sourceTree = "<group>"; };
+		BC6D0211265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSOLTransactionPaidByP2PORG.json; sourceTree = "<group>"; };
 		BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssociatedTokenProgramTests.swift; sourceTree = "<group>"; };
 		BC7826D6264B876C0061F762 /* FeeRelayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeRelayerTests.swift; sourceTree = "<group>"; };
 		BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenProgramTests.swift; sourceTree = "<group>"; };
@@ -240,6 +242,7 @@
 				BC54A943261C09B90083A127 /* CreateAccountTransaction.json */,
 				BC54A96E261C1B560083A127 /* CloseAccountTransaction.json */,
 				BC54A973261C1E430083A127 /* SendSOLTransaction.json */,
+				BC6D0211265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json */,
 				BC65DF9E261D5B3300E436C7 /* SendSPLToSOLTransaction.json */,
 				BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */,
 				BC53E22A26565CD0005624CC /* SendTokenToNewAssociatedTokenAddress.json */,
@@ -518,6 +521,7 @@
 				BC65DF9F261D5B3300E436C7 /* SendSPLToSOLTransaction.json in Resources */,
 				BC54A944261C09B90083A127 /* CreateAccountTransaction.json in Resources */,
 				BC6D01FE265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json in Resources */,
+				BC6D0212265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json in Resources */,
 				BC6D020F265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json in Resources */,
 				BC53E22B26565CD0005624CC /* SendTokenToNewAssociatedTokenAddress.json in Resources */,
 				BC44FC5B265B9866008BEE84 /* SendTokenToNewAssociatedTokenAddressTransferChecked.json in Resources */,

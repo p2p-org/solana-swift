@@ -199,11 +199,12 @@ public extension SolanaSDK {
             let lamports = instruction.parsed?.info.lamports ?? UInt64(instruction.parsed?.info.amount ?? instruction.parsed?.info.tokenAmount?.amount ?? "0")
             
             // SOL to SOL
+            let request: Single<TransferTransaction>
             if instruction.programId == PublicKey.programId.base58EncodedString {
                 source = Wallet.nativeSolana(pubkey: sourcePubkey, lamport: nil)
                 destination = Wallet.nativeSolana(pubkey: destinationPubkey, lamport: nil)
                 
-                return .just(
+                request = .just(
                     TransferTransaction(
                         source: source,
                         destination: destination,
@@ -235,7 +236,7 @@ public extension SolanaSDK {
                         }
                     }
                     
-                    return .just(
+                    request = .just(
                         TransferTransaction(
                             source: source,
                             destination: destination,
@@ -244,7 +245,7 @@ public extension SolanaSDK {
                         )
                     )
                 } else {
-                    return getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
+                    request = getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
                         .map { info in
                             // update source
                             let token = getTokenWithMint(info?.mint.base58EncodedString)
@@ -260,6 +261,19 @@ public extension SolanaSDK {
                         }
                 }
             }
+            
+            // define if transaction was paid by p2p.org
+            return Single.zip(
+                request,
+                FeeRelayer(solanaAPIClient: solanaSDK).getFeePayerPubkey()
+            )
+                .map { transaction, feePayer in
+                    var transaction = transaction
+                    if accountKeys.map({$0.publicKey}).first == feePayer {
+                        transaction.wasPaidByP2POrg = true
+                    }
+                    return transaction
+                }
         }
         
         // MARK: - Swap
