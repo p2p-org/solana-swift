@@ -72,6 +72,7 @@ extension SolanaSDK {
                         .asSingle()
                 }
                 .asCompletable()
+                .timeout(.seconds(30), scheduler: MainScheduler.instance)
         }
         
         // MARK: - Handlers
