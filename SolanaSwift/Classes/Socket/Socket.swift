@@ -96,20 +96,27 @@ extension SolanaSDK {
         {
             let id = write(
                 method: .init(.signature, .subscribe),
-                params: [signature/*, ["commitment": "max"]*/]
+                params: [signature, ["commitment": "max"]]
             )
             
             return subscribe(id: id)
-                .flatMap {
-                    self.observeNotification(
-                        .signature,
-                        decodedTo: SignatureNotification.self,
-                        subscription: $0
-                    )
+                .flatMapCompletable {[weak self] subscription in
+                    self?.dataSubject
+                        .filter {data in
+                            guard let response = try? JSONDecoder().decode(Response<SignatureNotification>.self, from: data),
+                                  response.method == "signatureNotification",
+                                  response.params?.subscription == subscription
+                            else {
+                                return false
+                            }
+                            return true
+                        }
                         .take(1)
                         .asSingle()
+                        .asCompletable()
+                    ?? .empty()
                 }
-                .asCompletable()
+                
         }
         
         @discardableResult
@@ -156,28 +163,6 @@ extension SolanaSDK {
                 .asSingle()
         }
         
-        private func observeNotification<T: Decodable>(_ entity: Entity, decodedTo type: T.Type, subscription: UInt64? = nil) -> Observable<T> {
-            dataSubject
-                .filter { data in
-                    guard let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
-                        else {
-                            return false
-                    }
-                    var condition = (json["method"] as? String) == entity.notificationMethodName
-                    if let subscription = subscription {
-                        condition = condition && (((json["params"] as? [String: Any])?["subscription"] as? UInt64) == subscription)
-                    }
-                    return condition
-                }
-                .map { data in
-                    guard let result = try JSONDecoder().decode(Response<T>.self, from: data).params?.result?.value
-                    else {
-                        throw Error.other("The response is empty")
-                    }
-                    return result
-                }
-        }
-        
         private func observeNotification(_ entity: Entity, subscription: UInt64? = nil) -> Observable<Data>
         {
             dataSubject
@@ -199,7 +184,6 @@ extension SolanaSDK {
                         throw Error.other("Request is invalid \(requestAPI)")
                     }
                     self?.socket.write(string: string, completion: {
-                        Logger.log(message: "\(requestAPI.method) success", event: .event)
                         completion?()
                     })
                 } catch {
