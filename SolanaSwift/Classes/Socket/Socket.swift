@@ -23,7 +23,7 @@ extension SolanaSDK {
         
         // MARK: - Subjects
         let status = BehaviorRelay<Status>(value: .initializing)
-        let textSubject = PublishSubject<String>()
+        let dataSubject = PublishSubject<Data>()
         var socketDidConnect: Completable {
             status.filter{$0 == .connected}.take(1).asSingle().asCompletable()
         }
@@ -85,18 +85,7 @@ extension SolanaSDK {
                 .disposed(by: disposeBag)
         }
         
-        public func observeSOLAccountNotification(account: String) -> Observable<Notification.SOLAccount>
-        {
-            // write
-            let id = write(method: .init(.account, .subscribe), params: [account])
-            
-            // get subscriptions
-            return observeNotification(.account, decodedTo: Notification.SOLAccount.self)
-        }
         
-        public func observeOtherAccountNotification(account: String) {
-            // TODO: - Other account notifications
-        }
         
         // MARK: - Signature notifications
         public func observeSignatureNotification(signature: String) -> Completable
@@ -110,7 +99,7 @@ extension SolanaSDK {
                 .flatMap {
                     self.observeNotification(
                         .signature,
-                        decodedTo: Rpc<Notification.Signature>.self,
+                        decodedTo: Rpc<SignatureNotification>.self,
                         subscription: $0
                     )
                         .take(1)
@@ -144,20 +133,15 @@ extension SolanaSDK {
         }
         
         private func subscribe(id: String) -> Single<UInt64> {
-            textSubject
-                .filter {
-                    guard let jsonData = $0.data(using: .utf8),
-                        let json = (try? JSONSerialization.jsonObject(with: jsonData, options: .mutableLeaves)) as? [String: Any]
+            dataSubject
+                .filter { data in
+                    guard let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
                         else {
                             return false
                     }
                     return (json["id"] as? String) == id
                 }
-                .map {
-                    guard let data = $0.data(using: .utf8) else {
-                        throw Error.other("The response is not valid")
-                    }
-                    
+                .map { data in
                     guard let subscription = try JSONDecoder().decode(Response<UInt64>.self, from: data).result
                     else {
                         throw Error.other("Subscription is not valid")
@@ -169,10 +153,9 @@ extension SolanaSDK {
         }
         
         private func observeNotification<T: Decodable>(_ entity: Entity, decodedTo type: T.Type, subscription: UInt64? = nil) -> Observable<T> {
-            textSubject
-                .filter { string in
-                    guard let jsonData = string.data(using: .utf8),
-                        let json = (try? JSONSerialization.jsonObject(with: jsonData, options: .mutableLeaves)) as? [String: Any]
+            dataSubject
+                .filter { data in
+                    guard let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
                         else {
                             return false
                     }
@@ -182,10 +165,7 @@ extension SolanaSDK {
                     }
                     return condition
                 }
-                .map { string in
-                    guard let data = string.data(using: .utf8) else {
-                        throw Error.other("The response is not valid")
-                    }
+                .map { data in
                     guard let result = try JSONDecoder().decode(Response<T>.self, from: data).params?.result
                     else {
                         throw Error.other("The response is empty")

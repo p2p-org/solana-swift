@@ -22,7 +22,9 @@ extension SolanaSDK.Socket: WebSocketDelegate {
             socket.connect()
         case .text(let string):
             Logger.log(message: "Received text: \(string)", event: .event)
-            textSubject.onNext(string)
+            if let data = string.data(using: .utf8) {
+                dataSubject.onNext(data)
+            }
         case .binary(let data):
             Logger.log(message: "Received data: \(data.count)", event: .event)
         case .ping(_):

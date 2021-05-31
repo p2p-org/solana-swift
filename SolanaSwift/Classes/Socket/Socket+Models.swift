@@ -36,11 +36,21 @@ extension SolanaSDK.Socket {
         }
     }
     
-    struct Subscription: Equatable {
+    public struct Subscription: Equatable {
         let entity: Entity
         let id: UInt64
         var account: String?
     }
+    
+    public struct AccountNotification {
+        let account: String
+        let lamports: SolanaSDK.Lamports
+    }
+    
+    public struct SignatureNotification: Decodable {
+        let err: SolanaSDK.ResponseError?
+    }
+
 }
 
 
