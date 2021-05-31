@@ -18,14 +18,7 @@ public extension SolanaSDK {
 		public let result: T?
 		public let error: ResponseError?
         public let method: String?
-        
-        // socket
-        public let params: SocketParams<T>?
 	}
-    struct SocketParams<T: Decodable>: Decodable {
-        public let result: T?
-        public let subscription: UInt64?
-    }
 	struct ResponseError: Decodable {
 		public let code: Int?
 		public let message: String?

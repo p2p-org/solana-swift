@@ -13,21 +13,26 @@ import RxCocoa
 extension SolanaSDK {
     public class Socket {
         // MARK: - Properties
-        let disposeBag = DisposeBag()
+        private let disposeBag = DisposeBag()
         let socket: WebSocket
-        let account: PublicKey?
         var wsHeartBeat: Timer!
         
+        // MARK: - Subscriptions
+        private var accounts = [String]()
+        private var accountSubscriptions = [Subscription]()
+        
         // MARK: - Subjects
-        public let status = BehaviorRelay<Status>(value: .initializing)
-        let textSubject = PublishSubject<String>()
+        let status = BehaviorRelay<Status>(value: .initializing)
+        let dataSubject = PublishSubject<Data>()
+        var socketDidConnect: Completable {
+            status.filter{$0 == .connected}.take(1).asSingle().asCompletable()
+        }
 
         // MARK: - Initializer
-        public init(endpoint: String, publicKey: PublicKey?) {
+        public init(endpoint: String) {
             var request = URLRequest(url: URL(string: endpoint)!)
             request.timeoutInterval = 5
             socket = WebSocket(request: request)
-            account = publicKey
             defer {socket.delegate = self}
         }
         
@@ -35,100 +40,112 @@ extension SolanaSDK {
             disconnect()
         }
         
-        // MARK: - Public methods
+        // MARK: - Socket actions
+        /// Connect to Solana's websocket
         public func connect() {
+            // connecting
             status.accept(.connecting)
+            
+            // connect
             socket.connect()
         }
         
+        /// Disconnect from Solana's websocket
         public func disconnect() {
+            unsubscribeToAllSubscriptions()
             status.accept(.disconnected)
             socket.disconnect()
-            write(method: "accountUnsubscribe", params: [account?.base58EncodedString])
+        }
+        
+        // MARK: - Account notifications
+        public func subscribeAccountNotification(account: String) {
+            // check if subscriptions exists
+            guard !accountSubscriptions.contains(where: {$0.account == account })
+            else {
+                // already registered
+                return
+            }
+            
+            // if account was not registered, add account to self.accounts
+            if !accounts.contains(account) {
+                accounts.append(account)
+            }
+            
+            // add subscriptions
+            let id = write(method: .init(.account, .subscribe), params: [account, ["encoding":"jsonParsed"]])
+            subscribe(id: id)
+                .subscribe(onSuccess: {[weak self] subscriptionId in
+                    guard let strongSelf = self else {return}
+                    if strongSelf.accountSubscriptions.contains(where: {$0.account == account})
+                    {
+                        strongSelf.accountSubscriptions.removeAll(where: {$0.account == account})
+                    }
+                    strongSelf.accountSubscriptions.append(.init(entity: .account, id: subscriptionId, account: account))
+                })
+                .disposed(by: disposeBag)
+        }
+        
+        public func observeAccountNotifications() -> Observable<(pubkey: String, lamports: Lamports)>
+        {
+            observeNotification(.account)
+                .flatMap {self.decodeDataToAccountNotification(data: $0)}
+        }
+        
+        // MARK: - Signature notifications
+        public func observeSignatureNotification(signature: String) -> Completable
+        {
+            let id = write(
+                method: .init(.signature, .subscribe),
+                params: [signature/*, ["commitment": "max"]*/]
+            )
+            
+            return subscribe(id: id)
+                .flatMap {
+                    self.observeNotification(
+                        .signature,
+                        decodedTo: SignatureNotification.self,
+                        subscription: $0
+                    )
+                        .take(1)
+                        .asSingle()
+                }
+                .asCompletable()
         }
         
         @discardableResult
-        public func write(method: String, params: [Encodable]) -> String {
+        public func write(method: Method, params: [Encodable]) -> String {
             let requestAPI = RequestAPI(
-                method: method,
+                method: method.rawValue,
                 params: params
             )
             write(requestAPI: requestAPI)
             return requestAPI.id
         }
         
-        public func observeAccountNotification() -> Observable<Notification.Account> {
-            observe(method: "accountNotification", decodedTo: Notification.Account.self)
-        }
-        
-        public func observeSignatureNotification(signature: String) -> Completable
-        {
-            let id = write(method: "signatureSubscribe", params: [signature, ["commitment": "max"]])
-            
-            return subscribe(id: id)
-                .flatMap {
-                    self.observe(method: "signatureNotification", decodedTo: Rpc<Notification.Signature>.self, subscription: $0)
-                        .take(1)
-                        .asSingle()
-                }
-                .asCompletable()
-                .timeout(.seconds(30), scheduler: MainScheduler.instance)
-        }
-        
-        // MARK: - Handlers
-        func updateSubscriptions() {
-            write(method: "accountSubscribe", params: [account?.base58EncodedString, ["encoding":"jsonParsed"]])
-        }
-        
-        func resetSubscriptions() {
-            // TODO: - resetSubscriptions
-        }
-        
-        func onOpen() {
-            status.accept(.connected)
-            wsHeartBeat?.invalidate()
-            wsHeartBeat = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { (_) in
-                // Ping server every 5s to prevent idle timeouts
-                self.socket.write(ping: Data())
-            }
-            updateSubscriptions()
-        }
-
-        func onError(_ error: Error) {
-            status.accept(.error(error))
-            Logger.log(message: "Socket error: \(error.localizedDescription)", event: .error)
-        }
-        
-        func onClose(_ code: Int) {
-            wsHeartBeat?.invalidate()
-            wsHeartBeat = nil
-            
-            if code == 1000 {
-                // explicit close, check if any subscriptions have been made since close
-                updateSubscriptions()
-                return
-            }
-            
-            // implicit close, prepare subscriptions for auto-reconnect
-            resetSubscriptions()
-        }
-        
         // MARK: - Helpers
+        /// Subscribe to accountNotification from all accounts in the queue
+        func subscribeToAllAccounts() {
+            accounts.forEach {subscribeAccountNotification(account: $0)}
+        }
+        
+        /// Unsubscribe to all current subscriptions
+        func unsubscribeToAllSubscriptions() {
+            for subscription in accountSubscriptions {
+                write(method: .init(subscription.entity, .unsubscribe), params: [subscription.id])
+            }
+            accountSubscriptions = []
+        }
+        
         private func subscribe(id: String) -> Single<UInt64> {
-            textSubject
-                .filter {
-                    guard let jsonData = $0.data(using: .utf8),
-                        let json = (try? JSONSerialization.jsonObject(with: jsonData, options: .mutableLeaves)) as? [String: Any]
+            dataSubject
+                .filter { data in
+                    guard let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
                         else {
                             return false
                     }
                     return (json["id"] as? String) == id
                 }
-                .map {
-                    guard let data = $0.data(using: .utf8) else {
-                        throw Error.other("The response is not valid")
-                    }
-                    
+                .map { data in
                     guard let subscription = try JSONDecoder().decode(Response<UInt64>.self, from: data).result
                     else {
                         throw Error.other("Subscription is not valid")
@@ -139,29 +156,37 @@ extension SolanaSDK {
                 .asSingle()
         }
         
-        private func observe<T: Decodable>(method: String, decodedTo type: T.Type, subscription: UInt64? = nil) -> Observable<T> {
-            textSubject
-                .filter { string in
-                    guard let jsonData = string.data(using: .utf8),
-                        let json = (try? JSONSerialization.jsonObject(with: jsonData, options: .mutableLeaves)) as? [String: Any]
+        private func observeNotification<T: Decodable>(_ entity: Entity, decodedTo type: T.Type, subscription: UInt64? = nil) -> Observable<T> {
+            dataSubject
+                .filter { data in
+                    guard let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
                         else {
                             return false
                     }
-                    var condition = (json["method"] as? String) == method
+                    var condition = (json["method"] as? String) == entity.notificationMethodName
                     if let subscription = subscription {
                         condition = condition && (((json["params"] as? [String: Any])?["subscription"] as? UInt64) == subscription)
                     }
                     return condition
                 }
-                .map { string in
-                    guard let data = string.data(using: .utf8) else {
-                        throw Error.other("The response is not valid")
-                    }
-                    guard let result = try JSONDecoder().decode(Response<T>.self, from: data).params?.result
+                .map { data in
+                    guard let result = try JSONDecoder().decode(Response<T>.self, from: data).params?.result?.value
                     else {
                         throw Error.other("The response is empty")
                     }
                     return result
+                }
+        }
+        
+        private func observeNotification(_ entity: Entity, subscription: UInt64? = nil) -> Observable<Data>
+        {
+            dataSubject
+                .filter { data in
+                    guard let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
+                        else {
+                            return false
+                    }
+                    return (json["method"] as? String) == entity.notificationMethodName
                 }
         }
         
@@ -195,69 +220,34 @@ extension SolanaSDK {
                 writeAndLog()
             }
         }
-    }
-}
-
-extension SolanaSDK.Socket: WebSocketDelegate {
-    public func didReceive(event: WebSocketEvent, client: WebSocket) {
-        switch event {
-        case .connected(let headers):
-            Logger.log(message: "websocket is connected: \(headers)", event: .event)
-            status.accept(.connected)
-            onOpen()
-        case .disconnected(let reason, let code):
-            Logger.log(message: "websocket is disconnected: \(reason) with code: \(code)", event: .event)
-            status.accept(.disconnected)
-            onClose(Int(code))
-            socket.connect()
-        case .text(let string):
-            Logger.log(message: "Received text: \(string)", event: .event)
-            textSubject.onNext(string)
-        case .binary(let data):
-            Logger.log(message: "Received data: \(data.count)", event: .event)
-        case .ping(_):
-//            Logger.log(message: "Socket ping", event: .event)
-            break
-        case .pong(_):
-//            Logger.log(message: "Socket pong", event: .event)
-            break
-        case .viabilityChanged(_):
-            break
-        case .reconnectSuggested(let bool):
-            Logger.log(message: "reconnectSuggested \(bool)", event: .event)
-            if bool { socket.connect() }
-        case .cancelled:
-            status.accept(.disconnected)
-        case .error(let error):
-            if let error = error {
-                status.accept(.error(error))
-                Logger.log(message: "Socket error: \(error)", event: .error)
-                onError(.socket(error))
-                
-                // reconnect
-                socket.connect()
-            }
-        }
-    }
-}
-
-extension SolanaSDK.Socket {
-    public enum Status: Equatable {
-        case initializing
-        case connecting
-        case connected
-        case disconnected
-        case error(Error)
         
-        public static func == (rhs: Self, lhs: Self) -> Bool {
-            switch (lhs, rhs) {
-            case (.initializing, .initializing), (.connected, .connected), (.disconnected, .disconnected):
-                return true
-            case (.error(let err1), .error(let err2)):
-                return err1.localizedDescription == err2.localizedDescription
-            default:
-                return false
+        func decodeDataToAccountNotification(data: Data) -> Observable<(pubkey: String, lamports: Lamports)>
+        {
+            let decoder = JSONDecoder()
+            
+            var account: String?
+            var lamports: SolanaSDK.Lamports?
+            
+            if let result = try? decoder
+                .decode(SOLAccountNotification.self, from: data)
+            {
+                account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
+                lamports = result.params?.result?.value.lamports
+            } else if let result = try? decoder
+                .decode(TokenAccountNotification.self, from: data)
+            {
+                account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
+                let string = result.params?.result?.value.data.parsed.info.tokenAmount.amount ?? "0"
+                lamports = Lamports(string)
             }
+            
+            if let pubkey = account,
+               let lamports = lamports
+            {
+                return .just((pubkey: pubkey, lamports: lamports))
+            }
+            
+            return .empty()
         }
     }
 }
