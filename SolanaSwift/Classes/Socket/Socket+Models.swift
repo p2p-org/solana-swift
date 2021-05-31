@@ -86,7 +86,7 @@ extension SolanaSDK.Socket {
         let err: SolanaSDK.ResponseError?
     }
     
-    typealias SOLAccountNotification = Response<AccountNotification<String>>
+    typealias SOLAccountNotification = Response<AccountNotification<[String]>>
     typealias TokenAccountNotification = Response<AccountNotification<TokenAccountNotificationData>>
 }
 

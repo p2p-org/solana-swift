@@ -22,7 +22,7 @@ class DecodingSocketResponsesTests: XCTestCase {
     }
 
     func testDecodingSOLAccountNotification() throws {
-        let string = #"{"jsonrpc":"2.0","method":"accountNotification","params":{"result":{"context":{"slot":80221533},"value":{"data":"","executable":false,"lamports":41083620,"owner":"11111111111111111111111111111111","rentEpoch":185}},"subscription":46133}}"#
+        let string = #"{"jsonrpc":"2.0","method":"accountNotification","params":{"result":{"context":{"slot":80221533},"value":{"data":["","base64"],"executable":false,"lamports":41083620,"owner":"11111111111111111111111111111111","rentEpoch":185}},"subscription":46133}}"#
         let result = try decoder.decode(SolanaSDK.Socket.SOLAccountNotification.self, from: string.data(using: .utf8)!)
         XCTAssertEqual(result.params?.result?.value.lamports, 41083620)
         XCTAssertThrowsError(try decoder.decode(SolanaSDK.Socket.TokenAccountNotification.self, from: string.data(using: .utf8)!))
@@ -35,6 +35,13 @@ class DecodingSocketResponsesTests: XCTestCase {
         
         let result = try decoder.decode(SolanaSDK.Socket.TokenAccountNotification.self, from: string.data(using: .utf8)!)
         XCTAssertEqual(result.params?.result?.value.data.parsed.info.tokenAmount.amount, "390000101")
+    }
+    
+    func testDecodingSignatureNotification() throws {
+        let string = #"{"jsonrpc":"2.0","method":"signatureNotification","params":{"result":{"context":{"slot":80768508},"value":{"err":null}},"subscription":43601}}"#
+        
+        let result = try decoder.decode(SolanaSDK.Socket.Response<SolanaSDK.Socket.SignatureNotification>.self, from: string.data(using: .utf8)!)
+        XCTAssertEqual(result.method, "signatureNotification")
     }
 
 }
