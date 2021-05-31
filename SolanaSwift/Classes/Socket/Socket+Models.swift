@@ -56,21 +56,19 @@ extension SolanaSDK.Socket {
     }
     
     struct AccountNotification<T: Decodable>: Decodable {
-        public let data: AccountNotificationData<T>
+        public let data: T
         public let lamports: SolanaSDK.Lamports
         public let owner: String
         public let executable: Bool
         public let rentEpoch: UInt64
     }
     
-    struct AccountNotificationData<T: Decodable>: Decodable {
+    struct TokenAccountNotificationData: Decodable {
         public let program: String
-        public let parsed: T
+        public let parsed: TokenAccountNotificationDataParsed
     }
     
-    typealias SOLAccountNotificationData = String
-    
-    struct TokenAccountNotificationData: Decodable {
+    struct TokenAccountNotificationDataParsed: Decodable {
         public let type: String
         public let info: TokenAccountNotificationDataInfo
     }
@@ -88,7 +86,7 @@ extension SolanaSDK.Socket {
         let err: SolanaSDK.ResponseError?
     }
     
-    typealias SOLAccountNotification = Response<AccountNotification<SOLAccountNotificationData>>
+    typealias SOLAccountNotification = Response<AccountNotification<String>>
     typealias TokenAccountNotification = Response<AccountNotification<TokenAccountNotificationData>>
 }
 
