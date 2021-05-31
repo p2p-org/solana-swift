@@ -72,7 +72,7 @@ extension SolanaSDK {
             }
             
             // add subscriptions
-            let id = write(method: .init(.account, .subscribe), params: [account])
+            let id = write(method: .init(.account, .subscribe), params: [account, ["encoding":"jsonParsed"]])
             subscribe(id: id)
                 .subscribe(onSuccess: {[weak self] subscriptionId in
                     guard let strongSelf = self else {return}
@@ -85,7 +85,11 @@ extension SolanaSDK {
                 .disposed(by: disposeBag)
         }
         
-        
+        public func observeAccountNotifications() -> Observable<(pubkey: String, lamports: Lamports)>
+        {
+            observeNotification(.account)
+                .flatMap {self.decodeDataToAccountNotification(data: $0)}
+        }
         
         // MARK: - Signature notifications
         public func observeSignatureNotification(signature: String) -> Completable
@@ -99,7 +103,7 @@ extension SolanaSDK {
                 .flatMap {
                     self.observeNotification(
                         .signature,
-                        decodedTo: Rpc<SignatureNotification>.self,
+                        decodedTo: SignatureNotification.self,
                         subscription: $0
                     )
                         .take(1)
@@ -166,11 +170,23 @@ extension SolanaSDK {
                     return condition
                 }
                 .map { data in
-                    guard let result = try JSONDecoder().decode(Response<T>.self, from: data).params?.result
+                    guard let result = try JSONDecoder().decode(Response<T>.self, from: data).params?.result?.value
                     else {
                         throw Error.other("The response is empty")
                     }
                     return result
+                }
+        }
+        
+        private func observeNotification(_ entity: Entity, subscription: UInt64? = nil) -> Observable<Data>
+        {
+            dataSubject
+                .filter { data in
+                    guard let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
+                        else {
+                            return false
+                    }
+                    return (json["method"] as? String) == entity.notificationMethodName
                 }
         }
         
@@ -203,6 +219,35 @@ extension SolanaSDK {
             } else {
                 writeAndLog()
             }
+        }
+        
+        func decodeDataToAccountNotification(data: Data) -> Observable<(pubkey: String, lamports: Lamports)>
+        {
+            let decoder = JSONDecoder()
+            
+            var account: String?
+            var lamports: SolanaSDK.Lamports?
+            
+            if let result = try? decoder
+                .decode(SOLAccountNotification.self, from: data)
+            {
+                account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
+                lamports = result.params?.result?.value.lamports
+            } else if let result = try? decoder
+                .decode(TokenAccountNotification.self, from: data)
+            {
+                account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
+                let string = result.params?.result?.value.data.parsed.info.tokenAmount.amount ?? "0"
+                lamports = Lamports(string)
+            }
+            
+            if let pubkey = account,
+               let lamports = lamports
+            {
+                return .just((pubkey: pubkey, lamports: lamports))
+            }
+            
+            return .empty()
         }
     }
 }
