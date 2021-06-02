@@ -43,9 +43,16 @@ extension SolanaSDK {
         public func getFeePayerPubkey() -> Single<PublicKey>
         {
             RxAlamofire.request(.get, "\(feeRelayerUrl)/fee_payer/pubkey")
-                .validate(statusCode: 200..<300)
                 .responseString()
-                .map {try SolanaSDK.PublicKey(string: $0.1)}
+                .map { (response, string) in
+                    // Print
+                    guard (200..<300).contains(response.statusCode) else {
+                        let readableError = string.slice(from: "(", to: ")") ?? string
+                        throw Error.invalidResponse(ResponseError(code: response.statusCode, message: readableError, data: nil))
+                    }
+                    return string
+                }
+                .map {try SolanaSDK.PublicKey(string: $0)}
                 .take(1)
                 .asSingle()
                 .do(
@@ -53,7 +60,7 @@ extension SolanaSDK {
                         Logger.log(message: $0.base58EncodedString, event: .response, apiMethod: "fee_payer/pubkey")
                     },
                     onError: {
-                        Logger.log(message: $0.localizedDescription, event: .error, apiMethod: "fee_payer/pubkey")
+                        Logger.log(message: $0.readableDescription, event: .error, apiMethod: "fee_payer/pubkey")
                     })
         }
         
@@ -237,15 +244,29 @@ extension SolanaSDK {
                 urlRequest.httpBody = try JSONEncoder().encode(EncodableWrapper(wrapped: params))
                 
                 return RxAlamofire.request(urlRequest)
-                    .validate(statusCode: 200..<300)
                     .responseString()
-                    .map {$0.1}
+                    .map { (response, string) in
+                        // Print
+                        guard (200..<300).contains(response.statusCode) else {
+                            let readableError = string.slice(from: "(", to: ")") ?? string
+                            throw Error.invalidResponse(ResponseError(code: response.statusCode, message: readableError, data: nil))
+                        }
+                        return string
+                    }
                     .take(1)
                     .asSingle()
             } catch {
                 return .error(error)
             }
         }
+    }
+}
+
+private extension String {
+    func slice(from: String, to: String) -> String? {
+        guard let rangeFrom = range(of: from)?.upperBound else { return nil }
+        guard let rangeTo = self[rangeFrom...].range(of: to)?.lowerBound else { return nil }
+        return String(self[rangeFrom..<rangeTo])
     }
 }
 
