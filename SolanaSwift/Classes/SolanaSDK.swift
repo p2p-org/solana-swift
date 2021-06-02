@@ -61,19 +61,22 @@ public class SolanaSDK {
                     // Print
                     Logger.log(message: String(data: data, encoding: .utf8) ?? "", event: .response, apiMethod: bcMethod)
                     
-                    // Print
-                    guard (200..<300).contains(response.statusCode) else {
-                        // Decode errror
-                        throw Error.invalidResponse(ResponseError(code: response.statusCode, message: nil, data: nil))
-                    }
-                    let response = try JSONDecoder().decode(Response<T>.self, from: data)
-                    if let result = response.result {
+                    let statusCode = response.statusCode
+                    let isValidStatusCode = (200..<300).contains(statusCode)
+                    
+                    let res = try JSONDecoder().decode(Response<T>.self, from: data)
+                    
+                    if isValidStatusCode, let result = res.result {
                         return result
                     }
-                    if let error = response.error {
-                        throw Error.invalidResponse(error)
+                    
+                    var readableErrorMessage: String?
+                    if let error = res.error {
+                        readableErrorMessage = error.message?
+                            .replacingOccurrences(of: ", contact your app developer or support@rpcpool.com.", with: "")
                     }
-                    throw Error.unknown
+                    
+                    throw Error.invalidResponse(.init(code: statusCode, message: readableErrorMessage, data: nil))
                 }
                 .take(1)
                 .asSingle()
