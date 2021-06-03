@@ -24,15 +24,13 @@ extension SolanaSDK {
     }
     
     public func getSwapPools() -> Single<[Pool]> {
-        if let pools = _swapPool {return .just(pools)}
-        return getPools(swapProgramId: endpoint.network.swapProgramId.base58EncodedString)
+        getPools(swapProgramId: endpoint.network.swapProgramId.base58EncodedString)
             .map {
                 $0.filter {
                     $0.tokenABalance?.amountInUInt64 != 0 &&
                         $0.tokenBBalance?.amountInUInt64 != 0
                 }
             }
-            .do(onSuccess: {self._swapPool = $0})
     }
     
     func getPools(swapProgramId: String) -> Single<[Pool]> {
@@ -68,12 +66,14 @@ extension SolanaSDK {
                 
                 return self.getMultipleMintDatas(mintAddresses: mintAddresses)
                     .map {mintDatas in
-                        var parsedInfo =  result
+                        var parsedInfo = result
                         for i in 0..<parsedInfo.count {
                             let swapInfo = parsedInfo[i].info
-                            parsedInfo[i].mintDatas?.mintA = mintDatas[swapInfo.mintA]
-                            parsedInfo[i].mintDatas?.mintB = mintDatas[swapInfo.mintB]
-                            parsedInfo[i].mintDatas?.tokenPool = mintDatas[swapInfo.tokenPool]
+                            parsedInfo[i].mintDatas = .init(
+                                mintA: mintDatas[swapInfo.mintA],
+                                mintB: mintDatas[swapInfo.mintB],
+                                tokenPool: mintDatas[swapInfo.tokenPool]
+                            )
                         }
                         return parsedInfo
                     }
@@ -83,38 +83,24 @@ extension SolanaSDK {
 //                Logger.log(message: String(data: try JSONEncoder().encode(parsedInfo), encoding: .utf8)!, event: .response)
 //
 //            })
-            .flatMap { parsedSwapInfos in
-                let singles = parsedSwapInfos.map {self.getPoolInfo(parsedSwapInfo: $0)}
-                return Single.zip(singles)
-                    .map {$0.compactMap {$0}}
+            .map { parsedSwapInfos in
+                parsedSwapInfos.map {self.getPool(parsedSwapInfo: $0)}
+                    .compactMap {$0}
             }
     }
     
-    func getPoolInfo(parsedSwapInfo: ParsedSwapInfo) -> Single<Pool?> {
-        Single.zip([
-            self.getTokenAccountBalance(pubkey: parsedSwapInfo.info.tokenAccountA.base58EncodedString)
-                .map {$0 as Any},
-            self.getTokenAccountBalance(pubkey: parsedSwapInfo.info.tokenAccountB.base58EncodedString)
-                .map {$0 as Any}
-        ])
-            .map { result in
-                guard let tokenABalance = result[0] as? TokenAccountBalance,
-                      let tokenBBalance = result[1] as? TokenAccountBalance,
-                      let tokenAInfo = parsedSwapInfo.mintDatas?.mintA,
-                      let tokenBInfo = parsedSwapInfo.mintDatas?.mintB,
-                      let poolTokenMintInfo = parsedSwapInfo.mintDatas?.tokenPool
-                else {
-                    return nil
-                }
-                return Pool(
-                    address: try PublicKey(string: parsedSwapInfo.address),
-                    tokenAInfo: tokenAInfo,
-                    tokenBInfo: tokenBInfo,
-                    poolTokenMint: poolTokenMintInfo,
-                    swapData: parsedSwapInfo.info,
-                    tokenABalance: tokenABalance,
-                    tokenBBalance: tokenBBalance
-                )
-            }
+    private func getPool(parsedSwapInfo: ParsedSwapInfo) -> Pool? {
+        guard let address = try? PublicKey(string: parsedSwapInfo.address),
+              let tokenAInfo = parsedSwapInfo.mintDatas?.mintA,
+              let tokenBInfo = parsedSwapInfo.mintDatas?.mintB,
+              let poolTokenMintInfo = parsedSwapInfo.mintDatas?.tokenPool
+        else {return nil}
+        return Pool(
+            address: address,
+            tokenAInfo: tokenAInfo,
+            tokenBInfo: tokenBInfo,
+            poolTokenMint: poolTokenMintInfo,
+            swapData: parsedSwapInfo.info
+        )
     }
 }

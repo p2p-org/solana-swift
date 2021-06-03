@@ -20,7 +20,6 @@ public class SolanaSDK {
     // MARK: - Properties
     public let accountStorage: SolanaSDKAccountStorage
     var endpoint: APIEndPoint
-    var _swapPool: [Pool]?
     public private(set) var supportedTokens = [Token]()
     
     // MARK: - Initializer
