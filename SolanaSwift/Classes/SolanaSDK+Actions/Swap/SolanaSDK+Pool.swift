@@ -64,7 +64,20 @@ extension SolanaSDK {
                     return result
                 })
                 
-                return self.getMultipleMintDatas(mintAddresses: mintAddresses)
+                // split array to form multiple requests (max address per request is 100)
+                let requestChunks = mintAddresses.chunked(into: 100)
+                    .map {self.getMultipleMintDatas(mintAddresses: $0)}
+                
+                return Single.zip(requestChunks)
+                    .map {results -> [PublicKey: Mint] in
+                        var joinedResult = [PublicKey: Mint]()
+                        for result in results {
+                            for (key, value) in result {
+                                joinedResult[key] = value
+                            }
+                        }
+                        return joinedResult
+                    }
                     .map {mintDatas in
                         var parsedInfo = result
                         for i in 0..<parsedInfo.count {
@@ -102,5 +115,13 @@ extension SolanaSDK {
             poolTokenMint: poolTokenMintInfo,
             swapData: parsedSwapInfo.info
         )
+    }
+}
+
+private extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
     }
 }
