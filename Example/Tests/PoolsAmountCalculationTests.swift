@@ -88,4 +88,11 @@ class PoolsAmountCalculationTests: XCTestCase {
         
         XCTAssertEqual(estimatedAmountResult?.convertToBalance(decimals: 6), expectedEstimatedAmount)
     }
+    
+    func testFeeCalculation() throws {
+        let inputAmount: Double = 1
+        let fee = pool.fee(forInputAmount: inputAmount.toLamport(decimals: pool.tokenAInfo.decimals))
+        
+        XCTAssertEqual(fee, 0.013415)
+    }
 }
