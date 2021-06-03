@@ -116,6 +116,19 @@ extension SolanaSDK {
             swapData: parsedSwapInfo.info
         )
     }
+    
+    public func getPoolWithTokenBalances(pool: Pool) -> Single<Pool> {
+        Single.zip(
+            getTokenAccountBalance(pubkey: pool.swapData.tokenAccountA.base58EncodedString),
+            getTokenAccountBalance(pubkey: pool.swapData.tokenAccountB.base58EncodedString)
+        )
+            .map { (tokenABalance, tokenBBalance) in
+                var pool = pool
+                pool.tokenABalance = tokenABalance
+                pool.tokenBBalance = tokenBBalance
+                return pool
+            }
+    }
 }
 
 private extension Array {
