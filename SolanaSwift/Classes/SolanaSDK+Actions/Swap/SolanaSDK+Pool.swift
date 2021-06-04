@@ -118,7 +118,10 @@ extension SolanaSDK {
     }
     
     public func getPoolWithTokenBalances(pool: Pool) -> Single<Pool> {
-        Single.zip(
+        if pool.tokenABalance != nil && pool.tokenBBalance != nil {
+            return .just(pool)
+        }
+        return Single.zip(
             getTokenAccountBalance(pubkey: pool.swapData.tokenAccountA.base58EncodedString),
             getTokenAccountBalance(pubkey: pool.swapData.tokenAccountB.base58EncodedString)
         )
