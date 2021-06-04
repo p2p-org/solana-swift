@@ -75,10 +75,12 @@ extension SolanaSDK {
             Lamports(Float64(estimatedAmount) * Float64(1 - slippage))
         }
         
-        public func fee(forInputAmount inputAmount: UInt64) -> Double? {
+        public func fee(forInputAmount inputAmount: Double) -> Double? {
             guard let tokenABalance = tokenABalance?.amountInUInt64,
                   let tokenBBalance = tokenBBalance?.amountInUInt64
             else {return nil}
+            
+            let inputAmount = inputAmount.toLamport(decimals: tokenAInfo.decimals)
             
             let i = BInt(inputAmount)
             

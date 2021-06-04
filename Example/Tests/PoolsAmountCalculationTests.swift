@@ -91,7 +91,7 @@ class PoolsAmountCalculationTests: XCTestCase {
     
     func testFeeCalculation() throws {
         let inputAmount: Double = 1
-        let fee = pool.fee(forInputAmount: inputAmount.toLamport(decimals: pool.tokenAInfo.decimals))
+        let fee = pool.fee(forInputAmount: inputAmount)
         
         XCTAssertEqual(fee, 0.013415)
     }
