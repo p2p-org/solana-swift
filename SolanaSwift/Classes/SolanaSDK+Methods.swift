@@ -189,7 +189,7 @@ public extension SolanaSDK {
                     switch error {
                     case .invalidResponse(let response) where response.message != nil:
                         var message = response.message
-                        if let readableMessage = response.data?.logs
+                        if let readableMessage = response.data?.logs?
                             .first(where: {$0.contains("Error:")})?
                             .components(separatedBy: "Error: ")
                             .last
