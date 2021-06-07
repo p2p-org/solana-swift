@@ -9,6 +9,11 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
+    public struct SwapResponse {
+        public let transactionId: String
+        public let newWalletPubkey: String?
+    }
+    
     public func swap(
         account: Account? = nil,
         pool: Pool? = nil,
@@ -19,7 +24,7 @@ extension SolanaSDK {
         slippage: Double,
         amount: UInt64,
         isSimulation: Bool = false
-    ) -> Single<TransactionID> {
+    ) -> Single<SwapResponse> {
         // verify account
         guard let owner = account ?? accountStorage.account
         else {return .error(Error.unauthorized)}
@@ -103,6 +108,8 @@ extension SolanaSDK {
                 }
                 
                 // check toToken
+                var newWalletPubkey: String?
+                
                 let isMintBWSOL = destinationMint == .wrappedSOLMint
                 if destination == nil || isMintBWSOL {
                     // create toToken if it doesn't exist
@@ -116,6 +123,7 @@ extension SolanaSDK {
                     )
                     
                     destination = newAccount.publicKey
+                    newWalletPubkey = destination?.base58EncodedString
                 }
                 
                 // approve
@@ -164,6 +172,7 @@ extension SolanaSDK {
                     signers: signers,
                     isSimulation: isSimulation
                 )
+                    .map {.init(transactionId: $0, newWalletPubkey: newWalletPubkey)}
             }
     }
     
