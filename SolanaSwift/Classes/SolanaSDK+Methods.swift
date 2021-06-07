@@ -52,12 +52,34 @@ public extension SolanaSDK {
 	func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) -> Single<[String]> {
 		request(parameters: [account, startSlot, endSlot])
 	}
+    @available(*, deprecated, renamed: "getSignaturesForAddress(address:configs:)", message: "use getSignaturesForAddress instead.This method is expected to be removed in solana-core v1.8.")
 	func getConfirmedSignaturesForAddress2(account: String, configs: RequestConfiguration? = nil) -> Single<[SignatureInfo]> {
-		request(parameters: [account, configs])
+		request(
+            overridingEndpoint: "https://api.mainnet-beta.solana.com",
+            parameters: [account, configs]
+        )
 	}
+    func getSignaturesForAddress(address: String, configs: RequestConfiguration? = nil) -> Single<[SignatureInfo]> {
+        request(
+            overridingEndpoint: "https://api.mainnet-beta.solana.com",
+            parameters: [address, configs],
+            onMethodNotFoundReplaceWith: "getConfirmedSignaturesForAddress2"
+        )
+    }
+    @available(*, deprecated, renamed: "getTransaction(transactionSignature:)", message: "use getTransaction instead This method is expected to be removed in solana-core v1.8.")
 	func getConfirmedTransaction(transactionSignature: String) -> Single<TransactionInfo> {
-        request(parameters: [transactionSignature, "jsonParsed"])
+        request(
+            overridingEndpoint: "https://api.mainnet-beta.solana.com",
+            parameters: [transactionSignature, "jsonParsed"]
+        )
 	}
+    func getTransaction(transactionSignature: String) -> Single<TransactionInfo> {
+        request(
+            overridingEndpoint: "https://api.mainnet-beta.solana.com",
+            parameters: [transactionSignature, "jsonParsed"],
+            onMethodNotFoundReplaceWith: "getConfirmedTransaction"
+        )
+    }
 	func getEpochInfo(commitment: Commitment? = nil) -> Single<EpochInfo> {
 		request(parameters: [RequestConfiguration(commitment: commitment)])
 	}

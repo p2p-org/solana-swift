@@ -35,11 +35,13 @@ public class SolanaSDK {
     // MARK: - Helper
     public func request<T: Decodable>(
         method: HTTPMethod = .post,
+        overridingEndpoint: String? = nil,
         path: String = "",
         bcMethod: String = #function,
-        parameters: [Encodable?] = []
+        parameters: [Encodable?] = [],
+        onMethodNotFoundReplaceWith replacingMethod: String? = nil
     ) -> Single<T>{
-        guard let url = URL(string: endpoint.url + path) else {
+        guard let url = URL(string: (overridingEndpoint != nil ? overridingEndpoint!: endpoint.url) + path) else {
             return .error(Error.invalidRequest(reason: "Invalid URL"))
         }
         let params = parameters.compactMap {$0}
@@ -79,6 +81,26 @@ public class SolanaSDK {
                 }
                 .take(1)
                 .asSingle()
+                .catch { error in
+                    if let error = error as? Error, let replacingMethod = replacingMethod
+                    {
+                        switch error {
+                        case .invalidResponse(let response):
+                            if response.message == "Method not found" {
+                                return self.request(
+                                    method: method,
+                                    overridingEndpoint: overridingEndpoint,
+                                    path: path,
+                                    bcMethod: replacingMethod,
+                                    parameters: parameters
+                                )
+                            }
+                        default:
+                            break
+                        }
+                    }
+                    throw error
+                }
         } catch {
             return .error(error)
         }
