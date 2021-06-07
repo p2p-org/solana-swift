@@ -26,7 +26,8 @@ public extension SolanaSDK {
 	}
     struct ResponseErrorData: Decodable {
         // public let err: ResponseErrorDataError
-        public let logs: [String]
+        public let logs: [String]?
+        public let numSlotsBehind: Int?
     }
 	struct Rpc<T: Decodable>: Decodable {
 		public let context: Context
