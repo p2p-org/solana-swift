@@ -11,8 +11,10 @@ import Alamofire
 import RxSwift
 
 public protocol SolanaSDKAccountStorage {
-    func save(_ account: SolanaSDK.Account) throws
-    var account: SolanaSDK.Account? {get}
+    func save(seedPhrases: [String]) throws
+    func save(derivableType: SolanaSDK.DerivablePath.DerivableType) throws
+    func save(selectedWalletIndex: Int) throws
+    func getCurrentAccount() -> Single<SolanaSDK.Account?>
     func clear()
 }
 
@@ -33,6 +35,16 @@ public class SolanaSDK {
     }
      
     // MARK: - Helper
+    public func getCurrentAccount() -> Single<Account> {
+        accountStorage.getCurrentAccount()
+            .map {
+                guard let account = $0 else {
+                    throw Error.unauthorized
+                }
+                return account
+            }
+    }
+    
     public func request<T: Decodable>(
         method: HTTPMethod = .post,
         path: String = "",

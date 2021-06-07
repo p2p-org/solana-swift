@@ -24,65 +24,61 @@ extension SolanaSDK {
         withoutFee: Bool = true,
         isSimulation: Bool = false
     ) -> Single<TransactionID> {
-        guard let account = self.accountStorage.account else {
-            return .error(Error.unauthorized)
-        }
-        
-        do {
-            let fromPublicKey = account.publicKey
-            
-            if fromPublicKey.base58EncodedString == destination {
-                throw Error.other("You can not send tokens to yourself")
-            }
-            
-            // check
-            return getAccountInfo(account: destination, decodedTo: EmptyInfo.self)
-                .map {info -> Void in
-                    guard info.owner == PublicKey.programId.base58EncodedString
-                    else {throw Error.other("Invalid account info")}
-                    return
+        getCurrentAccount()
+            .flatMap {account in
+                
+                let fromPublicKey = account.publicKey
+                
+                if fromPublicKey.base58EncodedString == destination {
+                    throw Error.other("You can not send tokens to yourself")
                 }
-                .catch { error in
-                    if (error as? Error) == Error.other("Could not retrieve account info") {
-                        // let request through
-                        return .just(())
+                
+                // check
+                return self.getAccountInfo(account: destination, decodedTo: EmptyInfo.self)
+                    .map {info -> Void in
+                        guard info.owner == PublicKey.programId.base58EncodedString
+                        else {throw Error.other("Invalid account info")}
+                        return
                     }
-                    throw error
-                }
-                .flatMap {
-                    // real transaction without fee
-                    if !isSimulation && withoutFee {
-                        let feeRelayer = FeeRelayer(solanaAPIClient: self)
-                        return feeRelayer.transferSOL(
-                            to: destination,
-                            amount: amount
+                    .catch { error in
+                        if (error as? Error) == Error.other("Could not retrieve account info") {
+                            // let request through
+                            return .just(())
+                        }
+                        throw error
+                    }
+                    .flatMap {
+                        // real transaction without fee
+                        if !isSimulation && withoutFee {
+                            let feeRelayer = FeeRelayer(solanaAPIClient: self)
+                            return feeRelayer.transferSOL(
+                                to: destination,
+                                amount: amount
+                            )
+                        }
+                        
+                        // transaction with fee, can be a simulation
+                        let instruction = SystemProgram.transferInstruction(
+                            from: fromPublicKey,
+                            to: try PublicKey(string: destination),
+                            lamports: amount
+                        )
+                        
+                        return self.serializeAndSendWithFee(
+                            instructions: [instruction],
+                            signers: [account],
+                            isSimulation: isSimulation
                         )
                     }
-                    
-                    // transaction with fee, can be a simulation
-                    let instruction = SystemProgram.transferInstruction(
-                        from: fromPublicKey,
-                        to: try PublicKey(string: destination),
-                        lamports: amount
-                    )
-                    
-                    return self.serializeAndSendWithFee(
-                        instructions: [instruction],
-                        signers: [account],
-                        isSimulation: isSimulation
-                    )
-                }
-                .catch {error in
-                    var error = error
-                    if error.localizedDescription == "Invalid param: WrongSize"
-                    {
-                        error = Error.other("Wrong wallet address")
+                    .catch {error in
+                        var error = error
+                        if error.localizedDescription == "Invalid param: WrongSize"
+                        {
+                            error = Error.other("Wrong wallet address")
+                        }
+                        throw error
                     }
-                    throw error
-                }
-        } catch {
-            return .error(error)
-        }
+            }
     }
     
     /// Send SPLTokens to another account
@@ -103,73 +99,72 @@ extension SolanaSDK {
         withoutFee: Bool = true,
         isSimulation: Bool = false
     ) -> Single<TransactionID> {
-        guard let account = self.accountStorage.account else {
-            return .error(Error.unauthorized)
-        }
-        
-        // real transaction without fee
-        if !isSimulation && withoutFee {
-            let feeRelayer = FeeRelayer(solanaAPIClient: self)
-            return feeRelayer.transferSPLToken(
-                mintAddress: mintAddress,
-                from: fromPublicKey,
-                to: destinationAddress,
-                amount: amount,
-                decimals: decimals
-            )
-        }
-        
-        return findSPLTokenDestinationAddress(
-            mintAddress: mintAddress,
-            destinationAddress: destinationAddress
-        )
-            .flatMap {result in
-                // get address
-                let toPublicKey = result.destination
-                
-                // catch error
-                if fromPublicKey == toPublicKey.base58EncodedString {
-                    throw Error.other("You can not send tokens to yourself")
-                }
-                
-                let fromPublicKey = try PublicKey(string: fromPublicKey)
-                
-                var instructions = [TransactionInstruction]()
-                
-                // create associated token address
-                if result.isUnregisteredAsocciatedToken {
-                    let mint = try PublicKey(string: mintAddress)
-                    let owner = try PublicKey(string: destinationAddress)
-                    
-                    let createATokenInstruction = AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
-                        mint: mint,
-                        associatedAccount: toPublicKey,
-                        owner: owner,
-                        payer: account.publicKey
+        getCurrentAccount()
+            .flatMap { account in
+                // real transaction without fee
+                if !isSimulation && withoutFee {
+                    let feeRelayer = FeeRelayer(solanaAPIClient: self)
+                    return feeRelayer.transferSPLToken(
+                        mintAddress: mintAddress,
+                        from: fromPublicKey,
+                        to: destinationAddress,
+                        amount: amount,
+                        decimals: decimals
                     )
-                    instructions.append(createATokenInstruction)
                 }
                 
-                // send instruction
-                let sendInstruction = TokenProgram.transferInstruction(
-                    tokenProgramId: .tokenProgramId,
-                    source: fromPublicKey,
-                    destination: toPublicKey,
-                    owner: account.publicKey,
-                    amount: amount
+                return self.findSPLTokenDestinationAddress(
+                    mintAddress: mintAddress,
+                    destinationAddress: destinationAddress
                 )
-                
-                instructions.append(sendInstruction)
-                
-                return self.serializeAndSendWithFee(instructions: instructions, signers: [account], isSimulation: isSimulation)
-            }
-            .catch {error in
-                var error = error
-                if error.localizedDescription == "Invalid param: WrongSize"
-                {
-                    error = Error.other("Wrong wallet address")
-                }
-                throw error
+                    .flatMap {result in
+                        // get address
+                        let toPublicKey = result.destination
+                        
+                        // catch error
+                        if fromPublicKey == toPublicKey.base58EncodedString {
+                            throw Error.other("You can not send tokens to yourself")
+                        }
+                        
+                        let fromPublicKey = try PublicKey(string: fromPublicKey)
+                        
+                        var instructions = [TransactionInstruction]()
+                        
+                        // create associated token address
+                        if result.isUnregisteredAsocciatedToken {
+                            let mint = try PublicKey(string: mintAddress)
+                            let owner = try PublicKey(string: destinationAddress)
+                            
+                            let createATokenInstruction = AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+                                mint: mint,
+                                associatedAccount: toPublicKey,
+                                owner: owner,
+                                payer: account.publicKey
+                            )
+                            instructions.append(createATokenInstruction)
+                        }
+                        
+                        // send instruction
+                        let sendInstruction = TokenProgram.transferInstruction(
+                            tokenProgramId: .tokenProgramId,
+                            source: fromPublicKey,
+                            destination: toPublicKey,
+                            owner: account.publicKey,
+                            amount: amount
+                        )
+                        
+                        instructions.append(sendInstruction)
+                        
+                        return self.serializeAndSendWithFee(instructions: instructions, signers: [account], isSimulation: isSimulation)
+                    }
+                    .catch {error in
+                        var error = error
+                        if error.localizedDescription == "Invalid param: WrongSize"
+                        {
+                            error = Error.other("Wrong wallet address")
+                        }
+                        throw error
+                    }
             }
     }
     

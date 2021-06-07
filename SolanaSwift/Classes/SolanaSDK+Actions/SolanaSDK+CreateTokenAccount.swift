@@ -17,13 +17,9 @@ extension SolanaSDK {
         mintAddress: String,
         isSimulation: Bool = false
     ) -> Single<(signature: String, newPubkey: String)> {
-        guard let payer = self.accountStorage.account else {
-            return .error(Error.unauthorized)
-        }
-
         var newAccount: Account!
-        return Single.zip(getRecentBlockhash(), getCreatingTokenAccountFee())
-            .flatMap { (recentBlockhash, minBalance) in
+        return Single.zip(getRecentBlockhash(), getCreatingTokenAccountFee(), getCurrentAccount())
+            .flatMap { (recentBlockhash, minBalance, payer) in
                 
                 let mintAddress = try PublicKey(string: mintAddress)
                 

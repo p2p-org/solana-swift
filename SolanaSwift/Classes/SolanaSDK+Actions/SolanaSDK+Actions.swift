@@ -79,13 +79,18 @@ extension SolanaSDK {
             getRecentBlockhashRequest = getRecentBlockhash()
         }
         
-        guard let feePayer = feePayer ?? accountStorage.account?.publicKey else {
-            return .error(Error.invalidRequest(reason: "Fee-payer not found"))
+        // get fee payer
+        let getFeePayerRequest: Single<PublicKey>
+        if let feePayer = feePayer {
+            getFeePayerRequest = .just(feePayer)
+        } else {
+            getFeePayerRequest = getCurrentAccount()
+                .map {$0.publicKey}
         }
         
         // serialize transaction
-        return getRecentBlockhashRequest
-            .map {recentBlockhash -> String in
+        return Single.zip(getRecentBlockhashRequest, getFeePayerRequest)
+            .map {(recentBlockhash, feePayer) -> String in
                 var transaction = Transaction(
                     feePayer: feePayer,
                     instructions: instructions,

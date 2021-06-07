@@ -21,10 +21,12 @@ public extension SolanaSDK {
             }
 	}
 	func getBalance(account: String? = nil, commitment: Commitment? = nil) -> Single<UInt64> {
-        guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString
-        else {return .error(Error.unauthorized)}
+        let accountRequest: Single<String> = account != nil ? .just(account!): getCurrentAccount().map {$0.publicKey.base58EncodedString}
         
-		return (request(parameters: [account, RequestConfiguration(commitment: commitment)]) as Single<Rpc<UInt64>>)
+        return accountRequest
+            .flatMap { account -> Single<Rpc<UInt64>> in
+                self.request(parameters: [account, RequestConfiguration(commitment: commitment)])
+            }
 			.map {$0.value}
 	}
 	func getBlockCommitment(block: String) -> Single<BlockCommitment> {

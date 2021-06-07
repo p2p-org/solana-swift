@@ -52,36 +52,31 @@ extension SolanaSDK {
         payer: Account? = nil,
         isSimulation: Bool = false
     ) -> Single<TransactionID> {
-        // get account
-        guard let payer = payer ?? accountStorage.account else {
-            return .error(Error.unauthorized)
-        }
+        let getFeePayerRequest: Single<Account> = payer != nil ? .just(payer!): getCurrentAccount()
         
-        // generate address
-        do {
-            let associatedAddress = try PublicKey.associatedTokenAddress(
-                walletAddress: owner,
-                tokenMintAddress: tokenMint
-            )
-            
-            // create instruction
-            let instruction = AssociatedTokenProgram
-                .createAssociatedTokenAccountInstruction(
-                    mint: tokenMint,
-                    associatedAccount: associatedAddress,
-                    owner: owner,
-                    payer: payer.publicKey
+        return getFeePayerRequest
+            .flatMap {payer in
+                
+                let associatedAddress = try PublicKey.associatedTokenAddress(
+                    walletAddress: owner,
+                    tokenMintAddress: tokenMint
                 )
-            
-            // send transaction
-            return serializeAndSendWithFee(
-                instructions: [instruction],
-                signers: [payer],
-                isSimulation: isSimulation
-            )
-            
-        } catch {
-            return .error(error)
-        }
+                
+                // create instruction
+                let instruction = AssociatedTokenProgram
+                    .createAssociatedTokenAccountInstruction(
+                        mint: tokenMint,
+                        associatedAccount: associatedAddress,
+                        owner: owner,
+                        payer: payer.publicKey
+                    )
+                
+                // send transaction
+                return self.serializeAndSendWithFee(
+                    instructions: [instruction],
+                    signers: [payer],
+                    isSimulation: isSimulation
+                )
+            }
     }
 }

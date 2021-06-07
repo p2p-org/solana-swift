@@ -12,6 +12,7 @@ import RxAlamofire
 public protocol FeeRelayerSolanaAPIClient {
     var accountStorage: SolanaSDKAccountStorage {get}
     func getRecentBlockhash() -> Single<String>
+    func getCurrentAccount() -> Single<SolanaSDK.Account>
     func findSPLTokenDestinationAddress(
         mintAddress: String,
         destinationAddress: String
@@ -74,33 +75,33 @@ extension SolanaSDK {
             amount: SolanaSDK.Lamports
         ) -> Single<TransactionID>
         {
-            guard let account = solanaAPIClient.accountStorage.account
-            else {return .error(Error.unauthorized)}
-            
-            return Single.zip([
+            Single.zip(
+                solanaAPIClient.getCurrentAccount(),
                 getFeePayerPubkey().map {$0.base58EncodedString},
                 solanaAPIClient.getRecentBlockhash()
-            ])
-                .map { result -> (signature: String, blockhash: String) in
-                    let feePayer = result[0]
-                    let recentBlockhash = result[1]
+            )
+                .map { result -> (signature: String, blockhash: String, account: Account) in
+                    let account = result.0
+                    let feePayer = result.1
+                    let recentBlockhash = result.2
                     let instruction = SystemProgram.transferInstruction(
                         from: try PublicKey(string: account.publicKey.base58EncodedString),
                         to: try PublicKey(string: destination),
                         lamports: amount
                     )
                     let signature = try self.getSignature(
+                        signer: account,
                         feePayer: feePayer,
                         instructions: [instruction],
                         recentBlockhash: recentBlockhash
                     )
-                    return (signature: Base58.encode(signature.bytes), blockhash: recentBlockhash)
+                    return (signature: Base58.encode(signature.bytes), blockhash: recentBlockhash, account: account)
                 }
                 .flatMap {result in
                     self.sendTransaction(
                         path: transferSOLPath,
                         params: TransferSolParams(
-                            sender: account.publicKey.base58EncodedString,
+                            sender: result.account.publicKey.base58EncodedString,
                             recipient: destination,
                             amount: amount,
                             signature: result.signature,
@@ -124,19 +125,18 @@ extension SolanaSDK {
             amount: Lamports,
             decimals: Decimals
         ) -> Single<TransactionID> {
-            guard let account = solanaAPIClient.accountStorage.account
-            else {return .error(Error.unauthorized)}
-            
-            return Single.zip([
-                getFeePayerPubkey().map {$0.base58EncodedString as Any},
-                solanaAPIClient.getRecentBlockhash().map {$0 as Any},
-                solanaAPIClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destination).map {$0 as Any}
-            ])
-                .map { result -> (signature: String, blockhash: String, realDestination: String) in
+            return Single.zip(
+                solanaAPIClient.getCurrentAccount(),
+                getFeePayerPubkey(),
+                solanaAPIClient.getRecentBlockhash(),
+                solanaAPIClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destination)
+            )
+                .map { result -> (account: SolanaSDK.Account, signature: String, blockhash: String, realDestination: String) in
                     // get result of asynchronous requests
-                    let feePayer = result[0] as! String
-                    let recentBlockhash = result[1] as! String
-                    let splTokenDestinationAddress = result[2] as! SPLTokenDestinationAddress
+                    let account = result.0
+                    let feePayer = result.1
+                    let recentBlockhash = result.2
+                    let splTokenDestinationAddress = result.3
                     
                     // form instructions
                     var instructions = [TransactionInstruction]()
@@ -148,7 +148,7 @@ extension SolanaSDK {
                             mint: try PublicKey(string: mintAddress),
                             associatedAccount: splTokenDestinationAddress.destination,
                             owner: try PublicKey(string: destination),
-                            payer: try PublicKey(string: feePayer)
+                            payer: feePayer
                         )
                         instructions.append(createATokenInstruction)
                     }
@@ -168,7 +168,8 @@ extension SolanaSDK {
                     
                     // get signature from instructions
                     let signature = try self.getSignature(
-                        feePayer: feePayer,
+                        signer: account,
+                        feePayer: feePayer.base58EncodedString,
                         instructions: instructions,
                         recentBlockhash: recentBlockhash
                     )
@@ -181,7 +182,7 @@ extension SolanaSDK {
                     }
                     
                     // send result to catcher
-                    return (signature: Base58.encode(signature.bytes), blockhash: recentBlockhash, realDestination: realDestination)
+                    return (account: account, signature: Base58.encode(signature.bytes), blockhash: recentBlockhash, realDestination: realDestination)
                 }
                 .flatMap {result in
                     self.sendTransaction(
@@ -190,7 +191,7 @@ extension SolanaSDK {
                             sender: source,
                             recipient: result.realDestination,
                             mintAddress: mintAddress,
-                            authority: account.publicKey.base58EncodedString,
+                            authority: result.account.publicKey.base58EncodedString,
                             amount: amount,
                             decimals: decimals,
                             signature: result.signature,
@@ -209,12 +210,11 @@ extension SolanaSDK {
         /// - Throws: error if signature not found
         /// - Returns: signature
         private func getSignature(
+            signer: SolanaSDK.Account,
             feePayer: String,
             instructions: [TransactionInstruction],
             recentBlockhash: String
         ) throws -> Data {
-            guard let signer = solanaAPIClient.accountStorage.account
-            else {throw Error.unauthorized}
             let feePayer = try PublicKey(string: feePayer)
             var transaction = Transaction(feePayer: feePayer, instructions: instructions, recentBlockhash: recentBlockhash)
             try transaction.sign(signers: [signer])
