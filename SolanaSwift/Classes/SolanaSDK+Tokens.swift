@@ -15,7 +15,7 @@ extension SolanaSDK {
                 let memcmp = EncodableWrapper(
                     wrapped:
                         ["offset": EncodableWrapper(wrapped: 32),
-                         "bytes": EncodableWrapper(wrapped: account)]
+                         "bytes": EncodableWrapper(wrapped: account.publicKey.base58EncodedString)]
                 )
                 let configs = RequestConfiguration(commitment: "recent", encoding: "base64", dataSlice: nil, filters: [
                     ["memcmp": memcmp],
