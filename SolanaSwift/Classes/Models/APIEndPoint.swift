@@ -21,9 +21,9 @@ extension SolanaSDK {
         
         public static var definedEndpoints: [Self] {
             [
+                .init(url: "https://api.mainnet-beta.solana.com", network: .mainnetBeta),
                 .init(url: "https://datahub-proxy.p2p.org", network: .mainnetBeta),
                 .init(url: "https://solana-api.projectserum.com", network: .mainnetBeta),
-                .init(url: "https://api.mainnet-beta.solana.com", network: .mainnetBeta),
                 .init(url: "https://devnet.solana.com", network: .devnet),
                 .init(url: "https://testnet.solana.com", network: .testnet)
             ]
