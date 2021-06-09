@@ -127,16 +127,17 @@ extension SolanaSDK {
             guard let account = solanaAPIClient.accountStorage.account
             else {return .error(Error.unauthorized)}
             
-            return Single.zip([
-                getFeePayerPubkey().map {$0.base58EncodedString as Any},
-                solanaAPIClient.getRecentBlockhash().map {$0 as Any},
-                solanaAPIClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destination).map {$0 as Any}
-            ])
-                .map { result -> (signature: String, blockhash: String, realDestination: String) in
-                    // get result of asynchronous requests
-                    let feePayer = result[0] as! String
-                    let recentBlockhash = result[1] as! String
-                    let splTokenDestinationAddress = result[2] as! SPLTokenDestinationAddress
+            return Single.zip(
+                getFeePayerPubkey(),
+                solanaAPIClient.getRecentBlockhash(),
+                solanaAPIClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destination)
+            )
+                .map { (feePayer, recentBlockhash, splTokenDestinationAddress) -> (signature: String, blockhash: String, realDestination: String) in
+                    // check
+                    if source == splTokenDestinationAddress.destination.base58EncodedString
+                    {
+                        throw Error.other("You can not send tokens to yourself")
+                    }
                     
                     // form instructions
                     var instructions = [TransactionInstruction]()
@@ -148,7 +149,7 @@ extension SolanaSDK {
                             mint: try PublicKey(string: mintAddress),
                             associatedAccount: splTokenDestinationAddress.destination,
                             owner: try PublicKey(string: destination),
-                            payer: try PublicKey(string: feePayer)
+                            payer: feePayer
                         )
                         instructions.append(createATokenInstruction)
                     }
@@ -168,7 +169,7 @@ extension SolanaSDK {
                     
                     // get signature from instructions
                     let signature = try self.getSignature(
-                        feePayer: feePayer,
+                        feePayer: feePayer.base58EncodedString,
                         instructions: instructions,
                         recentBlockhash: recentBlockhash
                     )
