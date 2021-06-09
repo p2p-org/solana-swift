@@ -19,9 +19,10 @@ class RestAPITests: XCTestCase {
     var account: SolanaSDK.Account {solanaSDK.accountStorage.account!}
 
     override func setUpWithError() throws {
-        solanaSDK = SolanaSDK(endpoint: endpoint, accountStorage: InMemoryAccountStorage())
+        let accountStorage = InMemoryAccountStorage()
+        solanaSDK = SolanaSDK(endpoint: endpoint, accountStorage: accountStorage)
         let account = try SolanaSDK.Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network)
-        try solanaSDK.accountStorage.save(account)
+        try accountStorage.save(account)
     }
     
     func testGetTokenAccountBalance() throws {

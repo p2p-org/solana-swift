@@ -20,12 +20,15 @@ class FeeRelayerTests: XCTestCase {
             network: .mainnetBeta
         )
         
+        let accountStorage = InMemoryAccountStorage()
+        
         let solanaSDK = SolanaSDK(
             endpoint: endpoint,
-            accountStorage: InMemoryAccountStorage()
+            accountStorage: accountStorage
         )
         let account = try SolanaSDK.Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network)
-        try solanaSDK.accountStorage.save(account)
+        
+        try accountStorage.save(account)
         
         feeRelayer = SolanaSDK.FeeRelayer(solanaAPIClient: solanaSDK)
     }

@@ -11,9 +11,7 @@ import Alamofire
 import RxSwift
 
 public protocol SolanaSDKAccountStorage {
-    func save(_ account: SolanaSDK.Account) throws
     var account: SolanaSDK.Account? {get}
-    func clear()
 }
 
 public class SolanaSDK {
