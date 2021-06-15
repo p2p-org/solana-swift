@@ -183,6 +183,7 @@ extension SolanaSDK {
                     guard let string = String(data: data, encoding: .utf8) else {
                         throw Error.other("Request is invalid \(requestAPI)")
                     }
+                    Logger.log(message: string, event: .request)
                     self?.socket.write(string: string, completion: {
                         completion?()
                     })
