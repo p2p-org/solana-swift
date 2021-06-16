@@ -55,7 +55,8 @@ extension SolanaSDK {
                     decimals: 9,
                     logoURI: nil,
                     tags: [],
-                    extensions: nil
+                    extensions: nil,
+                    isNative: true
                 ),
                 liquidity: false
             )
