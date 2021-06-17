@@ -96,7 +96,7 @@ extension SolanaSDK {
         {
             let id = write(
                 method: .init(.signature, .subscribe),
-                params: [signature, ["commitment": "max"]]
+                params: [signature, ["commitment": "confirmed"]]
             )
             
             return subscribe(id: id)
