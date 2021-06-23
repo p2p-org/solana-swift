@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 public protocol SolanaSDKTransactionParserType {
-    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?) -> Single<SolanaSDK.AnyTransaction>
+    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?, p2pFeePayerPubkeys: [String]) -> Single<SolanaSDK.AnyTransaction>
 }
 
 public extension SolanaSDK {
@@ -26,7 +26,8 @@ public extension SolanaSDK {
         public func parse(
             transactionInfo: TransactionInfo,
             myAccount: String?,
-            myAccountSymbol: String?
+            myAccountSymbol: String?,
+            p2pFeePayerPubkeys: [String]
         ) -> Single<AnyTransaction> {
             // get data
             let innerInstructions = transactionInfo.meta?.innerInstructions
@@ -111,7 +112,8 @@ public extension SolanaSDK {
                     instruction: instruction,
                     postTokenBalances: transactionInfo.meta?.postTokenBalances ?? [],
                     myAccount: myAccount,
-                    accountKeys: transactionInfo.transaction.message.accountKeys
+                    accountKeys: transactionInfo.transaction.message.accountKeys,
+                    p2pFeePayerPubkeys: p2pFeePayerPubkeys
                 )
                     .map {$0 as AnyHashable}
             }
@@ -184,7 +186,8 @@ public extension SolanaSDK {
             instruction: ParsedInstruction,
             postTokenBalances: [TokenBalance],
             myAccount: String?,
-            accountKeys: [Account.Meta]
+            accountKeys: [Account.Meta],
+            p2pFeePayerPubkeys: [String]
         ) -> Single<TransferTransaction>
         {
             // construct wallets
@@ -263,13 +266,12 @@ public extension SolanaSDK {
             }
             
             // define if transaction was paid by p2p.org
-            return Single.zip(
-                request,
-                FeeRelayer(solanaAPIClient: solanaSDK).getFeePayerPubkey()
-            )
-                .map { transaction, feePayer in
+            return request
+                .map { transaction in
                     var transaction = transaction
-                    if accountKeys.map({$0.publicKey}).first == feePayer {
+                    if let payer = accountKeys.map({$0.publicKey}).first?.base58EncodedString,
+                       p2pFeePayerPubkeys.contains(payer)
+                    {
                         transaction.wasPaidByP2POrg = true
                     }
                     return transaction
