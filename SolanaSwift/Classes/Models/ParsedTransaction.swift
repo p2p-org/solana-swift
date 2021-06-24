@@ -97,19 +97,17 @@ public extension SolanaSDK {
         
         public let source: Wallet?
         public let destination: Wallet?
+        public let authority: String?
         public let amount: Double?
         public var wasPaidByP2POrg: Bool = false
         
         let myAccount: String?
         
         public var transferType: TransferType? {
-            if source?.pubkey == myAccount {
+            if source?.pubkey == myAccount || authority == myAccount {
                 return .send
             }
-            if destination?.pubkey == myAccount {
-                return .receive
-            }
-            return nil
+            return .receive
         }
     }
     

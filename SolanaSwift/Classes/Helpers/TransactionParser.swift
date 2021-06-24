@@ -211,6 +211,7 @@ public extension SolanaSDK {
                     TransferTransaction(
                         source: source,
                         destination: destination,
+                        authority: instruction.parsed?.info.authority,
                         amount: lamports?.convertToBalance(decimals: source!.token.decimals),
                         myAccount: myAccount
                     )
@@ -243,6 +244,7 @@ public extension SolanaSDK {
                         TransferTransaction(
                             source: source,
                             destination: destination,
+                            authority: instruction.parsed?.info.authority,
                             amount: lamports?.convertToBalance(decimals: source?.token.decimals),
                             myAccount: myAccount
                         )
@@ -258,6 +260,7 @@ public extension SolanaSDK {
                             return TransferTransaction(
                                 source: source,
                                 destination: destination,
+                                authority: instruction.parsed?.info.authority,
                                 amount: lamports?.convertToBalance(decimals: source?.token.decimals),
                                 myAccount: myAccount
                             )

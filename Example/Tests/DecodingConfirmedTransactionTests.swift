@@ -139,6 +139,22 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction2.amount, 0.001)
     }
     
+    func testDecodingSendSPLTokenParsedInNativeSOLWallet() throws {
+        // transfer type
+        let transactionInfo = try transactionInfoFromJSONFileName("SendSPLTokenParsedInNativeSOLWallet")
+        let myAccount = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+        
+        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
+            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        
+        XCTAssertEqual(transaction.source?.token.symbol, "RAY")
+        XCTAssertEqual(transaction.authority, myAccount)
+        XCTAssertEqual(transaction.source?.pubkey, "5ADqZHdZzL3xd2NiP8MrM4pCFj5ijC4oQWSBzvXx4fbY")
+        XCTAssertEqual(transaction.destination?.pubkey, "4ijqHixcbzhxQbfJWAoPkvBhokBDRGtXyqVcMN8ywj8W")
+        XCTAssertEqual(transaction.transferType, .send)
+        XCTAssertEqual(transaction.wasPaidByP2POrg, true)
+    }
+    
     func testDecodingProvideLiquidityToPoolTransaction() throws {
         // transfer type
         let transactionInfo = try transactionInfoFromJSONFileName("ProvideLiquidityToPoolTransaction")
