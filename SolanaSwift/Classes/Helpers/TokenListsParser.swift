@@ -22,7 +22,7 @@ public extension SolanaSDK {
             // map tags
             list.tokens = list.tokens.map {
                 var item = $0
-                item.tags = item._tags.map {
+                item.tags = (item._tags ?? []).map {
                     list.tags[$0] ?? TokenTag(name: $0, description: $0)
                 }
                 return item

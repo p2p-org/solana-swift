@@ -16,7 +16,7 @@ extension SolanaSDK {
         let timestamp: String
         var tokens: [Token]
     }
-
+    
     public struct TokenTag: Hashable, Decodable {
         public var name: String
         public var description: String
@@ -25,9 +25,9 @@ extension SolanaSDK {
     public enum WrappingToken: String {
         case sollet, wormhole
     }
-
+    
     public struct Token: Hashable, Decodable {
-        public init(_tags: [String], chainId: Int, address: String, symbol: String, name: String, decimals: UInt8, logoURI: String?, tags: [TokenTag] = [], extensions: TokenExtensions?, isNative: Bool = false) {
+        public init(_tags: [String]?, chainId: Int, address: String, symbol: String, name: String, decimals: SolanaSDK.Decimals, logoURI: String?, tags: [SolanaSDK.TokenTag] = [], extensions: SolanaSDK.TokenExtensions?, isNative: Bool = false) {
             self._tags = _tags
             self.chainId = chainId
             self.address = address
@@ -40,7 +40,7 @@ extension SolanaSDK {
             self.isNative = isNative
         }
         
-        let _tags: [String]
+        let _tags: [String]?
         
         public let chainId: Int
         public let address: String
@@ -86,9 +86,23 @@ extension SolanaSDK {
             return nil
         }
     }
-
+    
     public struct TokenExtensions: Hashable, Decodable {
-        public let website: String?
-        public let bridgeContract: String?
+        let website: String?
+        let bridgeContract: String?
+        let assetContract: String?
+        let address: String?
+        let explorer: String?
+        let twitter: String?
+        let github: String?
+        let medium: String?
+        let tgann: String?
+        let tggroup: String?
+        let discord: String?
+        let serumV3Usdt: String?
+        let serumV3Usdc: String?
+        let coingeckoId: String?
+        let imageUrl: String?
+        let description: String?
     }
 }
