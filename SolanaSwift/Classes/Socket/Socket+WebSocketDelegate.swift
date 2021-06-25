@@ -41,15 +41,11 @@ extension SolanaSDK.Socket: WebSocketDelegate {
         case .cancelled:
             status.accept(.disconnected)
         case .error(let error):
-            Logger.log(message: "Socket error: \(error?.readableDescription)", event: .error)
-//            if let error = error {
-//                status.accept(.error(error))
-//                Logger.log(message: "Socket error: \(error)", event: .error)
-//                onError(SolanaSDK.Error.socket(error))
-//
-//                // reconnect
-//                socket.connect()
-//            }
+            if let error = error {
+                onError(SolanaSDK.Error.socket(error))
+            }
+            // reconnect
+            socket.connect()
         }
     }
     
