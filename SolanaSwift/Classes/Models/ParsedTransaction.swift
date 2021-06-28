@@ -86,11 +86,25 @@ public extension SolanaSDK {
     }
     
     struct CloseAccountTransaction: Hashable {
+        public init(reimbursedAmount: Double?, closedWallet: SolanaSDK.Wallet?) {
+            self.reimbursedAmount = reimbursedAmount
+            self.closedWallet = closedWallet
+        }
+        
         public let reimbursedAmount: Double?
         public let closedWallet: Wallet?
     }
     
     struct TransferTransaction: Hashable {
+        public init(source: SolanaSDK.Wallet?, destination: SolanaSDK.Wallet?, authority: String?, amount: Double?, wasPaidByP2POrg: Bool = false, myAccount: String?) {
+            self.source = source
+            self.destination = destination
+            self.authority = authority
+            self.amount = amount
+            self.wasPaidByP2POrg = wasPaidByP2POrg
+            self.myAccount = myAccount
+        }
+        
         public enum TransferType {
             case send, receive
         }
@@ -112,6 +126,14 @@ public extension SolanaSDK {
     }
     
     struct SwapTransaction: Hashable {
+        public init(source: SolanaSDK.Wallet?, sourceAmount: Double?, destination: SolanaSDK.Wallet?, destinationAmount: Double?, myAccountSymbol: String?) {
+            self.source = source
+            self.sourceAmount = sourceAmount
+            self.destination = destination
+            self.destinationAmount = destinationAmount
+            self.myAccountSymbol = myAccountSymbol
+        }
+        
         public enum Direction {
             case spend, receive
         }
