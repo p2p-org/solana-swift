@@ -315,11 +315,9 @@ public extension SolanaSDK {
             let instruction = instructions[index]
             
             // group request
-            var requests = [Single<AccountInfo?>]()
+            var request: Single<(source: Wallet?, destination: Wallet?)>
             var sourceAmountLamports: Lamports?
             var destinationAmountLamports: Lamports?
-            var sourcePubkey: PublicKey?
-            var destinationPubkey: PublicKey?
             
             // check inner instructions
             if let data = instruction.data,
@@ -338,19 +336,46 @@ public extension SolanaSDK {
                 let destinationInfo = destinationInstruction.parsed?.info
                 
                 // get source
+                var accountInfoRequests = [Single<AccountInfo?>]()
+                var sourcePubkey: PublicKey?
                 if let sourceString = sourceInfo?.source {
                     sourcePubkey = try? PublicKey(string: sourceString)
-                    requests.append(
+                    accountInfoRequests.append(
                         getAccountInfo(account: sourceString, retryWithAccount: sourceInfo?.destination)
                     )
                 }
                 
+                var destinationPubkey: PublicKey?
                 if let destinationString = destinationInfo?.destination {
                     destinationPubkey = try? PublicKey(string: destinationString)
-                    requests.append(
+                    accountInfoRequests.append(
                         getAccountInfo(account: destinationString, retryWithAccount: destinationInfo?.source)
                     )
                 }
+                
+                request = Single.zip(accountInfoRequests)
+                    .map {params -> (source: Wallet?, destination: Wallet?) in
+                        // get source, destination account info
+                        let sourceAccountInfo = params[0]
+                        let destinationAccountInfo = params[1]
+                        
+                        // source
+                        let sourceToken = getTokenWithMint(sourceAccountInfo?.mint.base58EncodedString)
+                        let source = Wallet(
+                            pubkey: sourcePubkey?.base58EncodedString,
+                            lamports: sourceAccountInfo?.lamports,
+                            token: sourceToken
+                        )
+                        
+                        // destination
+                        let destinationToken = getTokenWithMint(destinationAccountInfo?.mint.base58EncodedString)
+                        let destination = Wallet(
+                            pubkey: destinationPubkey?.base58EncodedString,
+                            lamports: destinationAccountInfo?.lamports,
+                            token: destinationToken
+                        )
+                        return (source: source, destination: destination)
+                    }
                 
                 sourceAmountLamports = Lamports(sourceInfo?.amount ?? "0")
                 destinationAmountLamports = Lamports(destinationInfo?.amount ?? "0")
@@ -359,13 +384,27 @@ public extension SolanaSDK {
             // check instructions for failed transaction
             else if let approveInstruction = instructions
                         .first(where: {$0.parsed?.type == "approve"}),
-                    let sourceAmountString = approveInstruction.parsed?.info.amount
+                    let sourceAmountString = approveInstruction.parsed?.info.amount,
+                    let sourceMint = postTokenBalances?.first?.mint,
+                    let destinationMint = postTokenBalances?.last?.mint
             {
+                // get wallets
+                let source = Wallet(
+                    pubkey: nil,
+                    lamports: Lamports(postTokenBalances?.first?.uiTokenAmount.amount ?? "0"),
+                    token: getTokenWithMint(sourceMint)
+                )
+                
+                let destination = Wallet(
+                    pubkey: nil,
+                    lamports: Lamports(postTokenBalances?.last?.uiTokenAmount.amount ?? "0"),
+                    token: getTokenWithMint(destinationMint)
+                )
+                
+                request = .just((source: source, destination: destination))
+                
                 sourceAmountLamports = Lamports(sourceAmountString)
                 destinationAmountLamports = nil // because of the error
-                
-                
-                
             }
             
             // unknown
@@ -374,27 +413,11 @@ public extension SolanaSDK {
             }
             
             // get token account info
-            return Single.zip(requests)
-                .map { params in
-                    // get source, destination account info
-                    let sourceAccountInfo = params[0]
-                    let destinationAccountInfo = params[1]
-                    
-                    // source
-                    let sourceToken = getTokenWithMint(sourceAccountInfo?.mint.base58EncodedString)
-                    let source = Wallet(
-                        pubkey: sourcePubkey?.base58EncodedString,
-                        lamports: sourceAccountInfo?.lamports,
-                        token: sourceToken
-                    )
-                    
-                    // destination
-                    let destinationToken = getTokenWithMint(destinationAccountInfo?.mint.base58EncodedString)
-                    let destination = Wallet(
-                        pubkey: destinationPubkey?.base58EncodedString,
-                        lamports: destinationAccountInfo?.lamports,
-                        token: destinationToken
-                    )
+            return request
+                .map { params -> SwapTransaction? in
+                    guard let source = params.source,
+                        let destination = params.destination
+                    else {return nil}
                     
                     // get decimals
                     return SwapTransaction(
@@ -405,15 +428,7 @@ public extension SolanaSDK {
                         myAccountSymbol: myAccountSymbol
                     )
                 }
-                .catchAndReturn(
-                    SolanaSDK.SwapTransaction(
-                        source: nil,
-                        sourceAmount: nil,
-                        destination: nil,
-                        destinationAmount: nil,
-                        myAccountSymbol: myAccountSymbol
-                    )
-                )
+                .catchAndReturn(nil)
         }
         
         // MARK: - Helpers
