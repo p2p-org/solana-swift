@@ -40,6 +40,7 @@
 		BCBBE23E25650A1700533F6B /* RegexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBBE23D25650A1700533F6B /* RegexTests.swift */; };
 		BCC49C1225BE864200D4D336 /* EncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCC49C1125BE864200D4D336 /* EncodingTests.swift */; };
 		BCF5795A262ECD6C00E73226 /* PoolsAmountCalculationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF57959262ECD6C00E73226 /* PoolsAmountCalculationTests.swift */; };
+		BCFCB4D8268B01C400EF02DF /* SwapErrorTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BCFCB4D7268B01C400EF02DF /* SwapErrorTransaction.json */; };
 		E6DDE50635D3D9571A63FE4D /* Pods_SolanaSwift_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8C40B5C5D42F5F26B6E4DA /* Pods_SolanaSwift_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -180,6 +181,7 @@
 		BCBBE23D25650A1700533F6B /* RegexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegexTests.swift; sourceTree = "<group>"; };
 		BCC49C1125BE864200D4D336 /* EncodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingTests.swift; sourceTree = "<group>"; };
 		BCF57959262ECD6C00E73226 /* PoolsAmountCalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoolsAmountCalculationTests.swift; sourceTree = "<group>"; };
+		BCFCB4D7268B01C400EF02DF /* SwapErrorTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SwapErrorTransaction.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -256,6 +258,7 @@
 				BC51E54A26847D6900C9B05D /* SendSPLTokenParsedInNativeSOLWallet.json */,
 				BC6D01FD265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json */,
 				BC6D020E265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json */,
+				BCFCB4D7268B01C400EF02DF /* SwapErrorTransaction.json */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -536,6 +539,7 @@
 				BC53E22B26565CD0005624CC /* SendTokenToNewAssociatedTokenAddress.json in Resources */,
 				BC44FC5B265B9866008BEE84 /* SendTokenToNewAssociatedTokenAddressTransferChecked.json in Resources */,
 				BC54A974261C1E430083A127 /* SendSOLTransaction.json in Resources */,
+				BCFCB4D8268B01C400EF02DF /* SwapErrorTransaction.json in Resources */,
 				BC65DFAE261D5D4300E436C7 /* SendSPLToSPLTransaction.json in Resources */,
 				BC3F71D0261AF25600DFDFD0 /* SwapTransaction.json in Resources */,
 				BC54A96F261C1B560083A127 /* CloseAccountTransaction.json in Resources */,

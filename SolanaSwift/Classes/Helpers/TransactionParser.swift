@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 public protocol SolanaSDKTransactionParserType {
-    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?, p2pFeePayerPubkeys: [String]) -> Single<SolanaSDK.AnyTransaction>
+    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?, p2pFeePayerPubkeys: [String]) -> Single<SolanaSDK.ParsedTransaction>
 }
 
 public extension SolanaSDK {
@@ -28,7 +28,7 @@ public extension SolanaSDK {
             myAccount: String?,
             myAccountSymbol: String?,
             p2pFeePayerPubkeys: [String]
-        ) -> Single<AnyTransaction> {
+        ) -> Single<ParsedTransaction> {
             // get data
             let innerInstructions = transactionInfo.meta?.innerInstructions
             let instructions = transactionInfo.transaction.message.instructions
@@ -40,23 +40,8 @@ public extension SolanaSDK {
             if let instructionIndex = getSwapInstructionIndex(instructions: instructions)
             {
                 let checkingInnerInstructions = innerInstructions?.first?.instructions
-                // swap
-                if checkingInnerInstructions?.count == 2,
-                   checkingInnerInstructions![0].parsed?.type == "transfer",
-                   checkingInnerInstructions![1].parsed?.type == "transfer"
-                {
-                    let instruction = instructions[instructionIndex]
-                    single = parseSwapTransaction(
-                        index: instructionIndex,
-                        instruction: instruction,
-                        innerInstructions: innerInstructions,
-                        myAccountSymbol: myAccountSymbol
-                    )
-                        .map {$0 as AnyHashable}
-                }
-                
-                // Later: provide liquidity to pool (unsupported yet)
-                else if checkingInnerInstructions?.count == 3,
+                // Provide liquidity to pool (unsupported yet)
+                if checkingInnerInstructions?.count == 3,
                         checkingInnerInstructions![0].parsed?.type == "transfer",
                         checkingInnerInstructions![1].parsed?.type == "transfer",
                         checkingInnerInstructions![2].parsed?.type == "mintTo"
@@ -73,9 +58,16 @@ public extension SolanaSDK {
                     single = .just(nil)
                 }
                 
-                // unsupported
+                // swap
                 else {
-                    single = .just(nil)
+                    single = parseSwapTransaction(
+                        index: instructionIndex,
+                        instructions: instructions,
+                        innerInstructions: innerInstructions,
+                        postTokenBalances: transactionInfo.meta?.postTokenBalances,
+                        myAccountSymbol: myAccountSymbol
+                    )
+                        .map {$0 as AnyHashable}
                 }
             }
             
@@ -123,9 +115,26 @@ public extension SolanaSDK {
                 single = .just(nil)
             }
             
+            // parse error
+            var status = SolanaSDK.ParsedTransaction.Status.confirmed
+            if transactionInfo.meta?.err != nil {
+                let errorMessage = transactionInfo.meta?.logMessages?
+                    .first(where: {$0.contains("Program log: Error:")})?
+                    .replacingOccurrences(of: "Program log: Error: ", with: "")
+                status = .error(errorMessage)
+            }
+            
             return single
                 .map {
-                    AnyTransaction(signature: nil, value: $0, slot: nil, blockTime: nil, fee: transactionInfo.meta?.fee, blockhash: transactionInfo.transaction.message.recentBlockhash)
+                    ParsedTransaction(
+                        status: status,
+                        signature: nil,
+                        value: $0,
+                        slot: nil,
+                        blockTime: nil,
+                        fee: transactionInfo.meta?.fee,
+                        blockhash: transactionInfo.transaction.message.recentBlockhash
+                    )
                 }
         }
         
@@ -296,47 +305,72 @@ public extension SolanaSDK {
         
         private func parseSwapTransaction(
             index: Int,
-            instruction: ParsedInstruction,
+            instructions: [ParsedInstruction],
             innerInstructions: [InnerInstruction]?,
+            postTokenBalances: [TokenBalance]?,
             myAccountSymbol: String?
-        ) -> Single<SwapTransaction> {
-            // get data
-            guard let data = instruction.data else {return .just(SwapTransaction.empty)}
-            let buf = Base58.decode(data)
-            
-            // get instruction index
-            guard let instructionIndex = buf.first,
-                  instructionIndex == 1,
-                  let swapInnerInstruction = innerInstructions?.first(where: {$0.index == index})
-            else { return .just(SwapTransaction.empty) }
-            
-            // get instructions
-            let transfersInstructions = swapInnerInstruction.instructions.filter {$0.parsed?.type == "transfer"}
-            guard transfersInstructions.count >= 2 else {return .just(SwapTransaction.empty)}
-            
-            let sourceInstruction = transfersInstructions[0]
-            let destinationInstruction = transfersInstructions[1]
-            let sourceInfo = sourceInstruction.parsed?.info
-            let destinationInfo = destinationInstruction.parsed?.info
+        ) -> Single<SwapTransaction?> {
+            // get instruction
+            guard index < instructions.count else {return .just(nil)}
+            let instruction = instructions[index]
             
             // group request
             var requests = [Single<AccountInfo?>]()
-            
-            // get source
+            var sourceAmountLamports: Lamports?
+            var destinationAmountLamports: Lamports?
             var sourcePubkey: PublicKey?
-            if let sourceString = sourceInfo?.source {
-                sourcePubkey = try? PublicKey(string: sourceString)
-                requests.append(
-                    getAccountInfo(account: sourceString, retryWithAccount: sourceInfo?.destination)
-                )
+            var destinationPubkey: PublicKey?
+            
+            // check inner instructions
+            if let data = instruction.data,
+               let instructionIndex = Base58.decode(data).first,
+               instructionIndex == 1,
+               let swapInnerInstruction = innerInstructions?.first(where: {$0.index == index})
+            {
+                // get instructions
+                let transfersInstructions = swapInnerInstruction.instructions.filter {$0.parsed?.type == "transfer"}
+                guard transfersInstructions.count >= 2 else {return .just(nil)}
+                
+                let sourceInstruction = transfersInstructions[0]
+                let destinationInstruction = transfersInstructions[1]
+                
+                let sourceInfo = sourceInstruction.parsed?.info
+                let destinationInfo = destinationInstruction.parsed?.info
+                
+                // get source
+                if let sourceString = sourceInfo?.source {
+                    sourcePubkey = try? PublicKey(string: sourceString)
+                    requests.append(
+                        getAccountInfo(account: sourceString, retryWithAccount: sourceInfo?.destination)
+                    )
+                }
+                
+                if let destinationString = destinationInfo?.destination {
+                    destinationPubkey = try? PublicKey(string: destinationString)
+                    requests.append(
+                        getAccountInfo(account: destinationString, retryWithAccount: destinationInfo?.source)
+                    )
+                }
+                
+                sourceAmountLamports = Lamports(sourceInfo?.amount ?? "0")
+                destinationAmountLamports = Lamports(destinationInfo?.amount ?? "0")
             }
             
-            var destinationPubkey: PublicKey?
-            if let destinationString = destinationInfo?.destination {
-                destinationPubkey = try? PublicKey(string: destinationString)
-                requests.append(
-                    getAccountInfo(account: destinationString, retryWithAccount: destinationInfo?.source)
-                )
+            // check instructions for failed transaction
+            else if let approveInstruction = instructions
+                        .first(where: {$0.parsed?.type == "approve"}),
+                    let sourceAmountString = approveInstruction.parsed?.info.amount
+            {
+                sourceAmountLamports = Lamports(sourceAmountString)
+                destinationAmountLamports = nil // because of the error
+                
+                
+                
+            }
+            
+            // unknown
+            else {
+                return .just(nil)
             }
             
             // get token account info
@@ -362,15 +396,12 @@ public extension SolanaSDK {
                         token: destinationToken
                     )
                     
-                    let sourceAmount = UInt64(sourceInfo?.amount ?? "0")?.convertToBalance(decimals: source.token.decimals)
-                    let destinationAmount = UInt64(destinationInfo?.amount ?? "0")?.convertToBalance(decimals: destination.token.decimals)
-                    
                     // get decimals
                     return SwapTransaction(
                         source: source,
-                        sourceAmount: sourceAmount,
+                        sourceAmount: sourceAmountLamports?.convertToBalance(decimals: source.token.decimals),
                         destination: destination,
-                        destinationAmount: destinationAmount,
+                        destinationAmount: destinationAmountLamports?.convertToBalance(decimals: destination.token.decimals),
                         myAccountSymbol: myAccountSymbol
                     )
                 }

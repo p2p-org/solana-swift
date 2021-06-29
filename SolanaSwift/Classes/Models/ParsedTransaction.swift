@@ -8,8 +8,16 @@
 import Foundation
 
 public extension SolanaSDK {
-    struct AnyTransaction: Hashable {
-        public init(signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: UInt64?, blockhash: String?) {
+    struct ParsedTransaction: Hashable {
+        public enum Status: Equatable, Hashable {
+            case requesting
+            case processing(percent: Double)
+            case confirmed
+            case error(String?)
+        }
+        
+        public init(status: Status = .confirmed, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: UInt64?, blockhash: String?) {
+            self.status = status
             self.signature = signature
             self.value = value
             self.amountInFiat = amountInFiat
@@ -19,6 +27,7 @@ public extension SolanaSDK {
             self.blockhash = blockhash
         }
         
+        public var status: Status
         public let signature: String?
         public let value: AnyHashable?
         public var amountInFiat: Double?
