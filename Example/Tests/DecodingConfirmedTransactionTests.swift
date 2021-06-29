@@ -30,11 +30,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingSwapTransaction() throws {
-        let transactionInfo = try transactionInfoFromJSONFileName("SwapTransaction")
-        
         let myAccountSymbol = "SOL"
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: myAccountSymbol, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.SwapTransaction
+        let transaction = try parse(fileName: "SwapTransaction", myAccountSymbol: myAccountSymbol).value as! SolanaSDK.SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SRM")
         XCTAssertEqual(transaction.source?.pubkey, "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua")
@@ -45,10 +42,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingCreateAccountTransaction() throws {
-        let transactionInfo = try transactionInfoFromJSONFileName("CreateAccountTransaction")
-        
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.CreateAccountTransaction
+        let transaction = try parse(fileName: "CreateAccountTransaction").value as! SolanaSDK.CreateAccountTransaction
         
         XCTAssertEqual(transaction.fee, 0.00203928)
         XCTAssertEqual(transaction.newWallet?.token.symbol, "ETH")
@@ -56,21 +50,15 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingCloseAccountTransaction() throws {
-        let transactionInfo = try transactionInfoFromJSONFileName("CloseAccountTransaction")
-        
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: nil, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.CloseAccountTransaction
+        let transaction = try parse(fileName: "CloseAccountTransaction").value as! SolanaSDK.CloseAccountTransaction
         
         XCTAssertEqual(transaction.reimbursedAmount, 0.00203928)
         XCTAssertEqual(transaction.closedWallet?.token.symbol, "ETH")
     }
     
     func testDecodingSendSOLTransaction() throws {
-        let transactionInfo = try transactionInfoFromJSONFileName("SendSOLTransaction")
-        
         let myAccount = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSOLTransaction", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SOL")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
@@ -80,11 +68,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingSendSOLTransactionPaidByP2PORG() throws {
-        let transactionInfo = try transactionInfoFromJSONFileName("SendSOLTransactionPaidByP2PORG")
-        
         let myAccount = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSOLTransactionPaidByP2PORG", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SOL")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
@@ -94,10 +79,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingSendSPLToSOLTransaction() throws {
-        let transactionInfo = try transactionInfoFromJSONFileName("SendSPLToSOLTransaction")
         let myAccount = "22hXC9c4SGccwCkjtJwZ2VGRfhDYh9KSRCviD8bs4Xbg"
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSPLToSOLTransaction", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "wUSDT")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
@@ -106,10 +89,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingSendSPLToSPLTransaction() throws {
-        let transactionInfo = try transactionInfoFromJSONFileName("SendSPLToSPLTransaction")
         let myAccount = "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua"
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSPLToSPLTransaction", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SRM")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
@@ -118,21 +99,15 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingSendTokenToNewAssociatedTokenAddress() throws {
-        // transfer type
-        let transactionInfo = try transactionInfoFromJSONFileName("SendTokenToNewAssociatedTokenAddress")
         let myAccount = "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd"
-        
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: "MAPS", p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendTokenToNewAssociatedTokenAddress", myAccount: myAccount, myAccountSymbol: "MAPS").value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "MAPS")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.amount, 0.001)
         
         // transfer checked type
-        let transactionInfo2 = try transactionInfoFromJSONFileName("SendTokenToNewAssociatedTokenAddressTransferChecked")
-        let transaction2 = try parser.parse(transactionInfo: transactionInfo2, myAccount: myAccount, myAccountSymbol: "MAPS", p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        let transaction2 = try parse(fileName: "SendTokenToNewAssociatedTokenAddressTransferChecked", myAccount: myAccount, myAccountSymbol: "MAPS").value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction2.source?.token.symbol, "MAPS")
         XCTAssertEqual(transaction2.source?.pubkey, myAccount)
@@ -140,12 +115,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingSendSPLTokenParsedInNativeSOLWallet() throws {
-        // transfer type
-        let transactionInfo = try transactionInfoFromJSONFileName("SendSPLTokenParsedInNativeSOLWallet")
         let myAccount = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-        
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()?.value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSPLTokenParsedInNativeSOLWallet", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "RAY")
         XCTAssertEqual(transaction.authority, myAccount)
@@ -156,25 +127,27 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingProvideLiquidityToPoolTransaction() throws {
-        // transfer type
-        let transactionInfo = try transactionInfoFromJSONFileName("ProvideLiquidityToPoolTransaction")
         let myAccount = "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd"
-        
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()!
+        let transaction = try parse(fileName: "ProvideLiquidityToPoolTransaction", myAccount: myAccount)
         
         XCTAssertNil(transaction.value)
     }
     
     func testDecodingBurnLiquidityInPoolTransaction() throws {
-        // transfer type
-        let transactionInfo = try transactionInfoFromJSONFileName("BurnLiquidityInPoolTransaction")
         let myAccount = "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd"
-        
-        let transaction = try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: nil, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
-            .toBlocking().first()!
+        let transaction = try parse(fileName: "BurnLiquidityInPoolTransaction", myAccount: myAccount)
         
         XCTAssertNil(transaction.value)
+    }
+    
+    private func parse(
+        fileName: String,
+        myAccount: String? = nil,
+        myAccountSymbol: String? = nil
+    ) throws -> SolanaSDK.AnyTransaction {
+        let transactionInfo = try transactionInfoFromJSONFileName(fileName)
+        return try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: myAccountSymbol, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
+            .toBlocking().first()!
     }
     
     private func transactionInfoFromJSONFileName(_ name: String) throws -> SolanaSDK.TransactionInfo
