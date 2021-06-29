@@ -16,7 +16,7 @@ public extension SolanaSDK {
             case error(String?)
         }
         
-        public init(status: Status = .confirmed, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: UInt64?, blockhash: String?) {
+        public init(status: Status, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: UInt64?, blockhash: String?) {
             self.status = status
             self.signature = signature
             self.value = value
