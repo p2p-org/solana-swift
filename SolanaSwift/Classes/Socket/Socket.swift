@@ -72,7 +72,13 @@ extension SolanaSDK {
             }
             
             // add subscriptions
-            let id = write(method: .init(.account, .subscribe), params: [account, ["encoding":"jsonParsed"]])
+            let id = write(
+                method: .init(.account, .subscribe),
+                params: [
+                    account,
+                    ["encoding":"jsonParsed", "commitment": "confirmed"]
+                ]
+            )
             subscribe(id: id)
                 .subscribe(onSuccess: {[weak self] subscriptionId in
                     guard let strongSelf = self else {return}
