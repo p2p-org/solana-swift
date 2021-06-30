@@ -76,7 +76,7 @@ extension SolanaSDK {
                 method: .init(.account, .subscribe),
                 params: [
                     account,
-                    ["encoding":"jsonParsed", "commitment": "confirmed"]
+                    ["encoding":"jsonParsed", "commitment": "recent"]
                 ]
             )
             subscribe(id: id)
