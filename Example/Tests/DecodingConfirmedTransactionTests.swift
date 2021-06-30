@@ -140,11 +140,25 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertNil(transaction.value)
     }
     
+    func testDecodingSwapErrorTransaction() throws {
+        let myAccount = "G8PrkEwmVx3kt3rXBin5o1bdDC1cvz7oBnXbHksNg7R4"
+        let parsedTransaction = try parse(fileName: "SwapErrorTransaction", myAccount: myAccount)
+        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        
+        XCTAssertEqual(parsedTransaction.status, .error("Swap instruction exceeds desired slippage limit"))
+        XCTAssertEqual(transaction.source?.token.symbol, "KIN")
+        XCTAssertEqual(transaction.source?.pubkey, "2xKofw1wK2CVMVUssGTv3G5pVrUALAR9r8J9zZnwtrUG")
+        XCTAssertEqual(transaction.sourceAmount?.rounded(), 100)
+        
+        XCTAssertEqual(transaction.destination?.token.symbol, "SOL")
+        XCTAssertEqual(transaction.destination?.pubkey, "G8PrkEwmVx3kt3rXBin5o1bdDC1cvz7oBnXbHksNg7R4")
+    }
+    
     private func parse(
         fileName: String,
         myAccount: String? = nil,
         myAccountSymbol: String? = nil
-    ) throws -> SolanaSDK.AnyTransaction {
+    ) throws -> SolanaSDK.ParsedTransaction {
         let transactionInfo = try transactionInfoFromJSONFileName(fileName)
         return try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: myAccountSymbol, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
             .toBlocking().first()!
