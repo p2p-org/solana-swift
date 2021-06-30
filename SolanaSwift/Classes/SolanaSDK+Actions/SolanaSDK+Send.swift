@@ -18,7 +18,7 @@ extension SolanaSDK {
     ///   - withoutFee: send without fee. if it's true, the transaction can not be a simulation
     ///   - isSimulation: define if this is a simulation or real transaction
     /// - Returns: transaction id
-    public func sendSOL(
+    public func sendNativeSOL(
         to destination: String,
         amount: UInt64,
         withoutFee: Bool = true,
