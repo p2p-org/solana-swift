@@ -388,21 +388,27 @@ public extension SolanaSDK {
                     let sourceMint = postTokenBalances?.first?.mint,
                     let destinationMint = postTokenBalances?.last?.mint
             {
-                // get wallets
+                // source wallet
                 let source = Wallet(
-                    pubkey: nil,
+                    pubkey: approveInstruction.parsed?.info.source,
                     lamports: Lamports(postTokenBalances?.first?.uiTokenAmount.amount ?? "0"),
                     token: getTokenWithMint(sourceMint)
                 )
                 
+                // destination wallet
+                var destinationPubkey: String?
+                let destinationToken = getTokenWithMint(destinationMint)
+                if destinationToken.symbol == "SOL" {
+                    destinationPubkey = approveInstruction.parsed?.info.owner
+                }
                 let destination = Wallet(
-                    pubkey: nil,
+                    pubkey: destinationPubkey,
                     lamports: Lamports(postTokenBalances?.last?.uiTokenAmount.amount ?? "0"),
-                    token: getTokenWithMint(destinationMint)
+                    token: destinationToken
                 )
                 
+                // form request
                 request = .just((source: source, destination: destination))
-                
                 sourceAmountLamports = Lamports(sourceAmountString)
                 destinationAmountLamports = nil // because of the error
             }

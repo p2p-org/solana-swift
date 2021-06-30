@@ -147,9 +147,11 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         
         XCTAssertEqual(parsedTransaction.status, .error("Swap instruction exceeds desired slippage limit"))
         XCTAssertEqual(transaction.source?.token.symbol, "KIN")
+        XCTAssertEqual(transaction.source?.pubkey, "2xKofw1wK2CVMVUssGTv3G5pVrUALAR9r8J9zZnwtrUG")
         XCTAssertEqual(transaction.sourceAmount?.rounded(), 100)
         
         XCTAssertEqual(transaction.destination?.token.symbol, "SOL")
+        XCTAssertEqual(transaction.destination?.pubkey, "G8PrkEwmVx3kt3rXBin5o1bdDC1cvz7oBnXbHksNg7R4")
     }
     
     private func parse(
