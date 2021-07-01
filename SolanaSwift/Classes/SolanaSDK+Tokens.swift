@@ -31,18 +31,59 @@ extension SolanaSDK {
                 $0.compactMap {$0.account.data.value != nil ? $0: nil}
             }
             .map {$0.map {($0.pubkey, $0.account.data.value!)}}
-            .map {
-                $0.map { (pubkey, accountInfo) in
-                    let mintAddress = accountInfo.mint.base58EncodedString
-                    let token = self.supportedTokens.first(where: {$0.address == mintAddress}) ?? .unsupported(mint: mintAddress)
+            .flatMap { list -> Single<[Wallet]> in
+                var knownWallets = [Wallet]()
+                var unknownAccounts = [(String, AccountInfo)]()
+                
+                for item in list {
+                    let pubkey = item.0
+                    let accountInfo = item.1
                     
-                    return Wallet(
-                        pubkey: pubkey,
-                        lamports: accountInfo.lamports,
-                        token: token,
-                        liquidity: false
-                    )
+                    let mintAddress = accountInfo.mint.base58EncodedString
+                    // known token
+                    if let token = self.supportedTokens.first(where: {$0.address == mintAddress})
+                    {
+                        knownWallets.append(
+                            Wallet(
+                                pubkey: pubkey,
+                                lamports: accountInfo.lamports,
+                                token: token
+                            )
+                        )
+                    }
+                    
+                    // unknown token
+                    else {
+                        unknownAccounts.append(item)
+                    }
+                    
                 }
+                
+                return self.getMultipleMintDatas(
+                    mintAddresses: unknownAccounts.map{$0.1.mint}
+                )
+                    .map {mintDatas -> [Wallet] in
+                        guard mintDatas.count == unknownAccounts.count
+                        else {throw Error.unknown}
+                        var wallets = [Wallet]()
+                        for (index, item) in mintDatas.enumerated() {
+                            wallets.append(
+                                Wallet(
+                                    pubkey: unknownAccounts[index].0,
+                                    lamports: unknownAccounts[index].1.lamports,
+                                    token: .unsupported(
+                                        mint: unknownAccounts[index].1.mint.base58EncodedString,
+                                        decimals: item.value.decimals
+                                    )
+                                )
+                            )
+                        }
+                        return wallets
+                    }
+                    .catchAndReturn(unknownAccounts.map {
+                        Wallet(pubkey: $0.0, lamports: $0.1.lamports, token: .unsupported(mint: $0.1.mint.base58EncodedString))
+                    })
+                    .map {knownWallets + $0}
             }
     }
     

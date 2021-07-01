@@ -16,7 +16,7 @@ extension SolanaSDK {
         public var userInfo: AnyHashable?
         
         // MARK: - Initializer
-        public init(pubkey: String? = nil, lamports: UInt64? = nil, token: SolanaSDK.Token, liquidity: Bool? = false) {
+        public init(pubkey: String? = nil, lamports: UInt64? = nil, token: SolanaSDK.Token) {
             self.pubkey = pubkey
             self.lamports = lamports
             self.token = token
@@ -51,8 +51,7 @@ extension SolanaSDK {
                     tags: [],
                     extensions: nil,
                     isNative: true
-                ),
-                liquidity: false
+                )
             )
         }
     }

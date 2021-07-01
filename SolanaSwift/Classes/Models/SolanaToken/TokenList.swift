@@ -57,7 +57,8 @@ extension SolanaSDK {
         }
         
         public static func unsupported(
-            mint: String?
+            mint: String?,
+            decimals: Decimals = 0
         ) -> Token {
             Token(
                 _tags: [],
@@ -65,7 +66,7 @@ extension SolanaSDK {
                 address: mint ?? "<undefined>",
                 symbol: "",
                 name: mint ?? "<undefined>",
-                decimals: 0,
+                decimals: decimals,
                 logoURI: nil,
                 tags: [],
                 extensions: nil
