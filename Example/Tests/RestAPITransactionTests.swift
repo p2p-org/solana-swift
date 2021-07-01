@@ -38,7 +38,7 @@ class RestAPITransactionTests: RestAPITests {
         let balance = try solanaSDK.getBalance().toBlocking().first()
         XCTAssertNotNil(balance)
         
-        _ = try solanaSDK.sendSOL(
+        _ = try solanaSDK.sendNativeSOL(
             to: toPublicKey,
             amount: balance!/10,
             isSimulation: true
@@ -48,7 +48,7 @@ class RestAPITransactionTests: RestAPITests {
     func testSendSOLWithoutFee() throws {
         let toPublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
         
-        _ = try solanaSDK.sendSOL(
+        _ = try solanaSDK.sendNativeSOL(
             to: toPublicKey,
             amount: 0.001.toLamport(decimals: 9)
         ).toBlocking().first()
