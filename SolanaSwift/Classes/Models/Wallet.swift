@@ -15,17 +15,11 @@ extension SolanaSDK {
         public var token: Token
         public var userInfo: AnyHashable?
         
-        let liquidity: Bool?
-        public var isLiquidity: Bool {
-            liquidity == true
-        }
-        
         // MARK: - Initializer
         public init(pubkey: String? = nil, lamports: UInt64? = nil, token: SolanaSDK.Token, liquidity: Bool? = false) {
             self.pubkey = pubkey
             self.lamports = lamports
             self.token = token
-            self.liquidity = liquidity
         }
         
         // MARK: - Computed properties
