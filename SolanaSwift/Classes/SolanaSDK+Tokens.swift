@@ -9,6 +9,15 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
+    public func getTokensList() -> Single<[Token]> {
+        if let cache = supportedTokensCache {
+            return .just(cache)
+        }
+        let parser = TokensListParser()
+        return parser.parse(network: endpoint.network.cluster)
+            .do(onSuccess: {self.supportedTokensCache = $0})
+    }
+    
     public func getTokenWallets(account: String? = nil) -> Single<[Wallet]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.unauthorized)
@@ -22,16 +31,20 @@ extension SolanaSDK {
             ["memcmp": memcmp],
             ["dataSize": .init(wrapped: 165)]
         ])
-        return getProgramAccounts(
-            publicKey: PublicKey.tokenProgramId.base58EncodedString,
-            configs: configs,
-            decodedTo: AccountInfo.self
+        
+        return Single.zip(
+            getProgramAccounts(
+                publicKey: PublicKey.tokenProgramId.base58EncodedString,
+                configs: configs,
+                decodedTo: AccountInfo.self
+            )
+                .map {
+                    $0.compactMap {$0.account.data.value != nil ? $0: nil}
+                }
+                .map {$0.map {($0.pubkey, $0.account.data.value!)}},
+            getTokensList()
         )
-            .map {
-                $0.compactMap {$0.account.data.value != nil ? $0: nil}
-            }
-            .map {$0.map {($0.pubkey, $0.account.data.value!)}}
-            .flatMap { list -> Single<[Wallet]> in
+            .flatMap { list, supportedTokens -> Single<[Wallet]> in
                 var knownWallets = [Wallet]()
                 var unknownAccounts = [(String, AccountInfo)]()
                 
@@ -41,7 +54,7 @@ extension SolanaSDK {
                     
                     let mintAddress = accountInfo.mint.base58EncodedString
                     // known token
-                    if let token = self.supportedTokens.first(where: {$0.address == mintAddress})
+                    if let token = supportedTokens.first(where: {$0.address == mintAddress})
                     {
                         knownWallets.append(
                             Wallet(

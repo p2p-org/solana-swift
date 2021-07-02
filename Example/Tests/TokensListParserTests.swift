@@ -11,11 +11,9 @@ import SolanaSwift
 
 class SolanaTokensListParserTests: XCTestCase {
     var parser: SolanaSDK.TokensListParser!
-    var list: [SolanaSDK.Token]!
 
     override func setUpWithError() throws {
         parser = SolanaSDK.TokensListParser()
-        list = try parser.parse(network: SolanaSDK.Network.mainnetBeta.cluster)
     }
 
     override func tearDownWithError() throws {
@@ -24,10 +22,11 @@ class SolanaTokensListParserTests: XCTestCase {
 
     func testParsing() throws {
         // List count must be equal to 396 after removing duppicated items
-        XCTAssertEqual(list.count, 567)
+        let list = try parser.parse(network: "mainnet-beta").toBlocking().first()
+        XCTAssertNotEqual(list?.count, 0)
         
         // Tags must be parsed
-        XCTAssertEqual(list[2].tags.count, 1)
+        XCTAssertEqual(list?[2].tags.count, 1)
     }
 
     func testPerformanceExample() throws {

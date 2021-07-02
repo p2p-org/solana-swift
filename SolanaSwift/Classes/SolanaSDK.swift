@@ -18,16 +18,12 @@ public class SolanaSDK {
     // MARK: - Properties
     public let accountStorage: SolanaSDKAccountStorage
     var endpoint: APIEndPoint
-    public private(set) var supportedTokens = [Token]()
+    var supportedTokensCache: [Token]?
     
     // MARK: - Initializer
     public init(endpoint: APIEndPoint, accountStorage: SolanaSDKAccountStorage) {
         self.endpoint = endpoint
         self.accountStorage = accountStorage
-        
-        // get supported tokens
-        let parser = TokensListParser()
-        supportedTokens = (try? parser.parse(network: endpoint.network.cluster)) ?? []
     }
      
     // MARK: - Helper
