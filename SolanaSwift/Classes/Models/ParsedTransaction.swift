@@ -14,6 +14,30 @@ public extension SolanaSDK {
             case processing(percent: Double)
             case confirmed
             case error(String?)
+            
+            public func getError() -> Error? {
+                var error: Error?
+                switch self {
+                case .error(let err) where err != nil:
+                    return Error.other(err!)
+                default:
+                    break
+                }
+                return nil
+            }
+            
+            public var rawValue: String {
+                switch self {
+                case .requesting:
+                    return "requesting"
+                case .processing:
+                    return "processing"
+                case .confirmed:
+                    return "confirmed"
+                case .error:
+                    return "error"
+                }
+            }
         }
         
         public init(status: Status, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: UInt64?, blockhash: String?) {
@@ -29,7 +53,7 @@ public extension SolanaSDK {
         
         public var status: Status
         public let signature: String?
-        public let value: AnyHashable?
+        public var value: AnyHashable?
         public var amountInFiat: Double?
         public let slot: UInt64?
         public let blockTime: Date?
