@@ -107,6 +107,15 @@ public extension SolanaSDK {
                 return ""
             }
         }
+        
+        public var isProcessing: Bool {
+            switch status {
+            case .requesting, .processing:
+                return true
+            default:
+                return false
+            }
+        }
     }
     
     struct CreateAccountTransaction: Hashable {
