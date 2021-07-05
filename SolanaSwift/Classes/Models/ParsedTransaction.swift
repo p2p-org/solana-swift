@@ -52,7 +52,7 @@ public extension SolanaSDK {
         }
         
         public var status: Status
-        public let signature: String?
+        public var signature: String?
         public var value: AnyHashable?
         public var amountInFiat: Double?
         public let slot: UInt64?
