@@ -53,6 +53,7 @@ extension SolanaSDK {
         
         // get pool
         return getPoolRequest
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .flatMap { pool -> Single<[Any]> in
                 Single.zip([
                     self.getAccountInfoData(
@@ -65,6 +66,7 @@ extension SolanaSDK {
                         .map {$0 as Any}
                 ])
             }
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .flatMap {params in
                 guard let pool = pool,
                       let poolAuthority = pool.authority,

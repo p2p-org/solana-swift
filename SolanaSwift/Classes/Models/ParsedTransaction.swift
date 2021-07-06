@@ -188,7 +188,7 @@ public extension SolanaSDK {
         public let destination: Wallet?
         public let destinationAmount: Double?
         
-        let myAccountSymbol: String?
+        public var myAccountSymbol: String?
         
         static var empty: Self {
             SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil, myAccountSymbol: nil)
