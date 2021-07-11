@@ -56,7 +56,7 @@ public extension SolanaSDK {
         public var value: AnyHashable?
         public var amountInFiat: Double?
         public let slot: UInt64?
-        public let blockTime: Date?
+        public var blockTime: Date?
         public let fee: UInt64?
         public let blockhash: String?
         
