@@ -47,6 +47,7 @@ public extension SolanaSDK {
                 
                 // transfer
                 let authority: String?
+                let wallet: String? // spl-associated-token-account
                 
                 // transferChecked
                 let tokenAmount: TokenAccountBalance?
