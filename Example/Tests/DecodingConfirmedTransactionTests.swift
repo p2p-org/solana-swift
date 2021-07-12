@@ -63,6 +63,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.source?.token.symbol, "SOL")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.destination?.pubkey, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        XCTAssertEqual(transaction.authority, nil)
+        XCTAssertEqual(transaction.destinationAuthority, nil)
         XCTAssertEqual(transaction.amount, 0.01)
         XCTAssertEqual(transaction.wasPaidByP2POrg, false)
     }
@@ -74,6 +76,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.source?.token.symbol, "SOL")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.destination?.pubkey, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        XCTAssertEqual(transaction.authority, nil)
+        XCTAssertEqual(transaction.destinationAuthority, nil)
         XCTAssertEqual(transaction.amount, 0.00001)
         XCTAssertEqual(transaction.wasPaidByP2POrg, true)
     }
@@ -85,6 +89,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.source?.token.symbol, "wUSDT")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.destination?.pubkey, "GCmbXJRc6mfnNNbnh5ja2TwWFzVzBp8MovsrTciw1HeS")
+        XCTAssertEqual(transaction.authority, "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm")
+        XCTAssertEqual(transaction.destinationAuthority, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
         XCTAssertEqual(transaction.amount, 0.004325)
     }
     
@@ -95,6 +101,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.source?.token.symbol, "SRM")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.destination?.pubkey, "3YuhjsaohzpzEYAsonBQakYDj3VFWimhDn7bci8ERKTh")
+        XCTAssertEqual(transaction.authority, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        XCTAssertEqual(transaction.destinationAuthority, "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm")
         XCTAssertEqual(transaction.amount, 0.012111)
     }
     
@@ -105,6 +113,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.source?.token.symbol, "MAPS")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.amount, 0.001)
+        XCTAssertEqual(transaction.authority, "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm")
+        XCTAssertEqual(transaction.destinationAuthority, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
         
         // transfer checked type
         let transaction2 = try parse(fileName: "SendTokenToNewAssociatedTokenAddressTransferChecked", myAccount: myAccount, myAccountSymbol: "MAPS").value as! SolanaSDK.TransferTransaction
@@ -112,6 +122,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction2.source?.token.symbol, "MAPS")
         XCTAssertEqual(transaction2.source?.pubkey, myAccount)
         XCTAssertEqual(transaction2.amount, 0.001)
+        XCTAssertEqual(transaction.authority, "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm")
+        XCTAssertEqual(transaction.destinationAuthority, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
     }
     
     func testDecodingSendSPLTokenParsedInNativeSOLWallet() throws {
@@ -122,6 +134,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.authority, myAccount)
         XCTAssertEqual(transaction.source?.pubkey, "5ADqZHdZzL3xd2NiP8MrM4pCFj5ijC4oQWSBzvXx4fbY")
         XCTAssertEqual(transaction.destination?.pubkey, "4ijqHixcbzhxQbfJWAoPkvBhokBDRGtXyqVcMN8ywj8W")
+        XCTAssertEqual(transaction.authority, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        XCTAssertEqual(transaction.destinationAuthority, "B4PdyoVU39hoCaiTLPtN9nJxy6rEpbciE3BNPvHkCeE2")
         XCTAssertEqual(transaction.transferType, .send)
         XCTAssertEqual(transaction.wasPaidByP2POrg, true)
     }

@@ -328,6 +328,27 @@ public extension SolanaSDK {
             }
             
             return request
+                .flatMap {transaction -> Single<TransferTransaction> in
+                    if transaction.destinationAuthority != nil {
+                        return .just(transaction)
+                    }
+                    guard let account = transaction.destination?.pubkey else {
+                        return .just(transaction)
+                    }
+                    return getAccountInfo(account: account)
+                        .map {$0?.owner.base58EncodedString}
+                        .catchAndReturn(nil)
+                        .map {
+                            TransferTransaction(
+                                source: transaction.source,
+                                destination: transaction.destination,
+                                authority: transaction.authority,
+                                destinationAuthority: $0,
+                                amount: transaction.amount,
+                                myAccount: myAccount
+                            )
+                        }
+                }
         }
         
         // MARK: - Swap
