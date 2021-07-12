@@ -97,11 +97,10 @@ public extension SolanaSDK {
             
             // transfer
             else if instructions.count == 1 || instructions.count == 4 || instructions.count == 2,
-               instructions.last?.parsed?.type == "transfer" || instructions.last?.parsed?.type == "transferChecked",
-               let instruction = instructions.last
+               instructions.last?.parsed?.type == "transfer" || instructions.last?.parsed?.type == "transferChecked"
             {
                 single = parseTransferTransaction(
-                    instruction: instruction,
+                    instructions: instructions,
                     postTokenBalances: transactionInfo.meta?.postTokenBalances ?? [],
                     myAccount: myAccount,
                     accountKeys: transactionInfo.transaction.message.accountKeys,
@@ -191,88 +190,51 @@ public extension SolanaSDK {
         
         // MARK: - Transfer
         private func parseTransferTransaction(
-            instruction: ParsedInstruction,
+            instructions: [ParsedInstruction],
             postTokenBalances: [TokenBalance],
             myAccount: String?,
             accountKeys: [Account.Meta],
             p2pFeePayerPubkeys: [String]
         ) -> Single<TransferTransaction>
         {
-            // construct wallets
-            var source: Wallet?
-            var destination: Wallet?
-            
             // get pubkeys
-            let sourcePubkey = instruction.parsed?.info.source
-            let destinationPubkey = instruction.parsed?.info.destination
+            let transferInstruction = instructions.last
+            let sourcePubkey = transferInstruction?.parsed?.info.source
+            let destinationPubkey = transferInstruction?.parsed?.info.destination
             
             // get lamports
-            let lamports = instruction.parsed?.info.lamports ?? UInt64(instruction.parsed?.info.amount ?? instruction.parsed?.info.tokenAmount?.amount ?? "0")
+            let lamports = transferInstruction?.parsed?.info.lamports ?? UInt64(transferInstruction?.parsed?.info.amount ?? transferInstruction?.parsed?.info.tokenAmount?.amount ?? "0")
             
             // SOL to SOL
             let request: Single<TransferTransaction>
-            if instruction.programId == PublicKey.programId.base58EncodedString {
-                source = Wallet.nativeSolana(pubkey: sourcePubkey, lamport: nil)
-                destination = Wallet.nativeSolana(pubkey: destinationPubkey, lamport: nil)
+            if transferInstruction?.programId == PublicKey.programId.base58EncodedString {
+                let source = Wallet.nativeSolana(pubkey: sourcePubkey, lamport: nil)
+                let destination = Wallet.nativeSolana(pubkey: destinationPubkey, lamport: nil)
                 
                 request = .just(
                     TransferTransaction(
                         source: source,
                         destination: destination,
-                        authority: instruction.parsed?.info.authority,
-                        amount: lamports?.convertToBalance(decimals: source!.token.decimals),
+                        authority: nil,
+                        destinationAuthority: nil,
+                        amount: lamports?.convertToBalance(decimals: source.token.decimals),
                         myAccount: myAccount
                     )
                 )
-            } else {
-                // SPL to SPL token
-                if let tokenBalance = postTokenBalances.first(where: {!$0.mint.isEmpty})
-                {
-                    // if the wallet that is opening is SOL, then modify myAccount
-                    var myAccount = myAccount
-                    if sourcePubkey != myAccount && destinationPubkey != myAccount,
-                       accountKeys.count >= 4
-                    {
-                        // send
-                        if myAccount == accountKeys[0].publicKey.base58EncodedString {
-                            myAccount = sourcePubkey
-                        }
-                        
-                        if myAccount == accountKeys[3].publicKey.base58EncodedString {
-                            myAccount = destinationPubkey
-                        }
-                    }
-                    
-                    request = getTokenWithMint(tokenBalance.mint)
-                        .map {token in
-                            source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
-                            destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
-                            return TransferTransaction(
-                                source: source,
-                                destination: destination,
-                                authority: instruction.parsed?.info.authority,
-                                amount: lamports?.convertToBalance(decimals: source?.token.decimals),
-                                myAccount: myAccount
-                            )
-                        }
-                } else {
-                    request = getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
-                        .flatMap { info in
-                            self.getTokenWithMint(info?.mint.base58EncodedString)
-                                .map {token in
-                                    source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
-                                    destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
-                                    
-                                    return TransferTransaction(
-                                        source: source,
-                                        destination: destination,
-                                        authority: instruction.parsed?.info.authority,
-                                        amount: lamports?.convertToBalance(decimals: source?.token.decimals),
-                                        myAccount: myAccount
-                                    )
-                                }
-                        }
-                }
+            }
+            
+            // SPL to SPL token
+            else {
+                request = parseTransferSPLToSPLTokenTransaction(
+                    instructions: instructions,
+                    postTokenBalances: postTokenBalances,
+                    myAccount: myAccount,
+                    accountKeys: accountKeys,
+                    sourcePubkey: sourcePubkey,
+                    destinationPubkey: destinationPubkey,
+                    authority: transferInstruction?.parsed?.info.authority,
+                    lamports: lamports
+                )
             }
             
             // define if transaction was paid by p2p.org
@@ -286,6 +248,86 @@ public extension SolanaSDK {
                     }
                     return transaction
                 }
+        }
+        
+        private func parseTransferSPLToSPLTokenTransaction(
+            instructions: [ParsedInstruction],
+            postTokenBalances: [TokenBalance],
+            myAccount: String?,
+            accountKeys: [Account.Meta],
+            sourcePubkey: String?,
+            destinationPubkey: String?,
+            authority: String?,
+            lamports: Lamports?
+        ) -> Single<TransferTransaction> {
+            // Get destinationAuthority
+            var destinationAuthority: String?
+            if let createATokenInstruction = instructions.first(where: {$0.programId == PublicKey.splAssociatedTokenAccountProgramId.base58EncodedString})
+            {
+                // send to associated token
+                destinationAuthority = createATokenInstruction.parsed?.info.wallet
+            } else if let initializeAccountInstruction = instructions.first(where: {$0.programId == PublicKey.tokenProgramId.base58EncodedString && $0.parsed?.type == "initializeAccount"})
+            {
+                // send to new token address (deprecated)
+                destinationAuthority = initializeAccountInstruction.parsed?.info.owner
+            }
+            
+            // Define token with mint
+            let request: Single<TransferTransaction>
+            if let tokenBalance = postTokenBalances.first(where: {!$0.mint.isEmpty})
+            {
+                // if the wallet that is opening is SOL, then modify myAccount
+                var myAccount = myAccount
+                if sourcePubkey != myAccount && destinationPubkey != myAccount,
+                   accountKeys.count >= 4
+                {
+                    // send
+                    if myAccount == accountKeys[0].publicKey.base58EncodedString {
+                        myAccount = sourcePubkey
+                    }
+                    
+                    if myAccount == accountKeys[3].publicKey.base58EncodedString {
+                        myAccount = destinationPubkey
+                    }
+                }
+                
+                request = getTokenWithMint(tokenBalance.mint)
+                    .map {token in
+                        let source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
+                        let destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
+                        return TransferTransaction(
+                            source: source,
+                            destination: destination,
+                            authority: authority,
+                            destinationAuthority: destinationAuthority,
+                            amount: lamports?.convertToBalance(decimals: source.token.decimals),
+                            myAccount: myAccount
+                        )
+                    }
+            }
+            
+            // Mint not found, retrieve mint
+            else {
+                request = getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
+                    .flatMap { info in
+                        self.getTokenWithMint(info?.mint.base58EncodedString)
+                            .map {token in
+                                let source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
+                                let destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
+                                
+                                return TransferTransaction(
+                                    source: source,
+                                    destination: destination,
+                                    authority: authority,
+                                    destinationAuthority: destinationAuthority,
+                                    amount: lamports?.convertToBalance(decimals: source.token.decimals),
+                                    myAccount: myAccount
+                                )
+                            }
+                    }
+            }
+            
+            return request
         }
         
         // MARK: - Swap

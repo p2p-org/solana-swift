@@ -138,10 +138,11 @@ public extension SolanaSDK {
     }
     
     struct TransferTransaction: Hashable {
-        public init(source: SolanaSDK.Wallet?, destination: SolanaSDK.Wallet?, authority: String?, amount: Double?, wasPaidByP2POrg: Bool = false, myAccount: String?) {
+        public init(source: SolanaSDK.Wallet?, destination: SolanaSDK.Wallet?, authority: String?, destinationAuthority: String?, amount: Double?, wasPaidByP2POrg: Bool = false, myAccount: String?) {
             self.source = source
             self.destination = destination
             self.authority = authority
+            self.destinationAuthority = destinationAuthority
             self.amount = amount
             self.wasPaidByP2POrg = wasPaidByP2POrg
             self.myAccount = myAccount
@@ -154,6 +155,7 @@ public extension SolanaSDK {
         public let source: Wallet?
         public let destination: Wallet?
         public let authority: String?
+        public let destinationAuthority: String?
         public let amount: Double?
         public var wasPaidByP2POrg: Bool = false
         
