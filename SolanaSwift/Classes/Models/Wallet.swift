@@ -27,11 +27,6 @@ extension SolanaSDK {
             lamports?.convertToBalance(decimals: token.decimals)
         }
         
-        public func shortPubkey(numOfSymbolsRevealed: Int = 4) -> String {
-            guard let pubkey = pubkey else {return ""}
-            return pubkey.prefix(numOfSymbolsRevealed) + "..." + pubkey.suffix(numOfSymbolsRevealed)
-        }
-        
         // MARK: - Fabric methods
         public static func nativeSolana(
             pubkey: String?,
