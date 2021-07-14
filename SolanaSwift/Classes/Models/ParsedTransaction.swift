@@ -116,6 +116,15 @@ public extension SolanaSDK {
                 return false
             }
         }
+        
+        public var isFailure: Bool {
+            switch status {
+            case .error:
+                return true
+            default:
+                return false
+            }
+        }
     }
     
     struct CreateAccountTransaction: Hashable {
