@@ -37,13 +37,13 @@ extension SolanaSDK.Socket {
     }
     
     public struct Subscriber: Equatable {
-        public init(pubkey: String, isNativeSOL: Bool) {
+        init(pubkey: String, isNative: Bool) {
             self.pubkey = pubkey
-            self.isNativeSOL = isNativeSOL
+            self.isNative = isNative
         }
         
         let pubkey: String
-        let isNativeSOL: Bool
+        let isNative: Bool
     }
     
     public struct Subscription: Equatable {

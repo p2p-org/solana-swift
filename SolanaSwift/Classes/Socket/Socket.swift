@@ -58,7 +58,9 @@ extension SolanaSDK {
         }
         
         // MARK: - Account notifications
-        public func subscribeAccountNotification(subscriber: Subscriber) {
+        public func subscribeAccountNotification(account: String, isNative: Bool) {
+            let subscriber = Subscriber(pubkey: account, isNative: isNative)
+            
             // check if subscriptions exists
             guard !accountSubscriptions.contains(where: {$0.account == subscriber.pubkey })
             else {
@@ -138,7 +140,7 @@ extension SolanaSDK {
         // MARK: - Helpers
         /// Subscribe to accountNotification from all accounts in the queue
         func subscribeToAllAccounts() {
-            subscribers.forEach {subscribeAccountNotification(subscriber: $0)}
+            subscribers.forEach {subscribeAccountNotification(account: $0.pubkey, isNative: $0.isNative)}
         }
         
         /// Unsubscribe to all current subscriptions
@@ -223,7 +225,7 @@ extension SolanaSDK {
                 .decode(NativeAccountNotification.self, from: data),
                let subscription = accountSubscriptions.first(where: {$0.id == result.params?.subscription}),
                let subscriber = subscribers.first(where: {$0.pubkey == subscription.account}),
-               subscriber.isNativeSOL
+               subscriber.isNative
             {
                 account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
                 lamports = result.params?.result?.value.lamports
@@ -231,7 +233,7 @@ extension SolanaSDK {
                 .decode(TokenAccountNotification.self, from: data),
                       let subscription = accountSubscriptions.first(where: {$0.id == result.params?.subscription}),
                       let subscriber = subscribers.first(where: {$0.pubkey == subscription.account}),
-                      !subscriber.isNativeSOL
+                      !subscriber.isNative
             {
                 account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
                 let string = result.params?.result?.value.data.parsed.info.tokenAmount.amount ?? "0"
