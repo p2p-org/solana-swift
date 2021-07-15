@@ -36,6 +36,16 @@ extension SolanaSDK.Socket {
         }
     }
     
+    public struct Subscriber: Equatable {
+        public init(pubkey: String, isNativeSOL: Bool) {
+            self.pubkey = pubkey
+            self.isNativeSOL = isNativeSOL
+        }
+        
+        let pubkey: String
+        let isNativeSOL: Bool
+    }
+    
     public struct Subscription: Equatable {
         let entity: Entity
         let id: UInt64
@@ -86,7 +96,7 @@ extension SolanaSDK.Socket {
         let err: SolanaSDK.ResponseError?
     }
     
-    typealias SOLAccountNotification = Response<AccountNotification<[String]>>
+    typealias NativeAccountNotification = Response<AccountNotification<[String]>>
     typealias TokenAccountNotification = Response<AccountNotification<TokenAccountNotificationData>>
 }
 

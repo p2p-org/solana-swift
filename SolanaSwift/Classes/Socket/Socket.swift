@@ -18,7 +18,7 @@ extension SolanaSDK {
         var wsHeartBeat: Timer!
         
         // MARK: - Subscriptions
-        private var accounts = [String]()
+        private var subscribers = [Subscriber]()
         private var accountSubscriptions = [Subscription]()
         
         // MARK: - Subjects
@@ -58,35 +58,35 @@ extension SolanaSDK {
         }
         
         // MARK: - Account notifications
-        public func subscribeAccountNotification(account: String) {
+        public func subscribeAccountNotification(subscriber: Subscriber) {
             // check if subscriptions exists
-            guard !accountSubscriptions.contains(where: {$0.account == account })
+            guard !accountSubscriptions.contains(where: {$0.account == subscriber.pubkey })
             else {
                 // already registered
                 return
             }
             
             // if account was not registered, add account to self.accounts
-            if !accounts.contains(account) {
-                accounts.append(account)
+            if !subscribers.contains(subscriber) {
+                subscribers.append(subscriber)
             }
             
             // add subscriptions
             let id = write(
                 method: .init(.account, .subscribe),
                 params: [
-                    account,
+                    subscriber.pubkey,
                     ["encoding":"jsonParsed", "commitment": "recent"]
                 ]
             )
             subscribe(id: id)
                 .subscribe(onSuccess: {[weak self] subscriptionId in
                     guard let strongSelf = self else {return}
-                    if strongSelf.accountSubscriptions.contains(where: {$0.account == account})
+                    if strongSelf.accountSubscriptions.contains(where: {$0.account == subscriber.pubkey})
                     {
-                        strongSelf.accountSubscriptions.removeAll(where: {$0.account == account})
+                        strongSelf.accountSubscriptions.removeAll(where: {$0.account == subscriber.pubkey})
                     }
-                    strongSelf.accountSubscriptions.append(.init(entity: .account, id: subscriptionId, account: account))
+                    strongSelf.accountSubscriptions.append(.init(entity: .account, id: subscriptionId, account: subscriber.pubkey))
                 })
                 .disposed(by: disposeBag)
         }
@@ -138,7 +138,7 @@ extension SolanaSDK {
         // MARK: - Helpers
         /// Subscribe to accountNotification from all accounts in the queue
         func subscribeToAllAccounts() {
-            accounts.forEach {subscribeAccountNotification(account: $0)}
+            subscribers.forEach {subscribeAccountNotification(subscriber: $0)}
         }
         
         /// Unsubscribe to all current subscriptions
@@ -220,12 +220,18 @@ extension SolanaSDK {
             var lamports: SolanaSDK.Lamports?
             
             if let result = try? decoder
-                .decode(SOLAccountNotification.self, from: data)
+                .decode(NativeAccountNotification.self, from: data),
+               let subscription = accountSubscriptions.first(where: {$0.id == result.params?.subscription}),
+               let subscriber = subscribers.first(where: {$0.pubkey == subscription.account}),
+               subscriber.isNativeSOL
             {
                 account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
                 lamports = result.params?.result?.value.lamports
             } else if let result = try? decoder
-                .decode(TokenAccountNotification.self, from: data)
+                .decode(TokenAccountNotification.self, from: data),
+                      let subscription = accountSubscriptions.first(where: {$0.id == result.params?.subscription}),
+                      let subscriber = subscribers.first(where: {$0.pubkey == subscription.account}),
+                      !subscriber.isNativeSOL
             {
                 account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
                 let string = result.params?.result?.value.data.parsed.info.tokenAmount.amount ?? "0"
