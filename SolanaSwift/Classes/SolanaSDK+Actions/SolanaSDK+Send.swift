@@ -11,18 +11,18 @@ import RxSwift
 extension SolanaSDK {
     public typealias SPLTokenDestinationAddress = (destination: PublicKey, isUnregisteredAsocciatedToken: Bool)
     
-    /// Send SOL to another account with or without fee
+    /// Send SOL to another account
     /// - Parameters:
     ///   - toPublicKey: destination address
     ///   - amount: amount to send
-    ///   - withoutFee: send without fee. if it's true, the transaction can not be a simulation
     ///   - isSimulation: define if this is a simulation or real transaction
+    ///   - customProxy: (optional) forward sending to a proxy (ex.: FeeRelayer)
     /// - Returns: transaction id
     public func sendNativeSOL(
         to destination: String,
         amount: UInt64,
-        withoutFee: Bool = true,
-        isSimulation: Bool = false
+        isSimulation: Bool = false,
+        customProxy: SolanaCustomClientProxy? = nil
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
@@ -51,11 +51,11 @@ extension SolanaSDK {
                 }
                 .flatMap {
                     // real transaction without fee
-                    if !isSimulation && withoutFee {
-                        let feeRelayer = FeeRelayer(solanaAPIClient: self)
-                        return feeRelayer.transferSOL(
+                    if let proxy = customProxy {
+                        return proxy.transferSOL(
                             to: destination,
-                            amount: amount
+                            amount: amount,
+                            isSimulation: isSimulation
                         )
                     }
                     
@@ -91,8 +91,8 @@ extension SolanaSDK {
     ///   - fromPublicKey: source wallet address
     ///   - destinationAddress: destination wallet address
     ///   - amount: amount to send
-    ///   - withoutFee: send without fee. if it's true, the transaction can not be a simulation
     ///   - isSimulation: define if this is a simulation or real transaction
+    ///   - proxy: (optional) forward sending to a proxy (ex.: FeeRelayer)
     /// - Returns: transaction id
     public func sendSPLTokens(
         mintAddress: String,
@@ -100,22 +100,22 @@ extension SolanaSDK {
         from fromPublicKey: String,
         to destinationAddress: String,
         amount: UInt64,
-        withoutFee: Bool = true,
-        isSimulation: Bool = false
+        isSimulation: Bool = false,
+        customProxy: SolanaCustomClientProxy? = nil
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
         }
         
         // real transaction without fee
-        if !isSimulation && withoutFee {
-            let feeRelayer = FeeRelayer(solanaAPIClient: self)
-            return feeRelayer.transferSPLToken(
+        if let proxy = customProxy {
+            return proxy.transferSPLToken(
                 mintAddress: mintAddress,
                 from: fromPublicKey,
                 to: destinationAddress,
                 amount: amount,
-                decimals: decimals
+                decimals: decimals,
+                isSimulation: isSimulation
             )
         }
         
