@@ -90,6 +90,10 @@ extension SolanaSDK {
         public var isLiquidity: Bool {
             tags.contains(where: {$0.name == "lp-token"})
         }
+        
+        public var isUndefined: Bool {
+            symbol.isEmpty
+        }
     }
     
     public struct TokenExtensions: Hashable, Decodable {
