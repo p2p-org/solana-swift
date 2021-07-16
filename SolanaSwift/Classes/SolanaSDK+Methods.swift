@@ -205,7 +205,7 @@ public extension SolanaSDK {
 	}
 	internal func sendTransaction(serializedTransaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<TransactionID> {
 		request(parameters: [serializedTransaction, configs])
-            .catchError { error in
+            .catch { error in
                 // Modify error message
                 if let error = error as? Error {
                     switch error {
