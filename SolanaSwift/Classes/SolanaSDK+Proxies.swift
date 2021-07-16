@@ -13,21 +13,22 @@ public protocol SolanaCustomFeeRelayerProxy {
     func getFeePayer() -> Single<String>
     
     func transferSOL(
-        signature: String,
-        recentBlockhash: String,
-        to destination: String,
+        sender: String,
+        recipient: String,
         amount: SolanaSDK.Lamports,
+        signature: String,
+        blockhash: String,
         isSimulation: Bool
     ) -> Single<SolanaSDK.TransactionID>
     
     func transferSPLToken(
-        signature: String,
-        recentBlockhash: String,
+        sender: String,
+        recipient: String,
         mintAddress: String,
-        from source: String,
-        to destination: String,
+        authority: String,
         amount: SolanaSDK.Lamports,
         decimals: SolanaSDK.Decimals,
-        isSimulation: Bool
+        signature: String,
+        blockhash: String
     ) -> Single<SolanaSDK.TransactionID>
 }

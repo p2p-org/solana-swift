@@ -73,10 +73,11 @@ extension SolanaSDK {
                             }
                             .flatMap {signature, recentBlockhash in
                                 proxy.transferSOL(
-                                    signature: signature,
-                                    recentBlockhash: recentBlockhash,
-                                    to: destination,
+                                    sender: account.publicKey.base58EncodedString,
+                                    recipient: destination,
                                     amount: amount,
+                                    signature: signature,
+                                    blockhash: recentBlockhash,
                                     isSimulation: isSimulation
                                 )
                             }
@@ -217,15 +218,16 @@ extension SolanaSDK {
                             {
                                 realDestination = splDestinationAddress.destination.base58EncodedString
                             }
+                            
                             return proxy.transferSPLToken(
-                                signature: signature,
-                                recentBlockhash: recentBlockhash,
+                                sender: fromPublicKey.base58EncodedString,
+                                recipient: realDestination,
                                 mintAddress: mintAddress,
-                                from: fromPublicKey.base58EncodedString,
-                                to: realDestination,
+                                authority: account.publicKey.base58EncodedString,
                                 amount: amount,
                                 decimals: decimals,
-                                isSimulation: isSimulation
+                                signature: signature,
+                                blockhash: recentBlockhash
                             )
                         }
                 }
