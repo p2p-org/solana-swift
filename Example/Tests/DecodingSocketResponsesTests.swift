@@ -23,7 +23,7 @@ class DecodingSocketResponsesTests: XCTestCase {
 
     func testDecodingSOLAccountNotification() throws {
         let string = #"{"jsonrpc":"2.0","method":"accountNotification","params":{"result":{"context":{"slot":80221533},"value":{"data":["","base64"],"executable":false,"lamports":41083620,"owner":"11111111111111111111111111111111","rentEpoch":185}},"subscription":46133}}"#
-        let result = try decoder.decode(SolanaSDK.Socket.SOLAccountNotification.self, from: string.data(using: .utf8)!)
+        let result = try decoder.decode(SolanaSDK.Socket.NativeAccountNotification.self, from: string.data(using: .utf8)!)
         XCTAssertEqual(result.params?.result?.value.lamports, 41083620)
         XCTAssertThrowsError(try decoder.decode(SolanaSDK.Socket.TokenAccountNotification.self, from: string.data(using: .utf8)!))
     }
@@ -31,7 +31,7 @@ class DecodingSocketResponsesTests: XCTestCase {
     func testDecodingTokenAccountNotification() throws {
         let string = #"{"jsonrpc":"2.0","method":"accountNotification","params":{"result":{"context":{"slot":80216037},"value":{"data":{"parsed":{"info":{"isNative":false,"mint":"kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6","owner":"6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm","state":"initialized","tokenAmount":{"amount":"390000101","decimals":5,"uiAmount":3900.00101,"uiAmountString":"3900.00101"}},"type":"account"},"program":"spl-token","space":165},"executable":false,"lamports":2039280,"owner":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","rentEpoch":185}},"subscription":42765}}"#
         
-        XCTAssertThrowsError(try decoder.decode(SolanaSDK.Socket.SOLAccountNotification.self, from: string.data(using: .utf8)!))
+        XCTAssertThrowsError(try decoder.decode(SolanaSDK.Socket.NativeAccountNotification.self, from: string.data(using: .utf8)!))
         
         let result = try decoder.decode(SolanaSDK.Socket.TokenAccountNotification.self, from: string.data(using: .utf8)!)
         XCTAssertEqual(result.params?.result?.value.data.parsed.info.tokenAmount.amount, "390000101")
