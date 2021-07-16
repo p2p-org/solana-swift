@@ -19,7 +19,13 @@ public extension SolanaSDK {
 		public let error: ResponseError?
         public let method: String?
 	}
-	struct ResponseError: Decodable {
+    struct ResponseError: Decodable {
+        public init(code: Int?, message: String?, data: SolanaSDK.ResponseErrorData?) {
+            self.code = code
+            self.message = message
+            self.data = data
+        }
+        
 		public let code: Int?
 		public let message: String?
         public let data: ResponseErrorData?
