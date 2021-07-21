@@ -29,9 +29,6 @@ extension SolanaSDK {
         guard let owner = account ?? accountStorage.account
         else {return .error(Error.unauthorized)}
         
-        // reuse variables
-        var pool = pool
-        
         // reduce pools
         var getPoolRequest: Single<Pool>
         if let pool = pool {
@@ -44,7 +41,6 @@ extension SolanaSDK {
                         sourceMint: sourceMint.base58EncodedString,
                         destinationMint: destinationMint.base58EncodedString
                     ) {
-                        pool = matchPool
                         return matchPool
                     }
                     throw Error.other("Unsupported swapping tokens")
@@ -54,30 +50,24 @@ extension SolanaSDK {
         // get pool
         return getPoolRequest
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .flatMap { pool -> Single<[Any]> in
-                Single.zip([
+            .flatMap { pool in
+                Single.zip(
+                    .just(pool),
+                    
                     self.getAccountInfoData(
                         account: pool.swapData.tokenAccountA.base58EncodedString,
                         tokenProgramId: .tokenProgramId
-                    )
-                        .map {$0 as Any},
+                    ),
                     
                     self.getMinimumBalanceForRentExemption(dataLength: UInt64(AccountInfo.BUFFER_LENGTH))
-                        .map {$0 as Any}
-                ])
+                )
             }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .flatMap {params in
-                guard let pool = pool,
-                      let poolAuthority = pool.authority,
+            .flatMap { pool, tokenAInfo, minimumBalanceForRentExemption in
+                guard let poolAuthority = pool.authority,
                       let estimatedAmount = pool.estimatedAmount(forInputAmount: amount, includeFees: true),
                       let tokenBBalance = UInt64(pool.tokenBBalance?.amount ?? "")
                 else {return .error(Error.other("Swap pool is not valid"))}
-                // get variables
-                let tokenAInfo      = params[0] as! AccountInfo
-                let minimumBalanceForRentExemption
-                                    = params[1] as! UInt64
-                
                 let minAmountIn = pool.minimumReceiveAmount(estimatedAmount: estimatedAmount, slippage: slippage)
                 
                 // find account
