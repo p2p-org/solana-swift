@@ -14,6 +14,13 @@ extension SolanaSDK {
         public let newWalletPubkey: String?
     }
     
+    struct AccountInstructions {
+        let account: PublicKey
+        let instructions: [TransactionInstruction]
+        let cleanupInstructions: [TransactionInstruction]
+        let signers: [Account]
+    }
+    
     public func swap(
         account: Account? = nil,
         pool: Pool? = nil,
@@ -29,22 +36,18 @@ extension SolanaSDK {
         guard let owner = account ?? accountStorage.account
         else {return .error(Error.unauthorized)}
         
-        // reduce pools
-        var getPoolRequest: Single<Pool>
+        // payer
+        let payer = owner
+        
+        // get pool pools
+        let getPoolRequest: Single<Pool>
         if let pool = pool {
             getPoolRequest = .just(pool)
         } else {
-            getPoolRequest = getSwapPools()
-                .map {pools -> Pool in
-                    // filter pool that match requirement
-                    if let matchPool = pools.matchedPool(
-                        sourceMint: sourceMint.base58EncodedString,
-                        destinationMint: destinationMint.base58EncodedString
-                    ) {
-                        return matchPool
-                    }
-                    throw Error.other("Unsupported swapping tokens")
-                }
+            getPoolRequest = getMatchedPool(
+                sourceMint: sourceMint,
+                destinationMint: destinationMint
+            )
         }
         
         // get pool
@@ -54,91 +57,59 @@ extension SolanaSDK {
                 Single.zip(
                     .just(pool),
                     
-                    self.getAccountInfoData(
-                        account: pool.swapData.tokenAccountA.base58EncodedString,
-                        tokenProgramId: .tokenProgramId
+                    self.prepareSourceAccountAndInstructions(
+                        pool: pool,
+                        source: source,
+                        amount: amount,
+                        payer: owner.publicKey
                     ),
                     
-                    self.getMinimumBalanceForRentExemption(dataLength: UInt64(AccountInfo.BUFFER_LENGTH))
+                    self.prepareDestinationAccountAndInstructions(
+                        myAccount: owner.publicKey,
+                        destination: destination,
+                        destinationMint: destinationMint,
+                        payer: payer
+                    )
                 )
             }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .flatMap { pool, tokenAInfo, minimumBalanceForRentExemption in
+            .flatMap { pool, sourceAccountInstructions, destinationAccountInstructions in
+                // pool validation
                 guard let poolAuthority = pool.authority,
                       let estimatedAmount = pool.estimatedAmount(forInputAmount: amount, includeFees: true),
                       let tokenBBalance = UInt64(pool.tokenBBalance?.amount ?? "")
                 else {return .error(Error.other("Swap pool is not valid"))}
                 let minAmountIn = pool.minimumReceiveAmount(estimatedAmount: estimatedAmount, slippage: slippage)
                 
-                // find account
-                var source = source
-                var destination = destination
-                
-                // add userTransferAuthority
-                let userTransferAuthority = try Account(network: self.endpoint.network)
-                
-                // form signers
-                var signers = [owner, userTransferAuthority]
-                
                 // form instructions
                 var instructions = [TransactionInstruction]()
                 var cleanupInstructions = [TransactionInstruction]()
                 
-                // create fromToken if it is native
-                if tokenAInfo.isNative {
-                    let newAccount = try self.createWrappedSolAccount(
-                        fromAccount: source,
-                        amount: amount,
-                        payer: owner.publicKey,
-                        instructions: &instructions,
-                        cleanupInstructions: &cleanupInstructions,
-                        signers: &signers,
-                        minimumBalanceForRentExemption: minimumBalanceForRentExemption
-                    )
-                    
-                    source = newAccount.publicKey
-                }
+                // form signers
+                let userTransferAuthority = try Account(network: self.endpoint.network)
+                var signers = [owner, userTransferAuthority]
                 
-                // check toToken
+                // source
+                instructions.append(contentsOf: sourceAccountInstructions.instructions)
+                cleanupInstructions.append(contentsOf: sourceAccountInstructions.cleanupInstructions)
+                signers.append(contentsOf: sourceAccountInstructions.signers)
+                
+                // destination
+                instructions.append(contentsOf: destinationAccountInstructions.instructions)
+                cleanupInstructions.append(contentsOf: destinationAccountInstructions.cleanupInstructions)
+                signers.append(contentsOf: destinationAccountInstructions.signers)
+                
+                // check if new wallet pubkey is created
                 var newWalletPubkey: String?
-                
-                let isMintBWSOL = destinationMint == .wrappedSOLMint
-                if destination == nil || isMintBWSOL {
-                    // create destination's associated token
-                    let associatedAddress = try PublicKey.associatedTokenAddress(
-                        walletAddress: owner.publicKey,
-                        tokenMintAddress: destinationMint
-                    )
-                    
-                    // create instruction
-                    instructions.append(AssociatedTokenProgram
-                        .createAssociatedTokenAccountInstruction(
-                            mint: destinationMint,
-                            associatedAccount: associatedAddress,
-                            owner: owner.publicKey,
-                            payer: owner.publicKey
-                        )
-                    )
-                    
-                    if isMintBWSOL {
-                        cleanupInstructions.append(
-                            TokenProgram.closeAccountInstruction(
-                                account: associatedAddress,
-                                destination: owner.publicKey,
-                                owner: owner.publicKey
-                            )
-                        )
-                    }
-                    
-                    destination = associatedAddress
-                    newWalletPubkey = destination?.base58EncodedString
+                if destinationAccountInstructions.account != destination {
+                    newWalletPubkey = destinationAccountInstructions.account.base58EncodedString
                 }
                 
                 // approve
                 instructions.append(
                     TokenProgram.approveInstruction(
                         tokenProgramId: .tokenProgramId,
-                        account: source,
+                        account: sourceAccountInstructions.account,
                         delegate: userTransferAuthority.publicKey,
                         owner: owner.publicKey,
                         amount: amount
@@ -161,10 +132,10 @@ extension SolanaSDK {
                         tokenSwap: pool.address,
                         authority: poolAuthority,
                         userTransferAuthority: userTransferAuthority.publicKey,
-                        userSource: source,
+                        userSource: sourceAccountInstructions.account,
                         poolSource: pool.swapData.tokenAccountA,
                         poolDestination: pool.swapData.tokenAccountB,
-                        userDestination: destination!,
+                        userDestination: destinationAccountInstructions.account,
                         poolMint: pool.swapData.tokenPool,
                         feeAccount: pool.swapData.feeAccount,
                         hostFeeAccount: nil,
@@ -184,58 +155,224 @@ extension SolanaSDK {
             }
     }
     
-    // MARK: - Helpers
-    private func getAccountInfoData(account: String, tokenProgramId: PublicKey) -> Single<AccountInfo> {
-        getAccountInfo(account: account, decodedTo: AccountInfo.self)
-            .map {
-                if $0.owner != tokenProgramId.base58EncodedString {
-                    throw Error.other("Invalid account owner")
+    // MARK: - Get pools
+    func getMatchedPool(
+        sourceMint: PublicKey,
+        destinationMint: PublicKey
+    ) -> Single<Pool> {
+        getSwapPools()
+            .map {pools -> Pool in
+                // filter pool that match requirement
+                if let matchPool = pools.matchedPool(
+                    sourceMint: sourceMint.base58EncodedString,
+                    destinationMint: destinationMint.base58EncodedString
+                ) {
+                    return matchPool
                 }
-                if let info = $0.data.value {
-                    return info
-                }
-                throw Error.other("Invalid data")
+                throw Error.other("Unsupported swapping tokens")
             }
     }
     
-    private func createWrappedSolAccount(
-        fromAccount: PublicKey,
-        amount: UInt64,
-        payer: PublicKey,
-        instructions: inout [TransactionInstruction],
-        cleanupInstructions: inout [TransactionInstruction],
-        signers: inout [Account],
-        minimumBalanceForRentExemption: UInt64
-    ) throws -> Account {
-        let newAccount = try Account(network: endpoint.network)
-        
-        instructions.append(
-            SystemProgram.createAccountInstruction(
-                from: fromAccount,
-                toNewPubkey: newAccount.publicKey,
-                lamports: amount + minimumBalanceForRentExemption
-            )
+    // MARK: - Account and instructions
+    func prepareSourceAccountAndInstructions(
+        pool: Pool,
+        source: PublicKey,
+        amount: Lamports,
+        payer: PublicKey
+    ) -> Single<AccountInstructions> {
+        getAccountInfo(
+            account: pool.swapData.tokenAccountA.base58EncodedString,
+            decodedTo: AccountInfo.self
         )
-        
-        instructions.append(
-            TokenProgram.initializeAccountInstruction(
-                account: newAccount.publicKey,
-                mint: .wrappedSOLMint,
-                owner: payer
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            // check if source token is native
+            .map { info -> Bool in
+                guard info.owner == PublicKey.tokenProgramId.base58EncodedString,
+                      let isNative = info.data.value?.isNative
+                else {
+                    throw Error.other("Source account is not valid")
+                }
+                
+                return isNative
+            }
+            // create token if source token is native
+            .flatMap {isNative in
+                // if token is non-native
+                if !isNative {
+                    return .just(.init(
+                        account: source,
+                        instructions: [],
+                        cleanupInstructions: [],
+                        signers: []
+                    ))
+                }
+                
+                // if token is native
+                return self.prepareForCreatingTempAccountAndClose(
+                    from: source,
+                    amount: amount,
+                    payer: payer
+                )
+            }
+    }
+    
+    func prepareDestinationAccountAndInstructions(
+        myAccount: PublicKey,
+        destination: PublicKey?,
+        destinationMint: PublicKey,
+        payer: Account
+    ) -> Single<AccountInstructions> {
+        // if destination is a registered non-native token account
+        if let destination = destination, destination != myAccount
+        {
+            return .just(
+                .init(
+                    account: destination,
+                    instructions: [],
+                    cleanupInstructions: [],
+                    signers: []
+                )
             )
-        )
+        }
         
-        cleanupInstructions.append(
-            TokenProgram.closeAccountInstruction(
-                account: newAccount.publicKey,
-                destination: payer,
-                owner: payer
+        // if destination is a native account or is nil
+        return prepareForCreatingAssociatedTokenAccountAndCloseIfNative(
+            owner: myAccount,
+            mint: destinationMint,
+            payer: payer
+        )
+    }
+    
+    // MARK: - Helpers
+    private func prepareForCreatingTempAccountAndClose(
+        from source: PublicKey,
+        amount: Lamports,
+        payer: PublicKey
+    ) -> Single<AccountInstructions> {
+        getMinimumBalanceForRentExemption(
+            dataLength: UInt64(AccountInfo.BUFFER_LENGTH)
+        )
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .map { minimumBalanceForRentExemption in
+                // create new account
+                let newAccount = try Account(network: self.endpoint.network)
+                
+                return .init(
+                    account: newAccount.publicKey,
+                    instructions: [
+                        SystemProgram.createAccountInstruction(
+                            from: source,
+                            toNewPubkey: newAccount.publicKey,
+                            lamports: amount + minimumBalanceForRentExemption
+                        ),
+                        TokenProgram.initializeAccountInstruction(
+                            account: newAccount.publicKey,
+                            mint: .wrappedSOLMint,
+                            owner: payer
+                        )
+                    ],
+                    cleanupInstructions: [
+                        TokenProgram.closeAccountInstruction(
+                            account: newAccount.publicKey,
+                            destination: payer,
+                            owner: payer
+                        )
+                    ],
+                    signers: [
+                        newAccount
+                    ]
+                )
+            }
+    }
+    
+    private func prepareForCreatingAssociatedTokenAccountAndCloseIfNative(
+        owner: PublicKey,
+        mint: PublicKey,
+        payer: Account
+    ) -> Single<AccountInstructions> {
+        do {
+            let associatedAddress = try PublicKey.associatedTokenAddress(
+                walletAddress: owner,
+                tokenMintAddress: mint
             )
-        )
-        
-        signers.append(newAccount)
-        
-        return newAccount
+            
+            return getAccountInfo(
+                account: associatedAddress.base58EncodedString,
+                decodedTo: AccountInfo.self
+            )
+                .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+                // check if associated address is registered
+                .map { info -> Bool in
+                    if info.owner == PublicKey.tokenProgramId.base58EncodedString,
+                       info.data.value?.owner == owner
+                    {
+                        return true
+                    }
+                    throw Error.other("Associated token account is belong to another user")
+                }
+                .catch { error in
+                    // associated address is not available
+                    if let error = error as? Error,
+                       error == Error.other("Could not retrieve account info")
+                    {
+                        return .just(false)
+                    }
+                    throw error
+                }
+                .map {isRegistered -> AccountInstructions in
+                    // cleanup intructions
+                    var cleanupInstructions = [TransactionInstruction]()
+                    if mint == .wrappedSOLMint {
+                        cleanupInstructions = [
+                            TokenProgram.closeAccountInstruction(
+                                account: associatedAddress,
+                                destination: owner,
+                                owner: owner
+                            )
+                        ]
+                    }
+                    
+                    // if associated address is registered, there is no need to creating it again
+                    if isRegistered {
+                        return .init(
+                            account: associatedAddress,
+                            instructions: [],
+                            cleanupInstructions: cleanupInstructions,
+                            signers: []
+                        )
+                    }
+                    
+                    // create associated address
+                    return .init(
+                        account: associatedAddress,
+                        instructions: [
+                            AssociatedTokenProgram
+                                .createAssociatedTokenAccountInstruction(
+                                    mint: mint,
+                                    associatedAccount: associatedAddress,
+                                    owner: owner,
+                                    payer: payer.publicKey
+                                )
+                        ],
+                        cleanupInstructions: cleanupInstructions,
+                        signers: []
+                    )
+                }
+                .catch {error -> Single<AccountInstructions> in
+                    if let error = error as? Error,
+                       error == .other("Associated token account is belong to another user")
+                    {
+                        return self.prepareForCreatingTempAccountAndClose(
+                            from: owner,
+                            amount: 0,
+                            payer: payer.publicKey
+                        )
+                    }
+                    throw error
+                }
+        } catch {
+            return .error(error)
+        }
     }
     
 //    private func createAccountByMint(

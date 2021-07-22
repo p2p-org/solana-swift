@@ -71,7 +71,7 @@ public class SolanaSDK {
                             .replacingOccurrences(of: ", contact your app developer or support@rpcpool.com.", with: "")
                     }
                     
-                    throw Error.invalidResponse(.init(code: statusCode, message: readableErrorMessage, data: nil))
+                    throw Error.invalidResponse(res.error ?? .init(code: statusCode, message: readableErrorMessage, data: nil))
                 }
                 .take(1)
                 .asSingle()
