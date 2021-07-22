@@ -30,11 +30,18 @@ extension SolanaSDK {
         destinationMint: PublicKey,
         slippage: Double,
         amount: UInt64,
-        isSimulation: Bool = false
+        isSimulation: Bool = false,
+        customProxy: SolanaCustomFeeRelayerProxy? = nil
     ) -> Single<SwapResponse> {
         // verify account
         guard let owner = account ?? accountStorage.account
         else {return .error(Error.unauthorized)}
+        
+        // proxy now support only spl token, disable it when source or destination is WSOL
+        var customProxy = customProxy
+        if source == owner.publicKey || destination == owner.publicKey {
+            customProxy = nil
+        }
         
         // payer
         let payer = owner
@@ -74,13 +81,6 @@ extension SolanaSDK {
             }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .flatMap { pool, sourceAccountInstructions, destinationAccountInstructions in
-                // pool validation
-                guard let poolAuthority = pool.authority,
-                      let estimatedAmount = pool.estimatedAmount(forInputAmount: amount, includeFees: true),
-                      let tokenBBalance = UInt64(pool.tokenBBalance?.amount ?? "")
-                else {return .error(Error.other("Swap pool is not valid"))}
-                let minAmountIn = pool.minimumReceiveAmount(estimatedAmount: estimatedAmount, slippage: slippage)
-                
                 // form instructions
                 var instructions = [TransactionInstruction]()
                 var cleanupInstructions = [TransactionInstruction]()
@@ -105,47 +105,37 @@ extension SolanaSDK {
                     newWalletPubkey = destinationAccountInstructions.account.base58EncodedString
                 }
                 
-                // approve
-                instructions.append(
-                    TokenProgram.approveInstruction(
-                        tokenProgramId: .tokenProgramId,
-                        account: sourceAccountInstructions.account,
-                        delegate: userTransferAuthority.publicKey,
+                // approve and swap
+                let approveAndSwapInstructions = try self.prepareApproveAndSwapInstructions(
+                    pool: pool,
+                    source: sourceAccountInstructions.account,
+                    destination: destinationAccountInstructions.account,
+                    userTransferAuthority: userTransferAuthority.publicKey,
+                    owner: owner.publicKey,
+                    amount: amount,
+                    slippage: slippage
+                )
+                
+                instructions.append(contentsOf: approveAndSwapInstructions)
+                
+                // send to proxy
+                if let proxy = customProxy {
+                    // get feeCompensationPool
+                    return self.swapProxySendTransaction(
+                        proxy: proxy,
                         owner: owner.publicKey,
-                        amount: amount
+                        userTransferAuthority: userTransferAuthority,
+                        pool: pool,
+                        source: source,
+                        destinationAccountInstructions: destinationAccountInstructions,
+                        slippage: slippage,
+                        instructions: instructions,
+                        cleanupInstructions: cleanupInstructions
                     )
-                )
+                        .map {.init(transactionId: $0, newWalletPubkey: newWalletPubkey)}
+                }
                 
-                // TODO: - Host fee
-//                let hostFeeAccount = try self.createAccountByMint(
-//                    owner: .swapHostFeeAddress,
-//                    mint: pool.swapData.tokenPool,
-//                    instructions: &instructions,
-//                    cleanupInstructions: &cleanupInstructions,
-//                    signers: &signers,
-//                    minimumBalanceForRentExemption: minimumBalanceForRentExemption
-//                )
-                
-                // swap
-                instructions.append(
-                    TokenSwapProgram.swapInstruction(
-                        tokenSwap: pool.address,
-                        authority: poolAuthority,
-                        userTransferAuthority: userTransferAuthority.publicKey,
-                        userSource: sourceAccountInstructions.account,
-                        poolSource: pool.swapData.tokenAccountA,
-                        poolDestination: pool.swapData.tokenAccountB,
-                        userDestination: destinationAccountInstructions.account,
-                        poolMint: pool.swapData.tokenPool,
-                        feeAccount: pool.swapData.feeAccount,
-                        hostFeeAccount: nil,
-                        swapProgramId: self.endpoint.network.swapProgramId,
-                        tokenProgramId: .tokenProgramId,
-                        amountIn: amount,
-                        minimumAmountOut: minAmountIn
-                    )
-                )
-                
+                // send without proxy
                 return self.serializeAndSendWithFee(
                     instructions: instructions + cleanupInstructions,
                     signers: signers,
@@ -358,21 +348,154 @@ extension SolanaSDK {
                         signers: []
                     )
                 }
-                .catch {error -> Single<AccountInstructions> in
-                    if let error = error as? Error,
-                       error == .other("Associated token account is belong to another user")
-                    {
-                        return self.prepareForCreatingTempAccountAndClose(
-                            from: owner,
-                            amount: 0,
-                            payer: payer.publicKey
-                        )
-                    }
-                    throw error
-                }
         } catch {
             return .error(error)
         }
+    }
+    
+    private func prepareApproveAndSwapInstructions(
+        pool: Pool,
+        source: PublicKey,
+        destination: PublicKey,
+        userTransferAuthority: PublicKey,
+        owner: PublicKey,
+        amount: Lamports,
+        slippage: Double
+    ) throws -> [TransactionInstruction] {
+        // pool validation
+        guard let poolAuthority = pool.authority,
+              let estimatedAmount = pool.estimatedAmount(forInputAmount: amount, includeFees: true),
+              let tokenBBalance = UInt64(pool.tokenBBalance?.amount ?? "")
+        else { throw Error.other("Swap pool is not valid") }
+        let minAmountIn = pool.minimumReceiveAmount(estimatedAmount: estimatedAmount, slippage: slippage)
+        
+        // TODO: - Host fee
+//                let hostFeeAccount = try self.createAccountByMint(
+//                    owner: .swapHostFeeAddress,
+//                    mint: pool.swapData.tokenPool,
+//                    instructions: &instructions,
+//                    cleanupInstructions: &cleanupInstructions,
+//                    signers: &signers,
+//                    minimumBalanceForRentExemption: minimumBalanceForRentExemption
+//                )
+        
+        return [
+            TokenProgram.approveInstruction(
+                tokenProgramId: .tokenProgramId,
+                account: source,
+                delegate: userTransferAuthority,
+                owner: owner,
+                amount: amount
+            ),
+            TokenSwapProgram.swapInstruction(
+                tokenSwap: pool.address,
+                authority: poolAuthority,
+                userTransferAuthority: userTransferAuthority,
+                userSource: source,
+                poolSource: pool.swapData.tokenAccountA,
+                poolDestination: pool.swapData.tokenAccountB,
+                userDestination: destination,
+                poolMint: pool.swapData.tokenPool,
+                feeAccount: pool.swapData.feeAccount,
+                hostFeeAccount: nil,
+                swapProgramId: self.endpoint.network.swapProgramId,
+                tokenProgramId: .tokenProgramId,
+                amountIn: amount,
+                minimumAmountOut: minAmountIn
+            )
+        ]
+    }
+    
+    private func swapProxySendTransaction(
+        proxy: SolanaCustomFeeRelayerProxy,
+        owner: PublicKey,
+        userTransferAuthority: Account,
+        pool: Pool,
+        source: PublicKey,
+        destinationAccountInstructions: AccountInstructions,
+        slippage: Double,
+        instructions: [TransactionInstruction],
+        cleanupInstructions: [TransactionInstruction]
+    ) -> Single<TransactionID> {
+        // create feepayer wsol account
+        let getFeePayerWsolAccount = proxy.getFeePayer()
+            .map {try PublicKey(string: $0)}
+            .flatMap {
+                // create fee payer wsol account
+                self.prepareForCreatingTempAccountAndClose(
+                    from: owner,
+                    amount: 0,
+                    payer: $0
+                )
+            }
+        
+        // get fee payer and compensation pool
+        return Single.zip(
+            getFeePayerWsolAccount,
+            getMatchedPool(
+                sourceMint: pool.swapData.mintA,
+                destinationMint: .wrappedSOLMint
+            )
+        )
+            .flatMap { feePayerWsolAccountAndInstructions, feeCompensationPool -> Single<([Account], AccountInstructions, Pool, Lamports)> in
+                // form signer
+                var signers = [userTransferAuthority]
+                signers.append(contentsOf: feePayerWsolAccountAndInstructions.signers)
+                
+                // fee per signature
+                let signatureFeesRequest: Single<Lamports>
+                if signers.isEmpty {
+                    signatureFeesRequest = .just(0)
+                } else {
+                    signatureFeesRequest = self.getFees(commitment: nil)
+                        .map {$0.feeCalculator?.lamportsPerSignature ?? 0}
+                        .map {$0 * Lamports(signers.count)}
+                }
+                
+                // fee per account creation
+                let creationFeeRequest: Single<Lamports>
+                if destinationAccountInstructions.instructions.isEmpty {
+                    creationFeeRequest = .just(0)
+                } else {
+                    creationFeeRequest = self.getMinimumBalanceForRentExemption(
+                        dataLength: UInt64(AccountInfo.BUFFER_LENGTH)
+                    )
+                }
+                
+                // total fee
+                return Single.zip(
+                    signatureFeesRequest,
+                    creationFeeRequest
+                )
+                    .map {$0 + $1}
+                    .map {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, $0)}
+            }
+        
+        .flatMap { (signers, feePayerWsolAccountAndInstructions, feeCompensationPool, feeAmount) -> Single<String> in
+            // instructions
+            var instructions = instructions
+            instructions.append(contentsOf: feePayerWsolAccountAndInstructions.instructions)
+            
+            instructions.append(contentsOf:
+                try self.prepareApproveAndSwapInstructions(
+                    pool: feeCompensationPool,
+                    source: source,
+                    destination: feePayerWsolAccountAndInstructions.account,
+                    userTransferAuthority: userTransferAuthority.publicKey,
+                    owner: owner,
+                    amount: feeAmount,
+                    slippage: slippage
+                )
+            )
+            
+            // clean up instructions
+            var cleanupInstructions = cleanupInstructions
+            cleanupInstructions.append(contentsOf: feePayerWsolAccountAndInstructions.cleanupInstructions)
+            
+            
+            return .just("")
+        }
+        
     }
     
 //    private func createAccountByMint(
