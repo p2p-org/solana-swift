@@ -52,6 +52,8 @@ extension SolanaSDK {
         
         // get pool
         return getPoolRequest
+            // retrieve pool balance if not exists
+            .flatMap {self.getPoolWithTokenBalances(pool: $0)}
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .flatMap { pool in
                 Single.zip(
