@@ -87,19 +87,16 @@ extension SolanaSDK {
                 var instructions = [TransactionInstruction]()
                 var cleanupInstructions = [TransactionInstruction]()
                 
-                // form signers
+                // create userTransferAuthority
                 let userTransferAuthority = try Account(network: self.endpoint.network)
-                var signers = [owner, userTransferAuthority]
                 
                 // source
                 instructions.append(contentsOf: sourceAccountInstructions.instructions)
                 cleanupInstructions.append(contentsOf: sourceAccountInstructions.cleanupInstructions)
-                signers.append(contentsOf: sourceAccountInstructions.signers)
                 
                 // destination
                 instructions.append(contentsOf: destinationAccountInstructions.instructions)
                 cleanupInstructions.append(contentsOf: destinationAccountInstructions.cleanupInstructions)
-                signers.append(contentsOf: destinationAccountInstructions.signers)
                 
                 // check if new wallet pubkey is created
                 var newWalletPubkey: String?
@@ -120,10 +117,12 @@ extension SolanaSDK {
                 
                 instructions.append(contentsOf: approveAndSwapInstructions)
                 
+                // prepare send request
+                let request: Single<TransactionID>
+                
                 // send to proxy
                 if let proxy = customProxy {
-                    // get feeCompensationPool
-                    return self.swapProxySendTransaction(
+                    request = self.swapProxySendTransaction(
                         proxy: proxy,
                         owner: owner.publicKey,
                         userTransferAuthority: userTransferAuthority,
@@ -134,15 +133,21 @@ extension SolanaSDK {
                         instructions: instructions,
                         cleanupInstructions: cleanupInstructions
                     )
-                        .map {.init(transactionId: $0, newWalletPubkey: newWalletPubkey)}
                 }
                 
                 // send without proxy
-                return self.serializeAndSendWithFee(
-                    instructions: instructions + cleanupInstructions,
-                    signers: signers,
-                    isSimulation: isSimulation
-                )
+                else {
+                    var signers = [owner, userTransferAuthority]
+                    signers.append(contentsOf: sourceAccountInstructions.signers)
+                    signers.append(contentsOf: destinationAccountInstructions.signers)
+                    
+                    request = self.serializeAndSendWithFee(
+                        instructions: instructions + cleanupInstructions,
+                        signers: signers,
+                        isSimulation: isSimulation
+                    )
+                }
+                return request
                     .map {.init(transactionId: $0, newWalletPubkey: newWalletPubkey)}
             }
     }
@@ -366,8 +371,7 @@ extension SolanaSDK {
     ) throws -> [TransactionInstruction] {
         // pool validation
         guard let poolAuthority = pool.authority,
-              let estimatedAmount = pool.estimatedAmount(forInputAmount: amount, includeFees: true),
-              let tokenBBalance = UInt64(pool.tokenBBalance?.amount ?? "")
+              let estimatedAmount = pool.estimatedAmount(forInputAmount: amount, includeFees: true)
         else { throw Error.other("Swap pool is not valid") }
         let minAmountIn = pool.minimumReceiveAmount(estimatedAmount: estimatedAmount, slippage: slippage)
         

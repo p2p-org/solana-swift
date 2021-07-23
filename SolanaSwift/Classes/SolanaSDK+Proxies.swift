@@ -31,4 +31,19 @@ public protocol SolanaCustomFeeRelayerProxy {
         signature: String,
         blockhash: String
     ) -> Single<SolanaSDK.TransactionID>
+    
+    func swapToken(
+        sourceToken: String,
+        destinationToken: String,
+        sourceTokenMint: String,
+        destinationTokenMint: String,
+        userAuthority: String,
+        pool: SolanaSDK.Pool,
+        amount: SolanaSDK.Lamports,
+        minAmountOut: SolanaSDK.Lamports,
+        feeCompensationPool: SolanaSDK.Pool,
+        feeAmount: SolanaSDK.Lamports,
+        feeMintAmountOut: SolanaSDK.Lamports,
+        feePayerWSOLAccountKeypair: String
+    ) -> Single<SolanaSDK.TransactionID>
 }
