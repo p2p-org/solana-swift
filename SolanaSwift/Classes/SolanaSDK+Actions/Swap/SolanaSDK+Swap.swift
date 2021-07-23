@@ -19,6 +19,9 @@ extension SolanaSDK {
         let instructions: [TransactionInstruction]
         let cleanupInstructions: [TransactionInstruction]
         let signers: [Account]
+        
+        // additionally return newAccount's secretkey
+        internal private(set) var secretKey: Data?
     }
     
     public func swap(
@@ -128,6 +131,8 @@ extension SolanaSDK {
                         userTransferAuthority: userTransferAuthority,
                         pool: pool,
                         source: source,
+                        destination: destination ?? owner.publicKey,
+                        amount: amount,
                         destinationAccountInstructions: destinationAccountInstructions,
                         slippage: slippage,
                         instructions: instructions,
@@ -277,7 +282,8 @@ extension SolanaSDK {
                     ],
                     signers: [
                         newAccount
-                    ]
+                    ],
+                    secretKey: newAccount.secretKey
                 )
             }
     }
@@ -371,9 +377,8 @@ extension SolanaSDK {
     ) throws -> [TransactionInstruction] {
         // pool validation
         guard let poolAuthority = pool.authority,
-              let estimatedAmount = pool.estimatedAmount(forInputAmount: amount, includeFees: true)
+              let minAmountOut = pool.minimumReceiveAmount(fromInputAmount: amount, slippage: slippage, includesFees: true)
         else { throw Error.other("Swap pool is not valid") }
-        let minAmountIn = pool.minimumReceiveAmount(estimatedAmount: estimatedAmount, slippage: slippage)
         
         // TODO: - Host fee
 //                let hostFeeAccount = try self.createAccountByMint(
@@ -407,7 +412,7 @@ extension SolanaSDK {
                 swapProgramId: self.endpoint.network.swapProgramId,
                 tokenProgramId: .tokenProgramId,
                 amountIn: amount,
-                minimumAmountOut: minAmountIn
+                minimumAmountOut: minAmountOut
             )
         ]
     }
@@ -418,6 +423,8 @@ extension SolanaSDK {
         userTransferAuthority: Account,
         pool: Pool,
         source: PublicKey,
+        destination: PublicKey,
+        amount: Lamports,
         destinationAccountInstructions: AccountInstructions,
         slippage: Double,
         instructions: [TransactionInstruction],
@@ -443,7 +450,7 @@ extension SolanaSDK {
                 destinationMint: .wrappedSOLMint
             )
         )
-            .flatMap { feePayerWsolAccountAndInstructions, feeCompensationPool -> Single<([Account], AccountInstructions, Pool, Lamports)> in
+            .flatMap { feePayerWsolAccountAndInstructions, feeCompensationPool -> Single<([Account], AccountInstructions, Pool, Lamports, String, String)> in
                 // form signer
                 var signers = [userTransferAuthority]
                 signers.append(contentsOf: feePayerWsolAccountAndInstructions.signers)
@@ -471,35 +478,69 @@ extension SolanaSDK {
                 // total fee
                 return Single.zip(
                     signatureFeesRequest,
-                    creationFeeRequest
+                    creationFeeRequest,
+                    proxy.getFeePayer(),
+                    self.getRecentBlockhash()
                 )
-                    .map {$0 + $1}
-                    .map {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, $0)}
+                    .map {($0 + $1, $2, $3)}
+                    .map {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, $0, $1, $2)}
             }
         
-        .flatMap { (signers, feePayerWsolAccountAndInstructions, feeCompensationPool, feeAmount) -> Single<String> in
-            // instructions
-            var instructions = instructions
-            instructions.append(contentsOf: feePayerWsolAccountAndInstructions.instructions)
-            
-            instructions.append(contentsOf:
-                try self.prepareApproveAndSwapInstructions(
-                    pool: feeCompensationPool,
-                    source: source,
-                    destination: feePayerWsolAccountAndInstructions.account,
-                    userTransferAuthority: userTransferAuthority.publicKey,
-                    owner: owner,
-                    amount: feeAmount,
-                    slippage: slippage
+            .flatMap { (signers, feePayerWsolAccountAndInstructions, feeCompensationPool, feeAmount, feePayer, recentBlockhash) -> Single<TransactionID> in
+                // instructions
+                var instructions = instructions
+                instructions.append(contentsOf: feePayerWsolAccountAndInstructions.instructions)
+                
+                instructions.append(contentsOf:
+                    try self.prepareApproveAndSwapInstructions(
+                        pool: feeCompensationPool,
+                        source: source,
+                        destination: feePayerWsolAccountAndInstructions.account,
+                        userTransferAuthority: userTransferAuthority.publicKey,
+                        owner: owner,
+                        amount: feeAmount,
+                        slippage: slippage
+                    )
                 )
-            )
-            
-            // clean up instructions
-            var cleanupInstructions = cleanupInstructions
-            cleanupInstructions.append(contentsOf: feePayerWsolAccountAndInstructions.cleanupInstructions)
-            
-            return .just("")
-        }
+                
+                // clean up instructions
+                var cleanupInstructions = cleanupInstructions
+                cleanupInstructions.append(contentsOf: feePayerWsolAccountAndInstructions.cleanupInstructions)
+                
+                let signature = try self.getSignatureForProxy(
+                    feePayer: feePayer,
+                    instructions: instructions + cleanupInstructions,
+                    recentBlockhash: recentBlockhash
+                )
+                
+                guard let feePayerSecretKey = feePayerWsolAccountAndInstructions.secretKey?.bytes
+                else {
+                    throw Error.other("Could not create fee payer account")
+                }
+                
+                guard let minAmountOut = pool.minimumReceiveAmount(fromInputAmount: amount, slippage: slippage, includesFees: true),
+                      let minFeeAmountOut = feeCompensationPool.minimumReceiveAmount(fromInputAmount: feeAmount, slippage: slippage, includesFees: true)
+                else {
+                    throw Error.other("Swap pool is not valid")
+                }
+                
+                return proxy.swapToken(
+                    sourceToken: source.base58EncodedString,
+                    destinationToken: destination.base58EncodedString,
+                    sourceTokenMint: pool.swapData.mintA.base58EncodedString,
+                    destinationTokenMint: pool.swapData.mintB.base58EncodedString,
+                    userAuthority: userTransferAuthority.publicKey.base58EncodedString,
+                    pool: pool,
+                    amount: amount,
+                    minAmountOut: minAmountOut,
+                    feeCompensationPool: feeCompensationPool,
+                    feeAmount: feeAmount,
+                    feeMintAmountOut: minFeeAmountOut,
+                    feePayerWSOLAccountKeypair: Base58.encode(feePayerSecretKey),
+                    signature: signature,
+                    blockhash: recentBlockhash
+                )
+            }
         
     }
     

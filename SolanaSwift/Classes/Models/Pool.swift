@@ -69,10 +69,14 @@ extension SolanaSDK {
         }
         
         public func minimumReceiveAmount(
-            estimatedAmount: Lamports,
-            slippage: Double
-        ) -> Lamports {
-            Lamports(Float64(estimatedAmount) * Float64(1 - slippage))
+            fromInputAmount inputAmount: Lamports,
+            slippage: Double,
+            includesFees: Bool
+        ) -> Lamports? {
+            guard let estimatedAmount = estimatedAmount(forInputAmount: inputAmount, includeFees: includesFees)
+            else {return nil}
+            
+            return Lamports(Float64(estimatedAmount) * Float64(1 - slippage))
         }
         
         public func fee(forInputAmount inputAmount: Double) -> Double? {
