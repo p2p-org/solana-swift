@@ -48,7 +48,10 @@ extension SolanaSDK {
         
         // get pool pools
         let getPoolRequest: Single<Pool>
-        if let pool = pool {
+        if let pool = pool,
+           pool.swapData.mintA == sourceMint,
+           pool.swapData.mintB == destinationMint
+        {
             getPoolRequest = .just(pool)
         } else {
             getPoolRequest = getMatchedPool(
