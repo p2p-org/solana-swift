@@ -20,6 +20,9 @@ extension SolanaSDK {
         let cleanupInstructions: [TransactionInstruction]
         let signers: [Account]
         
+        // additionally return new wallet address
+        internal private(set) var newWalletPubkey: String?
+        
         // additionally return newAccount's secretkey
         internal private(set) var secretKey: Data?
     }
@@ -100,12 +103,7 @@ extension SolanaSDK {
                 // destination
                 instructions.append(contentsOf: destinationAccountInstructions.instructions)
                 cleanupInstructions.append(contentsOf: destinationAccountInstructions.cleanupInstructions)
-                
-                // check if new wallet pubkey is created
-                var newWalletPubkey: String?
-                if destinationAccountInstructions.account != destination {
-                    newWalletPubkey = destinationAccountInstructions.account.base58EncodedString
-                }
+                let newWalletPubkey = destinationAccountInstructions.newWalletPubkey
                 
                 // approve and swap
                 let approveAndSwapInstructions = try self.prepareApproveAndSwapInstructions(
@@ -358,7 +356,8 @@ extension SolanaSDK {
                                 )
                         ],
                         cleanupInstructions: cleanupInstructions,
-                        signers: []
+                        signers: [],
+                        newWalletPubkey: associatedAddress.base58EncodedString
                     )
                 }
         } catch {
