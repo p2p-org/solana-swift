@@ -498,7 +498,6 @@ extension SolanaSDK {
             var cleanupInstructions = cleanupInstructions
             cleanupInstructions.append(contentsOf: feePayerWsolAccountAndInstructions.cleanupInstructions)
             
-            
             return .just("")
         }
         

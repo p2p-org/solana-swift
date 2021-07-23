@@ -323,29 +323,4 @@ extension SolanaSDK {
                 return .just((destination: toPublicKey, isUnregisteredAsocciatedToken: false))
             }
     }
-    
-    /// Get signature from formed instructions
-    /// - Parameters:
-    ///   - feePayer: the feepayer gotten from getFeePayerPubkey
-    ///   - instructions: instructions to get signature from
-    ///   - recentBlockhash: recentBlockhash retrieved from server
-    /// - Throws: error if signature not found
-    /// - Returns: signature
-    private func getSignatureForProxy(
-        feePayer: String,
-        instructions: [TransactionInstruction],
-        recentBlockhash: String
-    ) throws -> String {
-        guard let signer = accountStorage.account
-        else {throw Error.unauthorized}
-        let feePayer = try PublicKey(string: feePayer)
-        var transaction = Transaction(feePayer: feePayer, instructions: instructions, recentBlockhash: recentBlockhash)
-        try transaction.sign(signers: [signer])
-        
-        guard let signature = transaction.findSignature(pubkey: signer.publicKey)?.signature
-        else {
-            throw Error.other("Signature not found")
-        }
-        return Base58.encode(signature.bytes)
-    }
 }
