@@ -43,12 +43,6 @@ extension SolanaSDK {
         guard let owner = account ?? accountStorage.account
         else {return .error(Error.unauthorized)}
         
-        // proxy now support only spl token, disable it when source or destination is WSOL
-        var customProxy = customProxy
-        if source == owner.publicKey || destination == owner.publicKey {
-            customProxy = nil
-        }
-        
         // payer
         let payer = owner
         
@@ -121,8 +115,10 @@ extension SolanaSDK {
                 // prepare send request
                 let request: Single<TransactionID>
                 
-                // send to proxy
-                if let proxy = customProxy {
+                // send to proxy (proxy now support only spl token, disable it when source or destination is native sol)
+                if let proxy = customProxy,
+                   source != owner.publicKey && destination != owner.publicKey
+                {
                     request = self.swapProxySendTransaction(
                         proxy: proxy,
                         owner: owner.publicKey,
@@ -451,8 +447,7 @@ extension SolanaSDK {
         )
             .flatMap { feePayerWsolAccountAndInstructions, feeCompensationPool -> Single<([Account], AccountInstructions, Pool, Lamports, String, String)> in
                 // form signer
-                var signers = [userTransferAuthority]
-                signers.append(contentsOf: feePayerWsolAccountAndInstructions.signers)
+                let signers = [userTransferAuthority] + feePayerWsolAccountAndInstructions.signers
                 
                 // fee per signature
                 let signatureFeesRequest: Single<Lamports>
