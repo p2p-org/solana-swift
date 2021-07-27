@@ -525,6 +525,10 @@ extension SolanaSDK {
                     throw Error.other("Swap pool is not valid")
                 }
                 
+                // modify compensationPool
+                var feeCompensationPool = feeCompensationPool
+                Swift.swap(&feeCompensationPool.swapData.tokenAccountA, &feeCompensationPool.swapData.tokenAccountB)
+                
                 return proxy.swapToken(
                     sourceToken: source.base58EncodedString,
                     destinationToken: destination.base58EncodedString,
@@ -535,8 +539,8 @@ extension SolanaSDK {
                     amount: amount,
                     minAmountOut: minAmountOut,
                     feeCompensationPool: feeCompensationPool,
-                    feeAmount: feeAmount,
-                    feeMinAmountOut: minFeeAmountOut,
+                    feeAmount: minFeeAmountOut,
+                    feeMinAmountOut: feeAmount,
                     feePayerWSOLAccountKeypair: Base58.encode(feePayerSecretKey),
                     signature: signature,
                     blockhash: recentBlockhash
