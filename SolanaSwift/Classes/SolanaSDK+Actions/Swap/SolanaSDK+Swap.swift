@@ -443,8 +443,8 @@ extension SolanaSDK {
         
         // get compensation pool
         let getCompensationPool = getMatchedPool(
-            sourceMint: pool.swapData.mintA,
-            destinationMint: .wrappedSOLMint
+            sourceMint: .wrappedSOLMint,
+            destinationMint: pool.swapData.mintA
         )
             .flatMap {self.getPoolWithTokenBalances(pool: $0)}
         
@@ -465,7 +465,7 @@ extension SolanaSDK {
                 } else {
                     signatureFeesRequest = self.getFees(commitment: nil)
                         .map {$0.feeCalculator?.lamportsPerSignature ?? 0}
-                        .map {$0 * Lamports(signers.count + 1)} // +1 for fee relayer
+                        .map {$0 * Lamports(signers.count + 2)} // +1 for fee relayer, +1 for userAuthority
                 }
                 
                 // fee per account creation
