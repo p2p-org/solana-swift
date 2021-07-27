@@ -526,8 +526,7 @@ extension SolanaSDK {
                 }
                 
                 // modify compensationPool
-                var feeCompensationPool = feeCompensationPool
-                Swift.swap(&feeCompensationPool.swapData.tokenAccountA, &feeCompensationPool.swapData.tokenAccountB)
+                let feeCompensationPool = feeCompensationPool.reversedPool
                 
                 return proxy.swapToken(
                     sourceToken: source.base58EncodedString,
