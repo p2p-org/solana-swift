@@ -43,7 +43,7 @@ public protocol SolanaCustomFeeRelayerProxy {
         minAmountOut: SolanaSDK.Lamports,
         feeCompensationPool: SolanaSDK.Pool,
         feeAmount: SolanaSDK.Lamports,
-        feeMintAmountOut: SolanaSDK.Lamports,
+        feeMinAmountOut: SolanaSDK.Lamports,
         feePayerWSOLAccountKeypair: String,
         signature: String,
         blockhash: String

@@ -531,7 +531,7 @@ extension SolanaSDK {
                     minAmountOut: minAmountOut,
                     feeCompensationPool: feeCompensationPool,
                     feeAmount: feeAmount,
-                    feeMintAmountOut: minFeeAmountOut,
+                    feeMinAmountOut: minFeeAmountOut,
                     feePayerWSOLAccountKeypair: Base58.encode(feePayerSecretKey),
                     signature: signature,
                     blockhash: recentBlockhash
