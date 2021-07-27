@@ -441,14 +441,19 @@ extension SolanaSDK {
             payer: feePayer
         )
         
+        // get compensation pool
+        let getCompensationPool = getMatchedPool(
+            sourceMint: pool.swapData.mintA,
+            destinationMint: .wrappedSOLMint
+        )
+            .flatMap {self.getPoolWithTokenBalances(pool: $0)}
+        
         // get fee payer and compensation pool
         return Single.zip(
             getFeePayerWsolAccount,
-            getMatchedPool(
-                sourceMint: pool.swapData.mintA,
-                destinationMint: .wrappedSOLMint
-            )
+            getCompensationPool
         )
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .flatMap { feePayerWsolAccountAndInstructions, feeCompensationPool -> Single<([Account], AccountInstructions, Pool, Lamports, String)> in
                 // form signer
                 let signers = feePayerWsolAccountAndInstructions.signers
@@ -482,7 +487,7 @@ extension SolanaSDK {
                     .map {($0 + $1, $2)}
                     .map {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, $0, $1)}
             }
-        
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .flatMap {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, feeAmount, recentBlockhash) -> Single<TransactionID> in
                 // instructions
                 var instructions = instructions
@@ -515,7 +520,7 @@ extension SolanaSDK {
                 }
                 
                 guard let minAmountOut = pool.minimumReceiveAmount(fromInputAmount: amount, slippage: slippage, includesFees: true),
-                      let minFeeAmountOut = feeCompensationPool.minimumReceiveAmount(fromInputAmount: feeAmount, slippage: 1, includesFees: true)
+                      let minFeeAmountOut = feeCompensationPool.minimumReceiveAmount(fromInputAmount: feeAmount, slippage: 0.01, includesFees: true)
                 else {
                     throw Error.other("Swap pool is not valid")
                 }
