@@ -151,6 +151,7 @@ extension SolanaSDK {
                     request = self.swapProxySendTransaction(
                         proxy: proxy,
                         owner: owner.publicKey,
+                        feePayer: feePayer,
                         pool: pool,
                         source: source,
                         destination: destination ?? owner.publicKey,
@@ -423,6 +424,7 @@ extension SolanaSDK {
     private func swapProxySendTransaction(
         proxy: SolanaCustomFeeRelayerProxy,
         owner: PublicKey,
+        feePayer: PublicKey,
         pool: Pool,
         source: PublicKey,
         destination: PublicKey,
@@ -433,16 +435,11 @@ extension SolanaSDK {
         cleanupInstructions: [TransactionInstruction]
     ) -> Single<TransactionID> {
         // create feepayer wsol account
-        let getFeePayerWsolAccount = proxy.getFeePayer()
-            .map {try PublicKey(string: $0)}
-            .flatMap {
-                // create fee payer wsol account
-                self.prepareForCreatingTempAccountAndClose(
-                    from: owner,
-                    amount: 0,
-                    payer: $0
-                )
-            }
+        let getFeePayerWsolAccount = prepareForCreatingTempAccountAndClose(
+            from: feePayer,
+            amount: 0,
+            payer: feePayer
+        )
         
         // get fee payer and compensation pool
         return Single.zip(
@@ -452,9 +449,9 @@ extension SolanaSDK {
                 destinationMint: .wrappedSOLMint
             )
         )
-            .flatMap { feePayerWsolAccountAndInstructions, feeCompensationPool -> Single<([Account], AccountInstructions, Pool, Lamports, String, String)> in
+            .flatMap { feePayerWsolAccountAndInstructions, feeCompensationPool -> Single<([Account], AccountInstructions, Pool, Lamports, String)> in
                 // form signer
-                let signers = [userTransferAuthority] + feePayerWsolAccountAndInstructions.signers
+                let signers = feePayerWsolAccountAndInstructions.signers
                 
                 // fee per signature
                 let signatureFeesRequest: Single<Lamports>
@@ -463,7 +460,7 @@ extension SolanaSDK {
                 } else {
                     signatureFeesRequest = self.getFees(commitment: nil)
                         .map {$0.feeCalculator?.lamportsPerSignature ?? 0}
-                        .map {$0 * Lamports(signers.count)}
+                        .map {$0 * Lamports(signers.count + 1)} // +1 for fee relayer
                 }
                 
                 // fee per account creation
@@ -480,27 +477,25 @@ extension SolanaSDK {
                 return Single.zip(
                     signatureFeesRequest,
                     creationFeeRequest,
-                    proxy.getFeePayer(),
                     self.getRecentBlockhash()
                 )
-                    .map {($0 + $1, $2, $3)}
-                    .map {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, $0, $1, $2)}
+                    .map {($0 + $1, $2)}
+                    .map {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, $0, $1)}
             }
         
-            .flatMap { (signers, feePayerWsolAccountAndInstructions, feeCompensationPool, feeAmount, feePayer, recentBlockhash) -> Single<TransactionID> in
+            .flatMap {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, feeAmount, recentBlockhash) -> Single<TransactionID> in
                 // instructions
                 var instructions = instructions
                 instructions.append(contentsOf: feePayerWsolAccountAndInstructions.instructions)
                 
-                instructions.append(contentsOf:
+                instructions.append(
                     try self.swapInstruction(
                         pool: feeCompensationPool,
                         source: source,
-                        destination: feePayerWsolAccountAndInstructions.account,
-                        userTransferAuthority: userTransferAuthority.publicKey,
-                        owner: owner,
+                        destination: destinationAccountInstructions.account,
+                        userTransferAuthority: owner,
                         amount: feeAmount,
-                        slippage: slippage
+                        slippage: 1
                     )
                 )
                 
@@ -509,7 +504,7 @@ extension SolanaSDK {
                 cleanupInstructions.append(contentsOf: feePayerWsolAccountAndInstructions.cleanupInstructions)
                 
                 let signature = try self.getSignatureForProxy(
-                    feePayer: feePayer,
+                    feePayer: feePayer.base58EncodedString,
                     instructions: instructions + cleanupInstructions,
                     recentBlockhash: recentBlockhash
                 )
@@ -520,7 +515,7 @@ extension SolanaSDK {
                 }
                 
                 guard let minAmountOut = pool.minimumReceiveAmount(fromInputAmount: amount, slippage: slippage, includesFees: true),
-                      let minFeeAmountOut = feeCompensationPool.minimumReceiveAmount(fromInputAmount: feeAmount, slippage: slippage, includesFees: true)
+                      let minFeeAmountOut = feeCompensationPool.minimumReceiveAmount(fromInputAmount: feeAmount, slippage: 1, includesFees: true)
                 else {
                     throw Error.other("Swap pool is not valid")
                 }
@@ -530,7 +525,7 @@ extension SolanaSDK {
                     destinationToken: destination.base58EncodedString,
                     sourceTokenMint: pool.swapData.mintA.base58EncodedString,
                     destinationTokenMint: pool.swapData.mintB.base58EncodedString,
-                    userAuthority: userTransferAuthority.publicKey.base58EncodedString,
+                    userAuthority: owner.base58EncodedString,
                     pool: pool,
                     amount: amount,
                     minAmountOut: minAmountOut,
