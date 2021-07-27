@@ -43,10 +43,22 @@ extension SolanaSDK {
         guard let owner = account ?? accountStorage.account
         else {return .error(Error.unauthorized)}
         
-        // payer
-        let payer = owner
+        // reveal proxy (proxy now support only spl token, disable it when source or destination is native sol)
+        var proxy = customProxy
+        if source == owner.publicKey || destination == owner.publicKey
+        {
+            proxy = nil // disable proxy
+        }
         
-        // get pool pools
+        // get payer
+        let getFeePayerRequest: Single<PublicKey>
+        if let proxy = proxy {
+            getFeePayerRequest = proxy.getFeePayer().map {try PublicKey(string: $0)}
+        } else {
+            getFeePayerRequest = .just(owner.publicKey)
+        }
+        
+        // get pool
         let getPoolRequest: Single<Pool>
         if let pool = pool,
            pool.swapData.mintA == sourceMint,
@@ -60,12 +72,15 @@ extension SolanaSDK {
             )
         }
         
-        // get pool
-        return getPoolRequest
-            // retrieve pool balance if not exists
-            .flatMap {self.getPoolWithTokenBalances(pool: $0)}
+        // request
+        return Single.zip(
+            getPoolRequest
+                // retrieve pool balance if not exists
+                .flatMap {self.getPoolWithTokenBalances(pool: $0)},
+            getFeePayerRequest
+        )
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .flatMap { pool in
+            .flatMap { pool, feePayer in
                 Single.zip(
                     .just(pool),
                     
@@ -73,19 +88,21 @@ extension SolanaSDK {
                         pool: pool,
                         source: source,
                         amount: amount,
-                        payer: owner.publicKey
+                        feePayer: feePayer
                     ),
                     
                     self.prepareDestinationAccountAndInstructions(
                         myAccount: owner.publicKey,
                         destination: destination,
                         destinationMint: destinationMint,
-                        payer: payer
-                    )
+                        feePayer: feePayer
+                    ),
+                    
+                    .just(feePayer)
                 )
             }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .flatMap { pool, sourceAccountInstructions, destinationAccountInstructions in
+            .flatMap { pool, sourceAccountInstructions, destinationAccountInstructions, feePayer in
                 // form instructions
                 var instructions = [TransactionInstruction]()
                 var cleanupInstructions = [TransactionInstruction]()
@@ -102,30 +119,38 @@ extension SolanaSDK {
                 cleanupInstructions.append(contentsOf: destinationAccountInstructions.cleanupInstructions)
                 let newWalletPubkey = destinationAccountInstructions.newWalletPubkey
                 
-                // approve and swap
-                let approveAndSwapInstructions = try self.prepareApproveAndSwapInstructions(
+                // approve (if send without proxy)
+                if proxy == nil {
+                    let approveTransaction = TokenProgram.approveInstruction(
+                        tokenProgramId: .tokenProgramId,
+                        account: source,
+                        delegate: userTransferAuthority.publicKey,
+                        owner: owner.publicKey,
+                        amount: amount
+                    )
+                    instructions.append(approveTransaction)
+                }
+                
+                // swap
+                let swapInstruction = try self.swapInstruction(
                     pool: pool,
                     source: sourceAccountInstructions.account,
                     destination: destinationAccountInstructions.account,
-                    userTransferAuthority: userTransferAuthority.publicKey,
-                    owner: owner.publicKey,
+                    userTransferAuthority: proxy == nil ? userTransferAuthority.publicKey: owner.publicKey,
                     amount: amount,
                     slippage: slippage
                 )
                 
-                instructions.append(contentsOf: approveAndSwapInstructions)
+                instructions.append(swapInstruction)
                 
                 // prepare send request
                 let request: Single<TransactionID>
                 
-                // send to proxy (proxy now support only spl token, disable it when source or destination is native sol)
-                if let proxy = customProxy,
-                   source != owner.publicKey && destination != owner.publicKey
-                {
+                // send to proxy
+                if let proxy = proxy {
                     request = self.swapProxySendTransaction(
                         proxy: proxy,
                         owner: owner.publicKey,
-                        userTransferAuthority: userTransferAuthority,
                         pool: pool,
                         source: source,
                         destination: destination ?? owner.publicKey,
@@ -177,7 +202,7 @@ extension SolanaSDK {
         pool: Pool,
         source: PublicKey,
         amount: Lamports,
-        payer: PublicKey
+        feePayer: PublicKey
     ) -> Single<AccountInstructions> {
         getAccountInfo(
             account: pool.swapData.tokenAccountA.base58EncodedString,
@@ -210,7 +235,7 @@ extension SolanaSDK {
                 return self.prepareForCreatingTempAccountAndClose(
                     from: source,
                     amount: amount,
-                    payer: payer
+                    payer: feePayer
                 )
             }
     }
@@ -219,7 +244,7 @@ extension SolanaSDK {
         myAccount: PublicKey,
         destination: PublicKey?,
         destinationMint: PublicKey,
-        payer: Account
+        feePayer: PublicKey
     ) -> Single<AccountInstructions> {
         // if destination is a registered non-native token account
         if let destination = destination, destination != myAccount
@@ -238,7 +263,7 @@ extension SolanaSDK {
         return prepareForCreatingAssociatedTokenAccountAndCloseIfNative(
             owner: myAccount,
             mint: destinationMint,
-            payer: payer
+            feePayer: feePayer
         )
     }
     
@@ -288,7 +313,7 @@ extension SolanaSDK {
     private func prepareForCreatingAssociatedTokenAccountAndCloseIfNative(
         owner: PublicKey,
         mint: PublicKey,
-        payer: Account
+        feePayer: PublicKey
     ) -> Single<AccountInstructions> {
         do {
             let associatedAddress = try PublicKey.associatedTokenAddress(
@@ -351,7 +376,7 @@ extension SolanaSDK {
                                     mint: mint,
                                     associatedAccount: associatedAddress,
                                     owner: owner,
-                                    payer: payer.publicKey
+                                    payer: feePayer
                                 )
                         ],
                         cleanupInstructions: cleanupInstructions,
@@ -364,61 +389,40 @@ extension SolanaSDK {
         }
     }
     
-    private func prepareApproveAndSwapInstructions(
+    private func swapInstruction(
         pool: Pool,
         source: PublicKey,
         destination: PublicKey,
         userTransferAuthority: PublicKey,
-        owner: PublicKey,
         amount: Lamports,
         slippage: Double
-    ) throws -> [TransactionInstruction] {
+    ) throws -> TransactionInstruction {
         // pool validation
         guard let poolAuthority = pool.authority,
               let minAmountOut = pool.minimumReceiveAmount(fromInputAmount: amount, slippage: slippage, includesFees: true)
         else { throw Error.other("Swap pool is not valid") }
         
-        // TODO: - Host fee
-//                let hostFeeAccount = try self.createAccountByMint(
-//                    owner: .swapHostFeeAddress,
-//                    mint: pool.swapData.tokenPool,
-//                    instructions: &instructions,
-//                    cleanupInstructions: &cleanupInstructions,
-//                    signers: &signers,
-//                    minimumBalanceForRentExemption: minimumBalanceForRentExemption
-//                )
-        
-        return [
-            TokenProgram.approveInstruction(
-                tokenProgramId: .tokenProgramId,
-                account: source,
-                delegate: userTransferAuthority,
-                owner: owner,
-                amount: amount
-            ),
-            TokenSwapProgram.swapInstruction(
-                tokenSwap: pool.address,
-                authority: poolAuthority,
-                userTransferAuthority: userTransferAuthority,
-                userSource: source,
-                poolSource: pool.swapData.tokenAccountA,
-                poolDestination: pool.swapData.tokenAccountB,
-                userDestination: destination,
-                poolMint: pool.swapData.tokenPool,
-                feeAccount: pool.swapData.feeAccount,
-                hostFeeAccount: nil,
-                swapProgramId: self.endpoint.network.swapProgramId,
-                tokenProgramId: .tokenProgramId,
-                amountIn: amount,
-                minimumAmountOut: minAmountOut
-            )
-        ]
+        return TokenSwapProgram.swapInstruction(
+            tokenSwap: pool.address,
+            authority: poolAuthority,
+            userTransferAuthority: userTransferAuthority,
+            userSource: source,
+            poolSource: pool.swapData.tokenAccountA,
+            poolDestination: pool.swapData.tokenAccountB,
+            userDestination: destination,
+            poolMint: pool.swapData.tokenPool,
+            feeAccount: pool.swapData.feeAccount,
+            hostFeeAccount: nil,
+            swapProgramId: self.endpoint.network.swapProgramId,
+            tokenProgramId: .tokenProgramId,
+            amountIn: amount,
+            minimumAmountOut: minAmountOut
+        )
     }
     
     private func swapProxySendTransaction(
         proxy: SolanaCustomFeeRelayerProxy,
         owner: PublicKey,
-        userTransferAuthority: Account,
         pool: Pool,
         source: PublicKey,
         destination: PublicKey,
@@ -489,7 +493,7 @@ extension SolanaSDK {
                 instructions.append(contentsOf: feePayerWsolAccountAndInstructions.instructions)
                 
                 instructions.append(contentsOf:
-                    try self.prepareApproveAndSwapInstructions(
+                    try self.swapInstruction(
                         pool: feeCompensationPool,
                         source: source,
                         destination: feePayerWsolAccountAndInstructions.account,
