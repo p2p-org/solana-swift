@@ -125,32 +125,32 @@ extension SolanaSDK {
                 cleanupInstructions.append(contentsOf: destinationAccountInstructions.cleanupInstructions)
                 let newWalletPubkey = destinationAccountInstructions.newWalletPubkey
                 
-                // approve (if send without proxy)
+                // userTransferAuthorityPubkey
+                var userTransferAuthorityPubkey = userTransferAuthority.publicKey
+                
                 if proxy == nil {
+                    // approve (if send without proxy)
                     let approveTransaction = TokenProgram.approveInstruction(
                         tokenProgramId: .tokenProgramId,
-                        account: source,
-                        delegate: userTransferAuthority.publicKey,
+                        account: sourceAccountInstructions.account,
+                        delegate: userTransferAuthorityPubkey,
                         owner: owner.publicKey,
                         amount: amount
                     )
                     instructions.append(approveTransaction)
+                } else {
+                    userTransferAuthorityPubkey = owner.publicKey
                 }
                 
                 // swap
                 guard let minAmountOut = pool.estimatedAmount(forInputAmount: amount, includeFees: true)
                 else {throw Error.other("Could not estimate minimum amount output")}
                 
-                var userTransferAuthorityPubkey = userTransferAuthority.publicKey
-                if pool != nil {
-                    userTransferAuthorityPubkey = owner.publicKey
-                }
-                
                 let swapInstruction = TokenSwapProgram.swapInstruction(
                     tokenSwap: pool.address,
                     authority: pool.authority!,
                     userTransferAuthority: userTransferAuthorityPubkey,
-                    userSource: source,
+                    userSource: sourceAccountInstructions.account,
                     poolSource: pool.swapData.tokenAccountA,
                     poolDestination: pool.swapData.tokenAccountB,
                     userDestination: destinationAccountInstructions.account,
