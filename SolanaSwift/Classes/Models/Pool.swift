@@ -68,6 +68,28 @@ extension SolanaSDK {
             return Lamports(numerator / denominator)
         }
         
+        public func inputAmount(
+            forMinimumReceiveAmount minimumReceiveAmount: Lamports,
+            slippage: Double,
+            includeFees: Bool
+        ) -> Lamports? {
+            guard let tokenABalance = tokenABalance?.amountInUInt64,
+                  let tokenBBalance = tokenBBalance?.amountInUInt64
+            else {return nil}
+            
+            let e = BInt(minimumReceiveAmount)
+            
+            let b = BInt(tokenBBalance)
+            let a = BInt(tokenABalance)
+            let d = BInt(swapData.tradeFeeDenominator)
+            let n = includeFees ? BInt(swapData.tradeFeeNumerator) : 0
+            
+            let numerator = e * a * d
+            let denominator = b * (d - n) - e * d
+            
+            return Lamports(Float64(numerator / denominator) * Float64(1 + slippage))
+        }
+        
         public func minimumReceiveAmount(
             fromInputAmount inputAmount: Lamports,
             slippage: Double,

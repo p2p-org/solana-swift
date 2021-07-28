@@ -76,7 +76,13 @@ extension SolanaSDK {
         return Single.zip(
             getPoolRequest
                 // retrieve pool balance if not exists
-                .flatMap {self.getPoolWithTokenBalances(pool: $0)},
+                .flatMap {self.getPoolWithTokenBalances(pool: $0)}
+                .map { pool in
+                    guard pool.authority != nil else {
+                        throw Error.other("Swap pool is not valid")
+                    }
+                    return pool
+                },
             getFeePayerRequest
         )
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
@@ -132,13 +138,29 @@ extension SolanaSDK {
                 }
                 
                 // swap
-                let swapInstruction = try self.swapInstruction(
-                    pool: pool,
-                    source: sourceAccountInstructions.account,
-                    destination: destinationAccountInstructions.account,
-                    userTransferAuthority: proxy == nil ? userTransferAuthority.publicKey: owner.publicKey,
-                    amount: amount,
-                    slippage: slippage
+                guard let minAmountOut = pool.estimatedAmount(forInputAmount: amount, includeFees: true)
+                else {throw Error.other("Could not estimate minimum amount output")}
+                
+                var userTransferAuthorityPubkey = userTransferAuthority.publicKey
+                if pool != nil {
+                    userTransferAuthorityPubkey = owner.publicKey
+                }
+                
+                let swapInstruction = TokenSwapProgram.swapInstruction(
+                    tokenSwap: pool.address,
+                    authority: pool.authority!,
+                    userTransferAuthority: userTransferAuthorityPubkey,
+                    userSource: source,
+                    poolSource: pool.swapData.tokenAccountA,
+                    poolDestination: pool.swapData.tokenAccountB,
+                    userDestination: destinationAccountInstructions.account,
+                    poolMint: pool.swapData.tokenPool,
+                    feeAccount: pool.swapData.feeAccount,
+                    hostFeeAccount: nil,
+                    swapProgramId: self.endpoint.network.swapProgramId,
+                    tokenProgramId: .tokenProgramId,
+                    amountIn: amount,
+                    minimumAmountOut: minAmountOut
                 )
                 
                 instructions.append(swapInstruction)
@@ -390,37 +412,6 @@ extension SolanaSDK {
         }
     }
     
-    private func swapInstruction(
-        pool: Pool,
-        source: PublicKey,
-        destination: PublicKey,
-        userTransferAuthority: PublicKey,
-        amount: Lamports,
-        slippage: Double
-    ) throws -> TransactionInstruction {
-        // pool validation
-        guard let poolAuthority = pool.authority,
-              let minAmountOut = pool.minimumReceiveAmount(fromInputAmount: amount, slippage: slippage, includesFees: true)
-        else { throw Error.other("Swap pool is not valid") }
-        
-        return TokenSwapProgram.swapInstruction(
-            tokenSwap: pool.address,
-            authority: poolAuthority,
-            userTransferAuthority: userTransferAuthority,
-            userSource: source,
-            poolSource: pool.swapData.tokenAccountA,
-            poolDestination: pool.swapData.tokenAccountB,
-            userDestination: destination,
-            poolMint: pool.swapData.tokenPool,
-            feeAccount: pool.swapData.feeAccount,
-            hostFeeAccount: nil,
-            swapProgramId: self.endpoint.network.swapProgramId,
-            tokenProgramId: .tokenProgramId,
-            amountIn: amount,
-            minimumAmountOut: minAmountOut
-        )
-    }
-    
     private func swapProxySendTransaction(
         proxy: SolanaCustomFeeRelayerProxy,
         owner: PublicKey,
@@ -447,6 +438,13 @@ extension SolanaSDK {
             destinationMint: pool.swapData.mintA
         )
             .flatMap {self.getPoolWithTokenBalances(pool: $0)}
+            .map { pool -> Pool in
+                guard pool.authority != nil else {
+                    throw Error.other("Swap pool is not valid")
+                }
+                return pool
+            }
+            .map {$0.reversedPool}
         
         // get fee payer and compensation pool
         return Single.zip(
@@ -488,21 +486,31 @@ extension SolanaSDK {
                     .map {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, $0, $1)}
             }
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .flatMap {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, feeAmount, recentBlockhash) -> Single<TransactionID> in
+            .flatMap {(signers, feePayerWsolAccountAndInstructions, feeCompensationPool, feeMinAmountOut, recentBlockhash) -> Single<TransactionID> in
                 // instructions
                 var instructions = instructions
                 instructions.append(contentsOf: feePayerWsolAccountAndInstructions.instructions)
                 
-                instructions.append(
-                    try self.swapInstruction(
-                        pool: feeCompensationPool,
-                        source: source,
-                        destination: destinationAccountInstructions.account,
-                        userTransferAuthority: owner,
-                        amount: feeAmount,
-                        slippage: 1
-                    )
+                guard let feeAmount = feeCompensationPool.inputAmount(forMinimumReceiveAmount: feeMinAmountOut, slippage: 0.01, includeFees: true)
+                else {throw Error.other("Could not calculate input fee amount for fee compensation")}
+                
+                let swapInstruction = TokenSwapProgram.swapInstruction(
+                    tokenSwap: feeCompensationPool.address,
+                    authority: feeCompensationPool.authority!,
+                    userTransferAuthority: owner,
+                    userSource: source,
+                    poolSource: feeCompensationPool.swapData.tokenAccountA,
+                    poolDestination: feeCompensationPool.swapData.tokenAccountB,
+                    userDestination: destinationAccountInstructions.account,
+                    poolMint: feeCompensationPool.swapData.tokenPool,
+                    feeAccount: feeCompensationPool.swapData.feeAccount,
+                    hostFeeAccount: nil,
+                    swapProgramId: self.endpoint.network.swapProgramId,
+                    tokenProgramId: .tokenProgramId,
+                    amountIn: feeAmount,
+                    minimumAmountOut: feeMinAmountOut
                 )
+                instructions.append(swapInstruction)
                 
                 // clean up instructions
                 var cleanupInstructions = cleanupInstructions
@@ -519,14 +527,10 @@ extension SolanaSDK {
                     throw Error.other("Could not create fee payer account")
                 }
                 
-                guard let minAmountOut = pool.minimumReceiveAmount(fromInputAmount: amount, slippage: slippage, includesFees: true),
-                      let minFeeAmountOut = feeCompensationPool.minimumReceiveAmount(fromInputAmount: feeAmount, slippage: 0.01, includesFees: true)
+                guard let minAmountOut = pool.minimumReceiveAmount(fromInputAmount: amount, slippage: slippage, includesFees: true)
                 else {
                     throw Error.other("Swap pool is not valid")
                 }
-                
-                // modify compensationPool
-                let feeCompensationPool = feeCompensationPool.reversedPool
                 
                 return proxy.swapToken(
                     sourceToken: source.base58EncodedString,
@@ -538,8 +542,8 @@ extension SolanaSDK {
                     amount: amount,
                     minAmountOut: minAmountOut,
                     feeCompensationPool: feeCompensationPool,
-                    feeAmount: minFeeAmountOut,
-                    feeMinAmountOut: feeAmount,
+                    feeAmount: feeAmount,
+                    feeMinAmountOut: feeMinAmountOut,
                     feePayerWSOLAccountKeypair: Base58.encode(feePayerSecretKey),
                     signature: signature,
                     blockhash: recentBlockhash
