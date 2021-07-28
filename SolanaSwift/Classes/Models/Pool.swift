@@ -65,12 +65,17 @@ extension SolanaSDK {
             let numerator = e * a * d
             let denominator = b * (d - n) - e * d
             
+            if denominator == 0 {
+                return nil
+            }
+            
             return Lamports(numerator / denominator)
         }
         
         public func inputAmount(
             forMinimumReceiveAmount minimumReceiveAmount: Lamports,
             slippage: Double,
+            roundRules: FloatingPointRoundingRule? = nil,
             includeFees: Bool
         ) -> Lamports? {
             guard let tokenABalance = tokenABalance?.amountInUInt64,
@@ -87,7 +92,16 @@ extension SolanaSDK {
             let numerator = e * a * d
             let denominator = b * (d - n) - e * d
             
-            return Lamports(Float64(numerator / denominator) * Float64(1 + slippage))
+            if denominator == 0 {
+                return nil
+            }
+            
+            var float = Float64(numerator / denominator) * Float64(1 + slippage)
+            if let rule = roundRules {
+                float.round(rule)
+            }
+            
+            return Lamports(float)
         }
         
         public func minimumReceiveAmount(

@@ -490,7 +490,7 @@ extension SolanaSDK {
                 var instructions = instructions
                 instructions.append(contentsOf: feePayerWsolAccountAndInstructions.instructions)
                 
-                guard let feeAmount = feeCompensationPool.inputAmount(forMinimumReceiveAmount: feeMinAmountOut, slippage: 0.01, includeFees: true)
+                guard let feeAmount = feeCompensationPool.inputAmount(forMinimumReceiveAmount: feeMinAmountOut, slippage: 0.01, roundRules: .up, includeFees: true)
                 else {throw Error.other("Could not calculate input fee amount for fee compensation")}
                 
                 let swapInstruction = TokenSwapProgram.swapInstruction(
