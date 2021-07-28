@@ -548,46 +548,5 @@ extension SolanaSDK {
                     blockhash: recentBlockhash
                 )
             }
-        
     }
-    
-//    private func createAccountByMint(
-//        owner: PublicKey,
-//        mint: PublicKey,
-//        instructions: inout [TransactionInstruction],
-//        cleanupInstructions: inout [TransactionInstruction],
-//        signers: inout [Account],
-//        minimumBalanceForRentExemption: UInt64
-//    ) throws -> Account {
-//        let newAccount = try Account(network: endpoint.network)
-//
-//        instructions.append(
-//            SystemProgram.createAccountInstruction(
-//                from: owner,
-//                toNewPubkey: newAccount.publicKey,
-//                lamports: minimumBalanceForRentExemption
-//            )
-//        )
-//
-//        instructions.append(
-//            TokenProgram.initializeAccountInstruction(
-//                account: newAccount.publicKey,
-//                mint: mint,
-//                owner: owner
-//            )
-//        )
-//
-//        if mint == .wrappedSOLMint {
-//            cleanupInstructions.append(
-//                TokenProgram.closeAccountInstruction(
-//                    account: newAccount.publicKey,
-//                    destination: owner,
-//                    owner: owner
-//                )
-//            )
-//        }
-//
-//        signers.append(newAccount)
-//        return newAccount
-//    }
 }
