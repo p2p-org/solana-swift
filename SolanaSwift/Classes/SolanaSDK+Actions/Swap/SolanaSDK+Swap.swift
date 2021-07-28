@@ -434,8 +434,8 @@ extension SolanaSDK {
         
         // get compensation pool
         let getCompensationPool = getMatchedPool(
-            sourceMint: .wrappedSOLMint,
-            destinationMint: pool.swapData.mintA
+            sourceMint: pool.swapData.mintB,
+            destinationMint: .wrappedSOLMint
         )
             .flatMap {self.getPoolWithTokenBalances(pool: $0)}
             .map { pool -> Pool in
@@ -444,7 +444,6 @@ extension SolanaSDK {
                 }
                 return pool
             }
-            .map {$0.reversedPool}
         
         // get fee payer and compensation pool
         return Single.zip(
