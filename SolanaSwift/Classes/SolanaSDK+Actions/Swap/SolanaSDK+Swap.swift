@@ -434,7 +434,7 @@ extension SolanaSDK {
         
         // get compensation pool
         let getCompensationPool = getMatchedPool(
-            sourceMint: pool.swapData.mintB,
+            sourceMint: pool.swapData.mintA,
             destinationMint: .wrappedSOLMint
         )
             .flatMap {self.getPoolWithTokenBalances(pool: $0)}
