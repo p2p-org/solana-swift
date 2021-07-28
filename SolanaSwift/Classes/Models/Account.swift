@@ -73,7 +73,7 @@ public extension SolanaSDK {
 }
 
 public extension SolanaSDK.Account {
-    struct Meta: Decodable, CustomDebugStringConvertible {
+    struct Meta: Codable, CustomDebugStringConvertible {
         public let publicKey: SolanaSDK.PublicKey
         public var isSigner: Bool
         public var isWritable: Bool
@@ -88,6 +88,13 @@ public extension SolanaSDK.Account {
             publicKey = try SolanaSDK.PublicKey(string: try values.decode(String.self, forKey: .pubkey))
             isSigner = try values.decode(Bool.self, forKey: .signer)
             isWritable = try values.decode(Bool.self, forKey: .writable)
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(publicKey.base58EncodedString, forKey: .pubkey)
+            try container.encode(isSigner, forKey: .signer)
+            try container.encode(isWritable, forKey: .writable)
         }
         
         // Initializers

@@ -21,10 +21,10 @@ extension SolanaSDK {
         let signers: [Account]
         
         // additionally return new wallet address
-        internal private(set) var newWalletPubkey: String?
+        fileprivate private(set) var newWalletPubkey: String?
         
         // additionally return newAccount's secretkey
-        internal private(set) var secretKey: Data?
+        fileprivate private(set) var secretKey: Data?
     }
     
     public func swap(
@@ -500,7 +500,7 @@ extension SolanaSDK {
                     userSource: source,
                     poolSource: feeCompensationPool.swapData.tokenAccountA,
                     poolDestination: feeCompensationPool.swapData.tokenAccountB,
-                    userDestination: destinationAccountInstructions.account,
+                    userDestination: feePayerWsolAccountAndInstructions.account,
                     poolMint: feeCompensationPool.swapData.tokenPool,
                     feeAccount: feeCompensationPool.swapData.feeAccount,
                     hostFeeAccount: nil,
