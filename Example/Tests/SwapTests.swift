@@ -47,13 +47,13 @@ class SwapTests: XCTestCase {
         let destination = account.publicKey
         let ethAmount: SolanaSDK.Lamports = 1
         
-        let sourceAccountInstructions = try solanaSDK.prepareSourceAccountAndInstructions(pool: ethToSOLPool, source: source, amount: ethAmount, payer: account.publicKey).toBlocking().first()
+        let sourceAccountInstructions = try solanaSDK.prepareSourceAccountAndInstructions(pool: ethToSOLPool, source: source, amount: ethAmount, feePayer: account.publicKey).toBlocking().first()
         XCTAssertEqual(sourceAccountInstructions?.account, source)
         XCTAssertEqual(sourceAccountInstructions?.instructions.count, 0)
         XCTAssertEqual(sourceAccountInstructions?.cleanupInstructions.count, 0)
         XCTAssertEqual(sourceAccountInstructions?.signers.count, 0)
         
-        let destinationAccountInstructions = try solanaSDK.prepareDestinationAccountAndInstructions(myAccount: account.publicKey, destination: destination, destinationMint: solMint, payer: account).toBlocking().first()
+        let destinationAccountInstructions = try solanaSDK.prepareDestinationAccountAndInstructions(myAccount: account.publicKey, destination: destination, destinationMint: solMint, feePayer: account.publicKey).toBlocking().first()
         XCTAssertEqual(destinationAccountInstructions?.account.base58EncodedString, "2qoruNhk16M38BS95qs6DoTvHDnEx2ePLNKaPYnuwxne")
         XCTAssertEqual(destinationAccountInstructions?.instructions.count, 0)
         XCTAssertEqual(destinationAccountInstructions?.cleanupInstructions.count, 1)
