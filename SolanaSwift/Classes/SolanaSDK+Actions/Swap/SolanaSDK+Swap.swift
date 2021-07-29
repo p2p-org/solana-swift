@@ -143,7 +143,7 @@ extension SolanaSDK {
                 }
                 
                 // swap
-                guard let minAmountOut = pool.estimatedAmount(forInputAmount: amount, includeFees: true)
+                guard let minAmountOut = pool.minimumReceiveAmount(fromInputAmount: amount, slippage: slippage, includesFees: true)
                 else {throw Error.other("Could not estimate minimum amount output")}
                 
                 let swapInstruction = TokenSwapProgram.swapInstruction(
