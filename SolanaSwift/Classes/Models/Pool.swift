@@ -150,6 +150,7 @@ extension SolanaSDK {
         }
         
         public var isValid: Bool {
+            authority != nil &&
             swapData.mintA != swapData.mintB &&
                 (tokenABalance?.amountInUInt64 ?? 0) > 0 &&
                 (tokenBBalance?.amountInUInt64 ?? 0) > 0
@@ -158,12 +159,11 @@ extension SolanaSDK {
 }
 
 extension Array where Element == SolanaSDK.Pool {
-    public func matchedPool(sourceMint: String?, destinationMint: String?) -> SolanaSDK.Pool?
-    {
-        first(where: {
+    public func getMatchedPools(sourceMint: String?, destinationMint: String?) -> [SolanaSDK.Pool] {
+        filter {
             ($0.swapData.mintA.base58EncodedString == sourceMint && $0.swapData.mintB.base58EncodedString == destinationMint) ||
                 ($0.swapData.mintB.base58EncodedString == sourceMint && $0.swapData.mintA.base58EncodedString == destinationMint)
-        })
+        }
         .map { pool in
             if (pool.swapData.mintB.base58EncodedString == sourceMint && pool.swapData.mintA.base58EncodedString == destinationMint)
             {

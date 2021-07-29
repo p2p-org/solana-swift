@@ -62,11 +62,12 @@ extension SolanaSDK {
         let getPoolRequest: Single<Pool>
         if let pool = pool,
            pool.swapData.mintA == sourceMint,
-           pool.swapData.mintB == destinationMint
+           pool.swapData.mintB == destinationMint,
+           pool.isValid
         {
             getPoolRequest = .just(pool)
         } else {
-            getPoolRequest = getMatchedPool(
+            getPoolRequest = getValidPool(
                 sourceMint: sourceMint,
                 destinationMint: destinationMint
             )
@@ -74,15 +75,7 @@ extension SolanaSDK {
         
         // request
         return Single.zip(
-            getPoolRequest
-                // retrieve pool balance if not exists
-                .flatMap {self.getPoolWithTokenBalances(pool: $0)}
-                .map { pool in
-                    guard pool.authority != nil else {
-                        throw Error.other("Swap pool is not valid")
-                    }
-                    return pool
-                },
+            getPoolRequest,
             getFeePayerRequest
         )
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
@@ -203,20 +196,33 @@ extension SolanaSDK {
     }
     
     // MARK: - Get pools
-    func getMatchedPool(
+    func getValidPool(
         sourceMint: PublicKey,
         destinationMint: PublicKey
     ) -> Single<Pool> {
         getSwapPools()
-            .map {pools -> Pool in
+            .flatMap {pools -> Single<Pool> in
                 // filter pool that match requirement
-                if let matchPool = pools.matchedPool(
+                let matchedPools = pools.getMatchedPools(
                     sourceMint: sourceMint.base58EncodedString,
                     destinationMint: destinationMint.base58EncodedString
-                ) {
-                    return matchPool
+                )
+                
+                // if there is a valid pool
+                if let validPool = matchedPools.first(where: {$0.isValid}) {
+                    return .just(validPool)
                 }
-                throw Error.other("Unsupported swapping tokens")
+                
+                // get balance
+                return Single.zip(
+                    matchedPools.map {self.getPoolWithTokenBalances(pool: $0)}
+                )
+                .map {
+                    if let validPool = $0.first(where: {$0.isValid}) {
+                        return validPool
+                    }
+                    throw Error.other("Unsupported swapping tokens")
+                }
             }
     }
     
@@ -433,17 +439,10 @@ extension SolanaSDK {
         )
         
         // get compensation pool
-        let getCompensationPool = getMatchedPool(
+        let getCompensationPool = getValidPool(
             sourceMint: pool.swapData.mintA,
             destinationMint: .wrappedSOLMint
         )
-            .flatMap {self.getPoolWithTokenBalances(pool: $0)}
-            .map { pool -> Pool in
-                guard pool.authority != nil else {
-                    throw Error.other("Swap pool is not valid")
-                }
-                return pool
-            }
         
         // get fee payer and compensation pool
         return Single.zip(
