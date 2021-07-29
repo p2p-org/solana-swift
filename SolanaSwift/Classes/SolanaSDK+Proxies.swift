@@ -31,4 +31,55 @@ public protocol SolanaCustomFeeRelayerProxy {
         signature: String,
         blockhash: String
     ) -> Single<SolanaSDK.TransactionID>
+    
+    func swapToken(
+        sourceToken: String,
+        destinationToken: String,
+        sourceTokenMint: String,
+        destinationTokenMint: String,
+        userAuthority: String,
+        pool: SolanaSDK.Pool,
+        amount: SolanaSDK.Lamports,
+        minAmountOut: SolanaSDK.Lamports,
+        feeCompensationPool: SolanaSDK.Pool,
+        feeAmount: SolanaSDK.Lamports,
+        feeMinAmountOut: SolanaSDK.Lamports,
+        feePayerWSOLAccountKeypair: String,
+        signature: String,
+        blockhash: String
+    ) -> Single<SolanaSDK.TransactionID>
+}
+
+extension SolanaSDK {
+    /// Get signature from formed instructions
+    /// - Parameters:
+    ///   - feePayer: the feepayer gotten from getFeePayerPubkey
+    ///   - instructions: instructions to get signature from
+    ///   - recentBlockhash: recentBlockhash retrieved from server
+    /// - Throws: error if signature not found
+    /// - Returns: signature
+    func getSignatureForProxy(
+        feePayer: String,
+        instructions: [TransactionInstruction],
+        recentBlockhash: String
+    ) throws -> String {
+        guard let signer = accountStorage.account
+        else {throw Error.unauthorized}
+        let feePayer = try PublicKey(string: feePayer)
+        var transaction = Transaction(feePayer: feePayer, instructions: instructions, recentBlockhash: recentBlockhash)
+        try transaction.sign(signers: [signer])
+        
+        guard let signature = transaction.findSignature(pubkey: signer.publicKey)?.signature
+        else {
+            throw Error.other("Signature not found")
+        }
+        
+        guard let serializedTransaction = try transaction.serialize().bytes.toBase64() else {
+            throw Error.other("Could not serialize transaction")
+        }
+        
+        Logger.log(message: "serializedTransaction \(serializedTransaction)", event: .debug)
+        
+        return Base58.encode(signature.bytes)
+    }
 }
