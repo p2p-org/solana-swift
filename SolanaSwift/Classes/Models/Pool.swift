@@ -148,6 +148,12 @@ extension SolanaSDK {
             Swift.swap(&pool.tokenAInfo, &pool.tokenBInfo)
             return pool
         }
+        
+        public var isValid: Bool {
+            swapData.mintA != swapData.mintB &&
+                (tokenABalance?.amountInUInt64 ?? 0) > 0 &&
+                (tokenBBalance?.amountInUInt64 ?? 0) > 0
+        }
     }
 }
 
@@ -166,4 +172,31 @@ extension Array where Element == SolanaSDK.Pool {
             return pool
         }
     }
+    
+    public func getPools(mintA: String) -> [SolanaSDK.Pool] {
+        filter {
+            $0.swapData.mintA.base58EncodedString == mintA ||
+                $0.swapData.mintB.base58EncodedString == mintA
+        }
+        .map {
+            if $0.swapData.mintB.base58EncodedString == mintA {
+                return $0.reversedPool
+            }
+            return $0
+        }
+    }
+    
+    public func getPools(mintB: String) -> [SolanaSDK.Pool] {
+        filter {
+            $0.swapData.mintA.base58EncodedString == mintB ||
+                $0.swapData.mintB.base58EncodedString == mintB
+        }
+        .map {
+            if $0.swapData.mintA.base58EncodedString == mintB {
+                return $0.reversedPool
+            }
+            return $0
+        }
+    }
+    
 }
