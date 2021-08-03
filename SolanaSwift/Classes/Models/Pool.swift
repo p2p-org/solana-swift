@@ -9,6 +9,10 @@ import Foundation
 
 extension SolanaSDK {
     public struct Pool: Hashable, Codable {
+        // MARK: - Constants
+        public static var feeCompensationPoolDefaultSlippage: Double = 0.01
+        
+        // MARK: - Properties
         public let address: PublicKey
         public var tokenAInfo: Mint
         public var tokenBInfo: Mint
