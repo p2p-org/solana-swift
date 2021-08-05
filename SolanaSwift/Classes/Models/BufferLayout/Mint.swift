@@ -56,12 +56,12 @@ extension SolanaSDK {
         public static func layout()  -> [(key: String?, length: Int)] {
             [
                 (key: "mintAuthorityOption", length: 4),
-                (key: "mintAuthority", length: PublicKey.LENGTH),
+                (key: "mintAuthority", length: PublicKey.numberOfBytes),
                 (key: "supply", length: 8),
                 (key: "decimals", length: 1),
                 (key: "isInitialized", length: 1),
                 (key: "freezeAuthorityOption", length: 4),
-                (key: "freezeAuthority", length: PublicKey.LENGTH)
+                (key: "freezeAuthority", length: PublicKey.numberOfBytes)
             ]
         }
     }

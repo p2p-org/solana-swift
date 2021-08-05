@@ -76,17 +76,17 @@ extension SolanaSDK {
         
         public static func layout() -> [(key: String?, length: Int)] {
             [
-                (key: "mint", length: PublicKey.LENGTH),
-                (key: "owner", length: PublicKey.LENGTH),
+                (key: "mint", length: PublicKey.numberOfBytes),
+                (key: "owner", length: PublicKey.numberOfBytes),
                 (key: "lamports", length: 8),
                 (key: "delegateOption", length: 4),
-                (key: "delegate", length: PublicKey.LENGTH),
+                (key: "delegate", length: PublicKey.numberOfBytes),
                 (key: "state", length: 1),
                 (key: "isNativeOption", length: 4),
                 (key: "isNativeRaw", length: 8),
                 (key: "delegatedAmount", length: 8),
                 (key: "closeAuthorityOption", length: 4),
-                (key: "closeAuthority", length: PublicKey.LENGTH),
+                (key: "closeAuthority", length: PublicKey.numberOfBytes),
             ]
         }
     }

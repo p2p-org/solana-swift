@@ -40,7 +40,7 @@ public extension SolanaSDK {
                     decimals,
                     authority,
                     freezeAuthority != nil,
-                    freezeAuthority?.bytes ?? Data(capacity: PublicKey.LENGTH).bytes
+                    freezeAuthority?.bytes ?? Data(capacity: PublicKey.numberOfBytes).bytes
                 ]
             )
         }

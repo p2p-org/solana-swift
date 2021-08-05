@@ -77,7 +77,7 @@ extension SolanaSDK.Transaction {
             let keyCount = encodeLength(accountKeys.count)
             
             // construct data
-            var data = Data(capacity: keyCount.count + accountKeys.count * SolanaSDK.PublicKey.LENGTH)
+            var data = Data(capacity: keyCount.count + accountKeys.count * SolanaSDK.PublicKey.numberOfBytes)
             
             // sort
             let signedKeys = accountKeys.filter {$0.isSigner}

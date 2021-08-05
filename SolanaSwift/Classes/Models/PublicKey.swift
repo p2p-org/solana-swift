@@ -9,7 +9,7 @@ import Foundation
 
 public extension SolanaSDK {
     struct PublicKey: Codable, Equatable, CustomStringConvertible, Hashable {
-        public static let LENGTH = 32
+        public static let numberOfBytes = 32
         public let bytes: [UInt8]
         
         public func encode(to encoder: Encoder) throws {
@@ -24,7 +24,7 @@ public extension SolanaSDK {
         }
         
         public init(string: String?) throws {
-            guard let string = string, string.utf8.count >= SolanaSDK.PublicKey.LENGTH
+            guard let string = string, string.utf8.count >= SolanaSDK.PublicKey.numberOfBytes
             else {
                 throw Error.other("Invalid public key input")
             }
@@ -33,14 +33,14 @@ public extension SolanaSDK {
         }
         
         public init(data: Data) throws {
-            guard data.count <= SolanaSDK.PublicKey.LENGTH else {
+            guard data.count <= SolanaSDK.PublicKey.numberOfBytes else {
                 throw Error.other("Invalid public key input")
             }
             self.bytes = [UInt8](data)
         }
         
         public init(bytes: [UInt8]?) throws {
-            guard let bytes = bytes, bytes.count <= PublicKey.LENGTH else {
+            guard let bytes = bytes, bytes.count <= PublicKey.numberOfBytes else {
                 throw Error.other("Invalid public key input")
             }
             self.bytes = bytes
