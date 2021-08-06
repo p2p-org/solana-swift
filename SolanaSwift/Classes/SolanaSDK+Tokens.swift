@@ -38,10 +38,7 @@ extension SolanaSDK {
                 configs: configs,
                 decodedTo: AccountInfo.self
             )
-                .map {
-                    $0.compactMap {$0.account.data.value != nil ? $0: nil}
-                }
-                .map {$0.map {($0.pubkey, $0.account.data.value!)}},
+                .map {$0.accounts},
             getTokensList()
         )
             .flatMap { list, supportedTokens -> Single<[Wallet]> in
@@ -49,8 +46,8 @@ extension SolanaSDK {
                 var unknownAccounts = [(String, AccountInfo)]()
                 
                 for item in list {
-                    let pubkey = item.0
-                    let accountInfo = item.1
+                    let pubkey = item.pubkey
+                    let accountInfo = item.account.data
                     
                     let mintAddress = accountInfo.mint.base58EncodedString
                     // known token
@@ -67,13 +64,13 @@ extension SolanaSDK {
                     
                     // unknown token
                     else {
-                        unknownAccounts.append(item)
+                        unknownAccounts.append((item.pubkey, item.account.data))
                     }
                     
                 }
                 
                 return self.getMultipleMintDatas(
-                    mintAddresses: unknownAccounts.map{$0.1.mint}
+                    mintAddresses: unknownAccounts.map{$0.1.mint.base58EncodedString}
                 )
                     .map {mintDatas -> [Wallet] in
                         guard mintDatas.count == unknownAccounts.count

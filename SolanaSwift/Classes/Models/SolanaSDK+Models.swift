@@ -117,15 +117,35 @@ public extension SolanaSDK {
 		public let lamports: Lamports
 		public let address: String
 	}
-    struct ProgramAccount<T: BufferLayout>: Decodable {
+    
+    struct ProgramAccounts<T: DecodableBufferLayout>: Decodable {
+        public let accounts: [ProgramAccount<T>]
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let throwables = try container.decode([Throwable<ProgramAccount<T>>].self)
+            
+            var accounts = [ProgramAccount<T>]()
+            throwables.forEach {
+                switch $0.result {
+                case .success(let account):
+                    accounts.append(account)
+                case .failure(let error):
+                    Logger.log(message: "Error decoding an account in program accounts list: \(error.localizedDescription)", event: .error)
+                }
+            }
+            self.accounts = accounts
+        }
+    }
+    
+    struct ProgramAccount<T: DecodableBufferLayout>: Decodable {
         public let account: BufferInfo<T>
 		public let pubkey: String
 	}
     
-    struct BufferInfo<T: BufferLayout>: Decodable {
+    struct BufferInfo<T: DecodableBufferLayout>: Decodable {
         public let lamports: Lamports
         public let owner: String
-        public let data: Buffer<T>
+        public let data: T
         public let executable: Bool
         public let rentEpoch: UInt64
     }
@@ -214,7 +234,7 @@ public extension SolanaSDK {
             return UInt64(amount)
         }
 	}
-    struct TokenAccount<T: BufferLayout>: Decodable {
+    struct TokenAccount<T: DecodableBufferLayout>: Decodable {
 		public let pubkey: String
 		public let account: BufferInfo<T>
 	}

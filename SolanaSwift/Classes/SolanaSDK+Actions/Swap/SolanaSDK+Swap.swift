@@ -240,13 +240,12 @@ extension SolanaSDK {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             // check if source token is native
             .map { info -> Bool in
-                guard info.owner == PublicKey.tokenProgramId.base58EncodedString,
-                      let isNative = info.data.value?.isNative
+                guard info.owner == PublicKey.tokenProgramId.base58EncodedString
                 else {
                     throw Error.other("Source account is not valid")
                 }
                 
-                return isNative
+                return info.data.isNative
             }
             // create token if source token is native
             .flatMap {isNative in
@@ -358,7 +357,7 @@ extension SolanaSDK {
                 // check if associated address is registered
                 .map { info -> Bool in
                     if info.owner == PublicKey.tokenProgramId.base58EncodedString,
-                       info.data.value?.owner == owner
+                       info.data.owner == owner
                     {
                         return true
                     }

@@ -515,7 +515,7 @@ public extension SolanaSDK {
                 account: account,
                 decodedTo: AccountInfo.self
             )
-                .map {$0.data.value}
+                .map {Optional($0.data)}
                 .catchAndReturn(nil)
                 .flatMap {
                     if $0 == nil,

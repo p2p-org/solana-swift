@@ -255,7 +255,7 @@ extension SolanaSDK {
             decodedTo: SolanaSDK.AccountInfo.self
         )
             .map {info -> String in
-                let toTokenMint = info.data.value?.mint.base58EncodedString
+                let toTokenMint = info.data.mint.base58EncodedString
                 
                 // detect if destination address is already a SPLToken address
                 if mintAddress == toTokenMint {
@@ -311,7 +311,7 @@ extension SolanaSDK {
                             
                             // if associated token account has been registered
                             if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
-                                info?.data.value != nil
+                                info?.data != nil
                             {
                                 isUnregisteredAsocciatedToken = false
                             }

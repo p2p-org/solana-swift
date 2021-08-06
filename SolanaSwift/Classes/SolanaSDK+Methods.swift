@@ -10,7 +10,7 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-    func getAccountInfo<T: BufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
+    func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
         let configs = RequestConfiguration(encoding: "base64")
 		return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
             .map {
@@ -123,12 +123,12 @@ public extension SolanaSDK {
     func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") -> Single<UInt64> {
 		request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
 	}
-	func getMultipleAccounts<T: BufferLayout>(pubkeys: [String], decodedTo: T.Type) -> Single<[BufferInfo<T>]?> {
+	func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String], decodedTo: T.Type) -> Single<[BufferInfo<T>]?> {
         let configs = RequestConfiguration(encoding: "base64")
 		return (request(parameters: [pubkeys, configs]) as Single<Rpc<[BufferInfo<T>]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts<T: BufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<[ProgramAccount<T>]>
+    func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<ProgramAccounts<T>>
     {
         request(parameters: [publicKey, configs])
     }
@@ -245,39 +245,34 @@ public extension SolanaSDK {
     
     // MARK: - Additional methods
     func getMintData(
-        mintAddress: PublicKey,
-        programId: PublicKey = .tokenProgramId
+        mintAddress: String,
+        programId: String = PublicKey.tokenProgramId.base58EncodedString
     ) -> Single<Mint> {
-        getAccountInfo(account: mintAddress.base58EncodedString, decodedTo: Mint.self)
+        getAccountInfo(account: mintAddress, decodedTo: Mint.self)
             .map {
-                if $0.owner != programId.base58EncodedString {
+                if $0.owner != programId {
                     throw Error.other("Invalid mint owner")
                 }
-                
-                if let data = $0.data.value {
-                    return data
-                }
-                
-                throw Error.other("Invalid data")
+                return $0.data
             }
     }
     
     func getMultipleMintDatas(
-        mintAddresses: [PublicKey],
-        programId: PublicKey = .tokenProgramId
-    ) -> Single<[PublicKey: Mint]> {
-        getMultipleAccounts(pubkeys: mintAddresses.map {$0.base58EncodedString}, decodedTo: Mint.self)
+        mintAddresses: [String],
+        programId: String = PublicKey.tokenProgramId.base58EncodedString
+    ) -> Single<[String: Mint]> {
+        getMultipleAccounts(pubkeys: mintAddresses, decodedTo: Mint.self)
             .map {
-                if $0?.contains(where: {$0.owner != programId.base58EncodedString}) == true
+                if $0?.contains(where: {$0.owner != programId}) == true
                 {
                     throw Error.other("Invalid mint owner")
                 }
                 
-                guard let result = $0?.compactMap {$0.data.value}, result.count == mintAddresses.count else {
+                guard let result = $0?.map({$0.data}), result.count == mintAddresses.count else {
                     throw Error.other("Some of mint data are missing")
                 }
                 
-                var mintDict = [PublicKey: Mint]()
+                var mintDict = [String: Mint]()
                 for (index, address) in mintAddresses.enumerated() {
                     mintDict[address] = result[index]
                 }
