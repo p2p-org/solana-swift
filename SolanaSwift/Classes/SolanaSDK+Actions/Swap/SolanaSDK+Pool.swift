@@ -39,9 +39,7 @@ extension SolanaSDK {
                 
                 // get parsed swap info
                 let result = programs.compactMap {program -> ParsedSwapInfo? in
-                    guard let swapData = program.account.data.value else {
-                        return nil
-                    }
+                    let swapData = program.account.data
                     guard swapData.mintA.base58EncodedString != "11111111111111111111111111111111",
                           swapData.mintB.base58EncodedString != "11111111111111111111111111111111",
                           swapData.tokenPool.base58EncodedString != "11111111111111111111111111111111"
