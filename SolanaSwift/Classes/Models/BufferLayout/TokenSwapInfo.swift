@@ -6,8 +6,32 @@
 //
 
 import Foundation
+import BufferLayoutSwift
 
 extension SolanaSDK {
+    public struct TokenSwapInfo2: BufferLayout, Equatable, Hashable, Encodable {
+        public let version: UInt8
+        public let isInitialized: Bool
+        public let nonce: UInt8
+        public let tokenProgramId: PublicKey
+        public var tokenAccountA: PublicKey
+        public var tokenAccountB: PublicKey
+        public let tokenPool: PublicKey
+        public var mintA: PublicKey
+        public var mintB: PublicKey
+        public let feeAccount: PublicKey
+        public let tradeFeeNumerator: UInt64
+        public let tradeFeeDenominator: UInt64
+        public let ownerTradeFeeNumerator: UInt64
+        public let ownerTradeFeeDenominator: UInt64
+        public let ownerWithdrawFeeNumerator: UInt64
+        public let ownerWithdrawFeeDenominator: UInt64
+        public let hostFeeNumerator: UInt64
+        public let hostFeeDenominator: UInt64
+        public let curveType: UInt8
+        public let payer: PublicKey
+    }
+    
     public struct TokenSwapInfo: BufferLayout2, Equatable, Hashable, Encodable {
         init(version: UInt8, isInitialized: Bool, nonce: UInt8, tokenProgramId: SolanaSDK.PublicKey, tokenAccountA: SolanaSDK.PublicKey, tokenAccountB: SolanaSDK.PublicKey, tokenPool: SolanaSDK.PublicKey, mintA: SolanaSDK.PublicKey, mintB: SolanaSDK.PublicKey, feeAccount: SolanaSDK.PublicKey, tradeFeeNumerator: UInt64, tradeFeeDenominator: UInt64, ownerTradeFeeNumerator: UInt64, ownerTradeFeeDenominator: UInt64, ownerWithdrawFeeNumerator: UInt64, ownerWithdrawFeeDenominator: UInt64, hostFeeNumerator: UInt64, hostFeeDenominator: UInt64, curveType: UInt8, payer: SolanaSDK.PublicKey) {
             self.version = version

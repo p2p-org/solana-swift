@@ -6,8 +6,13 @@
 //
 
 import Foundation
+import BufferLayoutSwift
 
 extension SolanaSDK {
+    public struct EmptyInfo2: BufferLayout {
+        
+    }
+    
     public struct EmptyInfo: BufferLayout2 {
         init() {}
         
