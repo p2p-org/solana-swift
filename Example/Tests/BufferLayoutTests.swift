@@ -12,6 +12,9 @@ import SolanaSwift
 class BufferLayoutTests: XCTestCase {
     // MARK: - Mint
     func testDecodingMint() throws {
+        XCTAssertEqual(SolanaSDK.Mint.BUFFER_LENGTH, 82)
+        XCTAssertEqual(SolanaSDK.Mint.span, 82)
+        
         let string = "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
         
         let data = Data(base64Encoded: string)!
@@ -29,6 +32,9 @@ class BufferLayoutTests: XCTestCase {
 
     // MARK: - Account info
     func testDecodingAccountInfo() throws {
+        XCTAssertEqual(SolanaSDK.AccountInfo.BUFFER_LENGTH, 165)
+        XCTAssertEqual(SolanaSDK.AccountInfo.span, 165)
+        
         let string = "BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         
 
@@ -100,6 +106,9 @@ class BufferLayoutTests: XCTestCase {
 
     // MARK: - TokenSwapInfo
     func testDecodingTokenSwapInfo() throws {
+        XCTAssertEqual(SolanaSDK.TokenSwapInfo.BUFFER_LENGTH, 324)
+        XCTAssertEqual(SolanaSDK.TokenSwapInfo.span, 324)
+        
         let string = "AQH/Bt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkg7XoTWySqouc9rBPiFviH2xU9/fRb+6P90QcOMKupqewjVdppkaFaD9TmikzQc7KAtp/LEF9bATPPnDdGT+7Kj7KrmDRVoZN9WTu3h9wgrrN83pVvcqGHLhOtWWeWCUjG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYZqhgojuhD2D9j0JH/1UU78OyY17yIzxSctOkEdQqtVncXgwwKhJB+PCDsVtlUWWQbPgBu+MNnFskXx8qDFMwSAeAAAAAAAAABAnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         let data = Data(base64Encoded: string)!
         let swapInfo = try SolanaSDK.TokenSwapInfo2(buffer: data)
