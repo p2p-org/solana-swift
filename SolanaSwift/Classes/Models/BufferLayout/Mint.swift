@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import BufferLayoutSwift
 import Runtime
 
 extension SolanaSDK {

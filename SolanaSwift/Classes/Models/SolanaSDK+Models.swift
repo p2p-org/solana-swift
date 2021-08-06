@@ -117,6 +117,26 @@ public extension SolanaSDK {
 		public let lamports: Lamports
 		public let address: String
 	}
+    
+    struct ProgramAccounts<T: DecodableBufferLayout>: Decodable {
+        public let accounts: [ProgramAccount<T>]
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let throwables = try container.decode([Throwable<ProgramAccount<T>>].self)
+            
+            var accounts = [ProgramAccount<T>]()
+            throwables.forEach {
+                switch $0.result {
+                case .success(let account):
+                    accounts.append(account)
+                case .failure(let error):
+                    Logger.log(message: "Error decoding an account in program accounts list: \(error.localizedDescription)", event: .error)
+                }
+            }
+            self.accounts = accounts
+        }
+    }
+    
     struct ProgramAccount<T: DecodableBufferLayout>: Decodable {
         public let account: BufferInfo<T>
 		public let pubkey: String

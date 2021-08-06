@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import BufferLayoutSwift
 
 extension SolanaSDK {
     public struct EmptyInfo: DecodableBufferLayout {}

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import BufferLayoutSwift
 
 extension SolanaSDK {
     public struct TokenSwapInfo: DecodableBufferLayout, Equatable, Hashable, Encodable {

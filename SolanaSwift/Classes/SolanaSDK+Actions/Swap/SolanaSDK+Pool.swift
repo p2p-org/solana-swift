@@ -38,7 +38,7 @@ extension SolanaSDK {
             .flatMap { programs -> Single<[ParsedSwapInfo]> in
                 
                 // get parsed swap info
-                let result = programs.compactMap {program -> ParsedSwapInfo? in
+                let result = programs.accounts.compactMap {program -> ParsedSwapInfo? in
                     let swapData = program.account.data
                     guard swapData.mintA.base58EncodedString != "11111111111111111111111111111111",
                           swapData.mintB.base58EncodedString != "11111111111111111111111111111111",
@@ -64,11 +64,11 @@ extension SolanaSDK {
                 
                 // split array to form multiple requests (max address per request is 100)
                 let requestChunks = mintAddresses.chunked(into: 100)
-                    .map {self.getMultipleMintDatas(mintAddresses: $0)}
+                    .map {self.getMultipleMintDatas(mintAddresses: $0.map {$0.base58EncodedString})}
                 
                 return Single.zip(requestChunks)
-                    .map {results -> [PublicKey: Mint] in
-                        var joinedResult = [PublicKey: Mint]()
+                    .map {results -> [String: Mint] in
+                        var joinedResult = [String: Mint]()
                         for result in results {
                             for (key, value) in result {
                                 joinedResult[key] = value
@@ -81,9 +81,9 @@ extension SolanaSDK {
                         for i in 0..<parsedInfo.count {
                             let swapInfo = parsedInfo[i].info
                             parsedInfo[i].mintDatas = .init(
-                                mintA: mintDatas[swapInfo.mintA],
-                                mintB: mintDatas[swapInfo.mintB],
-                                tokenPool: mintDatas[swapInfo.tokenPool]
+                                mintA: mintDatas[swapInfo.mintA.base58EncodedString],
+                                mintB: mintDatas[swapInfo.mintB.base58EncodedString],
+                                tokenPool: mintDatas[swapInfo.tokenPool.base58EncodedString]
                             )
                         }
                         return parsedInfo

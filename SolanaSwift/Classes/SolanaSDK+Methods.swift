@@ -128,7 +128,7 @@ public extension SolanaSDK {
 		return (request(parameters: [pubkeys, configs]) as Single<Rpc<[BufferInfo<T>]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<[ProgramAccount<T>]>
+    func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<ProgramAccounts<T>>
     {
         request(parameters: [publicKey, configs])
     }
@@ -245,12 +245,12 @@ public extension SolanaSDK {
     
     // MARK: - Additional methods
     func getMintData(
-        mintAddress: PublicKey,
-        programId: PublicKey = .tokenProgramId
+        mintAddress: String,
+        programId: String = PublicKey.tokenProgramId.base58EncodedString
     ) -> Single<Mint> {
-        getAccountInfo(account: mintAddress.base58EncodedString, decodedTo: Mint.self)
+        getAccountInfo(account: mintAddress, decodedTo: Mint.self)
             .map {
-                if $0.owner != programId.base58EncodedString {
+                if $0.owner != programId {
                     throw Error.other("Invalid mint owner")
                 }
                 return $0.data
@@ -258,12 +258,12 @@ public extension SolanaSDK {
     }
     
     func getMultipleMintDatas(
-        mintAddresses: [PublicKey],
-        programId: PublicKey = .tokenProgramId
-    ) -> Single<[PublicKey: Mint]> {
-        getMultipleAccounts(pubkeys: mintAddresses.map {$0.base58EncodedString}, decodedTo: Mint.self)
+        mintAddresses: [String],
+        programId: String = PublicKey.tokenProgramId.base58EncodedString
+    ) -> Single<[String: Mint]> {
+        getMultipleAccounts(pubkeys: mintAddresses, decodedTo: Mint.self)
             .map {
-                if $0?.contains(where: {$0.owner != programId.base58EncodedString}) == true
+                if $0?.contains(where: {$0.owner != programId}) == true
                 {
                     throw Error.other("Invalid mint owner")
                 }
@@ -272,7 +272,7 @@ public extension SolanaSDK {
                     throw Error.other("Some of mint data are missing")
                 }
                 
-                var mintDict = [PublicKey: Mint]()
+                var mintDict = [String: Mint]()
                 for (index, address) in mintAddresses.enumerated() {
                     mintDict[address] = result[index]
                 }

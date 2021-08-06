@@ -7,7 +7,6 @@
 
 import Foundation
 import BufferLayoutSwift
-import Runtime
 
 extension SolanaSDK.PublicKey: BufferLayoutProperty {
     public static func fromBytes(bytes: [UInt8]) throws -> SolanaSDK.PublicKey {
@@ -25,12 +24,6 @@ public extension DecodableBufferLayout {
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         
-        // decode parsedJSON
-        if let parsedData = try? container.decode(Self.self) {
-            self = parsedData
-            return
-        }
-        
         // Unable to get parsed data, fallback to decoding base64
         let stringData = (try? container.decode([String].self).first) ?? (try? container.decode(String.self))
         guard let string = stringData,
@@ -43,17 +36,8 @@ public extension DecodableBufferLayout {
     }
     
     static var BUFFER_LENGTH: Int {
-        guard let info = try? typeInfo(of: Self.self) else {return 0}
-        var numberOfBytes = 0
-        for property in info.properties {
-            guard let instanceInfo = try? typeInfo(of: property.type) else {return 0}
-            if let t = instanceInfo.type as? BufferLayoutProperty.Type,
-               !Self.excludedPropertyNames.contains(property.name)
-            {
-                numberOfBytes += t.numberOfBytes
-            }
-        }
-        return numberOfBytes
+        guard let length = try? Self.getBufferLength() else {return 0}
+        return length
     }
     
     static var span: UInt64 {
