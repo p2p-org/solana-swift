@@ -8,7 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct EmptyInfo: BufferLayout {
+    public struct EmptyInfo: BufferLayout2 {
         init() {}
         
         public init?(_ keys: [String : [UInt8]]) {

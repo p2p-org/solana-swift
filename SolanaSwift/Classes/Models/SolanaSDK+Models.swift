@@ -117,12 +117,12 @@ public extension SolanaSDK {
 		public let lamports: Lamports
 		public let address: String
 	}
-    struct ProgramAccount<T: BufferLayout>: Decodable {
+    struct ProgramAccount<T: BufferLayout2>: Decodable {
         public let account: BufferInfo<T>
 		public let pubkey: String
 	}
     
-    struct BufferInfo<T: BufferLayout>: Decodable {
+    struct BufferInfo<T: BufferLayout2>: Decodable {
         public let lamports: Lamports
         public let owner: String
         public let data: Buffer<T>
@@ -214,7 +214,7 @@ public extension SolanaSDK {
             return UInt64(amount)
         }
 	}
-    struct TokenAccount<T: BufferLayout>: Decodable {
+    struct TokenAccount<T: BufferLayout2>: Decodable {
 		public let pubkey: String
 		public let account: BufferInfo<T>
 	}

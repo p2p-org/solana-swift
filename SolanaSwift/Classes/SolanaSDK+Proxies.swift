@@ -74,9 +74,7 @@ extension SolanaSDK {
             throw Error.other("Signature not found")
         }
         
-        guard let serializedTransaction = try transaction.serialize().bytes.toBase64() else {
-            throw Error.other("Could not serialize transaction")
-        }
+        let serializedTransaction = try transaction.serialize().bytes.toBase64()
         
         Logger.log(message: "serializedTransaction \(serializedTransaction)", event: .debug)
         

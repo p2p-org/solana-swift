@@ -8,7 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct AccountInfo: BufferLayout {
+    public struct AccountInfo: BufferLayout2 {
         public let mint: PublicKey
         public let owner: PublicKey
         public let lamports: UInt64

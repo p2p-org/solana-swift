@@ -8,7 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct TokenSwapInfo: BufferLayout, Equatable, Hashable, Encodable {
+    public struct TokenSwapInfo: BufferLayout2, Equatable, Hashable, Encodable {
         init(version: UInt8, isInitialized: Bool, nonce: UInt8, tokenProgramId: SolanaSDK.PublicKey, tokenAccountA: SolanaSDK.PublicKey, tokenAccountB: SolanaSDK.PublicKey, tokenPool: SolanaSDK.PublicKey, mintA: SolanaSDK.PublicKey, mintB: SolanaSDK.PublicKey, feeAccount: SolanaSDK.PublicKey, tradeFeeNumerator: UInt64, tradeFeeDenominator: UInt64, ownerTradeFeeNumerator: UInt64, ownerTradeFeeDenominator: UInt64, ownerWithdrawFeeNumerator: UInt64, ownerWithdrawFeeDenominator: UInt64, hostFeeNumerator: UInt64, hostFeeDenominator: UInt64, curveType: UInt8, payer: SolanaSDK.PublicKey) {
             self.version = version
             self.isInitialized = isInitialized

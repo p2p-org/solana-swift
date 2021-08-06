@@ -10,7 +10,7 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-    func getAccountInfo<T: BufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
+    func getAccountInfo<T: BufferLayout2>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
         let configs = RequestConfiguration(encoding: "base64")
 		return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
             .map {
@@ -123,12 +123,12 @@ public extension SolanaSDK {
     func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") -> Single<UInt64> {
 		request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
 	}
-	func getMultipleAccounts<T: BufferLayout>(pubkeys: [String], decodedTo: T.Type) -> Single<[BufferInfo<T>]?> {
+	func getMultipleAccounts<T: BufferLayout2>(pubkeys: [String], decodedTo: T.Type) -> Single<[BufferInfo<T>]?> {
         let configs = RequestConfiguration(encoding: "base64")
 		return (request(parameters: [pubkeys, configs]) as Single<Rpc<[BufferInfo<T>]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts<T: BufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<[ProgramAccount<T>]>
+    func getProgramAccounts<T: BufferLayout2>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<[ProgramAccount<T>]>
     {
         request(parameters: [publicKey, configs])
     }

@@ -8,7 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct Mint: BufferLayout, Equatable, Hashable, Encodable {
+    public struct Mint: BufferLayout2, Equatable, Hashable, Encodable {
         init(mintAuthorityOption: UInt32, mintAuthority: SolanaSDK.PublicKey?, supply: UInt64, decimals: UInt8, isInitialized: Bool, freezeAuthorityOption: UInt32, freezeAuthority: SolanaSDK.PublicKey?) {
             self.mintAuthorityOption = mintAuthorityOption
             self.mintAuthority = mintAuthority

@@ -7,12 +7,12 @@
 
 import Foundation
 
-public protocol BufferLayout: Codable {
+public protocol BufferLayout2: Codable {
     init?(_ keys: [String: [UInt8]])
     static func layout() -> [(key: String?, length: Int)]
 }
 
-extension BufferLayout {
+extension BufferLayout2 {
     public static var BUFFER_LENGTH: Int {
         layout().reduce(0, {$0 + ($1.key != nil ? $1.length: 0)})
     }
@@ -24,7 +24,7 @@ extension BufferLayout {
 
 extension SolanaSDK {
 
-    public struct Buffer<T: BufferLayout>: Codable {
+    public struct Buffer<T: BufferLayout2>: Codable {
         public let value: T?
         
         public init(from decoder: Decoder) throws {

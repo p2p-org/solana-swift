@@ -33,18 +33,21 @@ class DecodingTests: XCTestCase {
     }
     
     func testDecodingAccountInfo() throws {
-        let string = #"["BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","base64"]"#
-        let accountInfo = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.AccountInfo>.self, from: string.data(using: .utf8)!).value
+        let string = "BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         
-        XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", accountInfo?.mint.base58EncodedString)
-        XCTAssertEqual("BQWWFhzBdw2vKKBUX17NHeFbCoFQHfRARpdztPE2tDJ", accountInfo?.owner.base58EncodedString)
-        XCTAssertEqual("GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", accountInfo?.delegate?.base58EncodedString)
-        XCTAssertEqual(100, accountInfo?.delegatedAmount)
-        XCTAssertEqual(false, accountInfo?.isNative)
-        XCTAssertEqual(true, accountInfo?.isInitialized)
-        XCTAssertEqual(false, accountInfo?.isFrozen)
-        XCTAssertNil(accountInfo?.rentExemptReserve)
-        XCTAssertNil(accountInfo?.closeAuthority)
+        let data = Data(base64Encoded: string)!
+        
+        let accountInfo = try SolanaSDK.AccountInfo2(buffer: data)
+        
+        XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", accountInfo.mint.base58EncodedString)
+        XCTAssertEqual("BQWWFhzBdw2vKKBUX17NHeFbCoFQHfRARpdztPE2tDJ", accountInfo.owner.base58EncodedString)
+        XCTAssertEqual("GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", accountInfo.delegate?.base58EncodedString)
+        XCTAssertEqual(100, accountInfo.delegatedAmount)
+        XCTAssertEqual(false, accountInfo.isNative)
+        XCTAssertEqual(true, accountInfo.isInitialized)
+        XCTAssertEqual(false, accountInfo.isFrozen)
+        XCTAssertNil(accountInfo.rentExemptReserve)
+        XCTAssertNil(accountInfo.closeAuthority)
     }
     
     func testDecodingAccountInfo2() throws {
