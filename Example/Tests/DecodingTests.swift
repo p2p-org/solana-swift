@@ -23,16 +23,19 @@ class DecodingTests: XCTestCase {
 //    }
     
     func testDecodingMint() throws {
-        let string = #"["AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","base64"]"#
-        let mintLayout = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.Mint>.self, from: string.data(using: .utf8)!).value
+        let string = "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
         
-        XCTAssertEqual(mintLayout?.mintAuthorityOption, 1)
-        XCTAssertEqual(mintLayout?.mintAuthority?.base58EncodedString, "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")
-        XCTAssertEqual(mintLayout?.supply, 1000000000000)
-        XCTAssertEqual(mintLayout?.decimals, 6)
-        XCTAssertEqual(mintLayout?.isInitialized, true)
-        XCTAssertEqual(mintLayout?.freezeAuthorityOption, 0)
-        XCTAssertNil(mintLayout?.freezeAuthority)
+        let data = Data(base64Encoded: string)!
+        
+        let mintLayout = try SolanaSDK.Mint2(buffer: data)
+        
+        XCTAssertEqual(mintLayout.mintAuthorityOption, 1)
+        XCTAssertEqual(mintLayout.mintAuthority?.base58EncodedString, "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")
+        XCTAssertEqual(mintLayout.supply, 1000000000000)
+        XCTAssertEqual(mintLayout.decimals, 6)
+        XCTAssertEqual(mintLayout.isInitialized, true)
+        XCTAssertEqual(mintLayout.freezeAuthorityOption, 0)
+        XCTAssertNil(mintLayout.freezeAuthority)
     }
     
     func testDecodingAccountInfo() throws {
