@@ -10,7 +10,7 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-    func getAccountInfo<T: BufferLayout2>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
+    func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
         let configs = RequestConfiguration(encoding: "base64")
 		return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
             .map {
@@ -123,12 +123,12 @@ public extension SolanaSDK {
     func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") -> Single<UInt64> {
 		request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
 	}
-	func getMultipleAccounts<T: BufferLayout2>(pubkeys: [String], decodedTo: T.Type) -> Single<[BufferInfo<T>]?> {
+	func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String], decodedTo: T.Type) -> Single<[BufferInfo<T>]?> {
         let configs = RequestConfiguration(encoding: "base64")
 		return (request(parameters: [pubkeys, configs]) as Single<Rpc<[BufferInfo<T>]?>>)
 			.map {$0.value}
 	}
-    func getProgramAccounts<T: BufferLayout2>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<[ProgramAccount<T>]>
+    func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<[ProgramAccount<T>]>
     {
         request(parameters: [publicKey, configs])
     }
@@ -253,12 +253,7 @@ public extension SolanaSDK {
                 if $0.owner != programId.base58EncodedString {
                     throw Error.other("Invalid mint owner")
                 }
-                
-                if let data = $0.data.value {
-                    return data
-                }
-                
-                throw Error.other("Invalid data")
+                return $0.data
             }
     }
     
@@ -273,7 +268,7 @@ public extension SolanaSDK {
                     throw Error.other("Invalid mint owner")
                 }
                 
-                guard let result = $0?.compactMap {$0.data.value}, result.count == mintAddresses.count else {
+                guard let result = $0?.map({$0.data}), result.count == mintAddresses.count else {
                     throw Error.other("Some of mint data are missing")
                 }
                 
