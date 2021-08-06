@@ -113,4 +113,10 @@ class BufferLayoutTests: XCTestCase {
         XCTAssertEqual(swapInfo?.curveType, 0)
         XCTAssertEqual(swapInfo?.payer.base58EncodedString, "11111111111111111111111111111111")
     }
+    
+    // MARK: - EmptyInfo
+    func testDecodingEmptyInfo() throws {
+        let string = #"["AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","base64"]"#
+        let _ = try JSONDecoder().decode(SolanaSDK.Buffer<SolanaSDK.EmptyInfo>.self, from: string.data(using: .utf8)!).value
+    }
 }
