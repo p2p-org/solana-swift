@@ -92,9 +92,7 @@ extension SolanaSDK {
                     recentBlockhash: recentBlockhash
                 )
                 try transaction.sign(signers: signers)
-                guard let serializedTransaction = try transaction.serialize().bytes.toBase64() else {
-                    throw Error.other("Could not serialize transaction")
-                }
+                let serializedTransaction = try transaction.serialize().bytes.toBase64()
                 return serializedTransaction
             }
     }
