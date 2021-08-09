@@ -23,7 +23,7 @@ protocol SerumSwapAccountProvider {
 }
 
 extension SolanaSDK {
-    class SerumSwap {
+    public class SerumSwap {
         // MARK: - Nested type
         struct SignersAndInstructions {
             let signers: [Account]
