@@ -8,14 +8,14 @@
 import Foundation
 import BufferLayoutSwift
 
-extension SolanaSDK.SerumSwap {
+extension SerumSwap {
     public class OpenOrders {
         
     }
 }
 
 // MARK: - Models
-public extension SolanaSDK.SerumSwap {
+public extension SerumSwap {
     struct OpenOrdersLayoutV1: BufferLayout {
         let blob5: Blob5
         let accountFlags: AccountFlags
