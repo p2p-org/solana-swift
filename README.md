@@ -10,7 +10,7 @@ Solana-blockchain client, written in pure swift.
 - [x] Key pairs generation
 - [x] Networking with POST methods for comunicating with solana-based networking system
 - [x] Create, sign transactions
-- [x] Socket communication // TODO
+- [x] Socket communication
 
 ## Example
 
