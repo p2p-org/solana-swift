@@ -10,7 +10,7 @@ Solana-blockchain client, written in pure swift.
 - [x] Key pairs generation
 - [x] Networking with POST methods for comunicating with solana-based networking system
 - [x] Create, sign transactions
-- [ ] Socket communication // TODO
+- [x] Socket communication // TODO
 
 ## Example
 
@@ -24,7 +24,7 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 - RxAlamofire
 - TweetNacl
 - CryptoSwift
-- Socket-io client // TODO
+- Starscream
 
 ## Installation
 
@@ -105,9 +105,16 @@ Example:
 ```swift
 (solanaSDK.request(method: .post, bcMethod: "aNewMethodThatReturnsAString", parameters: []) as Single<String>)
 ```
-* Observe socket events:
+* Subscribe and observe socket events:
+```swift
+// accountNotifications
+solanaSDK.subscribeAccountNotification(account: <ACCOUNT_PUBLIC_KEY>, isNative: <BOOL>) // isNative = true if you want to observe native solana account
+solanaSDK.observeAccountNotifications() // return an Observable<(pubkey: String, lamports: Lamports)>
 
-// TODO: The socket implementation has not been ready yet.
+// signatureNotifications
+solanaSDK.observeSignatureNotification(signature: <SIGNATURE>) // return an Completable
+```
+
 
 ## Contribution
 - For supporting new methods, data types, edit `SolanaSDK+Methods` or `SolanaSDK+Models`
