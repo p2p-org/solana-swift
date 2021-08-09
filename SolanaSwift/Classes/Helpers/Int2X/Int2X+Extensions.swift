@@ -8,5 +8,5 @@
 import Foundation
 import BufferLayoutSwift
 
-public extension Int2X: BufferLayoutProperty {}
-public extension UInt2X: BufferLayoutProperty {}
+extension Int2X: BufferLayoutProperty {}
+extension UInt2X: BufferLayoutProperty {}

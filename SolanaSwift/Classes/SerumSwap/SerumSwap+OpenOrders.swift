@@ -56,7 +56,7 @@ public extension SerumSwap {
     struct Blob5: BufferLayoutProperty {
         public static var numberOfBytes: Int {5}
         
-        public static func fromBytes(bytes: [UInt8]) throws -> SolanaSDK.SerumSwap.Blob5 {
+        public static func fromBytes(bytes: [UInt8]) throws -> Blob5 {
             Blob5()
         }
     }
@@ -72,7 +72,7 @@ public extension SerumSwap {
         
         public static var numberOfBytes: Int { 8 }
         
-        public static func fromBytes(bytes: [UInt8]) throws -> SolanaSDK.SerumSwap.AccountFlags {
+        public static func fromBytes(bytes: [UInt8]) throws -> AccountFlags {
             try .init(buffer: Data(bytes))
         }
     }
@@ -84,7 +84,7 @@ public extension SerumSwap {
             128 * MemoryLayout<T>.size
         }
         
-        public static func fromBytes(bytes: [UInt8]) throws -> SolanaSDK.SerumSwap.Seq128Elements<T> {
+        public static func fromBytes(bytes: [UInt8]) throws -> Seq128Elements<T> {
             guard bytes.count > Self.numberOfBytes else {
                 throw BufferLayoutSwift.Error.bytesLengthIsNotValid
             }
@@ -102,7 +102,7 @@ public extension SerumSwap {
     struct Blob7: BufferLayoutProperty {
         public static var numberOfBytes: Int {7}
         
-        public static func fromBytes(bytes: [UInt8]) throws -> SolanaSDK.SerumSwap.Blob7 {
+        public static func fromBytes(bytes: [UInt8]) throws -> Blob7 {
             Blob7()
         }
     }
