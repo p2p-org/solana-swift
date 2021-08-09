@@ -66,7 +66,10 @@ extension SolanaSDK {
         guard let signer = accountStorage.account
         else {throw Error.unauthorized}
         let feePayer = try PublicKey(string: feePayer)
-        var transaction = Transaction(feePayer: feePayer, instructions: instructions, recentBlockhash: recentBlockhash)
+        var transaction = Transaction()
+        transaction.instructions = instructions
+        transaction.feePayer = feePayer
+        transaction.recentBlockhash = recentBlockhash
         try transaction.sign(signers: [signer])
         
         guard let signature = transaction.findSignature(pubkey: signer.publicKey)?.signature
