@@ -10,7 +10,12 @@ import RxSwift
 
 protocol SerumSwapAPIClient {
     func getMarketAddressIfNeeded(fromMint: SolanaSDK.PublicKey, toMint: SolanaSDK.PublicKey) -> Single<SolanaSDK.PublicKey>
+    func getMarketAddress(fromMint: SolanaSDK.PublicKey, toMint: SolanaSDK.PublicKey) -> Single<SolanaSDK.PublicKey>
     func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64>
+    func serializeAndSend(
+        instructions: [SolanaSDK.TransactionInstruction],
+        signers: [SolanaSDK.Account]
+    ) -> Single<SolanaSDK.TransactionID>
 }
 
 protocol SerumSwapAccountProvider {
@@ -49,7 +54,7 @@ extension SolanaSDK {
         public func initAccounts(
             fromMint: PublicKey,
             toMint: PublicKey
-        ) -> Single<PublicKey> {
+        ) -> Single<TransactionID> {
             
             let request: Single<SignersAndInstructions>
             
@@ -66,7 +71,34 @@ extension SolanaSDK {
                     toMint: fromMint
                 )
             }
+            // Transitive swap across USD(x).
+            else {
+                // Builds the instructions for initializing open orders for a transitive swap.
+                // Build transitive with usdcMint
+                request = buildTransitive(
+                    usdxMint: usdcMint,
+                    fromMint: fromMint,
+                    toMint: toMint
+                )
+                    .catch {[weak self] _ in
+                        guard let self = self else {return .error(SolanaSDK.Error.unknown)}
+                        // Retry with building transitive with usdtMint
+                        return self.buildTransitive(
+                            usdxMint: self.usdtMint,
+                            fromMint: fromMint,
+                            toMint: toMint
+                        )
+                    }
+            }
             
+            return request
+                .flatMap {[weak self] signersAndInstructions in
+                    guard let self = self else {return .error(SolanaSDK.Error.unknown)}
+                    return self.client.serializeAndSend(
+                        instructions: signersAndInstructions.instructions,
+                        signers: signersAndInstructions.signers
+                    )
+                }
         }
         
         // MARK: - Helpers
@@ -84,33 +116,57 @@ extension SolanaSDK {
                     span: AccountInfo.span
                 )
             )
-                .map {[weak self] marketAddress, minimumBalanceForRentExemption in
-                    guard let self = self else {throw SolanaSDK.Error.unknown}
-                    
-                    let openOrders = try Account(network: .mainnetBeta)
-                    
-                    // signers
-                    var signers = [Account]()
-                    signers.append(openOrders)
-                    
-                    // instructions
-                    var instructions = [TransactionInstruction]()
-                    
-                    instructions.append(
-                        SystemProgram.createAccountInstruction(
-                            from: self.accountProvider.getNativeWalletAddress(),
-                            toNewPubkey: openOrders.publicKey,
-                            lamports: minimumBalanceForRentExemption,
-                            programPubkey: self.dexPID
-                        )
+            .map {[weak self] marketAddress, minimumBalanceForRentExemption in
+                guard let self = self else {throw SolanaSDK.Error.unknown}
+                
+                let openOrders = try Account(network: .mainnetBeta)
+                
+                // signers
+                var signers = [Account]()
+                signers.append(openOrders)
+                
+                // instructions
+                var instructions = [TransactionInstruction]()
+                
+                instructions.append(
+                    SystemProgram.createAccountInstruction(
+                        from: self.accountProvider.getNativeWalletAddress(),
+                        toNewPubkey: openOrders.publicKey,
+                        lamports: minimumBalanceForRentExemption,
+                        programPubkey: self.dexPID
                     )
-                    
-                    instructions.append(
-                        TokenProgram.initializeAccountInstruction(programId: <#T##SolanaSDK.PublicKey#>, account: <#T##SolanaSDK.PublicKey#>, mint: <#T##SolanaSDK.PublicKey#>, owner: <#T##SolanaSDK.PublicKey#>)
-                    )
-                    
-                    return .init(signers: signers, instructions: instructions)
-                }
+                )
+                
+                // TODO:
+//                tx.add(
+//                    this.program.instruction.initAccount({
+//                        accounts: {
+//                            openOrders: openOrders.publicKey,
+//                            authority: this.program.provider.wallet.publicKey,
+//                            market: marketAddress,
+//                            dexProgram: DEX_PID,
+//                            rent: SYSVAR_RENT_PUBKEY,
+//                        },
+//                    }),
+//                );
+                
+                return .init(signers: signers, instructions: instructions)
+            }
+        }
+        
+        private func buildTransitive(
+            usdxMint: PublicKey,
+            fromMint: PublicKey,
+            toMint: PublicKey
+        ) -> Single<SignersAndInstructions> {
+            // Markets
+            let marketFrom = client.getMarketAddress(fromMint: usdxMint, toMint: fromMint)
+            let marketTo = client.getMarketAddress(fromMint: usdxMint, toMint: toMint)
+            
+            // Open orders accounts (already existing).
+            return Single.zip(
+                
+            )
         }
     }
 }
