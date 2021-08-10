@@ -169,16 +169,19 @@ public class SerumSwap {
             return .error(error)
         }
         
+        let ownerAddress = accountProvider.getNativeWalletAddress()
+        
         // form instruction
         return OpenOrders.makeCreateAccountInstruction(
             client: client,
             marketAddress: marketAddress,
-            ownerAddress: accountProvider.getNativeWalletAddress(),
+            ownerAddress: ownerAddress,
             newAccountAddress: newAccount.publicKey,
             programId: dexPID
         )
         .map {createAccountInstruction in
             var instructions = [createAccountInstruction]
+            // TODO: initAccount instruction
 //            instructions.append(
 //                    this.program.instruction.initAccount({
 //                        accounts: {
