@@ -19,6 +19,8 @@ public class SerumSwap {
     public typealias PublicKey = SolanaSDK.PublicKey
     public typealias TransactionID = SolanaSDK.TransactionID
     public typealias AccountInfo = SolanaSDK.AccountInfo
+    public typealias SystemProgram = SolanaSDK.SystemProgram
+    public typealias TokenProgram = SolanaSDK.TokenProgram
     
     // MARK: - Nested type
     struct SignersAndInstructions {
@@ -98,50 +100,13 @@ public class SerumSwap {
         toMint: PublicKey
     ) -> Single<SignersAndInstructions>
     {
-        Single.zip(
-            client.getMarketAddressIfNeeded(
-                fromMint: fromMint,
-                toMint: toMint
-            ),
-            client.getMinimumBalanceForRentExemption(
-                span: AccountInfo.span
-            )
+        client.getMarketAddressIfNeeded(
+            fromMint: fromMint,
+            toMint: toMint
         )
-        .map {[weak self] marketAddress, minimumBalanceForRentExemption in
+        .flatMap {[weak self] marketAddress in
             guard let self = self else {throw SerumSwapError.unknown}
-            
-            let openOrders = try Account(network: .mainnetBeta)
-            
-            // signers
-            var signers = [Account]()
-            signers.append(openOrders)
-            
-            // instructions
-            var instructions = [TransactionInstruction]()
-            
-//            instructions.append(
-//                SystemProgram.createAccountInstruction(
-//                    from: self.accountProvider.getNativeWalletAddress(),
-//                    toNewPubkey: openOrders.publicKey,
-//                    lamports: minimumBalanceForRentExemption,
-//                    programPubkey: self.dexPID
-//                )
-//            )
-            
-            // TODO:
-//                tx.add(
-//                    this.program.instruction.initAccount({
-//                        accounts: {
-//                            openOrders: openOrders.publicKey,
-//                            authority: this.program.provider.wallet.publicKey,
-//                            market: marketAddress,
-//                            dexProgram: DEX_PID,
-//                            rent: SYSVAR_RENT_PUBKEY,
-//                        },
-//                    }),
-//                );
-            
-            return .init(signers: signers, instructions: instructions)
+            return self.createAndInitAccount(marketAddress: marketAddress)
         }
     }
     
@@ -155,7 +120,7 @@ public class SerumSwap {
             client.getMarketAddress(fromMint: usdxMint, toMint: fromMint),
             client.getMarketAddress(fromMint: usdxMint, toMint: toMint)
         )
-        .flatMap {[weak self] marketFrom, marketTo -> Single<([OpenOrders], [OpenOrders])> in
+        .flatMap {[weak self] marketFrom, marketTo -> Single<([OpenOrders], [OpenOrders], PublicKey, PublicKey)> in
             guard let self = self else {throw SerumSwapError.unknown}
             return Single.zip(
                 OpenOrders.findForMarketAndOwner(
@@ -169,26 +134,65 @@ public class SerumSwap {
                     marketAddress: marketTo,
                     ownerAddress: self.accountProvider.getNativeWalletAddress(),
                     programId: dexPID
-                )
+                ),
+                .just(marketFrom),
+                .just(marketTo)
             )
         }
-        .map { ooAccsFrom, ooAccsTo in
+        .flatMap { [weak self] ooAccsFrom, ooAccsTo, marketFrom, marketTo in
+            guard let self = self else {throw SerumSwapError.unknown}
+            
             if ooAccsFrom.first != nil && ooAccsTo.first != nil {
                 throw SerumSwapError("Open orders already exist")
             }
             
-            // No open orders account for the from market, so make it.
-            var signers = [Account]()
-            var instructions = [TransactionInstruction]()
-            
             if ooAccsFrom.first == nil {
-                
+                return self.createAndInitAccount(marketAddress: marketFrom)
             }
             
             if ooAccsTo.first == nil {
-                
+                return self.createAndInitAccount(marketAddress: marketTo)
             }
-            return SignersAndInstructions(signers: signers, instructions: instructions)
+            
+            throw SerumSwapError.unknown
         }
+    }
+    
+    private func createAndInitAccount(
+        marketAddress: PublicKey
+    ) -> Single<SignersAndInstructions> {
+        // create new account
+        let newAccount: Account
+        do {
+            newAccount = try Account(network: .mainnetBeta)
+        } catch {
+            return .error(error)
+        }
+        
+        // form instruction
+        return OpenOrders.makeCreateAccountInstruction(
+            client: client,
+            marketAddress: marketAddress,
+            ownerAddress: accountProvider.getNativeWalletAddress(),
+            newAccountAddress: newAccount.publicKey,
+            programId: dexPID
+        )
+        .map {createAccountInstruction in
+            var instructions = [createAccountInstruction]
+//            instructions.append(
+//                    this.program.instruction.initAccount({
+//                        accounts: {
+//                            openOrders: openOrders.publicKey,
+//                            authority: this.program.provider.wallet.publicKey,
+//                            market: marketAddress,
+//                            dexProgram: DEX_PID,
+//                            rent: SYSVAR_RENT_PUBKEY,
+//                        },
+//                    }),
+//            )
+            let signers = [newAccount]
+            return .init(signers: signers, instructions: instructions)
+        }
+        
     }
 }

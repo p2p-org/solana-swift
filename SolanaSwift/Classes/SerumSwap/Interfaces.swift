@@ -12,7 +12,6 @@ import BufferLayoutSwift
 protocol SerumSwapAPIClient: OpenOrdersAPIClient {
     func getMarketAddressIfNeeded(fromMint: SolanaSDK.PublicKey, toMint: SolanaSDK.PublicKey) -> Single<SolanaSDK.PublicKey>
     func getMarketAddress(fromMint: SolanaSDK.PublicKey, toMint: SolanaSDK.PublicKey) -> Single<SolanaSDK.PublicKey>
-    func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64>
     func serializeAndSend(
         instructions: [SolanaSDK.TransactionInstruction],
         signers: [SolanaSDK.Account]
@@ -20,6 +19,7 @@ protocol SerumSwapAPIClient: OpenOrdersAPIClient {
 }
 
 protocol OpenOrdersAPIClient {
+    func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64>
     func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: SolanaSDK.RequestConfiguration?, decodedTo: T.Type) -> Single<SolanaSDK.ProgramAccounts<T>>
 }
 

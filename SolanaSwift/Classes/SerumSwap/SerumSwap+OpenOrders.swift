@@ -16,6 +16,22 @@ private var PROGRAM_LAYOUT_VERSIONS: [String: Int] { [
     "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin": 3
 ] }
 
+private func getVersion(programId: String) -> Int {
+    PROGRAM_LAYOUT_VERSIONS[programId] ?? 3
+}
+
+private func getLayoutType(programId: String) -> SerumSwapOpenOrdersLayoutType.Type {
+    let version = getVersion(programId: programId)
+    if version == 1 {return OpenOrdersLayoutV1.self}
+    return OpenOrdersLayoutV2.self
+}
+
+private func getLayoutSpan(programId: String) -> UInt64 {
+    let version = getVersion(programId: programId)
+    if version == 1 {return OpenOrdersLayoutV1.span}
+    return OpenOrdersLayoutV2.span
+}
+
 extension SerumSwap {
     public class OpenOrders {
         let address: PublicKey
@@ -30,7 +46,7 @@ extension SerumSwap {
         ) throws {
             self.address = address
             self.programId = programId
-            self.version = PROGRAM_LAYOUT_VERSIONS[programId.base58EncodedString] ?? 3
+            self.version = getVersion(programId: programId.base58EncodedString)
             if !data.accountFlags.initialized || !data.accountFlags.openOrders
             {
                 throw SerumSwapError("Invalid OpenOrders account")
@@ -90,6 +106,25 @@ extension SerumSwap {
             )
         }
         
+        static func makeCreateAccountInstruction(
+            client: OpenOrdersAPIClient,
+            marketAddress: PublicKey,
+            ownerAddress: PublicKey,
+            newAccountAddress: PublicKey,
+            programId: PublicKey
+        ) -> Single<TransactionInstruction> {
+            let span = getLayoutSpan(programId: programId.base58EncodedString)
+            return client.getMinimumBalanceForRentExemption(span: span)
+                .map {minRentExemption in
+                    SystemProgram.createAccountInstruction(
+                        from: ownerAddress,
+                        toNewPubkey: newAccountAddress,
+                        lamports: minRentExemption,
+                        space: span,
+                        programPubkey: programId
+                    )
+                }
+        }
         
         private static func getFilteredProgramAccounts(
             client: OpenOrdersAPIClient,
@@ -98,9 +133,11 @@ extension SerumSwap {
             programId: PublicKey
         ) -> Single<[OpenOrders]> {
             var filter = filter
-            let version = PROGRAM_LAYOUT_VERSIONS[programId.base58EncodedString] ?? 3
+            filter.append(["dataSize": .init(wrapped: getLayoutSpan(programId: programId.base58EncodedString))])
+            
+            let version = getVersion(programId: programId.base58EncodedString)
+            
             if version == 1 {
-                filter.append(["dataSize": .init(wrapped: try! OpenOrdersLayoutV1.getBufferLength())])
                 return client.getProgramAccounts(
                     publicKey: programId.base58EncodedString,
                     configs: .init(filters: filter),
@@ -120,7 +157,6 @@ extension SerumSwap {
                 }
             }
             
-            filter.append(["dataSize": .init(wrapped: try! OpenOrdersLayoutV2.getBufferLength())])
             return client.getProgramAccounts(
                 publicKey: programId.base58EncodedString,
                 configs: .init(filters: filter),
