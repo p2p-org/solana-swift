@@ -10,15 +10,29 @@ import RxSwift
 import BufferLayoutSwift
 
 protocol SerumSwapAPIClient: OpenOrdersAPIClient {
-    func getMarketAddressIfNeeded(fromMint: SolanaSDK.PublicKey, toMint: SolanaSDK.PublicKey) -> Single<SolanaSDK.PublicKey>
-    func getMarketAddress(fromMint: SolanaSDK.PublicKey, toMint: SolanaSDK.PublicKey) -> Single<SolanaSDK.PublicKey>
-    func serializeAndSend(
-        instructions: [SolanaSDK.TransactionInstruction],
-        signers: [SolanaSDK.Account]
-    ) -> Single<SolanaSDK.TransactionID>
+    func getMarketAddressIfNeeded(
+        fromMint: SolanaSDK.PublicKey,
+        toMint: SolanaSDK.PublicKey
+    ) -> Single<SolanaSDK.PublicKey>
+    func getMarketAddress(
+        fromMint: SolanaSDK.PublicKey,
+        toMint: SolanaSDK.PublicKey
+    ) -> Single<SolanaSDK.PublicKey>
+    func usdcPathExists(
+        fromMint: SolanaSDK.PublicKey,
+        toMint: SolanaSDK.PublicKey
+    ) -> Single<Bool>
     func prepareSourceAccountAndInstructions(
+        myNativeWallet: SolanaSDK.PublicKey,
         source: SolanaSDK.PublicKey,
+        sourceMint: SolanaSDK.PublicKey,
         amount: SolanaSDK.Lamports,
+        feePayer: SolanaSDK.PublicKey
+    ) -> Single<SolanaSDK.AccountInstructions>
+    func prepareDestinationAccountAndInstructions(
+        myAccount: SolanaSDK.PublicKey,
+        destination: SolanaSDK.PublicKey?,
+        destinationMint: SolanaSDK.PublicKey,
         feePayer: SolanaSDK.PublicKey
     ) -> Single<SolanaSDK.AccountInstructions>
 }

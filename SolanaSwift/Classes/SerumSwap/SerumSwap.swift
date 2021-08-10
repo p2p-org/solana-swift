@@ -24,9 +24,22 @@ public class SerumSwap {
     public typealias Lamports = SolanaSDK.Lamports
     
     // MARK: - Nested type
-    struct SignersAndInstructions {
+    public struct SignersAndInstructions {
         let signers: [Account]
         let instructions: [TransactionInstruction]
+    }
+    
+    // Side rust enum used for the program's RPC API.
+    public enum Size {
+        case bid, ask
+        var params: [String: [String: String]] {
+            switch self {
+            case .bid:
+                return ["bid": [:]]
+            case .ask:
+                return ["ask": [:]]
+            }
+        }
     }
     
     // MARK: - Properties
@@ -49,19 +62,17 @@ public class SerumSwap {
     public func initAccounts(
         fromMint: PublicKey,
         toMint: PublicKey
-    ) -> Single<TransactionID> {
-        
-        let request: Single<SignersAndInstructions>
+    ) -> Single<SignersAndInstructions> {
         
         // Direct swap on USD(x).
         if fromMint == usdcMint || fromMint == usdtMint {
-            request = createAndInitAccountForDirectSwapOnUSDX(
+            return createAndInitAccountForDirectSwapOnUSDX(
                 fromMint: fromMint,
                 toMint: toMint
             )
         }
         else if toMint == usdcMint || toMint == usdtMint {
-            request = createAndInitAccountForDirectSwapOnUSDX(
+            return createAndInitAccountForDirectSwapOnUSDX(
                 fromMint: toMint,
                 toMint: fromMint
             )
@@ -70,7 +81,7 @@ public class SerumSwap {
         else {
             // Builds the instructions for initializing open orders for a transitive swap.
             // Build transitive with usdcMint
-            request = buildTransitiveForInitAccounts(
+            return buildTransitiveForInitAccounts(
                 usdxMint: usdcMint,
                 fromMint: fromMint,
                 toMint: toMint
@@ -85,15 +96,6 @@ public class SerumSwap {
                 )
             }
         }
-        
-        return request
-            .flatMap {[weak self] signersAndInstructions in
-                guard let self = self else {return .error(SerumSwapError.unknown)}
-                return self.client.serializeAndSend(
-                    instructions: signersAndInstructions.instructions,
-                    signers: signersAndInstructions.signers
-                )
-            }
     }
     
     private func createAndInitAccountForDirectSwapOnUSDX(
@@ -183,7 +185,7 @@ public class SerumSwap {
     public func closeAccounts(
         fromMint: PublicKey,
         toMint: PublicKey
-    ) -> Single<TransactionID> {
+    ) -> Single<SignersAndInstructions> {
         let instructionRequest: Single<TransactionInstruction>
         
         if fromMint == usdcMint || fromMint == usdtMint {
@@ -217,11 +219,11 @@ public class SerumSwap {
         }
         
         return instructionRequest
-            .flatMap {[weak self] instruction in
-                guard let self = self else {return .error(SerumSwapError.unknown)}
-                return self.client.serializeAndSend(
-                    instructions: [instruction],
-                    signers: []
+            .map {[weak self] instruction in
+                guard let self = self else {throw SerumSwapError.unknown}
+                return .init(
+                    signers: [],
+                    instructions: [instruction]
                 )
             }
     }
@@ -298,6 +300,7 @@ public class SerumSwap {
     ///   - quoteWallet: Wallet of the quote currency to use in a transitive swap. Should be either a USDC or USDT wallet. If not provided uses an associated token address for the configured provider.
     ///   - fromWallet: Wallet for `fromMint`. If not provided, uses an associated token address for the configured provider.
     ///   - toWallet: Wallet for `toMint`. If not provided, uses the associated token address for the configured provider.
+    ///   - feePayer: The wallet that is responsible for paying fee (leave it nil if user is the payer)
     ///   - configs: Request configuration.
     public func swap(
         fromMint: PublicKey,
@@ -306,10 +309,11 @@ public class SerumSwap {
         minExpectedSwapAmount: Lamports?,
         referral: PublicKey?,
         quoteWallet: PublicKey?,
-        fromWallet: PublicKey?,
+        fromWallet: PublicKey,
         toWallet: PublicKey?,
+        feePayer: PublicKey?,
         configs: SolanaSDK.RequestConfiguration? = nil
-    ) -> Single<TransactionID> {
+    ) -> Single<SignersAndInstructions> {
         
         prepareForSwap(
             fromMint: fromMint,
@@ -320,15 +324,9 @@ public class SerumSwap {
             quoteWallet: quoteWallet,
             fromWallet: fromWallet,
             toWallet: toWallet,
+            feePayer: feePayer,
             configs: configs
         )
-        .flatMap {[weak self] signersAndInstructions in
-            guard let self = self else {throw SerumSwapError.unknown}
-            return self.client.serializeAndSend(
-                instructions: signersAndInstructions.instructions,
-                signers: signersAndInstructions.signers
-            )
-        }
     }
     
     /**
@@ -345,8 +343,9 @@ public class SerumSwap {
         minExpectedSwapAmount: Lamports?,
         referral: PublicKey?,
         quoteWallet: PublicKey?,
-        fromWallet: PublicKey?,
+        fromWallet: PublicKey,
         toWallet: PublicKey?,
+        feePayer: PublicKey?,
         configs: SolanaSDK.RequestConfiguration? = nil
     ) -> Single<Lamports> {
         // Build the transaction.
@@ -374,8 +373,9 @@ public class SerumSwap {
         minExpectedSwapAmount: Lamports?,
         referral: PublicKey?,
         quoteWallet: PublicKey?,
-        fromWallet: PublicKey?,
+        fromWallet: PublicKey,
         toWallet: PublicKey?,
+        feePayer: PublicKey?,
         configs: SolanaSDK.RequestConfiguration? = nil
     ) -> Single<SignersAndInstructions> {
         // min expected swap amount
@@ -383,16 +383,144 @@ public class SerumSwap {
         if let minExpectedSwapAmount = minExpectedSwapAmount {
             requestMinExpectedSwapAmount = .just(minExpectedSwapAmount)
         } else {
-            requestMinExpectedSwapAmount = estimate(fromMint: fromMint, toMint: toMint, amount: amount, minExpectedSwapAmount: minExpectedSwapAmount, referral: referral, quoteWallet: quoteWallet, fromWallet: fromWallet, toWallet: toWallet)
+            requestMinExpectedSwapAmount = estimate(fromMint: fromMint, toMint: toMint, amount: amount, minExpectedSwapAmount: minExpectedSwapAmount, referral: referral, quoteWallet: quoteWallet, fromWallet: fromWallet, toWallet: toWallet, feePayer: feePayer)
                 .map {estimated in
                     // Defaults to 0.5% error off the estimate, if not provided.
                     SerumSwap.Lamports(BInt(estimated) * BInt(995) / BInt(1000))
                 }
         }
         
-        // If either wallet isn't given, then use the associated token account.
-        // Assumes the accounts are already created.
+        // Prepare source account, create and init new account if fromWallet is native.
+        let requestSourceAccount = client.prepareSourceAccountAndInstructions(
+            myNativeWallet: accountProvider.getNativeWalletAddress(),
+            source: fromWallet,
+            sourceMint: fromMint,
+            amount: amount,
+            feePayer: feePayer ?? accountProvider.getNativeWalletAddress()
+        )
         
+        // Prepare destination account, create associated token if toWallet is native.
+        let requestDestinationAccount = client.prepareDestinationAccountAndInstructions(
+            myAccount: accountProvider.getNativeWalletAddress(),
+            destination: toWallet,
+            destinationMint: toMint,
+            feePayer: feePayer ?? accountProvider.getNativeWalletAddress()
+        )
+        
+        // Swap
+        return Single.zip(
+            requestMinExpectedSwapAmount,
+            requestSourceAccount,
+            requestDestinationAccount
+        )
+        .flatMap {[weak self] minExpectedSwapAmount, sourceAccountInstructions, destinationAccountInstructions in
+            guard let self = self else { throw SerumSwapError.unknown }
+            
+            let instructions = sourceAccountInstructions.instructions + destinationAccountInstructions.instructions
+            let cleanupInstructions = sourceAccountInstructions.cleanupInstructions + destinationAccountInstructions.cleanupInstructions
+            
+            // If swapping to/from a USD(x) token, then swap directly on the market.
+            if fromMint == usdcMint || fromMint == usdtMint {
+                return self.swapDirect(
+                    coinWallet: destinationAccountInstructions.account,
+                    pcWallet: sourceAccountInstructions.account,
+                    baseMint: toMint,
+                    quoteMint: fromMint,
+                    size: .bid,
+                    amount: amount,
+                    minExpectedSwapAmount: minExpectedSwapAmount,
+                    referral: referral,
+                    currentInstructions: instructions,
+                    cleanupInstructions: cleanupInstructions
+                )
+            }
+            else if toMint == usdcMint || toMint == usdtMint {
+                return self.swapDirect(
+                    coinWallet: sourceAccountInstructions.account,
+                    pcWallet: destinationAccountInstructions.account,
+                    baseMint: fromMint,
+                    quoteMint: toMint,
+                    size: .ask,
+                    amount: amount,
+                    minExpectedSwapAmount: minExpectedSwapAmount,
+                    referral: referral,
+                    currentInstructions: instructions,
+                    cleanupInstructions: cleanupInstructions
+                )
+            }
+            
+            // Neither wallet is a USD stable coin. So perform a transitive swap.
+            let requestQuoteWallet: Single<PublicKey>
+            if let quoteWallet = quoteWallet {
+                requestQuoteWallet = .just(quoteWallet)
+            } else {
+                requestQuoteWallet = self.client.usdcPathExists(
+                    fromMint: fromMint,
+                    toMint: toMint
+                )
+                .map {[weak self] usdcPathExists in
+                    guard let self = self else { throw SerumSwapError.unknown }
+                    if usdcPathExists {
+                        return try PublicKey.associatedTokenAddress(
+                            walletAddress: self.accountProvider.getNativeWalletAddress(),
+                            tokenMintAddress: usdcMint
+                        )
+                    } else {
+                        return try PublicKey.associatedTokenAddress(
+                            walletAddress: self.accountProvider.getNativeWalletAddress(),
+                            tokenMintAddress: usdtMint
+                        )
+                    }
+                }
+            }
+            
+            return requestQuoteWallet
+                .flatMap {[weak self] quoteWallet in
+                    guard let self = self else { throw SerumSwapError.unknown }
+                    return self.swapTransitive(
+                        fromMint: fromMint,
+                        toMint: toMint,
+                        fromWallet: sourceAccountInstructions.account,
+                        toWallet: destinationAccountInstructions.account,
+                        pcWallet: quoteWallet,
+                        amount: amount,
+                        minExpectedSwapAmount: minExpectedSwapAmount,
+                        referral: referral,
+                        currentInstructions: instructions,
+                        cleanupInstructions: cleanupInstructions
+                    )
+                }
+            
+        }
+    }
+    
+    private func swapDirect(
+        coinWallet: PublicKey,
+        pcWallet: PublicKey,
+        baseMint: PublicKey,
+        quoteMint: PublicKey,
+        size: Size,
+        amount: Lamports,
+        minExpectedSwapAmount: Lamports,
+        referral: PublicKey?,
+        currentInstructions: [TransactionInstruction],
+        cleanupInstructions: [TransactionInstruction]
+    ) -> Single<SignersAndInstructions> {
+        
+    }
+    
+    private func swapTransitive(
+        fromMint: PublicKey,
+        toMint: PublicKey,
+        fromWallet: PublicKey,
+        toWallet: PublicKey,
+        pcWallet: PublicKey,
+        amount: Lamports,
+        minExpectedSwapAmount: Lamports,
+        referral: PublicKey?,
+        currentInstructions: [TransactionInstruction],
+        cleanupInstructions: [TransactionInstruction]
+    ) -> Single<SignersAndInstructions> {
         
     }
     
