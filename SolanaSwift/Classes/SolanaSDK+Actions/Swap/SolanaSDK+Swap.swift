@@ -246,10 +246,10 @@ extension SolanaSDK {
         }
         
         // if token is native
-        return self.prepareForCreatingAssociatedTokenAccountAndCloseIfNative(
-            owner: myNativeWallet,
-            mint: sourceMint,
-            feePayer: feePayer
+        return self.prepareForCreatingTempAccountAndClose(
+            from: source,
+            amount: amount,
+            payer: feePayer
         )
     }
     
