@@ -16,6 +16,11 @@ protocol SerumSwapAPIClient: OpenOrdersAPIClient {
         instructions: [SolanaSDK.TransactionInstruction],
         signers: [SolanaSDK.Account]
     ) -> Single<SolanaSDK.TransactionID>
+    func prepareSourceAccountAndInstructions(
+        source: SolanaSDK.PublicKey,
+        amount: SolanaSDK.Lamports,
+        feePayer: SolanaSDK.PublicKey
+    ) -> Single<SolanaSDK.AccountInstructions>
 }
 
 protocol OpenOrdersAPIClient {
