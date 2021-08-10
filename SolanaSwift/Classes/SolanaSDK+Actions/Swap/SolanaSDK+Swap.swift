@@ -84,8 +84,9 @@ extension SolanaSDK {
                     .just(pool),
                     
                     self.prepareSourceAccountAndInstructions(
-                        pool: pool,
+                        myNativeWallet: owner.publicKey,
                         source: source,
+                        sourceMint: sourceMint,
                         amount: amount,
                         feePayer: feePayer
                     ),
@@ -228,44 +229,28 @@ extension SolanaSDK {
     
     // MARK: - Account and instructions
     func prepareSourceAccountAndInstructions(
-        pool: Pool,
+        myNativeWallet: PublicKey,
         source: PublicKey,
+        sourceMint: PublicKey,
         amount: Lamports,
         feePayer: PublicKey
     ) -> Single<AccountInstructions> {
-        getAccountInfo(
-            account: pool.swapData.tokenAccountA.base58EncodedString,
-            decodedTo: AccountInfo.self
+        // if token is non-native
+        if source != myNativeWallet {
+            return .just(.init(
+                account: source,
+                instructions: [],
+                cleanupInstructions: [],
+                signers: []
+            ))
+        }
+        
+        // if token is native
+        return self.prepareForCreatingAssociatedTokenAccountAndCloseIfNative(
+            owner: myNativeWallet,
+            mint: sourceMint,
+            feePayer: feePayer
         )
-            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            // check if source token is native
-            .map { info -> Bool in
-                guard info.owner == PublicKey.tokenProgramId.base58EncodedString
-                else {
-                    throw Error.other("Source account is not valid")
-                }
-                
-                return info.data.isNative
-            }
-            // create token if source token is native
-            .flatMap {isNative in
-                // if token is non-native
-                if !isNative {
-                    return .just(.init(
-                        account: source,
-                        instructions: [],
-                        cleanupInstructions: [],
-                        signers: []
-                    ))
-                }
-                
-                // if token is native
-                return self.prepareForCreatingTempAccountAndClose(
-                    from: source,
-                    amount: amount,
-                    payer: feePayer
-                )
-            }
     }
     
     func prepareDestinationAccountAndInstructions(
