@@ -39,6 +39,8 @@ extension SerumSwap {
         let programId: PublicKey
         let version: Int
         
+        var publicKey: PublicKey {address}
+        
         init(
             address: PublicKey,
             data: SerumSwapOpenOrdersLayoutType,

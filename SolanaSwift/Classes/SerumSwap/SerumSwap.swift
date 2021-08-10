@@ -38,6 +38,7 @@ public class SerumSwap {
         self.accountProvider = accountProvider
     }
     
+    // MARK: - InitAccount
     /**
      * Sends a transaction to initialize all accounts required for a swap between
      * the two mints. I.e., creates the DEX open orders accounts.
@@ -68,7 +69,7 @@ public class SerumSwap {
         else {
             // Builds the instructions for initializing open orders for a transitive swap.
             // Build transitive with usdcMint
-            request = buildTransitive(
+            request = buildTransitiveForInitAccounts(
                 usdxMint: usdcMint,
                 fromMint: fromMint,
                 toMint: toMint
@@ -76,7 +77,7 @@ public class SerumSwap {
             .catch {[weak self] _ in
                 guard let self = self else {return .error(SerumSwapError.unknown)}
                 // Retry with building transitive with usdtMint
-                return self.buildTransitive(
+                return self.buildTransitiveForInitAccounts(
                     usdxMint: usdtMint,
                     fromMint: fromMint,
                     toMint: toMint
@@ -94,12 +95,12 @@ public class SerumSwap {
             }
     }
     
-    // MARK: - Helpers
     private func createAndInitAccountForDirectSwapOnUSDX(
         fromMint: PublicKey,
         toMint: PublicKey
     ) -> Single<SignersAndInstructions>
     {
+        
         client.getMarketAddressIfNeeded(
             fromMint: fromMint,
             toMint: toMint
@@ -110,52 +111,34 @@ public class SerumSwap {
         }
     }
     
-    private func buildTransitive(
+    private func buildTransitiveForInitAccounts(
         usdxMint: PublicKey,
         fromMint: PublicKey,
         toMint: PublicKey
     ) -> Single<SignersAndInstructions> {
-        // Markets
-        Single.zip(
-            client.getMarketAddress(fromMint: usdxMint, toMint: fromMint),
-            client.getMarketAddress(fromMint: usdxMint, toMint: toMint)
+        
+        findMarketsAndOpenOrders(
+            usdxMint: usdxMint,
+            fromMint: fromMint,
+            toMint: toMint
         )
-        .flatMap {[weak self] marketFrom, marketTo -> Single<([OpenOrders], [OpenOrders], PublicKey, PublicKey)> in
-            guard let self = self else {throw SerumSwapError.unknown}
-            return Single.zip(
-                OpenOrders.findForMarketAndOwner(
-                    client: self.client,
-                    marketAddress: marketFrom,
-                    ownerAddress: self.accountProvider.getNativeWalletAddress(),
-                    programId: dexPID
-                ),
-                OpenOrders.findForMarketAndOwner(
-                    client: self.client,
-                    marketAddress: marketTo,
-                    ownerAddress: self.accountProvider.getNativeWalletAddress(),
-                    programId: dexPID
-                ),
-                .just(marketFrom),
-                .just(marketTo)
-            )
-        }
-        .flatMap { [weak self] ooAccsFrom, ooAccsTo, marketFrom, marketTo in
-            guard let self = self else {throw SerumSwapError.unknown}
-            
-            if ooAccsFrom.first != nil && ooAccsTo.first != nil {
-                throw SerumSwapError("Open orders already exist")
+            .flatMap { [weak self] marketFrom, marketTo, ooAccsFrom, ooAccsTo  in
+                guard let self = self else {throw SerumSwapError.unknown}
+                
+                if ooAccsFrom.first != nil && ooAccsTo.first != nil {
+                    throw SerumSwapError("Open orders already exist")
+                }
+                
+                if ooAccsFrom.first == nil {
+                    return self.createAndInitAccount(marketAddress: marketFrom)
+                }
+                
+                if ooAccsTo.first == nil {
+                    return self.createAndInitAccount(marketAddress: marketTo)
+                }
+                
+                throw SerumSwapError.unknown
             }
-            
-            if ooAccsFrom.first == nil {
-                return self.createAndInitAccount(marketAddress: marketFrom)
-            }
-            
-            if ooAccsTo.first == nil {
-                return self.createAndInitAccount(marketAddress: marketTo)
-            }
-            
-            throw SerumSwapError.unknown
-        }
     }
     
     private func createAndInitAccount(
@@ -179,23 +162,183 @@ public class SerumSwap {
             newAccountAddress: newAccount.publicKey,
             programId: dexPID
         )
-        .map {createAccountInstruction in
+        .map {[weak self] createAccountInstruction in
+            guard let self = self else {throw SerumSwapError.unknown}
             var instructions = [createAccountInstruction]
-            // TODO: initAccount instruction
-//            instructions.append(
-//                    this.program.instruction.initAccount({
-//                        accounts: {
-//                            openOrders: openOrders.publicKey,
-//                            authority: this.program.provider.wallet.publicKey,
-//                            market: marketAddress,
-//                            dexProgram: DEX_PID,
-//                            rent: SYSVAR_RENT_PUBKEY,
-//                        },
-//                    }),
-//            )
+            instructions.append(self.initAccountInstruction())
             let signers = [newAccount]
             return .init(signers: signers, instructions: instructions)
         }
+    }
+    
+    // MARK: - CloseAccount
+    /**
+     * Sends a transaction to close all accounts required for a swap transaction,
+     * i.e., all currently open DEX open orders accounts for the given `fromMint`
+     * `toMint` swap path.
+     *
+     * @throws if no open orders accounts exist.
+     */
+    public func closeAccounts(
+        fromMint: PublicKey,
+        toMint: PublicKey
+    ) -> Single<TransactionID> {
+        let instructionRequest: Single<TransactionInstruction>
         
+        if fromMint == usdcMint || fromMint == usdtMint {
+            instructionRequest = closeAccountForDirectSwapOnUSDX(
+                fromMint: fromMint,
+                toMint: toMint
+            )
+        }
+        else if toMint == usdcMint || toMint == usdtMint {
+            instructionRequest = closeAccountForDirectSwapOnUSDX(
+                fromMint: toMint,
+                toMint: fromMint
+            )
+        }
+        // Transitive swap across USD(x).
+        else {
+            instructionRequest = buildTransitiveForCloseAccount(
+                usdxMint: usdcMint,
+                fromMint: fromMint,
+                toMint: toMint
+            )
+            .catch {[weak self] _ in
+                guard let self = self else {return .error(SerumSwapError.unknown)}
+                // Retry with building transitive with usdtMint
+                return self.buildTransitiveForCloseAccount(
+                    usdxMint: usdtMint,
+                    fromMint: fromMint,
+                    toMint: toMint
+                )
+            }
+        }
+        
+        return instructionRequest
+            .flatMap {[weak self] instruction in
+                guard let self = self else {return .error(SerumSwapError.unknown)}
+                return self.client.serializeAndSend(
+                    instructions: [instruction],
+                    signers: []
+                )
+            }
+    }
+    
+    private func buildTransitiveForCloseAccount(
+        usdxMint: PublicKey,
+        fromMint: PublicKey,
+        toMint: PublicKey
+    ) -> Single<TransactionInstruction> {
+        
+        findMarketsAndOpenOrders(
+            usdxMint: usdxMint,
+            fromMint: fromMint,
+            toMint: toMint
+        )
+        .map { [weak self] marketFrom, marketTo, ooAccsFrom, ooAccsTo  in
+            guard let self = self else {throw SerumSwapError.unknown}
+            if ooAccsFrom.first == nil && ooAccsTo.first == nil {
+                throw SerumSwapError("No open orders accounts left to close")
+            }
+            if let order = ooAccsFrom.first {
+                return self.closeAccountInstruction(order: order)
+            }
+            
+            if let order = ooAccsTo.first {
+                return self.closeAccountInstruction(order: order)
+            }
+            
+            throw SerumSwapError.unknown
+        }
+    }
+    
+    private func closeAccountForDirectSwapOnUSDX(
+        fromMint: PublicKey,
+        toMint: PublicKey
+    ) -> Single<TransactionInstruction>
+    {
+        
+        return client.getMarketAddress(fromMint: fromMint, toMint: toMint)
+            .flatMap {[weak self] marketAddress -> Single<([OpenOrders], PublicKey)> in
+                guard let self = self else {throw SerumSwapError.unknown}
+                return Single.zip(
+                    OpenOrders.findForMarketAndOwner(
+                        client: self.client,
+                        marketAddress: marketAddress,
+                        ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                        programId: dexPID
+                    ),
+                    .just(marketAddress)
+                )
+            }
+            .map {[weak self] openOrders, marketAddress in
+                guard let self = self else {throw SerumSwapError.unknown}
+                guard let order = openOrders.first else {throw SerumSwapError("Open orders account doesn't exist")}
+                return self.closeAccountInstruction(order: order)
+            }
+    }
+    
+    // MARK: - Helpers
+    private func findMarketsAndOpenOrders(
+        usdxMint: PublicKey,
+        fromMint: PublicKey,
+        toMint: PublicKey
+    ) -> Single<(marketFrom: PublicKey, marketTo: PublicKey, marketFromOrders: [OpenOrders], marketToOrders: [OpenOrders])>
+    {
+        Single.zip(
+            client.getMarketAddress(fromMint: usdxMint, toMint: fromMint),
+            client.getMarketAddress(fromMint: usdxMint, toMint: toMint)
+        )
+        .flatMap {[weak self] marketFrom, marketTo -> Single<(PublicKey, PublicKey, [OpenOrders], [OpenOrders])> in
+            guard let self = self else {throw SerumSwapError.unknown}
+            return Single.zip(
+                .just(marketFrom),
+                .just(marketTo),
+                OpenOrders.findForMarketAndOwner(
+                    client: self.client,
+                    marketAddress: marketFrom,
+                    ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                    programId: dexPID
+                ),
+                OpenOrders.findForMarketAndOwner(
+                    client: self.client,
+                    marketAddress: marketTo,
+                    ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                    programId: dexPID
+                )
+            )
+        }
+        .map {(marketFrom: $0, marketTo: $1, marketFromOrders: $2, marketToOrders: $3)}
+    }
+    
+    private func closeAccountInstruction(
+        order: OpenOrders
+    ) -> TransactionInstruction {
+        // TODO: - closeAccount instruction
+//                this.program.instruction.closeAccount({
+//                  accounts: {
+//                    openOrders: ooAccsTo[0].publicKey,
+//                    authority: this.program.provider.wallet.publicKey,
+//                    destination: this.program.provider.wallet.publicKey,
+//                    market: marketTo,
+//                    dexProgram: DEX_PID,
+//                  },
+//                }),
+        fatalError()
+    }
+    
+    private func initAccountInstruction() -> TransactionInstruction {
+        // TODO: - initAccount instruction
+//        this.program.instruction.initAccount({
+//            accounts: {
+//                openOrders: openOrders.publicKey,
+//                authority: this.program.provider.wallet.publicKey,
+//                market: marketAddress,
+//                dexProgram: DEX_PID,
+//                rent: SYSVAR_RENT_PUBKEY,
+//            },
+//        }),
+        fatalError()
     }
 }
