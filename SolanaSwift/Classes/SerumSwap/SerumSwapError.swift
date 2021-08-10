@@ -7,9 +7,17 @@
 
 import Foundation
 
-enum SerumSwapError: Error {
-    case unknown
-    case openOrdersLayoutIsInvalid
-    case addressIsNotOwnedByTheProgram
-    case invalidOpenOrdersAccount
+struct SerumSwapError: Error, ExpressibleByStringLiteral {
+    let description: StaticString
+    init(stringLiteral value: StaticString) {
+        self.description = value
+    }
+    
+    static var unknown: Self {
+        .init(stringLiteral: "Unknown")
+    }
+    
+    init(_ string: StaticString) {
+        self.init(stringLiteral: string)
+    }
 }

@@ -8,6 +8,11 @@
 import Foundation
 import RxSwift
 
+// MARK: - Constants
+private let usdcMint = try! SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+private let usdtMint = try! SolanaSDK.PublicKey(string: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB")
+private let dexPID = try! SolanaSDK.PublicKey(string: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin")
+
 public class SerumSwap {
     public typealias Account = SolanaSDK.Account
     public typealias TransactionInstruction = SolanaSDK.TransactionInstruction
@@ -20,11 +25,6 @@ public class SerumSwap {
         let signers: [Account]
         let instructions: [TransactionInstruction]
     }
-    
-    // MARK: - Constants
-    let usdcMint = try! SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
-    let usdtMint = try! SolanaSDK.PublicKey(string: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB")
-    let dexPID = try! SolanaSDK.PublicKey(string: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin")
     
     // MARK: - Properties
     let client: SerumSwapAPIClient
@@ -71,20 +71,20 @@ public class SerumSwap {
                 fromMint: fromMint,
                 toMint: toMint
             )
-                .catch {[weak self] _ in
-                    guard let self = self else {return .error(SolanaSDK.Error.unknown)}
-                    // Retry with building transitive with usdtMint
-                    return self.buildTransitive(
-                        usdxMint: self.usdtMint,
-                        fromMint: fromMint,
-                        toMint: toMint
-                    )
-                }
+            .catch {[weak self] _ in
+                guard let self = self else {return .error(SerumSwapError.unknown)}
+                // Retry with building transitive with usdtMint
+                return self.buildTransitive(
+                    usdxMint: usdtMint,
+                    fromMint: fromMint,
+                    toMint: toMint
+                )
+            }
         }
         
         return request
             .flatMap {[weak self] signersAndInstructions in
-                guard let self = self else {return .error(SolanaSDK.Error.unknown)}
+                guard let self = self else {return .error(SerumSwapError.unknown)}
                 return self.client.serializeAndSend(
                     instructions: signersAndInstructions.instructions,
                     signers: signersAndInstructions.signers
@@ -108,7 +108,7 @@ public class SerumSwap {
             )
         )
         .map {[weak self] marketAddress, minimumBalanceForRentExemption in
-            guard let self = self else {throw SolanaSDK.Error.unknown}
+            guard let self = self else {throw SerumSwapError.unknown}
             
             let openOrders = try Account(network: .mainnetBeta)
             
@@ -151,10 +151,44 @@ public class SerumSwap {
         toMint: PublicKey
     ) -> Single<SignersAndInstructions> {
         // Markets
-        let marketFrom = client.getMarketAddress(fromMint: usdxMint, toMint: fromMint)
-        let marketTo = client.getMarketAddress(fromMint: usdxMint, toMint: toMint)
-        
-        // Open orders accounts (already existing).
-        fatalError()
+        Single.zip(
+            client.getMarketAddress(fromMint: usdxMint, toMint: fromMint),
+            client.getMarketAddress(fromMint: usdxMint, toMint: toMint)
+        )
+        .flatMap {[weak self] marketFrom, marketTo -> Single<([OpenOrders], [OpenOrders])> in
+            guard let self = self else {throw SerumSwapError.unknown}
+            return Single.zip(
+                OpenOrders.findForMarketAndOwner(
+                    client: self.client,
+                    marketAddress: marketFrom,
+                    ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                    programId: dexPID
+                ),
+                OpenOrders.findForMarketAndOwner(
+                    client: self.client,
+                    marketAddress: marketTo,
+                    ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                    programId: dexPID
+                )
+            )
+        }
+        .map { ooAccsFrom, ooAccsTo in
+            if ooAccsFrom.first != nil && ooAccsTo.first != nil {
+                throw SerumSwapError("Open orders already exist")
+            }
+            
+            // No open orders account for the from market, so make it.
+            var signers = [Account]()
+            var instructions = [TransactionInstruction]()
+            
+            if ooAccsFrom.first == nil {
+                
+            }
+            
+            if ooAccsTo.first == nil {
+                
+            }
+            return SignersAndInstructions(signers: signers, instructions: instructions)
+        }
     }
 }
