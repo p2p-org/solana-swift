@@ -33,7 +33,7 @@ extension SerumSwap {
             self.version = PROGRAM_LAYOUT_VERSIONS[programId.base58EncodedString] ?? 3
             if !data.accountFlags.initialized || !data.accountFlags.openOrders
             {
-                throw SerumSwapError.invalidOpenOrdersAccount
+                throw SerumSwapError("Invalid OpenOrders account")
             }
             self.data = data
         }
@@ -109,7 +109,7 @@ extension SerumSwap {
                 .map {
                     try $0.accounts.map {
                         guard $0.account.owner == programId.base58EncodedString else {
-                            throw SerumSwapError.addressIsNotOwnedByTheProgram
+                            throw SerumSwapError("The address is not owned by the program")
                         }
                         return try OpenOrders(
                             address: ownerAddress,
@@ -129,7 +129,7 @@ extension SerumSwap {
             .map {
                 try $0.accounts.map {
                     guard $0.account.owner == programId.base58EncodedString else {
-                        throw SerumSwapError.addressIsNotOwnedByTheProgram
+                        throw SerumSwapError("The address is not owned by the program")
                     }
                     return try OpenOrders(
                         address: ownerAddress,
