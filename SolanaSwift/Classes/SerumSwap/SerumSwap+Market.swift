@@ -9,11 +9,56 @@ import Foundation
 
 extension SerumSwap {
     struct Market {
+        // MARK: - Nested type
+        private typealias OpenOrdersAccountsCache = [String: (accounts: [OpenOrders], ts: UInt64)] // cache by PublicKey (String)
+        private typealias FeeDiscountKeysCache = [String: (accounts: [FeeDiscountAccount], ts: UInt64)]
+                
+        // MARK: - Properties
+        private let decoded: SerumSwapMarketStatLayout
+        private let baseSplTokenDecimals: Decimals
+        private let quoteSplTokenDecimals: Decimals
+        private let skipPreflight: Bool
+        private let commitment: SolanaSDK.Commitment
+        private let programId: PublicKey
+        private let layoutOverride: SerumSwapMarketStatLayout.Type?
+        private let openOrdersAccountsCache: OpenOrdersAccountsCache = [:]
+        private let feeDiscountKeysCache: FeeDiscountKeysCache = [:]
+        
+        // MARK: - Initializer
+        init(
+            decoded: SerumSwapMarketStatLayout,
+            baseMintDecimals baseSplTokenDecimals: SerumSwap.Decimals,
+            quoteMintDecimals quoteSplTokenDecimals: SerumSwap.Decimals,
+            skipPreflight: Bool = false,
+            commitment: SolanaSDK.Commitment = "recent",
+            programId: SerumSwap.PublicKey,
+            layoutOverride: SerumSwapMarketStatLayout.Type? = nil
+        ) {
+            self.decoded = decoded
+            self.baseSplTokenDecimals = baseSplTokenDecimals
+            self.quoteSplTokenDecimals = quoteSplTokenDecimals
+            self.skipPreflight = skipPreflight
+            self.commitment = commitment
+            self.programId = programId
+            self.layoutOverride = layoutOverride
+        }
+        
+        private static func getLayoutType(programId: String) -> SerumSwapMarketStatLayout.Type {
+            let version = SerumSwap.getVersion(programId: programId)
+            if version == 1 {return MarketStatLayoutV1.self}
+            return MarketStatLayoutV2.self
+        }
+
+        private static func getLayoutSpan(programId: String) -> UInt64 {
+            getLayoutType(programId: programId).span
+        }
+        
         
     }
 }
 
 protocol SerumSwapMarketStatLayout {
+    static var span: UInt64 {get}
     var accountFlags: SerumSwap.AccountFlags {get}
     var ownAddress: SerumSwap.PublicKey {get}
     var vaultSignerNonce: UInt64 {get}
@@ -111,5 +156,12 @@ extension SerumSwap {
         let pruneAuthority: PublicKey
         let blob1024: Blob1024
         let blob7: Blob7
+    }
+    
+    struct FeeDiscountAccount {
+        let balance: Lamports
+        let mint: PublicKey
+        let pubkey: PublicKey
+        let feeTier: Lamports
     }
 }

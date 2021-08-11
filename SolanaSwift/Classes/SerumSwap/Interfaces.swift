@@ -9,11 +9,19 @@ import Foundation
 import RxSwift
 import BufferLayoutSwift
 
-protocol SerumSwapAPIClient: OpenOrdersAPIClient {
+protocol SerumSwapAPIClient {
     func getAccountInfo<T: DecodableBufferLayout>(
         account: String,
         decodedTo: T.Type
     ) -> Single<SolanaSDK.BufferInfo<T>>
+    func getMinimumBalanceForRentExemption(
+        span: UInt64
+    ) -> Single<UInt64>
+    func getProgramAccounts<T: DecodableBufferLayout>(
+        publicKey: String,
+        configs: SolanaSDK.RequestConfiguration?,
+        decodedTo: T.Type
+    ) -> Single<SolanaSDK.ProgramAccounts<T>>
     func getMarketAddressIfNeeded(
         fromMint: SolanaSDK.PublicKey,
         toMint: SolanaSDK.PublicKey
@@ -39,11 +47,6 @@ protocol SerumSwapAPIClient: OpenOrdersAPIClient {
         destinationMint: SolanaSDK.PublicKey,
         feePayer: SolanaSDK.PublicKey
     ) -> Single<SolanaSDK.AccountInstructions>
-}
-
-protocol OpenOrdersAPIClient {
-    func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64>
-    func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: SolanaSDK.RequestConfiguration?, decodedTo: T.Type) -> Single<SolanaSDK.ProgramAccounts<T>>
 }
 
 protocol SerumSwapAccountProvider {

@@ -40,13 +40,11 @@ extension SerumSwap {
         }
 
         private static func getLayoutSpan(programId: String) -> UInt64 {
-            let version = SerumSwap.getVersion(programId: programId)
-            if version == 1 {return OpenOrdersLayoutV1.span}
-            return OpenOrdersLayoutV2.span
+            getLayoutType(programId: programId).span
         }
         
         static func findForOwner(
-            client: OpenOrdersAPIClient,
+            client: SerumSwapAPIClient,
             ownerAddress: PublicKey,
             programId: PublicKey
         ) -> Single<[OpenOrders]> {
@@ -67,7 +65,7 @@ extension SerumSwap {
         }
         
         static func findForMarketAndOwner(
-            client: OpenOrdersAPIClient,
+            client: SerumSwapAPIClient,
             marketAddress: PublicKey,
             ownerAddress: PublicKey,
             programId: PublicKey
@@ -98,7 +96,7 @@ extension SerumSwap {
         }
         
         static func makeCreateAccountInstruction(
-            client: OpenOrdersAPIClient,
+            client: SerumSwapAPIClient,
             marketAddress: PublicKey,
             ownerAddress: PublicKey,
             newAccountAddress: PublicKey,
@@ -118,7 +116,7 @@ extension SerumSwap {
         }
         
         private static func getFilteredProgramAccounts(
-            client: OpenOrdersAPIClient,
+            client: SerumSwapAPIClient,
             ownerAddress: PublicKey,
             filter: [[String: SolanaSDK.EncodableWrapper]],
             programId: PublicKey
@@ -171,6 +169,7 @@ extension SerumSwap {
 
 // MARK: - Models
 public protocol SerumSwapOpenOrdersLayoutType {
+    static var span: UInt64 {get}
     var blob5: SerumSwap.Blob5 {get}
     var accountFlags: SerumSwap.AccountFlags {get}
     var market: SolanaSDK.PublicKey {get}
