@@ -70,7 +70,7 @@ extension SerumSwap {
             ownerAddress: PublicKey,
             programId: PublicKey,
             minRentExemption: UInt64? = nil
-        ) -> Single<(existingOpenOrder: PublicKey?, newOpenOrder: SignersAndInstructions?)> {
+        ) -> Single<GetOpenOrderResult> {
             findForMarketAndOwner(
                 client: client,
                 marketAddress: marketAddress,
@@ -278,5 +278,7 @@ extension SerumSwap {
         
         let blob7: Blob7
     }
+    
+    typealias GetOpenOrderResult = (existingOpenOrder: PublicKey?, newOpenOrder: SignersAndInstructions?)
 }
 

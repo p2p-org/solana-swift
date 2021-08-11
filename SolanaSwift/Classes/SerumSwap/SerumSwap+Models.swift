@@ -8,6 +8,7 @@
 import Foundation
 import BufferLayoutSwift
 
+// MARK: - BufferLayout properties
 extension SerumSwap {
     public struct Blob5: BufferLayoutProperty {
         public static var numberOfBytes: Int {5}

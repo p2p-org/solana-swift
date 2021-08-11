@@ -531,7 +531,7 @@ public class SerumSwap {
                     OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: dexPID)
                 )
             }
-            .flatMap {[weak self] marketClient, minRemExemption -> Single<(Market, PublicKey, (existingOpenOrder: PublicKey?, newOpenOrder: SignersAndInstructions?))> in
+            .flatMap {[weak self] marketClient, minRemExemption -> Single<(Market, PublicKey, GetOpenOrderResult)> in
                 guard let self = self else {throw SerumSwapError.unknown}
                 return Single.zip(
                     .just(marketClient),
@@ -572,7 +572,7 @@ public class SerumSwap {
                 
                 // add swap instruction
                 instructions.append(
-                    self.swapInstruction(size: size, amount: amount, minExpectedSwapAmount: minExpectedSwapAmount, market: market, vaultSigner: vaultOwner, openOrders: openOrder, pcWallet: pcWallet, coinWallet: coinWallet, referral: referral)
+                    self.directSwapInstruction(size: size, amount: amount, minExpectedSwapAmount: minExpectedSwapAmount, market: market, vaultSigner: vaultOwner, openOrders: openOrder, pcWallet: pcWallet, coinWallet: coinWallet, referral: referral)
                 )
                 
                 return .init(signers: signers, instructions: instructions + cleanupInstructions)
@@ -592,7 +592,6 @@ public class SerumSwap {
         currentInstructions: [TransactionInstruction],
         cleanupInstructions: [TransactionInstruction]
     ) -> Single<SignersAndInstructions> {
-        fatalError()
         // Try usdc market first, then usdt
         Single.zip(
             client.getMarketAddress(usdxMint: usdcMint, baseMint: fromMint),
@@ -605,14 +604,15 @@ public class SerumSwap {
                     self.client.getMarketAddress(usdxMint: usdtMint, baseMint: toMint)
                 )
             }
-            .flatMap {[weak self] fromMarketAddress, toMarketAddress -> Single<(Market, Market)> in
+            .flatMap {[weak self] fromMarketAddress, toMarketAddress -> Single<(Market, Market, UInt64)> in
                 guard let self = self else {throw SerumSwapError.unknown}
                 return Single.zip(
                     Market.load(client: self.client, address: fromMarketAddress, programId: dexPID),
-                    Market.load(client: self.client, address: toMarketAddress, programId: dexPID)
+                    Market.load(client: self.client, address: toMarketAddress, programId: dexPID),
+                    OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: dexPID)
                 )
             }
-            .flatMap {[weak self] fromMarket, toMarket -> Single<(fromMarket: Market, toMarket: Market, fromVaultSigner: PublicKey, toVaultSigner: PublicKey, fromOpenOrder: PublicKey?, toOpenOrder: PublicKey?)> in
+            .flatMap {[weak self] fromMarket, toMarket, minRentExemption -> Single<(fromMarket: Market, toMarket: Market, fromVaultSigner: PublicKey, toVaultSigner: PublicKey, fromOpenOrder: GetOpenOrderResult, toOpenOrder: GetOpenOrderResult)> in
                 guard let self = self else {throw SerumSwapError.unknown}
                 return Single.zip(
                     .just(fromMarket),
@@ -625,20 +625,67 @@ public class SerumSwap {
                         marketPublicKey: toMarket.publicKey,
                         dexProgramId: dexPID
                     ).map {$0.vaultOwner},
-                    OpenOrders.findForMarketAndOwner(
+                    OpenOrders.findAnOpenOrderOrCreateOne(
                         client: self.client,
                         marketAddress: fromMarket.address,
                         ownerAddress: self.accountProvider.getNativeWalletAddress(),
-                        programId: dexPID
-                    ).map {$0.first?.address},
-                    OpenOrders.findForMarketAndOwner(
+                        programId: dexPID,
+                        minRentExemption: minRentExemption
+                    ),
+                    OpenOrders.findAnOpenOrderOrCreateOne(
                         client: self.client,
                         marketAddress: toMarket.address,
                         ownerAddress: self.accountProvider.getNativeWalletAddress(),
-                        programId: dexPID
-                    ).map {$0.first?.address}
+                        programId: dexPID,
+                        minRentExemption: minRentExemption
+                    )
                 )
                     .map {(fromMarket: $0, toMarket: $1, fromVaultSigner: $2, toVaultSigner: $3, fromOpenOrder: $4, toOpenOrder: $5)}
+            }
+            .map {[weak self] params -> SignersAndInstructions in
+                guard let self = self else {throw SerumSwapError.unknown}
+                
+                guard let fromOpenOrder = params.fromOpenOrder.existingOpenOrder ?? params.fromOpenOrder.newOpenOrder?.signers.first?.publicKey,
+                      
+                      let toOpenOrder = params.toOpenOrder.existingOpenOrder ?? params.toOpenOrder.newOpenOrder?.signers.first?.publicKey
+                else {throw SerumSwapError("Could not find or create new order")}
+                
+                var signers = currentSigners
+                var instructions = currentInstructions
+                var cleanupInstructions = cleanupInstructions
+                
+                if let newOrder = params.fromOpenOrder.newOpenOrder {
+                    signers += newOrder.signers
+                    instructions += newOrder.instructions
+                    
+                    // TODO: - uncomment once the DEX supports closing open orders accounts.
+//                    cleanupInstructions.append(
+//                        self.closeAccountInstruction(
+//                            order: openOrder,
+//                            marketAddress: market.address
+//                        )
+//                    )
+                }
+                
+                if let newOrder = params.toOpenOrder.newOpenOrder {
+                    signers += newOrder.signers
+                    instructions += newOrder.instructions
+                    
+                    // TODO: - uncomment once the DEX supports closing open orders accounts.
+//                    cleanupInstructions.append(
+//                        self.closeAccountInstruction(
+//                            order: openOrder,
+//                            marketAddress: market.address
+//                        )
+//                    )
+                }
+                
+                // add swap instruction
+                instructions.append(
+                    self.transitiveSwapInstruction(fromMarketClient: params.fromMarket, toMarketClient: params.toMarket, fromVaultSigner: params.fromVaultSigner, toVaultSigner: params.toVaultSigner, fromOpenOrder: fromOpenOrder, toOpenOrder: toOpenOrder, fromWallet: fromWallet, toWallet: toWallet, pcWallet: pcWallet, referral: referral)
+                )
+                
+                return .init(signers: signers, instructions: instructions + cleanupInstructions)
             }
             
     }
@@ -710,7 +757,7 @@ public class SerumSwap {
         fatalError()
     }
     
-    private func swapInstruction(
+    private func directSwapInstruction(
         size: Size,
         amount: Lamports,
         minExpectedSwapAmount: Lamports,
@@ -719,6 +766,48 @@ public class SerumSwap {
         openOrders: PublicKey,
         pcWallet: PublicKey,
         coinWallet: PublicKey,
+        referral: PublicKey?
+    ) -> TransactionInstruction {
+//        this.program.instruction.swap(side, amount, minExpectedSwapAmount, {
+//            accounts: {
+//              market: {
+//                market: marketClient.address,
+//                // @ts-ignore
+//                requestQueue: marketClient._decoded.requestQueue,
+//                // @ts-ignore
+//                eventQueue: marketClient._decoded.eventQueue,
+//                bids: marketClient.bidsAddress,
+//                asks: marketClient.asksAddress,
+//                // @ts-ignore
+//                coinVault: marketClient._decoded.baseVault,
+//                // @ts-ignore
+//                pcVault: marketClient._decoded.quoteVault,
+//                vaultSigner,
+//                openOrders,
+//                orderPayerTokenAccount: side.bid ? pcWallet : coinWallet,
+//                coinWallet: coinWallet,
+//              },
+//              pcWallet,
+//              authority: this.program.provider.wallet.publicKey,
+//              dexProgram: DEX_PID,
+//              tokenProgram: TOKEN_PROGRAM_ID,
+//              rent: SYSVAR_RENT_PUBKEY,
+//            },
+//            remainingAccounts: referral && [referral],
+//        }),
+        fatalError()
+    }
+    
+    private func transitiveSwapInstruction(
+        fromMarketClient: Market,
+        toMarketClient: Market,
+        fromVaultSigner: PublicKey,
+        toVaultSigner: PublicKey,
+        fromOpenOrder: PublicKey,
+        toOpenOrder: PublicKey,
+        fromWallet: PublicKey,
+        toWallet: PublicKey,
+        pcWallet: PublicKey,
         referral: PublicKey?
     ) -> TransactionInstruction {
 //        this.program.instruction.swap(side, amount, minExpectedSwapAmount, {
