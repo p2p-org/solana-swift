@@ -289,6 +289,7 @@ public class SerumSwap {
             }
     }
     
+    // MARK: - Swap
     /**
      * Executes a swap against the Serum DEX on Solana. When using one should
      * first use `estimate` along with a user defined error tolerance to calculate
