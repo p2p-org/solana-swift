@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RxSwift
 
 extension SerumSwap {
     struct Market {
@@ -53,10 +54,129 @@ extension SerumSwap {
             getLayoutType(programId: programId).span
         }
         
+//        static func findAccountsByMints(
+//            client: SerumSwapAPIClient,
+//            baseMintAddress: PublicKey,
+//            quoteMintAddress: PublicKey,
+//            programId: PublicKey
+//        ) {
+//            let filter: [[String: Encodable]] = [
+//                [
+//                    "memcmp": EncodableWrapper(
+//                        wrapped: [
+//                            "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+//                             "bytes": EncodableWrapper(wrapped: baseMintAddress.base58EncodedString)
+//                        ]
+//                    )
+//                ],
+//                [
+//                    "memcmp": EncodableWrapper(
+//                        wrapped: [
+//                            "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+//                             "bytes": EncodableWrapper(wrapped: quoteMintAddress.base58EncodedString)
+//                        ]
+//                    )
+//                ]
+//            ]
+//
+//        }
         
+        static func load(
+            client: SerumSwapAPIClient,
+            address: PublicKey,
+            skipPreflight: Bool = false,
+            commitment: SolanaSDK.Commitment = "recent",
+            programId: PublicKey,
+            layoutOverride: SerumSwapMarketStatLayout.Type?
+        ) -> Single<Market> {
+            // layout type
+            let layoutType = layoutOverride ?? getLayoutType(programId: programId.base58EncodedString)
+            
+            // address info
+            let requestAddressInfo: Single<SerumSwapMarketStatLayout>
+            
+            if layoutType == MarketStatLayoutV1.self {
+                requestAddressInfo = getAccountInfoAndVerifyOwner(
+                    client: client,
+                    account: address,
+                    owner: programId,
+                    decodedTo: MarketStatLayoutV1.self
+                )
+                .map {$0 as SerumSwapMarketStatLayout}
+            } else if layoutType == MarketStatLayoutV2.self {
+                requestAddressInfo = getAccountInfoAndVerifyOwner(
+                    client: client,
+                    account: address,
+                    owner: programId,
+                    decodedTo: MarketStatLayoutV2.self
+                )
+                .map {$0 as SerumSwapMarketStatLayout}
+            } else {
+                requestAddressInfo = getAccountInfoAndVerifyOwner(
+                    client: client,
+                    account: address,
+                    owner: programId,
+                    decodedTo: MarketStatLayoutV3.self
+                )
+                .map {$0 as SerumSwapMarketStatLayout}
+            }
+            
+            return requestAddressInfo
+                .flatMap {decoded -> Single<(SerumSwapMarketStatLayout, Decimals, Decimals)> in
+                    guard decoded.accountFlags.initialized,
+                          decoded.accountFlags.market,
+                          decoded.ownAddress == address
+                    else {
+                        throw SerumSwapError("Invalid market")
+                    }
+                    return Single.zip(
+                        .just(decoded),
+                        client.getDecimals(
+                            mintAddress: decoded.baseMint.base58EncodedString,
+                            programId: decoded.baseMint.base58EncodedString
+                        ),
+                        client.getDecimals(
+                            mintAddress: decoded.baseMint.base58EncodedString,
+                            programId: decoded.quoteMint.base58EncodedString
+                        )
+                    )
+                }
+                .map {decoded, baseDecimal, quoteDecimal in
+                    Market(
+                        decoded: decoded,
+                        baseMintDecimals: baseDecimal,
+                        quoteMintDecimals: quoteDecimal,
+                        skipPreflight: skipPreflight,
+                        commitment: commitment,
+                        programId: programId,
+                        layoutOverride: layoutOverride
+                    )
+                }
+            
+        }
+        
+        private static func getAccountInfoAndVerifyOwner<T: DecodableBufferLayout>(
+            client: SerumSwapAPIClient,
+            account: PublicKey,
+            owner: PublicKey,
+            decodedTo type: T.Type
+        ) -> Single<T> {
+            client.getAccountInfo(
+                account: account.base58EncodedString,
+                decodedTo: type
+            )
+            .map { info in
+                guard info.owner == owner.base58EncodedString else {
+                    throw SerumSwapError("Address not owned by program")
+                }
+                return info.data
+            }
+        }
     }
 }
 
+
+// MARK: - Models
 protocol SerumSwapMarketStatLayout {
     static var span: UInt64 {get}
     var accountFlags: SerumSwap.AccountFlags {get}

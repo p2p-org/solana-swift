@@ -49,10 +49,10 @@ extension SerumSwap {
             programId: PublicKey
         ) -> Single<[OpenOrders]> {
             
-            let memcmp = SolanaSDK.EncodableWrapper(
+            let memcmp = EncodableWrapper(
                 wrapped: [
-                    "offset": SolanaSDK.EncodableWrapper(wrapped: PublicKey.numberOfBytes),
-                     "bytes": SolanaSDK.EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
+                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
                 ]
             )
             
@@ -70,17 +70,17 @@ extension SerumSwap {
             ownerAddress: PublicKey,
             programId: PublicKey
         ) -> Single<[OpenOrders]> {
-            let memcmp1 = SolanaSDK.EncodableWrapper(
+            let memcmp1 = EncodableWrapper(
                 wrapped: [
-                    "offset": SolanaSDK.EncodableWrapper(wrapped: PublicKey.numberOfBytes),
-                     "bytes": SolanaSDK.EncodableWrapper(wrapped: marketAddress.base58EncodedString)
+                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                     "bytes": EncodableWrapper(wrapped: marketAddress.base58EncodedString)
                 ]
             )
             
-            let memcmp2 = SolanaSDK.EncodableWrapper(
+            let memcmp2 = EncodableWrapper(
                 wrapped: [
-                    "offset": SolanaSDK.EncodableWrapper(wrapped: PublicKey.numberOfBytes),
-                     "bytes": SolanaSDK.EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
+                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
                 ]
             )
             
@@ -118,7 +118,7 @@ extension SerumSwap {
         private static func getFilteredProgramAccounts(
             client: SerumSwapAPIClient,
             ownerAddress: PublicKey,
-            filter: [[String: SolanaSDK.EncodableWrapper]],
+            filter: [[String: EncodableWrapper]],
             programId: PublicKey
         ) -> Single<[OpenOrders]> {
             var filter = filter

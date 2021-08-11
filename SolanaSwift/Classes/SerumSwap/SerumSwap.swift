@@ -23,6 +23,8 @@ public class SerumSwap {
     public typealias TokenProgram = SolanaSDK.TokenProgram
     public typealias Lamports = SolanaSDK.Lamports
     public typealias Decimals = SolanaSDK.Decimals
+    public typealias EncodableWrapper = SolanaSDK.EncodableWrapper
+    public typealias BufferInfo = SolanaSDK.BufferInfo
     
     // MARK: - Nested type
     public struct SignersAndInstructions {

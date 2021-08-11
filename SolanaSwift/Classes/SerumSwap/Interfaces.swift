@@ -14,6 +14,10 @@ protocol SerumSwapAPIClient {
         account: String,
         decodedTo: T.Type
     ) -> Single<SolanaSDK.BufferInfo<T>>
+    func getMintData(
+        mintAddress: String,
+        programId: String
+    ) -> Single<SolanaSDK.Mint>
     func getMinimumBalanceForRentExemption(
         span: UInt64
     ) -> Single<UInt64>
@@ -47,6 +51,16 @@ protocol SerumSwapAPIClient {
         destinationMint: SolanaSDK.PublicKey,
         feePayer: SolanaSDK.PublicKey
     ) -> Single<SolanaSDK.AccountInstructions>
+}
+
+extension SerumSwapAPIClient {
+    func getDecimals(
+        mintAddress: String,
+        programId: String
+    ) -> Single<SolanaSDK.Decimals> {
+        getMintData(mintAddress: mintAddress, programId: programId)
+            .map {$0.decimals}
+    }
 }
 
 protocol SerumSwapAccountProvider {
