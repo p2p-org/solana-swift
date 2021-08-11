@@ -54,6 +54,14 @@ extension SerumSwap {
             return .init(elements: elements)
         }
     }
+    
+    public struct Blob1024: BufferLayoutProperty {
+        public static var numberOfBytes: Int {1024}
+        
+        public static func fromBytes(bytes: [UInt8]) throws -> Blob1024 {
+            Blob1024()
+        }
+    }
 
     public struct Blob7: BufferLayoutProperty {
         public static var numberOfBytes: Int {7}

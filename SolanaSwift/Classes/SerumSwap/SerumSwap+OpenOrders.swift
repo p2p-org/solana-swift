@@ -10,7 +10,7 @@ import BufferLayoutSwift
 import RxSwift
 
 extension SerumSwap {
-    public class OpenOrders {
+    public struct OpenOrders {
         let address: PublicKey
         let data: SerumSwapOpenOrdersLayoutType
         let programId: PublicKey
