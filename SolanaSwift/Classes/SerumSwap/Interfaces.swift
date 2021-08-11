@@ -10,6 +10,10 @@ import RxSwift
 import BufferLayoutSwift
 
 protocol SerumSwapAPIClient: OpenOrdersAPIClient {
+    func getAccountInfo<T: DecodableBufferLayout>(
+        account: String,
+        decodedTo: T.Type
+    ) -> Single<SolanaSDK.BufferInfo<T>>
     func getMarketAddressIfNeeded(
         fromMint: SolanaSDK.PublicKey,
         toMint: SolanaSDK.PublicKey

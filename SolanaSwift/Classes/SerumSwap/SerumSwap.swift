@@ -219,8 +219,7 @@ public class SerumSwap {
         }
         
         return instructionRequest
-            .map {[weak self] instruction in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .map {instruction in
                 return .init(
                     signers: [],
                     instructions: [instruction]
