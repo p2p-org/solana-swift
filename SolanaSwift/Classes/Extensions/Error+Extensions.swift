@@ -11,4 +11,8 @@ extension Error {
     public var readableDescription: String {
         (self as? LocalizedError)?.errorDescription ?? localizedDescription
     }
+    
+    var isCouldNotRetrieveAccountInfoError: Bool {
+        (self as? SolanaSDK.Error) == SolanaSDK.Error.other("Could not retrieve account info")
+    }
 }
