@@ -64,6 +64,43 @@ extension SerumSwap {
             )
         }
         
+        static func findAnOpenOrderOrCreateOne(
+            client: SerumSwapAPIClient,
+            marketAddress: PublicKey,
+            ownerAddress: PublicKey,
+            programId: PublicKey,
+            minRentExemption: UInt64? = nil
+        ) -> Single<(existingOpenOrder: PublicKey?, newOpenOrder: SignersAndInstructions?)> {
+            findForMarketAndOwner(
+                client: client,
+                marketAddress: marketAddress,
+                ownerAddress: ownerAddress,
+                programId: programId
+            )
+            .map {$0.first?.address}
+            .flatMap { openOrder in
+                if let openOrder = openOrder {
+                    return .just((existingOpenOrder: openOrder, newOpenOrder: nil))
+                }
+                let newOpenOrder = try Account(network: .mainnetBeta)
+                return makeCreateAccountInstruction(
+                    client: client,
+                    marketAddress: marketAddress,
+                    ownerAddress: ownerAddress,
+                    newAccountAddress: newOpenOrder.publicKey,
+                    programId: programId,
+                    minRentExemption: minRentExemption
+                )
+                    .map {(
+                        existingOpenOrder: nil,
+                        newOpenOrder: .init(
+                            signers: [newOpenOrder],
+                            instructions: [$0]
+                        )
+                    )}
+            }
+        }
+        
         static func findForMarketAndOwner(
             client: SerumSwapAPIClient,
             marketAddress: PublicKey,
@@ -100,10 +137,18 @@ extension SerumSwap {
             marketAddress: PublicKey,
             ownerAddress: PublicKey,
             newAccountAddress: PublicKey,
-            programId: PublicKey
+            programId: PublicKey,
+            minRentExemption: UInt64? = nil
         ) -> Single<TransactionInstruction> {
             let span = getLayoutSpan(programId: programId.base58EncodedString)
-            return client.getMinimumBalanceForRentExemption(span: span)
+            let requestMinRentExemption: Single<UInt64>
+            if let minRentExemption = minRentExemption {
+                requestMinRentExemption = .just(minRentExemption)
+            } else {
+                requestMinRentExemption = client.getMinimumBalanceForRentExemption(span: span)
+            }
+            
+            return requestMinRentExemption
                 .map {minRentExemption in
                     SystemProgram.createAccountInstruction(
                         from: ownerAddress,
@@ -113,6 +158,14 @@ extension SerumSwap {
                         programPubkey: programId
                     )
                 }
+        }
+        
+        static func getMinimumBalanceForRentExemption(
+            client: SerumSwapAPIClient,
+            programId: PublicKey
+        ) -> Single<UInt64> {
+            let span = getLayoutSpan(programId: programId.base58EncodedString)
+            return client.getMinimumBalanceForRentExemption(span: span)
         }
         
         private static func getFilteredProgramAccounts(
