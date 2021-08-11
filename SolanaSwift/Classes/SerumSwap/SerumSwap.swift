@@ -171,7 +171,12 @@ public class SerumSwap {
         .map {[weak self] createAccountInstruction in
             guard let self = self else {throw SerumSwapError.unknown}
             var instructions = [createAccountInstruction]
-            instructions.append(self.initAccountInstruction())
+            instructions.append(
+                self.initAccountInstruction(
+                    order: newAccount.publicKey,
+                    marketAddress: marketAddress
+                )
+            )
             let signers = [newAccount]
             return .init(signers: signers, instructions: instructions)
         }
@@ -247,11 +252,11 @@ public class SerumSwap {
                 throw SerumSwapError("No open orders accounts left to close")
             }
             if let order = ooAccsFrom.first {
-                return self.closeAccountInstruction(order: order)
+                return self.closeAccountInstruction(order: order.address, marketAddress: marketFrom)
             }
             
             if let order = ooAccsTo.first {
-                return self.closeAccountInstruction(order: order)
+                return self.closeAccountInstruction(order: order.address, marketAddress: marketTo)
             }
             
             throw SerumSwapError.unknown
@@ -280,7 +285,7 @@ public class SerumSwap {
             .map {[weak self] openOrders, marketAddress in
                 guard let self = self else {throw SerumSwapError.unknown}
                 guard let order = openOrders.first else {throw SerumSwapError("Open orders account doesn't exist")}
-                return self.closeAccountInstruction(order: order)
+                return self.closeAccountInstruction(order: order.publicKey, marketAddress: marketAddress)
             }
     }
     
@@ -418,6 +423,7 @@ public class SerumSwap {
         .flatMap {[weak self] minExpectedSwapAmount, sourceAccountInstructions, destinationAccountInstructions in
             guard let self = self else { throw SerumSwapError.unknown }
             
+            let signers = sourceAccountInstructions.signers + destinationAccountInstructions.signers
             let instructions = sourceAccountInstructions.instructions + destinationAccountInstructions.instructions
             let cleanupInstructions = sourceAccountInstructions.cleanupInstructions + destinationAccountInstructions.cleanupInstructions
             
@@ -432,6 +438,7 @@ public class SerumSwap {
                     amount: amount,
                     minExpectedSwapAmount: minExpectedSwapAmount,
                     referral: referral,
+                    currentSigners: signers,
                     currentInstructions: instructions,
                     cleanupInstructions: cleanupInstructions
                 )
@@ -446,6 +453,7 @@ public class SerumSwap {
                     amount: amount,
                     minExpectedSwapAmount: minExpectedSwapAmount,
                     referral: referral,
+                    currentSigners: signers,
                     currentInstructions: instructions,
                     cleanupInstructions: cleanupInstructions
                 )
@@ -488,6 +496,7 @@ public class SerumSwap {
                         amount: amount,
                         minExpectedSwapAmount: minExpectedSwapAmount,
                         referral: referral,
+                        currentSigners: signers,
                         currentInstructions: instructions,
                         cleanupInstructions: cleanupInstructions
                     )
@@ -505,11 +514,12 @@ public class SerumSwap {
         amount: Lamports,
         minExpectedSwapAmount: Lamports,
         referral: PublicKey?,
+        currentSigners: [Account],
         currentInstructions: [TransactionInstruction],
         cleanupInstructions: [TransactionInstruction]
     ) -> Single<SignersAndInstructions> {
-        // load market
-        let requestLoadMarket = client.getMarketAddress(
+        
+        client.getMarketAddress(
             usdxMint: quoteMint,
             baseMint: baseMint
         )
@@ -517,8 +527,68 @@ public class SerumSwap {
                 guard let self = self else {throw SerumSwapError.unknown}
                 return Market.load(client: self.client, address: marketAddress, programId: dexPID)
             }
-            
-        
+            .flatMap {[weak self] marketClient -> Single<(Market, PublicKey, PublicKey?)> in
+                guard let self = self else {throw SerumSwapError.unknown}
+                return Single.zip(
+                    .just(marketClient),
+                    Self.getVaultOwnerAndNonce(
+                        marketPublicKey: marketClient.address,
+                        dexProgramId: dexPID
+                    ).map {$0.vaultOwner},
+                    OpenOrders.findForMarketAndOwner(
+                        client: self.client,
+                        marketAddress: marketClient.address,
+                        ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                        programId: dexPID
+                    )
+                        .map {$0.first?.address}
+                )
+            }
+            .flatMap {[weak self] market, vaultOwner, openOrder -> Single<(Market, PublicKey, PublicKey, SignersAndInstructions)> in
+                guard let self = self else {throw SerumSwapError.unknown}
+                
+                if let openOrder = openOrder {
+                    return .just((market, vaultOwner, openOrder, .init(signers: [], instructions: [])))
+                }
+                
+                let oo = try Account(network: .mainnetBeta)
+                return OpenOrders.makeCreateAccountInstruction(
+                    client: self.client,
+                    marketAddress: market.address,
+                    ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                    newAccountAddress: oo.publicKey,
+                    programId: dexPID
+                )
+                .map {(market, vaultOwner, oo.publicKey, .init(signers: [oo], instructions: [$0]))}
+            }
+            .map {[weak self] market, vaultOwner, openOrder, newSignersAndInstructions -> SignersAndInstructions in
+                guard let self = self else {throw SerumSwapError.unknown}
+                
+                let signers = currentSigners + newSignersAndInstructions.signers
+                var instructions = currentInstructions + newSignersAndInstructions.instructions
+                var cleanupInstructions = cleanupInstructions
+                
+                // add swap instruction
+                instructions.append(
+                    self.swapInstruction(size: size, amount: amount, minExpectedSwapAmount: minExpectedSwapAmount, market: market, vaultSigner: vaultOwner, openOrders: openOrder, pcWallet: pcWallet, coinWallet: coinWallet, referral: referral)
+                )
+                
+                // TODO: - enable once the DEX supports closing open orders accounts.
+                let enabled = false
+                // If an account was opened for this swap, then close it in the same transaction.
+                if let openedAccount = newSignersAndInstructions.signers.first,
+                   enabled // TODO: - remove later
+                {
+                    cleanupInstructions.append(
+                        self.closeAccountInstruction(
+                            order: openedAccount.publicKey,
+                            marketAddress: market.address
+                        )
+                    )
+                }
+                   
+                return .init(signers: signers, instructions: instructions + cleanupInstructions)
+            }
     }
     
     private func swapTransitive(
@@ -530,6 +600,7 @@ public class SerumSwap {
         amount: Lamports,
         minExpectedSwapAmount: Lamports,
         referral: PublicKey?,
+        currentSigners: [Account],
         currentInstructions: [TransactionInstruction],
         cleanupInstructions: [TransactionInstruction]
     ) -> Single<SignersAndInstructions> {
@@ -570,22 +641,26 @@ public class SerumSwap {
     }
     
     private func closeAccountInstruction(
-        order: OpenOrders
+        order: PublicKey,
+        marketAddress: PublicKey
     ) -> TransactionInstruction {
         // TODO: - closeAccount instruction
 //                this.program.instruction.closeAccount({
 //                  accounts: {
-//                    openOrders: ooAccsTo[0].publicKey,
+//                    openOrders: order,
 //                    authority: this.program.provider.wallet.publicKey,
 //                    destination: this.program.provider.wallet.publicKey,
-//                    market: marketTo,
+//                    market: marketAddress,
 //                    dexProgram: DEX_PID,
 //                  },
 //                }),
         fatalError()
     }
     
-    private func initAccountInstruction() -> TransactionInstruction {
+    private func initAccountInstruction(
+        order: PublicKey,
+        marketAddress: PublicKey
+    ) -> TransactionInstruction {
         // TODO: - initAccount instruction
 //        this.program.instruction.initAccount({
 //            accounts: {
@@ -595,6 +670,47 @@ public class SerumSwap {
 //                dexProgram: DEX_PID,
 //                rent: SYSVAR_RENT_PUBKEY,
 //            },
+//        }),
+        fatalError()
+    }
+    
+    private func swapInstruction(
+        size: Size,
+        amount: Lamports,
+        minExpectedSwapAmount: Lamports,
+        market: Market,
+        vaultSigner: PublicKey,
+        openOrders: PublicKey,
+        pcWallet: PublicKey,
+        coinWallet: PublicKey,
+        referral: PublicKey?
+    ) -> TransactionInstruction {
+//        this.program.instruction.swap(side, amount, minExpectedSwapAmount, {
+//            accounts: {
+//              market: {
+//                market: marketClient.address,
+//                // @ts-ignore
+//                requestQueue: marketClient._decoded.requestQueue,
+//                // @ts-ignore
+//                eventQueue: marketClient._decoded.eventQueue,
+//                bids: marketClient.bidsAddress,
+//                asks: marketClient.asksAddress,
+//                // @ts-ignore
+//                coinVault: marketClient._decoded.baseVault,
+//                // @ts-ignore
+//                pcVault: marketClient._decoded.quoteVault,
+//                vaultSigner,
+//                openOrders,
+//                orderPayerTokenAccount: side.bid ? pcWallet : coinWallet,
+//                coinWallet: coinWallet,
+//              },
+//              pcWallet,
+//              authority: this.program.provider.wallet.publicKey,
+//              dexProgram: DEX_PID,
+//              tokenProgram: TOKEN_PROGRAM_ID,
+//              rent: SYSVAR_RENT_PUBKEY,
+//            },
+//            remainingAccounts: referral && [referral],
 //        }),
         fatalError()
     }
