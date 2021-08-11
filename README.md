@@ -11,6 +11,7 @@ Solana-blockchain client, written in pure swift.
 - [x] Networking with POST methods for comunicating with solana-based networking system
 - [x] Create, sign transactions
 - [x] Socket communication
+- [x] Serum DEX Swap
 
 ## Example
 

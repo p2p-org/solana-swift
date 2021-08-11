@@ -15,15 +15,23 @@ extension SerumSwap {
         private typealias FeeDiscountKeysCache = [String: (accounts: [FeeDiscountAccount], ts: UInt64)]
                 
         // MARK: - Properties
-        private let decoded: SerumSwapMarketStatLayout
+        let decoded: SerumSwapMarketStatLayout
         private let baseSplTokenDecimals: Decimals
         private let quoteSplTokenDecimals: Decimals
         private let skipPreflight: Bool
         private let commitment: SolanaSDK.Commitment
-        private let programId: PublicKey
+        let programId: PublicKey
         private let layoutOverride: SerumSwapMarketStatLayout.Type?
         private let openOrdersAccountsCache: OpenOrdersAccountsCache = [:]
         private let feeDiscountKeysCache: FeeDiscountKeysCache = [:]
+        
+        var address: PublicKey {decoded.ownAddress}
+        var publicKey: PublicKey {address}
+        var baseMintAddress: PublicKey {decoded.baseMint}
+        var quoteMintAddress: PublicKey {decoded.quoteMint}
+        var bidsAddress: PublicKey {decoded.bids}
+        var asksAddress: PublicKey {decoded.asks}
+        
         
         // MARK: - Initializer
         init(
