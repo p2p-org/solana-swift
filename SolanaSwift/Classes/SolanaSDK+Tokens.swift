@@ -101,8 +101,7 @@ extension SolanaSDK {
         getAccountInfo(account: account, decodedTo: EmptyInfo.self)
             .map {_ in true}
             .catch {error in
-                if let error = error as? Error, error == .other("Could not retrieve account info")
-                {
+                if error.isCouldNotRetrieveAccountInfoError {
                     return .just(false)
                 }
                 throw error

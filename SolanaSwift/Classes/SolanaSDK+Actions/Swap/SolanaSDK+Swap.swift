@@ -350,9 +350,7 @@ extension SolanaSDK {
                 }
                 .catch { error in
                     // associated address is not available
-                    if let error = error as? Error,
-                       error == Error.other("Could not retrieve account info")
-                    {
+                    if error.isCouldNotRetrieveAccountInfoError {
                         return .just(false)
                     }
                     throw error
