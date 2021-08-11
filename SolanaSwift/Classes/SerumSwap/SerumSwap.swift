@@ -264,7 +264,7 @@ public class SerumSwap {
     ) -> Single<TransactionInstruction>
     {
         
-        return client.getMarketAddress(fromMint: fromMint, toMint: toMint)
+        return client.getMarketAddress(usdxMint: fromMint, baseMint: toMint)
             .flatMap {[weak self] marketAddress -> Single<([OpenOrders], PublicKey)> in
                 guard let self = self else {throw SerumSwapError.unknown}
                 return Single.zip(
@@ -508,6 +508,16 @@ public class SerumSwap {
         currentInstructions: [TransactionInstruction],
         cleanupInstructions: [TransactionInstruction]
     ) -> Single<SignersAndInstructions> {
+        // load market
+        let requestLoadMarket = client.getMarketAddress(
+            usdxMint: quoteMint,
+            baseMint: baseMint
+        )
+            .flatMap {[weak self] marketAddress -> Single<Market> in
+                guard let self = self else {throw SerumSwapError.unknown}
+                return Market.load(client: self.client, address: marketAddress, programId: dexPID)
+            }
+            
         
     }
     
@@ -534,8 +544,8 @@ public class SerumSwap {
     ) -> Single<(marketFrom: PublicKey, marketTo: PublicKey, marketFromOrders: [OpenOrders], marketToOrders: [OpenOrders])>
     {
         Single.zip(
-            client.getMarketAddress(fromMint: usdxMint, toMint: fromMint),
-            client.getMarketAddress(fromMint: usdxMint, toMint: toMint)
+            client.getMarketAddress(usdxMint: usdxMint, baseMint: fromMint),
+            client.getMarketAddress(usdxMint: usdxMint, baseMint: toMint)
         )
         .flatMap {[weak self] marketFrom, marketTo -> Single<(PublicKey, PublicKey, [OpenOrders], [OpenOrders])> in
             guard let self = self else {throw SerumSwapError.unknown}

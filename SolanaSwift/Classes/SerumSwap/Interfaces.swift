@@ -31,8 +31,8 @@ protocol SerumSwapAPIClient {
         toMint: SolanaSDK.PublicKey
     ) -> Single<SolanaSDK.PublicKey>
     func getMarketAddress(
-        fromMint: SolanaSDK.PublicKey,
-        toMint: SolanaSDK.PublicKey
+        usdxMint: SolanaSDK.PublicKey,
+        baseMint: SolanaSDK.PublicKey
     ) -> Single<SolanaSDK.PublicKey>
     func usdcPathExists(
         fromMint: SolanaSDK.PublicKey,

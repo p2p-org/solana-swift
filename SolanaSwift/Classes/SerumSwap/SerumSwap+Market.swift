@@ -95,7 +95,7 @@ extension SerumSwap {
             skipPreflight: Bool = false,
             commitment: SolanaSDK.Commitment = "recent",
             programId: PublicKey,
-            layoutOverride: SerumSwapMarketStatLayout.Type?
+            layoutOverride: SerumSwapMarketStatLayout.Type? = nil
         ) -> Single<Market> {
             // layout type
             let layoutType = layoutOverride ?? getLayoutType(programId: programId.base58EncodedString)
