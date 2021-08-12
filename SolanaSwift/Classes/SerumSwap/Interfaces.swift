@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 import BufferLayoutSwift
 
-protocol SerumSwapAPIClient {
+public protocol SerumSwapAPIClient {
     func getAccountInfo<T: DecodableBufferLayout>(
         account: String,
         decodedTo: T.Type
@@ -64,6 +64,6 @@ extension SerumSwapAPIClient {
     }
 }
 
-protocol SerumSwapAccountProvider {
+public protocol SerumSwapAccountProvider {
     func getNativeWalletAddress() -> SolanaSDK.PublicKey?
 }

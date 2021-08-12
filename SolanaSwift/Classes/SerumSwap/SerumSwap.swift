@@ -50,7 +50,7 @@ public class SerumSwap {
     let accountProvider: SerumSwapAccountProvider
     
     // MARK: - Initializers
-    init(client: SerumSwapAPIClient, accountProvider: SerumSwapAccountProvider) {
+    public init(client: SerumSwapAPIClient, accountProvider: SerumSwapAccountProvider) {
         self.client = client
         self.accountProvider = accountProvider
     }
