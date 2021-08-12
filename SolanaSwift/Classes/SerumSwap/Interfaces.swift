@@ -26,9 +26,10 @@ protocol SerumSwapAPIClient {
         configs: SolanaSDK.RequestConfiguration?,
         decodedTo: T.Type
     ) -> Single<SolanaSDK.ProgramAccounts<T>>
+    // Returns the `usdxMint` quoted market address *if* no open orders account already exists.
     func getMarketAddressIfNeeded(
-        fromMint: SolanaSDK.PublicKey,
-        toMint: SolanaSDK.PublicKey
+        usdxMint: SolanaSDK.PublicKey,
+        baseMint: SolanaSDK.PublicKey
     ) -> Single<SolanaSDK.PublicKey>
     func getMarketAddress(
         usdxMint: SolanaSDK.PublicKey,
@@ -64,5 +65,5 @@ extension SerumSwapAPIClient {
 }
 
 protocol SerumSwapAccountProvider {
-    func getNativeWalletAddress() -> SolanaSDK.PublicKey
+    func getNativeWalletAddress() -> SolanaSDK.PublicKey?
 }

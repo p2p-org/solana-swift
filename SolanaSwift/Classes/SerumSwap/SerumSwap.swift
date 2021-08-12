@@ -9,9 +9,9 @@ import Foundation
 import RxSwift
 
 // MARK: - Constants
-private var usdcMint: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") }
-private var usdtMint: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB") }
-private var dexPID: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin") }
+var usdcMint: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") }
+var usdtMint: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB") }
+var dexPID: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin") }
 
 public class SerumSwap {
     public typealias Account = SolanaSDK.Account
@@ -108,8 +108,8 @@ public class SerumSwap {
     {
         
         client.getMarketAddressIfNeeded(
-            fromMint: fromMint,
-            toMint: toMint
+            usdxMint: fromMint,
+            baseMint: toMint
         )
         .flatMap {[weak self] marketAddress in
             guard let self = self else {throw SerumSwapError.unknown}
@@ -158,7 +158,10 @@ public class SerumSwap {
             return .error(error)
         }
         
-        let ownerAddress = accountProvider.getNativeWalletAddress()
+        guard let ownerAddress = accountProvider.getNativeWalletAddress()
+        else {
+            return .error(SerumSwapError.unauthorized)
+        }
         
         // form instruction
         return OpenOrders.makeCreateAccountInstruction(
@@ -268,6 +271,8 @@ public class SerumSwap {
         toMint: PublicKey
     ) -> Single<TransactionInstruction>
     {
+        guard let ownerAddress = self.accountProvider.getNativeWalletAddress()
+        else {return .error(SerumSwapError.unauthorized)}
         
         return client.getMarketAddress(usdxMint: fromMint, baseMint: toMint)
             .flatMap {[weak self] marketAddress -> Single<([OpenOrders], PublicKey)> in
@@ -276,7 +281,7 @@ public class SerumSwap {
                     OpenOrders.findForMarketAndOwner(
                         client: self.client,
                         marketAddress: marketAddress,
-                        ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                        ownerAddress: ownerAddress,
                         programId: dexPID
                     ),
                     .just(marketAddress)
@@ -386,6 +391,9 @@ public class SerumSwap {
         feePayer: PublicKey?,
         configs: SolanaSDK.RequestConfiguration? = nil
     ) -> Single<SignersAndInstructions> {
+        guard let owner = accountProvider.getNativeWalletAddress()
+        else {return .error(SerumSwapError.unauthorized)}
+        
         // min expected swap amount
         let requestMinExpectedSwapAmount: Single<Lamports>
         if let minExpectedSwapAmount = minExpectedSwapAmount {
@@ -400,19 +408,19 @@ public class SerumSwap {
         
         // Prepare source account, create and init new account if fromWallet is native.
         let requestSourceAccount = client.prepareSourceAccountAndInstructions(
-            myNativeWallet: accountProvider.getNativeWalletAddress(),
+            myNativeWallet: owner,
             source: fromWallet,
             sourceMint: fromMint,
             amount: amount,
-            feePayer: feePayer ?? accountProvider.getNativeWalletAddress()
+            feePayer: feePayer ?? owner
         )
         
         // Prepare destination account, create associated token if toWallet is native.
         let requestDestinationAccount = client.prepareDestinationAccountAndInstructions(
-            myAccount: accountProvider.getNativeWalletAddress(),
+            myAccount: owner,
             destination: toWallet,
             destinationMint: toMint,
-            feePayer: feePayer ?? accountProvider.getNativeWalletAddress()
+            feePayer: feePayer ?? owner
         )
         
         // Swap
@@ -473,12 +481,12 @@ public class SerumSwap {
                     guard let self = self else { throw SerumSwapError.unknown }
                     if usdcPathExists {
                         return try PublicKey.associatedTokenAddress(
-                            walletAddress: self.accountProvider.getNativeWalletAddress(),
+                            walletAddress: owner,
                             tokenMintAddress: usdcMint
                         )
                     } else {
                         return try PublicKey.associatedTokenAddress(
-                            walletAddress: self.accountProvider.getNativeWalletAddress(),
+                            walletAddress: owner,
                             tokenMintAddress: usdtMint
                         )
                     }
@@ -533,6 +541,10 @@ public class SerumSwap {
             }
             .flatMap {[weak self] marketClient, minRemExemption -> Single<(Market, PublicKey, GetOpenOrderResult)> in
                 guard let self = self else {throw SerumSwapError.unknown}
+                
+                guard let owner = self.accountProvider.getNativeWalletAddress()
+                else {throw SerumSwapError.unauthorized}
+                
                 return Single.zip(
                     .just(marketClient),
                     Self.getVaultOwnerAndNonce(
@@ -542,7 +554,7 @@ public class SerumSwap {
                     OpenOrders.findAnOpenOrderOrCreateOne(
                         client: self.client,
                         marketAddress: marketClient.address,
-                        ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                        ownerAddress: owner,
                         programId: dexPID,
                         minRentExemption: minRemExemption
                     )
@@ -614,6 +626,10 @@ public class SerumSwap {
             }
             .flatMap {[weak self] fromMarket, toMarket, minRentExemption -> Single<(fromMarket: Market, toMarket: Market, fromVaultSigner: PublicKey, toVaultSigner: PublicKey, fromOpenOrder: GetOpenOrderResult, toOpenOrder: GetOpenOrderResult)> in
                 guard let self = self else {throw SerumSwapError.unknown}
+                
+                guard let owner = self.accountProvider.getNativeWalletAddress()
+                else {throw SerumSwapError.unauthorized}
+                
                 return Single.zip(
                     .just(fromMarket),
                     .just(toMarket),
@@ -628,14 +644,14 @@ public class SerumSwap {
                     OpenOrders.findAnOpenOrderOrCreateOne(
                         client: self.client,
                         marketAddress: fromMarket.address,
-                        ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                        ownerAddress: owner,
                         programId: dexPID,
                         minRentExemption: minRentExemption
                     ),
                     OpenOrders.findAnOpenOrderOrCreateOne(
                         client: self.client,
                         marketAddress: toMarket.address,
-                        ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                        ownerAddress: owner,
                         programId: dexPID,
                         minRentExemption: minRentExemption
                     )
@@ -703,19 +719,23 @@ public class SerumSwap {
         )
         .flatMap {[weak self] marketFrom, marketTo -> Single<(PublicKey, PublicKey, [OpenOrders], [OpenOrders])> in
             guard let self = self else {throw SerumSwapError.unknown}
+            
+            guard let owner = self.accountProvider.getNativeWalletAddress()
+            else {throw SerumSwapError.unauthorized}
+            
             return Single.zip(
                 .just(marketFrom),
                 .just(marketTo),
                 OpenOrders.findForMarketAndOwner(
                     client: self.client,
                     marketAddress: marketFrom,
-                    ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                    ownerAddress: owner,
                     programId: dexPID
                 ),
                 OpenOrders.findForMarketAndOwner(
                     client: self.client,
                     marketAddress: marketTo,
-                    ownerAddress: self.accountProvider.getNativeWalletAddress(),
+                    ownerAddress: owner,
                     programId: dexPID
                 )
             )

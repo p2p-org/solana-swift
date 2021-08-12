@@ -17,6 +17,10 @@ struct SerumSwapError: Error, ExpressibleByStringLiteral {
         .init(stringLiteral: "Unknown")
     }
     
+    static var unauthorized: Self {
+        .init(stringLiteral: "Unauthorized")
+    }
+    
     init(_ string: StaticString) {
         self.init(stringLiteral: string)
     }
