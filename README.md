@@ -121,7 +121,7 @@ solanaSDK.sendSPLTokens(
 * Swap with orca:
 ```swift
 solanaSDK.swap(
-    source: PublicKey,
+    source: PublicKey, // if source is a native SOL wallet, send the account's pubkey here anyway
     sourceMint: PublicKey,
     destination: PublicKey? = nil,
     destinationMint: PublicKey,
