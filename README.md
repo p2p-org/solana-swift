@@ -11,6 +11,7 @@ Solana-blockchain client, written in pure swift.
 - [x] Networking with POST methods for comunicating with solana-based networking system
 - [x] Create, sign transactions
 - [x] Socket communication
+- [x] Orca swap
 - [x] Serum DEX Swap
 
 ## Example
@@ -79,7 +80,7 @@ let solanaSDK = SolanaSDK(endpoint: <YOUR_API_ENDPOINT>, accountStorage: Keychai
 * Creating an account:
 ```swift
 let mnemonic = Mnemonic()
-let account = try SolanaSDK.Account(phrase: mnemonic.phrase)
+let account = try SolanaSDK.Account(phrase: mnemonic.phrase, network: .mainnetBeta, derivablePath: .default)
 try solanaSDK.accountStorage.save(account)
 ```
 * Send pre-defined POST methods, which return a `RxSwift.Single`. [List of predefined methods](https://github.com/p2p-org/solana-swift/blob/main/SolanaSwift/Classes/Generated/SolanaSDK%2BGeneratedMethods.swift):
@@ -92,14 +93,49 @@ solanaSDK.getBalance(account: account, commitment: "recent")
     })
     .disposed(by: disposeBag)
 ```
-* Send token with `send(to:, amount:)` method:
+* Send token:
 ```swift
-solanaSDK.send(to: <ACCOUNT_PUBLIC_KEY>, amount: <LAMPORTS>)
+solanaSDK.sendNativeSOL(
+    to destination: String,
+    amount: UInt64,
+    isSimulation: Bool = false
+)
+    .subscribe(onNext: {result in
+        print(result)
+    })
+    .disposed(by: disposeBag)
+    
+solanaSDK.sendSPLTokens(
+    mintAddress: String,
+    decimals: Decimals,
+    from fromPublicKey: String,
+    to destinationAddress: String,
+    amount: UInt64,
+    isSimulation: Bool = false
+)
     .subscribe(onNext: {result in
         print(result)
     })
     .disposed(by: disposeBag)
 ```
+
+* Swap with orca:
+```swift
+solanaSDK.swap(
+    source: PublicKey, // if source is a native SOL wallet, send the account's pubkey here anyway
+    sourceMint: PublicKey,
+    destination: PublicKey? = nil,
+    destinationMint: PublicKey,
+    slippage: Double,
+    amount: UInt64,
+    isSimulation: Bool = false
+)
+    .subscribe(onNext: {result in
+        print(result)
+    })
+    .disposed(by: disposeBag)
+```
+
 * Send custom method, which was not defined by using method `request<T: Decodable>(method:, path:, bcMethod:, parameters:) -> Single<T>`
 
 Example:
