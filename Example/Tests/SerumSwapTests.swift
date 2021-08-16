@@ -26,7 +26,7 @@ class SerumSwapTests: RestAPITests {
         let request = serumSwap.swap(
             .init(
                 fromMint: try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
-                toMint: try SolanaSDK.PublicKey(string: "So11111111111111111111111111111111111111112"),
+                toMint: try SolanaSDK.PublicKey(string: "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"),
                 amount: 1000,
                 referral: nil,
                 quoteWallet: nil,
