@@ -26,7 +26,7 @@ extension SolanaSDK {
                 owner: account.publicKey
             )
             
-            return serializeAndSendWithFee(instructions: [instruction], signers: [account], isSimulation: isSimulation)
+            return serializeAndSend(instructions: [instruction], signers: [account], isSimulation: isSimulation)
         } catch {
             return .error(error)
         }

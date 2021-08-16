@@ -16,7 +16,7 @@ extension SolanaSDK {
     ///   - signers: signers
     ///   - isSimulation: define if this is a simulation or real transaction
     /// - Returns: transaction id
-    func serializeAndSendWithFee(
+    func serializeAndSend(
         instructions: [TransactionInstruction],
         recentBlockhash: String? = nil,
         signers: [Account],
@@ -58,14 +58,14 @@ extension SolanaSDK {
                     
                     if shouldRetry {
                         numberOfTries += 1
-                        return self.serializeAndSendWithFee(instructions: instructions, signers: signers, isSimulation: isSimulation)
+                        return self.serializeAndSend(instructions: instructions, signers: signers, isSimulation: isSimulation)
                     }
                 }
                 throw error
             }
     }
     
-    private func serializeTransaction(
+    public func serializeTransaction(
         instructions: [TransactionInstruction],
         recentBlockhash: String? = nil,
         signers: [Account],
