@@ -14,7 +14,7 @@ extension SolanaSDK {
         public let newWalletPubkey: String?
     }
     
-    struct AccountInstructions {
+    public struct AccountInstructions {
         let account: PublicKey
         let instructions: [TransactionInstruction]
         let cleanupInstructions: [TransactionInstruction]
@@ -228,7 +228,7 @@ extension SolanaSDK {
     }
     
     // MARK: - Account and instructions
-    func prepareSourceAccountAndInstructions(
+    public func prepareSourceAccountAndInstructions(
         myNativeWallet: PublicKey,
         source: PublicKey,
         sourceMint: PublicKey,
@@ -253,7 +253,7 @@ extension SolanaSDK {
         )
     }
     
-    func prepareDestinationAccountAndInstructions(
+    public func prepareDestinationAccountAndInstructions(
         myAccount: PublicKey,
         destination: PublicKey?,
         destinationMint: PublicKey,

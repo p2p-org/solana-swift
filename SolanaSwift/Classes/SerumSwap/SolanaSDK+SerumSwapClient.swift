@@ -9,11 +9,11 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK: SerumSwapAPIClient {
-    func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64> {
+    public func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64> {
         self.getMinimumBalanceForRentExemption(dataLength: span)
     }
     
-    func getMarketAddressIfNeeded(usdxMint: PublicKey, baseMint: PublicKey) -> Single<PublicKey> {
+    public func getMarketAddressIfNeeded(usdxMint: PublicKey, baseMint: PublicKey) -> Single<PublicKey> {
         getMarketAddress(usdxMint: usdxMint, baseMint: baseMint)
             .flatMap {[weak self] marketAddress -> Single<PublicKey> in
                 guard let self = self else {throw SerumSwapError.unknown}
@@ -36,7 +36,7 @@ extension SolanaSDK: SerumSwapAPIClient {
             }
     }
     
-    func getMarketAddress(usdxMint: PublicKey, baseMint: PublicKey) -> Single<PublicKey> {
+    public func getMarketAddress(usdxMint: PublicKey, baseMint: PublicKey) -> Single<PublicKey> {
         getTokensList()
             .map {list in
                 list.first { token in
@@ -62,7 +62,7 @@ extension SolanaSDK: SerumSwapAPIClient {
             }
     }
     
-    func usdcPathExists(fromMint: PublicKey, toMint: PublicKey) -> Single<Bool> {
+    public func usdcPathExists(fromMint: PublicKey, toMint: PublicKey) -> Single<Bool> {
         getTokensList()
             .map { tokens in
                 tokens.contains {$0.address == fromMint.base58EncodedString && $0.extensions?.serumV3Usdc != nil}
@@ -73,7 +73,7 @@ extension SolanaSDK: SerumSwapAPIClient {
 }
 
 extension SolanaSDK: SerumSwapAccountProvider {
-    func getNativeWalletAddress() -> PublicKey? {
+    public func getNativeWalletAddress() -> PublicKey? {
         accountStorage.account?.publicKey
     }
 }
