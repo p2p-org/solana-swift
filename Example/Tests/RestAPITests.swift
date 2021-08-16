@@ -17,11 +17,15 @@ class RestAPITests: XCTestCase {
     }
     var solanaSDK: SolanaSDK!
     var account: SolanaSDK.Account {solanaSDK.accountStorage.account!}
+    
+    var overridingAccount: String? {
+        nil
+    }
 
     override func setUpWithError() throws {
         let accountStorage = InMemoryAccountStorage()
         solanaSDK = SolanaSDK(endpoint: endpoint, accountStorage: accountStorage)
-        let account = try SolanaSDK.Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network)
+        let account = try SolanaSDK.Account(phrase: (overridingAccount ?? endpoint.network.testAccount).components(separatedBy: " "), network: endpoint.network)
         try accountStorage.save(account)
     }
     

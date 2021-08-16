@@ -33,6 +33,7 @@
 		BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */; };
 		BC81A2A425BE624300664A2C /* SystemProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2A325BE624300664A2C /* SystemProgramTests.swift */; };
 		BC81A2AB25BE628700664A2C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2AA25BE628700664A2C /* Constants.swift */; };
+		BC87FCA426CA3D830097A32B /* SerumSwapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC87FCA326CA3D830097A32B /* SerumSwapTests.swift */; };
 		BC8B53042664D25B00CA93DE /* DecodingSocketResponsesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8B53032664D25B00CA93DE /* DecodingSocketResponsesTests.swift */; };
 		BC966DB425BFDCA100F2AB36 /* RestAPIPoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC966DB325BFDCA100F2AB36 /* RestAPIPoolTests.swift */; };
 		BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */; };
@@ -136,6 +137,20 @@
 			remoteGlobalIDString = BD7CEAEABAA1E6C856FBC171E2EAED64;
 			remoteInfo = Ed25519HDKeySwift;
 		};
+		BC87FC9F26CA3D630097A32B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E4AA1FD58ED2F0709B0352477ECB7F36;
+			remoteInfo = BufferLayoutSwift;
+		};
+		BC87FCA126CA3D630097A32B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC23AE51254925F00029FF0B /* _Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = C3BB59B771973FE30B7046768711907C;
+			remoteInfo = Runtime;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -174,6 +189,7 @@
 		BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2A325BE624300664A2C /* SystemProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2AA25BE628700664A2C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		BC87FCA326CA3D830097A32B /* SerumSwapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerumSwapTests.swift; sourceTree = "<group>"; };
 		BC8B53032664D25B00CA93DE /* DecodingSocketResponsesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingSocketResponsesTests.swift; sourceTree = "<group>"; };
 		BC966DB325BFDCA100F2AB36 /* RestAPIPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPIPoolTests.swift; sourceTree = "<group>"; };
 		BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITransactionTests.swift; sourceTree = "<group>"; };
@@ -236,6 +252,7 @@
 				BC631EC325B96D6700138948 /* ProgramsTests */,
 				BC2EC2C825552DE9006EEDA5 /* RestAPITests */,
 				BCF5794C262ECD4E00E73226 /* CalculationTests */,
+				BC87FC8F26CA3D630097A32B /* SerumSwap */,
 				BCC49C2425BE872100D4D336 /* OtherTests */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 			);
@@ -295,9 +312,11 @@
 			children = (
 				BC23AE5F254925F10029FF0B /* Alamofire.framework */,
 				BC5FFECE256111AD002DB054 /* ASKSecp256k1.framework */,
+				BC87FCA026CA3D630097A32B /* BufferLayoutSwift.framework */,
 				BC23AE65254925F10029FF0B /* CryptoSwift.framework */,
 				BC7826D5264B87530061F762 /* Ed25519HDKeySwift.framework */,
 				BC23AE67254925F10029FF0B /* Pods_SolanaSwift_Tests.framework */,
+				BC87FCA226CA3D630097A32B /* Runtime.framework */,
 				BC23AE69254925F10029FF0B /* RxAlamofire.framework */,
 				BC23AE6B254925F10029FF0B /* RxBlocking.framework */,
 				BC4F6F2825B80FD3002BA313 /* RxCocoa.framework */,
@@ -332,6 +351,14 @@
 				BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */,
 			);
 			name = ProgramsTests;
+			sourceTree = "<group>";
+		};
+		BC87FC8F26CA3D630097A32B /* SerumSwap */ = {
+			isa = PBXGroup;
+			children = (
+				BC87FCA326CA3D830097A32B /* SerumSwapTests.swift */,
+			);
+			name = SerumSwap;
 			sourceTree = "<group>";
 		};
 		BCC49C2325BE86F600D4D336 /* CodableTests */ = {
@@ -523,6 +550,20 @@
 			remoteRef = BC7826D4264B87530061F762 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		BC87FCA026CA3D630097A32B /* BufferLayoutSwift.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = BufferLayoutSwift.framework;
+			remoteRef = BC87FC9F26CA3D630097A32B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BC87FCA226CA3D630097A32B /* Runtime.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Runtime.framework;
+			remoteRef = BC87FCA126CA3D630097A32B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -629,6 +670,7 @@
 				BC966DB425BFDCA100F2AB36 /* RestAPIPoolTests.swift in Sources */,
 				BC76B552263806100018A0FF /* AssociatedTokenProgramTests.swift in Sources */,
 				BCC49C1225BE864200D4D336 /* EncodingTests.swift in Sources */,
+				BC87FCA426CA3D830097A32B /* SerumSwapTests.swift in Sources */,
 				BCBBE23E25650A1700533F6B /* RegexTests.swift in Sources */,
 				BC3ADEBB2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift in Sources */,
 				BC23AEC2254928870029FF0B /* TransactionTests.swift in Sources */,
