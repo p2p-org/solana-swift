@@ -12,6 +12,7 @@ import RxSwift
 var usdcMint: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") }
 var usdtMint: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB") }
 var dexPID: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin") }
+var serumSwapPID: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "22Y43yTVxuUkoRKdm9thyRhQ3SdgQS7c7kB6UNCiaczD") }
 
 public class SerumSwap {
     public typealias Account = SolanaSDK.Account
@@ -33,7 +34,7 @@ public class SerumSwap {
     }
     
     // Side rust enum used for the program's RPC API.
-    public enum Size {
+    public enum Side {
         case bid, ask
         var params: [String: [String: String]] {
             switch self {
@@ -443,7 +444,7 @@ public class SerumSwap {
                     pcWallet: sourceAccountInstructions.account,
                     baseMint: toMint,
                     quoteMint: fromMint,
-                    size: .bid,
+                    side: .bid,
                     amount: amount,
                     minExpectedSwapAmount: minExpectedSwapAmount,
                     referral: referral,
@@ -458,7 +459,7 @@ public class SerumSwap {
                     pcWallet: destinationAccountInstructions.account,
                     baseMint: fromMint,
                     quoteMint: toMint,
-                    size: .ask,
+                    side: .ask,
                     amount: amount,
                     minExpectedSwapAmount: minExpectedSwapAmount,
                     referral: referral,
@@ -519,7 +520,7 @@ public class SerumSwap {
         pcWallet: PublicKey,
         baseMint: PublicKey,
         quoteMint: PublicKey,
-        size: Size,
+        side: Side,
         amount: Lamports,
         minExpectedSwapAmount: Lamports,
         referral: PublicKey?,
@@ -564,6 +565,8 @@ public class SerumSwap {
                 guard let self = self else {throw SerumSwapError.unknown}
                 guard let openOrder = order.existingOpenOrder ?? order.newOpenOrder?.signers.first?.publicKey
                 else {throw SerumSwapError("Could not find or create new order")}
+                guard let authority = self.accountProvider.getNativeWalletAddress()
+                else { throw SerumSwapError.unauthorized }
                 
                 var signers = currentSigners
                 var instructions = currentInstructions
@@ -584,7 +587,7 @@ public class SerumSwap {
                 
                 // add swap instruction
                 instructions.append(
-                    self.directSwapInstruction(size: size, amount: amount, minExpectedSwapAmount: minExpectedSwapAmount, market: market, vaultSigner: vaultOwner, openOrders: openOrder, pcWallet: pcWallet, coinWallet: coinWallet, referral: referral)
+                    self.directSwapInstruction(authority: authority, side: side, amount: amount, minExpectedSwapAmount: minExpectedSwapAmount, market: market, vaultSigner: vaultOwner, openOrders: openOrder, pcWallet: pcWallet, coinWallet: coinWallet, referral: referral)
                 )
                 
                 return .init(signers: signers, instructions: instructions + cleanupInstructions)
@@ -778,7 +781,8 @@ public class SerumSwap {
     }
     
     private func directSwapInstruction(
-        size: Size,
+        authority: PublicKey,
+        side: Side,
         amount: Lamports,
         minExpectedSwapAmount: Lamports,
         market: Market,
@@ -788,34 +792,31 @@ public class SerumSwap {
         coinWallet: PublicKey,
         referral: PublicKey?
     ) -> TransactionInstruction {
-//        this.program.instruction.swap(side, amount, minExpectedSwapAmount, {
-//            accounts: {
-//              market: {
-//                market: marketClient.address,
-//                // @ts-ignore
-//                requestQueue: marketClient._decoded.requestQueue,
-//                // @ts-ignore
-//                eventQueue: marketClient._decoded.eventQueue,
-//                bids: marketClient.bidsAddress,
-//                asks: marketClient.asksAddress,
-//                // @ts-ignore
-//                coinVault: marketClient._decoded.baseVault,
-//                // @ts-ignore
-//                pcVault: marketClient._decoded.quoteVault,
-//                vaultSigner,
-//                openOrders,
-//                orderPayerTokenAccount: side.bid ? pcWallet : coinWallet,
-//                coinWallet: coinWallet,
-//              },
-//              pcWallet,
-//              authority: this.program.provider.wallet.publicKey,
-//              dexProgram: DEX_PID,
-//              tokenProgram: TOKEN_PROGRAM_ID,
-//              rent: SYSVAR_RENT_PUBKEY,
-//            },
-//            remainingAccounts: referral && [referral],
-//        }),
-        fatalError()
+        TransactionInstruction(
+            keys: [
+                .init(publicKey: market.address, isSigner: false, isWritable: true),
+                .init(publicKey: openOrders, isSigner: false, isWritable: true),
+                .init(publicKey: market.decoded.requestQueue, isSigner: false, isWritable: true),
+                .init(publicKey: market.decoded.eventQueue, isSigner: false, isWritable: true),
+                .init(publicKey: market.bidsAddress, isSigner: false, isWritable: true),
+                .init(publicKey: market.asksAddress, isSigner: false, isWritable: true),
+                .init(publicKey: side == .bid ? pcWallet: coinWallet, isSigner: false, isWritable: true),
+                .init(publicKey: market.decoded.baseVault, isSigner: false, isWritable: true),
+                .init(publicKey: vaultSigner, isSigner: false, isWritable: false),
+                .init(publicKey: coinWallet, isSigner: false, isWritable: true),
+                .init(publicKey: authority, isSigner: true, isWritable: false),
+                .init(publicKey: pcWallet, isSigner: false, isWritable: true),
+                .init(publicKey: dexPID, isSigner: false, isWritable: false),
+                .init(publicKey: .tokenProgramId, isSigner: false, isWritable: false),
+                .init(publicKey: .sysvarRent, isSigner: false, isWritable: false)
+            ],
+            programId: serumSwapPID,
+            data: [
+//                side, // TODO
+                amount,
+                minExpectedSwapAmount
+            ]
+        )
     }
     
     private func transitiveSwapInstruction(
