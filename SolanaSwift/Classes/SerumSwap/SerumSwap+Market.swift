@@ -179,11 +179,11 @@ extension SerumSwap {
                         .just(decoded),
                         client.getDecimals(
                             mintAddress: decoded.baseMint.base58EncodedString,
-                            programId: decoded.baseMint.base58EncodedString
+                            programId: PublicKey.tokenProgramId.base58EncodedString
                         ),
                         client.getDecimals(
                             mintAddress: decoded.baseMint.base58EncodedString,
-                            programId: decoded.quoteMint.base58EncodedString
+                            programId: PublicKey.tokenProgramId.base58EncodedString
                         )
                     )
                 }
