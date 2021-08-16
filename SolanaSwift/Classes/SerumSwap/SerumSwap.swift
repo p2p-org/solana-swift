@@ -500,8 +500,7 @@ public class SerumSwap {
                     fromMint: fromMint,
                     toMint: toMint
                 )
-                .map {[weak self] usdcPathExists in
-                    guard let self = self else { throw SerumSwapError.unknown }
+                .map { usdcPathExists in
                     if usdcPathExists {
                         return try PublicKey.associatedTokenAddress(
                             walletAddress: owner,
