@@ -40,30 +40,46 @@ extension SolanaSDK: SerumSwapAPIClient {
             }
     }
     
-    public func getMarketAddress(usdxMint: PublicKey, baseMint: PublicKey) -> Single<PublicKey> {
+    public func getMarketAddresses(usdxMint: PublicKey, baseMint: PublicKey) -> Single<[PublicKey]> {
         getTokensList()
             .map {list in
-                list.first { token in
+                list.filter { token in
                     if token.address != baseMint.base58EncodedString {return false}
                     if usdxMint == usdcMint {return token.extensions?.serumV3Usdc != nil}
                     if usdxMint == usdtMint {return token.extensions?.serumV3Usdt != nil}
                     return false
                 }
             }
-            .map {token -> String? in
-                guard let extensions = token?.extensions else {
+            .map {list in
+                let list = list.reduce([PublicKey]()) { result, token in
+                    var result = result
+                    if usdxMint == usdcMint,
+                       let string = token.extensions?.serumV3Usdc,
+                       let address = try? PublicKey(string: string)
+                    {
+                        result.append(address)
+                    }
+                    if usdxMint == usdtMint,
+                       let string = token.extensions?.serumV3Usdt,
+                       let address = try? PublicKey(string: string)
+                    {
+                        result.append(address)
+                    }
+                    return result
+                }
+                
+                guard list.count > 0 else {
                     throw SerumSwapError("Usd(x) quoted market not found")
                 }
-                if usdxMint == usdcMint {return extensions.serumV3Usdc}
-                if usdxMint == usdtMint {return extensions.serumV3Usdt}
-                throw SerumSwapError("Usd(x) quoted market not found")
+                
+                return list
             }
-            .map {string -> PublicKey in
-                guard let string = string else {
-                    throw SerumSwapError("Usd(x) quoted market not found")
-                }
-                return try PublicKey(string: string)
-            }
+    }
+    
+    
+    public func getMarketAddress(usdxMint: PublicKey, baseMint: PublicKey) -> Single<PublicKey> {
+        getMarketAddresses(usdxMint: usdxMint, baseMint: baseMint)
+            .map {$0.first!}
     }
     
     public func usdcPathExists(fromMint: PublicKey, toMint: PublicKey) -> Single<Bool> {

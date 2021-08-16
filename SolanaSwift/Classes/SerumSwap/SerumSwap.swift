@@ -506,14 +506,14 @@ public class SerumSwap {
         cleanupInstructions: [TransactionInstruction]
     ) -> Single<SignersAndInstructions> {
         
-        client.getMarketAddress(
+        client.getMarketAddresses(
             usdxMint: quoteMint,
             baseMint: baseMint
         )
-            .flatMap {[weak self] marketAddress -> Single<(Market, UInt64)> in
+            .flatMap {[weak self] marketAddresses -> Single<(Market, UInt64)> in
                 guard let self = self else {throw SerumSwapError.unknown}
                 return Single.zip(
-                    Market.load(client: self.client, address: marketAddress, programId: dexPID),
+                    Market.loadAndFindValidMarket(client: self.client, addresses: marketAddresses, programId: dexPID),
                     OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: dexPID)
                 )
             }

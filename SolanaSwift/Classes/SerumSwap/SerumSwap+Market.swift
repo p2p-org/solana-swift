@@ -89,6 +89,44 @@ extension SerumSwap {
 //
 //        }
         
+        static func loadAndFindValidMarket(
+            client: SerumSwapAPIClient,
+            addresses: [PublicKey],
+            currentIndex: Int = 0,
+            skipPreflight: Bool = false,
+            commitment: SolanaSDK.Commitment = "recent",
+            programId: PublicKey,
+            layoutOverride: SerumSwapMarketStatLayout.Type? = nil
+        ) -> Single<Market> {
+            guard let address = addresses[safe: currentIndex] else {
+                return .error(SerumSwapError("No market found"))
+            }
+            return load(
+                client: client,
+                address: address,
+                skipPreflight: skipPreflight,
+                commitment: commitment,
+                programId: programId,
+                layoutOverride: layoutOverride
+            )
+            .catch {error in
+                if let error = error as? SerumSwapError,
+                   error == .invalidMarket
+                {
+                    return loadAndFindValidMarket(
+                        client: client,
+                        addresses: addresses,
+                        currentIndex: currentIndex+1,
+                        skipPreflight: skipPreflight,
+                        commitment: commitment,
+                        programId: programId,
+                        layoutOverride: layoutOverride
+                    )
+                }
+                throw error
+            }
+        }
+        
         static func load(
             client: SerumSwapAPIClient,
             address: PublicKey,
@@ -135,7 +173,7 @@ extension SerumSwap {
                           decoded.accountFlags.market,
                           decoded.ownAddress == address
                     else {
-                        throw SerumSwapError("Invalid market")
+                        throw SerumSwapError.invalidMarket
                     }
                     return Single.zip(
                         .just(decoded),
@@ -291,5 +329,12 @@ extension SerumSwap {
         let mint: PublicKey
         let pubkey: PublicKey
         let feeTier: Lamports
+    }
+}
+
+private extension Collection {
+    /// Returns the element at the specified index if it is within bounds, otherwise nil.
+    subscript (safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
     }
 }

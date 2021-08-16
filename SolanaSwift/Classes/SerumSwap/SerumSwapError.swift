@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct SerumSwapError: Error, ExpressibleByStringLiteral {
-    let description: StaticString
-    init(stringLiteral value: StaticString) {
+struct SerumSwapError: Error, Equatable, ExpressibleByStringLiteral {
+    let description: String
+    init(stringLiteral value: String) {
         self.description = value
     }
     
@@ -21,7 +21,11 @@ struct SerumSwapError: Error, ExpressibleByStringLiteral {
         .init(stringLiteral: "Unauthorized")
     }
     
-    init(_ string: StaticString) {
+    static var invalidMarket: Self {
+        .init(stringLiteral: "Invalid market")
+    }
+    
+    init(_ string: String) {
         self.init(stringLiteral: string)
     }
 }

@@ -25,13 +25,13 @@ class SerumSwapTests: RestAPITests {
     func testDirectSwap() throws {
         let request = serumSwap.swap(
             .init(
-                fromMint: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
-                toMint: "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt",
+                fromMint: try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
+                toMint: try SolanaSDK.PublicKey(string: "So11111111111111111111111111111111111111112"),
                 amount: 1000,
                 referral: nil,
                 quoteWallet: nil,
-                fromWallet: "F7jFFtqursGMQH5MoPPRxFzJMwr4cm7peiCBX4PvuRkL",
-                toWallet: "4cmcbL49XE5YEQGp4d6DRsNB9EjHrUrQbk4zZhGTy9tE",
+                fromWallet: try SolanaSDK.PublicKey(string: "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch"),
+                toWallet: nil,
                 feePayer: nil
             )
         )
