@@ -52,6 +52,15 @@ public protocol SerumSwapAPIClient {
         destinationMint: SolanaSDK.PublicKey,
         feePayer: SolanaSDK.PublicKey
     ) -> Single<SolanaSDK.AccountInstructions>
+    func serializeTransaction(
+        instructions: [SolanaSDK.TransactionInstruction],
+        recentBlockhash: String?,
+        signers: [SolanaSDK.Account],
+        feePayer: SolanaSDK.PublicKey?
+    )
+    func simulateTransaction(
+        transaction: String
+    ) -> Single<SolanaSDK.TransactionStatus>
 }
 
 extension SerumSwapAPIClient {

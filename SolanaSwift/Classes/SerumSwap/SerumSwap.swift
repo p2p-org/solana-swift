@@ -365,22 +365,20 @@ public class SerumSwap {
         feePayer: PublicKey?,
         configs: SolanaSDK.RequestConfiguration? = nil
     ) -> Single<Lamports> {
-        // Build the transaction.
-//        prepareForSwap(
-//            fromMint: fromMint,
-//            toMint: toMint,
-//            amount: amount,
-//            minExpectedSwapAmount: minExpectedSwapAmount,
-//            referral: referral,
-//            quoteWallet: quoteWallet,
-//            fromWallet: fromWallet,
-//            toWallet: toWallet,
-//            configs: configs
-//        )
-//        .flatMap {[weak self] signersAndInstructions in
-//            
-//        }
         fatalError()
+        // Build the transaction.
+        prepareForSwap(
+            fromMint: fromMint,
+            toMint: toMint,
+            amount: amount,
+            minExpectedSwapAmount: 1, // new BN(1)
+            referral: referral,
+            quoteWallet: quoteWallet,
+            fromWallet: fromWallet,
+            toWallet: toWallet, feePayer: feePayer,
+            configs: configs
+        )
+        
     }
     
     private func prepareForSwap(
