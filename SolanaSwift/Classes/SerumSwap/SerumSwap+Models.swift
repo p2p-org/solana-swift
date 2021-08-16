@@ -10,6 +10,19 @@ import BufferLayoutSwift
 
 extension SerumSwap {
     public struct SwapParams {
+        public init(fromMint: SerumSwap.PublicKey, toMint: SerumSwap.PublicKey, amount: SerumSwap.Lamports, minExpectedSwapAmount: SerumSwap.Lamports? = nil, referral: SerumSwap.PublicKey?, quoteWallet: SerumSwap.PublicKey?, fromWallet: SerumSwap.PublicKey, toWallet: SerumSwap.PublicKey?, feePayer: SerumSwap.PublicKey?, configs: SolanaSDK.RequestConfiguration? = nil) {
+            self.fromMint = fromMint
+            self.toMint = toMint
+            self.amount = amount
+            self.minExpectedSwapAmount = minExpectedSwapAmount
+            self.referral = referral
+            self.quoteWallet = quoteWallet
+            self.fromWallet = fromWallet
+            self.toWallet = toWallet
+            self.feePayer = feePayer
+            self.configs = configs
+        }
+        
         let fromMint: PublicKey
         let toMint: PublicKey
         let amount: Lamports

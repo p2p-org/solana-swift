@@ -44,6 +44,14 @@ public class SerumSwap {
                 return ["ask": [:]]
             }
         }
+        var byte: UInt8 {
+            switch self {
+            case .bid:
+                return 0
+            case .ask:
+                return 1
+            }
+        }
     }
     
     // MARK: - Properties
@@ -784,7 +792,7 @@ public class SerumSwap {
             ],
             programId: serumSwapPID,
             data: [
-//                side, // TODO
+                side.byte,
                 amount,
                 minExpectedSwapAmount
             ]

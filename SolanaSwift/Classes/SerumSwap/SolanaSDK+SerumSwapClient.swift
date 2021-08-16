@@ -45,8 +45,8 @@ extension SolanaSDK: SerumSwapAPIClient {
             .map {list in
                 list.first { token in
                     if token.address != baseMint.base58EncodedString {return false}
-                    if usdxMint == usdcMint {return token.extensions?.serumV3Usdc == nil}
-                    if usdxMint == usdtMint {return token.extensions?.serumV3Usdt == nil}
+                    if usdxMint == usdcMint {return token.extensions?.serumV3Usdc != nil}
+                    if usdxMint == usdtMint {return token.extensions?.serumV3Usdt != nil}
                     return false
                 }
             }
