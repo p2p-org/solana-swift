@@ -71,6 +71,18 @@ extension SerumSwap {
             Blob7()
         }
     }
+    
+    public struct DidSwap: BufferLayout {
+        public let givenAmount: UInt64
+        public let minExpectedSwapAmount: UInt64
+        public let fromAmount: UInt64
+        public let toAmount: UInt64
+        public let spillAmount: UInt64
+        public let fromMint: PublicKey
+        public let toMint: PublicKey
+        public let quoteMint: PublicKey
+        public let authority: PublicKey
+    }
 }
 
 private extension Array {

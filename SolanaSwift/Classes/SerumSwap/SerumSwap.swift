@@ -365,7 +365,6 @@ public class SerumSwap {
         feePayer: PublicKey?,
         configs: SolanaSDK.RequestConfiguration? = nil
     ) -> Single<Lamports> {
-        fatalError()
         // Build the transaction.
         prepareForSwap(
             fromMint: fromMint,
@@ -378,6 +377,28 @@ public class SerumSwap {
             toWallet: toWallet, feePayer: feePayer,
             configs: configs
         )
+            .flatMap {[weak self] signersAndInstructions -> Single<String> in
+                guard let self = self else {throw SerumSwapError.unknown}
+                return self.client.serializeTransaction(
+                    instructions: signersAndInstructions.instructions,
+                    recentBlockhash: nil,
+                    signers: signersAndInstructions.signers,
+                    feePayer: feePayer
+                )
+            }
+            .flatMap {[weak self] transaction -> Single<Lamports> in
+                guard let self = self else {throw SerumSwapError.unknown}
+                return self.client.simulateTransaction(transaction: transaction)
+                    .map {$0.logs}
+                    .map {logs -> DidSwap in
+                        guard let log = logs.first(where: {$0.starts(with: "Program log: 4ZfIrPLY4R'")})?
+                                .replacingOccurrences(of: "Program log: ", with: ""),
+                              let data = Data(base64Encoded: log)?[8...] // logArr.slice(8)
+                        else {throw SerumSwapError("Could not estimate minimum expected amount")}
+                        return try DidSwap(buffer: data)
+                    }
+                    .map {$0.toAmount}
+            }
         
     }
     
