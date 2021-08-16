@@ -8,7 +8,7 @@
 import Foundation
 
 public extension SolanaSDK {
-    struct PublicKey: Codable, Equatable, CustomStringConvertible, Hashable, ExpressibleByStringLiteral {
+    struct PublicKey: Codable, Equatable, CustomStringConvertible, Hashable {
         public static let numberOfBytes = 32
         public let bytes: [UInt8]
         
@@ -44,10 +44,6 @@ public extension SolanaSDK {
                 throw Error.other("Invalid public key input")
             }
             self.bytes = bytes
-        }
-        
-        public init(stringLiteral value: String) {
-            try! self.init(string: value)
         }
         
         public var base58EncodedString: String {
