@@ -1,0 +1,24 @@
+//
+//  PublicKey+StringLiteral.swift
+//  SolanaSwift
+//
+//  Created by Chung Tran on 16/08/2021.
+//
+
+import Foundation
+
+extension Optional: ExpressibleByStringLiteral,
+                    ExpressibleByUnicodeScalarLiteral,
+                    ExpressibleByExtendedGraphemeClusterLiteral where Wrapped == SolanaSDK.PublicKey {
+    public init(stringLiteral value: String) {
+        self = try? .init(string: value)
+    }
+    
+    public init(unicodeScalarLiteral value: String) {
+        self = .init(stringLiteral: value)
+    }
+    
+    public init(extendedGraphemeClusterLiteral value: String) {
+        self = .init(stringLiteral: value)
+    }
+}
