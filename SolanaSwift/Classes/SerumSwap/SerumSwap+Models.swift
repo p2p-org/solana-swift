@@ -8,6 +8,33 @@
 import Foundation
 import BufferLayoutSwift
 
+extension SerumSwap {
+    public struct SwapParams {
+        let fromMint: PublicKey
+        let toMint: PublicKey
+        let amount: Lamports
+        var minExpectedSwapAmount: Lamports?
+        let referral: PublicKey?
+        let quoteWallet: PublicKey?
+        let fromWallet: PublicKey
+        let toWallet: PublicKey?
+        let feePayer: PublicKey?
+        var configs: SolanaSDK.RequestConfiguration? = nil
+    }
+    
+    public struct DidSwap: BufferLayout {
+        public let givenAmount: UInt64
+        public let minExpectedSwapAmount: UInt64
+        public let fromAmount: UInt64
+        public let toAmount: UInt64
+        public let spillAmount: UInt64
+        public let fromMint: PublicKey
+        public let toMint: PublicKey
+        public let quoteMint: PublicKey
+        public let authority: PublicKey
+    }
+}
+
 // MARK: - BufferLayout properties
 extension SerumSwap {
     public struct Blob5: BufferLayoutProperty {
@@ -70,18 +97,6 @@ extension SerumSwap {
         public static func fromBytes(bytes: [UInt8]) throws -> Blob7 {
             Blob7()
         }
-    }
-    
-    public struct DidSwap: BufferLayout {
-        public let givenAmount: UInt64
-        public let minExpectedSwapAmount: UInt64
-        public let fromAmount: UInt64
-        public let toAmount: UInt64
-        public let spillAmount: UInt64
-        public let fromMint: PublicKey
-        public let toMint: PublicKey
-        public let quoteMint: PublicKey
-        public let authority: PublicKey
     }
 }
 
