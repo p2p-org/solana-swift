@@ -177,14 +177,8 @@ extension SerumSwap {
                     }
                     return Single.zip(
                         .just(decoded),
-                        client.getDecimals(
-                            mintAddress: decoded.baseMint.base58EncodedString,
-                            programId: PublicKey.tokenProgramId.base58EncodedString
-                        ),
-                        client.getDecimals(
-                            mintAddress: decoded.baseMint.base58EncodedString,
-                            programId: PublicKey.tokenProgramId.base58EncodedString
-                        )
+                        client.getDecimals(mintAddress: decoded.baseMint),
+                        client.getDecimals(mintAddress: decoded.quoteMint)
                     )
                 }
                 .map {decoded, baseDecimal, quoteDecimal in

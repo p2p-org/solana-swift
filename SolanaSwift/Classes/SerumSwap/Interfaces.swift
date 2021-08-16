@@ -68,11 +68,11 @@ public protocol SerumSwapAPIClient {
 }
 
 extension SerumSwapAPIClient {
-    func getDecimals(
-        mintAddress: String,
-        programId: String
-    ) -> Single<SolanaSDK.Decimals> {
-        getMintData(mintAddress: mintAddress, programId: programId)
+    func getDecimals(mintAddress: SolanaSDK.PublicKey) -> Single<SolanaSDK.Decimals> {
+        getMintData(
+            mintAddress: mintAddress.base58EncodedString,
+            programId: SolanaSDK.PublicKey.tokenProgramId.base58EncodedString
+        )
             .map {$0.decimals}
     }
 }
