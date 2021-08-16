@@ -185,7 +185,7 @@ extension SolanaSDK {
                     signers.append(contentsOf: sourceAccountInstructions.signers)
                     signers.append(contentsOf: destinationAccountInstructions.signers)
                     
-                    request = self.serializeAndSendWithFee(
+                    request = self.serializeAndSend(
                         instructions: instructions + cleanupInstructions,
                         signers: signers,
                         isSimulation: isSimulation

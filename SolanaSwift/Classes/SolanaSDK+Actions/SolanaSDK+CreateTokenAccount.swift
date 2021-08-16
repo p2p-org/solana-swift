@@ -50,7 +50,7 @@ extension SolanaSDK {
                 ]
                 
                 // serialize transaction
-                return self.serializeAndSendWithFee(
+                return self.serializeAndSend(
                     instructions: instructions,
                     recentBlockhash: recentBlockhash,
                     signers: [payer, newAccount],

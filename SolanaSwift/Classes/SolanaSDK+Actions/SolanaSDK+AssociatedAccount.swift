@@ -74,7 +74,7 @@ extension SolanaSDK {
                 )
             
             // send transaction
-            return serializeAndSendWithFee(
+            return serializeAndSend(
                 instructions: [instruction],
                 signers: [payer],
                 isSimulation: isSimulation

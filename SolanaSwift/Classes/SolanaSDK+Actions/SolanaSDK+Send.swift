@@ -84,7 +84,7 @@ extension SolanaSDK {
                     }
                     
                     // if not, serialize and send instructions normally
-                    return self.serializeAndSendWithFee(
+                    return self.serializeAndSend(
                         instructions: [instruction],
                         signers: [account],
                         isSimulation: isSimulation
@@ -233,7 +233,7 @@ extension SolanaSDK {
                 }
                 
                 // if not, serialize and send instructions normally
-                return self.serializeAndSendWithFee(instructions: instructions, signers: [account], isSimulation: isSimulation)
+                return self.serializeAndSend(instructions: instructions, signers: [account], isSimulation: isSimulation)
             }
             .catch {error in
                 var error = error
