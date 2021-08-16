@@ -10,7 +10,7 @@ import XCTest
 import SolanaSwift
 
 class TokenProgramTests: XCTestCase {
-    let publicKey = try! SolanaSDK.PublicKey(string: "11111111111111111111111111111111")
+    let publicKey: SolanaSDK.PublicKey = "11111111111111111111111111111111"
     
 //    func testInitializeMintInstruction() throws {
 //        let instruction = SolanaSDK.TokenProgram.initializeMintInstruction(tokenProgramId: publicKey, mint: publicKey, decimals: 2, authority: publicKey, freezeAuthority: nil)

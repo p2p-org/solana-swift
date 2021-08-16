@@ -7,11 +7,11 @@
 
 import Foundation
 
-extension Optional: ExpressibleByStringLiteral,
+extension SolanaSDK.PublicKey: ExpressibleByStringLiteral,
                     ExpressibleByUnicodeScalarLiteral,
-                    ExpressibleByExtendedGraphemeClusterLiteral where Wrapped == SolanaSDK.PublicKey {
+                    ExpressibleByExtendedGraphemeClusterLiteral {
     public init(stringLiteral value: String) {
-        self = try? .init(string: value)
+        self = try! .init(string: value)
     }
     
     public init(unicodeScalarLiteral value: String) {
