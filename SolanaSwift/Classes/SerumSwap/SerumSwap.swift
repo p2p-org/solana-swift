@@ -252,15 +252,17 @@ public class SerumSwap {
         )
         .map { [weak self] marketFrom, marketTo, ooAccsFrom, ooAccsTo  in
             guard let self = self else {throw SerumSwapError.unknown}
+            guard let owner = self.accountProvider.getNativeWalletAddress() else {throw SerumSwapError.unauthorized}
+            
             if ooAccsFrom.first == nil && ooAccsTo.first == nil {
                 throw SerumSwapError("No open orders accounts left to close")
             }
             if let order = ooAccsFrom.first {
-                return self.closeAccountInstruction(order: order.address, marketAddress: marketFrom)
+                return self.closeAccountInstruction(order: order.address, marketAddress: marketFrom, owner: owner)
             }
             
             if let order = ooAccsTo.first {
-                return self.closeAccountInstruction(order: order.address, marketAddress: marketTo)
+                return self.closeAccountInstruction(order: order.address, marketAddress: marketTo, owner: owner)
             }
             
             throw SerumSwapError.unknown
@@ -290,8 +292,9 @@ public class SerumSwap {
             }
             .map {[weak self] openOrders, marketAddress in
                 guard let self = self else {throw SerumSwapError.unknown}
+                guard let owner = self.accountProvider.getNativeWalletAddress() else {throw SerumSwapError.unauthorized}
                 guard let order = openOrders.first else {throw SerumSwapError("Open orders account doesn't exist")}
-                return self.closeAccountInstruction(order: order.publicKey, marketAddress: marketAddress)
+                return self.closeAccountInstruction(order: order.publicKey, marketAddress: marketAddress, owner: owner)
             }
     }
     
@@ -746,23 +749,26 @@ public class SerumSwap {
         .map {(marketFrom: $0, marketTo: $1, marketFromOrders: $2, marketToOrders: $3)}
     }
     
+    // https://github.com/project-serum/serum-dex/blob/e7214bbc455d37a483427a5c37c194246d457502/dex/src/instruction.rs
     private func closeAccountInstruction(
         order: PublicKey,
-        marketAddress: PublicKey
+        marketAddress: PublicKey,
+        owner: PublicKey
     ) -> TransactionInstruction {
-        // TODO: - closeAccount instruction
-//                this.program.instruction.closeAccount({
-//                  accounts: {
-//                    openOrders: order,
-//                    authority: this.program.provider.wallet.publicKey,
-//                    destination: this.program.provider.wallet.publicKey,
-//                    market: marketAddress,
-//                    dexProgram: DEX_PID,
-//                  },
-//                }),
-        fatalError()
+        TransactionInstruction(
+            keys: [
+                .init(publicKey: order, isSigner: false, isWritable: true),
+                .init(publicKey: owner, isSigner: true, isWritable: false),
+                .init(publicKey: marketAddress, isSigner: false, isWritable: false),
+                .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
+//                .init(publicKey: <#T##SolanaSDK.PublicKey#>, isSigner: <#T##Bool#>, isWritable: <#T##Bool#>) // 4. `[signer]` open orders market authority (optional).
+            ],
+            programId: dexPID,
+            data: [UInt8(14)]
+        )
     }
     
+    // https://github.com/project-serum/serum-dex/blob/e7214bbc455d37a483427a5c37c194246d457502/dex/src/instruction.rs
     private func initAccountInstruction(
         order: PublicKey,
         marketAddress: PublicKey
