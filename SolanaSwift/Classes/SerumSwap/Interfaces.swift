@@ -57,7 +57,7 @@ public protocol SerumSwapAPIClient {
         recentBlockhash: String?,
         signers: [SolanaSDK.Account],
         feePayer: SolanaSDK.PublicKey?
-    )
+    ) -> Single<String>
     func simulateTransaction(
         transaction: String
     ) -> Single<SolanaSDK.TransactionStatus>

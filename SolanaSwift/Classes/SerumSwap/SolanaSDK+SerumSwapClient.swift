@@ -9,6 +9,10 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK: SerumSwapAPIClient {
+    public func simulateTransaction(transaction: String) -> Single<TransactionStatus> {
+        simulateTransaction(transaction: transaction, configs: .init(encoding: "base64")!)
+    }
+    
     public func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64> {
         self.getMinimumBalanceForRentExemption(dataLength: span)
     }
