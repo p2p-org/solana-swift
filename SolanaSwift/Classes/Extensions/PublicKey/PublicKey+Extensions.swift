@@ -8,11 +8,11 @@
 import Foundation
 
 public extension SolanaSDK.PublicKey {
-    static let tokenProgramId = try! SolanaSDK.PublicKey(string: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-    static let sysvarRent = try! SolanaSDK.PublicKey(string: "SysvarRent111111111111111111111111111111111")
-    static let programId = try! SolanaSDK.PublicKey(string: "11111111111111111111111111111111")
-    static let wrappedSOLMint = try! SolanaSDK.PublicKey(string: "So11111111111111111111111111111111111111112")
-    static let ownerValidationProgramId = try! SolanaSDK.PublicKey(string: "4MNPdKu9wFMvEeZBMt3Eipfs5ovVWTJb31pEXDJAAxX5")
-    static let swapHostFeeAddress = try! SolanaSDK.PublicKey(string: "AHLwq66Cg3CuDJTFtwjPfwjJhifiv6rFwApQNKgX57Yg")
-    static let splAssociatedTokenAccountProgramId = try! SolanaSDK.PublicKey(string: "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
+    static let tokenProgramId: SolanaSDK.PublicKey = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    static let sysvarRent: SolanaSDK.PublicKey = "SysvarRent111111111111111111111111111111111"
+    static let programId: SolanaSDK.PublicKey = "11111111111111111111111111111111"
+    static let wrappedSOLMint: SolanaSDK.PublicKey = "So11111111111111111111111111111111111111112"
+    static let ownerValidationProgramId: SolanaSDK.PublicKey = "4MNPdKu9wFMvEeZBMt3Eipfs5ovVWTJb31pEXDJAAxX5"
+    static let swapHostFeeAddress: SolanaSDK.PublicKey = "AHLwq66Cg3CuDJTFtwjPfwjJhifiv6rFwApQNKgX57Yg"
+    static let splAssociatedTokenAccountProgramId: SolanaSDK.PublicKey = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 }
