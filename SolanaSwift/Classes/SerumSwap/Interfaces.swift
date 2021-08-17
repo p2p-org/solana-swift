@@ -82,5 +82,5 @@ public protocol SerumSwapAccountProvider {
 }
 
 public protocol SerumSwapTokenListContainer {
-    
+    func getTokensList() -> Single<[SerumSwap.Token]>
 }

@@ -25,7 +25,17 @@ struct SerumSwapError: Error, Equatable, ExpressibleByStringLiteral {
         .init(stringLiteral: "Invalid market")
     }
     
+    static var noMarketFound: Self {
+        .init(stringLiteral: "No market found")
+    }
+    
     init(_ string: String) {
         self.init(stringLiteral: string)
+    }
+}
+
+extension Error {
+    func isEqualTo(_ serumSwapError: SerumSwapError) -> Bool {
+        (self as? SerumSwapError) == serumSwapError
     }
 }

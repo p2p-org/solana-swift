@@ -22,7 +22,7 @@ public struct SerumSwap {
     // MARK: - Properties
     let client: SerumSwapAPIClient
     let accountProvider: SerumSwapAccountProvider
-    let tokenListContainer: SerumSwapTokenListContainer
+    let swapMarkets: SwapMarkets
     
     // MARK: - Initializers
     public init(
@@ -32,7 +32,13 @@ public struct SerumSwap {
     ) {
         self.client = client
         self.accountProvider = accountProvider
-        self.tokenListContainer = tokenListContainer
+        self.swapMarkets = SwapMarkets(tokenListContainer: tokenListContainer)
+    }
+    
+    // MARK: - Methods
+    /// Returns a list of markets to trade across to swap `fromMint` to `toMint`.
+    public func route(fromMint: PublicKey, toMint: PublicKey) -> Single<[PublicKey]?> {
+        swapMarkets.route(fromMint: fromMint, toMint: toMint)
     }
     
     // MARK: - InitAccount
