@@ -18,6 +18,23 @@ extension SerumSwap {
      * Parameters to perform a swap.
      */
     public struct SwapParams {
+        public init(fromMint: SerumSwap.PublicKey, toMint: SerumSwap.PublicKey, quoteMint: SerumSwap.PublicKey?, amount: SerumSwap.Lamports, minExchangeRate: SerumSwap.ExchangeRate, referral: SerumSwap.PublicKey?, fromWallet: SerumSwap.PublicKey?, toWallet: SerumSwap.PublicKey?, quoteWallet: SerumSwap.PublicKey?, fromMarket: SerumSwap.Market, toMarket: SerumSwap.Market?, fromOpenOrders: SerumSwap.PublicKey?, toOpenOrders: SerumSwap.PublicKey?, close: Bool?) {
+            self.fromMint = fromMint
+            self.toMint = toMint
+            self.quoteMint = quoteMint
+            self.amount = amount
+            self.minExchangeRate = minExchangeRate
+            self.referral = referral
+            self.fromWallet = fromWallet
+            self.toWallet = toWallet
+            self.quoteWallet = quoteWallet
+            self.fromMarket = fromMarket
+            self.toMarket = toMarket
+            self.fromOpenOrders = fromOpenOrders
+            self.toOpenOrders = toOpenOrders
+            self.close = close
+        }
+        
         /**
          * Token mint to swap from.
          */

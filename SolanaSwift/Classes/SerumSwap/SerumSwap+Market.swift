@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 extension SerumSwap {
-    struct Market {
+    public struct Market {
         // MARK: - Nested type
         private typealias OpenOrdersAccountsCache = [String: (accounts: [OpenOrders], ts: UInt64)] // cache by PublicKey (String)
         private typealias FeeDiscountKeysCache = [String: (accounts: [FeeDiscountAccount], ts: UInt64)]
