@@ -14,30 +14,109 @@ extension SerumSwap {
         let instructions: [TransactionInstruction]
     }
     
+    /**
+     * Parameters to perform a swap.
+     */
     public struct SwapParams {
-        public init(fromMint: SerumSwap.PublicKey, toMint: SerumSwap.PublicKey, amount: SerumSwap.Lamports, minExpectedSwapAmount: SerumSwap.Lamports? = nil, referral: SerumSwap.PublicKey?, quoteWallet: SerumSwap.PublicKey?, fromWallet: SerumSwap.PublicKey, toWallet: SerumSwap.PublicKey?, feePayer: SerumSwap.PublicKey?, configs: SolanaSDK.RequestConfiguration? = nil) {
-            self.fromMint = fromMint
-            self.toMint = toMint
-            self.amount = amount
-            self.minExpectedSwapAmount = minExpectedSwapAmount
-            self.referral = referral
-            self.quoteWallet = quoteWallet
-            self.fromWallet = fromWallet
-            self.toWallet = toWallet
-            self.feePayer = feePayer
-            self.configs = configs
-        }
-        
+        /**
+         * Token mint to swap from.
+         */
         let fromMint: PublicKey
+        
+        /**
+         * Token mint to swap to.
+         */
         let toMint: PublicKey
+        
+        /**
+         * Token mint used as the quote currency for a transitive swap, i.e., the
+         * connecting currency.
+         */
+        let quoteMint: PublicKey?
+        
+        /**
+         * Amount of `fromMint` to swap in exchange for `toMint`.
+         */
         let amount: Lamports
-        var minExpectedSwapAmount: Lamports?
+        
+        /**
+         * The minimum rate used to calculate the number of tokens one
+         * should receive for the swap. This is a safety mechanism to prevent one
+         * from performing an unexpecteed trade.
+         */
+        let minExchangeRate: ExchangeRate
+        
+        /**
+         * Token account to receive the Serum referral fee. The mint must be in the
+         * quote currency of the trade (USDC or USDT).
+         */
         let referral: PublicKey?
-        let quoteWallet: PublicKey?
-        let fromWallet: PublicKey
+        
+        /**
+         * Wallet for `fromMint`. If not provided, uses an associated token address
+         * for the configured provider.
+         */
+        let fromWallet: PublicKey?
+        
+        /**
+         * Wallet for `toMint`. If not provided, an associated token account will
+         * be created for the configured provider.
+         */
         let toWallet: PublicKey?
-        let feePayer: PublicKey?
-        var configs: SolanaSDK.RequestConfiguration? = nil
+        
+        /**
+         * Wallet of the quote currency to use in a transitive swap. Should be either
+         * a USDC or USDT wallet. If not provided an associated token account will
+         * be created for the configured provider.
+         */
+        let quoteWallet: PublicKey?
+        
+        /**
+         * Market client for the first leg of the swap. Can be given to prevent
+         * the client from making unnecessary network requests.
+         */
+        let fromMarket: Market
+        
+        /**
+         * Market client for the second leg of the swap. Can be given to prevent
+         * the client from making unnecessary network requests.
+         */
+        let toMarket: Market?
+        
+        /**
+         * Open orders account for the first leg of the swap. If not given, an
+         * open orders account will be created.
+         */
+        let fromOpenOrders: PublicKey?
+        
+        /**
+         * Open orders account for the second leg of the swap. If not given, an
+         * open orders account will be created.
+         */
+        let toOpenOrders: PublicKey?
+        
+        /**
+         * RPC options. If not given the options on the program's provider are used.
+         */
+        let options: SolanaSDK.RequestConfiguration? = nil
+        
+        /**
+         * True if all new open orders accounts should be automatically closed.
+         * Currently disabled.
+         */
+        let close: Bool?
+        
+        /**
+         * Additional transactions to bundle into the swap transaction
+         */
+        let additionalTransactions: [SignersAndInstructions]? = nil
+    }
+    
+    public struct ExchangeRate {
+        let rate: Lamports
+        let fromDecimals: Decimals
+        let quoteDecimals: Decimals
+        let strict: Bool
     }
     
     public struct DidSwap: BufferLayout {
@@ -83,7 +162,7 @@ extension SerumSwap {
             Blob5()
         }
     }
-
+    
     public struct AccountFlags: BufferLayout, BufferLayoutProperty {
         private(set) var initialized: Bool
         private(set) var market: Bool
@@ -99,7 +178,7 @@ extension SerumSwap {
             try .init(buffer: Data(bytes))
         }
     }
-
+    
     public struct Seq128Elements<T: FixedWidthInteger>: BufferLayoutProperty {
         var elements: [T]
         
@@ -129,7 +208,7 @@ extension SerumSwap {
             Blob1024()
         }
     }
-
+    
     public struct Blob7: BufferLayoutProperty {
         public static var numberOfBytes: Int {7}
         

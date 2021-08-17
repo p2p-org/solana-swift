@@ -41,6 +41,23 @@ public struct SerumSwap {
         swapMarkets.route(fromMint: fromMint, toMint: toMint)
     }
     
+    /// Executes a swap against the Serum DEX.
+    /// - Parameter params: SwapParams
+    /// - Returns: Signers and instructions for creating multiple transactions
+    public func swap(_ params: SwapParams) -> Single<[SignersAndInstructions]> {
+        swapTxs(params)
+            .map {tx in
+                if let additionalTxs = params.additionalTransactions {
+                    return [tx] + additionalTxs
+                }
+                return [tx]
+            }
+    }
+    
+    private func swapTxs(_ params: SwapParams) -> Single<SignersAndInstructions> {
+        fatalError()
+    }
+    
     // MARK: - InitAccount
     /**
      * Sends a transaction to initialize all accounts required for a swap between
@@ -280,31 +297,6 @@ public struct SerumSwap {
             }
     }
     
-    // MARK: - Swap
-    /**
-     * Executes a swap against the Serum DEX on Solana. When using one should
-     * first use `estimate` along with a user defined error tolerance to calculate
-     * the `minExpectedSwapAmount`, which provides a lower bound for the number
-     * of output tokens received when executing the swap. If, for example,
-     * swapping on an illiquid market and the output tokens is less than
-     * `minExpectedSwapAmount`, then the transaction will fail in an attempt to
-     * prevent an undesireable outcome.
-     */
-    /// - Parameters:
-    ///   - fromMint: Token mint to swap from.
-    ///   - toMint: Token mint to swap to.
-    ///   - amount: Amount of `fromMint` to swap in exchange for `toMint`.
-    ///   - minExpectedSwapAmount: The minimum number of `toMint` tokens one should receive for the swap. This is a safety mechanism to prevent one from performing an unexpecteed trade. If not given, then defaults to 0.05% off the **estimated** amount.
-    ///   - referral: Token account to receive the Serum referral fee. The mint must be in the quote currency of the trade.
-    ///   - quoteWallet: Wallet of the quote currency to use in a transitive swap. Should be either a USDC or USDT wallet. If not provided uses an associated token address for the configured provider.
-    ///   - fromWallet: Wallet for `fromMint`. If not provided, uses an associated token address for the configured provider.
-    ///   - toWallet: Wallet for `toMint`. If not provided, uses the associated token address for the configured provider.
-    ///   - feePayer: The wallet that is responsible for paying fee (leave it nil if user is the payer)
-    ///   - configs: Request configuration.
-    public func swap(_ params: SwapParams) -> Single<SignersAndInstructions> {
-        // TODO: - fee relayer
-        prepareForSwap(params)
-    }
     
     /**
      * Returns an estimate for the number of *to*, i.e., output, tokens one would
@@ -315,152 +307,154 @@ public struct SerumSwap {
      */
     public func estimate(_ params: SwapParams) -> Single<Lamports> {
         // Build the transaction.
-        var params = params
-        params.minExpectedSwapAmount = 1
-        return prepareForSwap(params)
-            .flatMap {signersAndInstructions -> Single<String> in
-                
-                return self.client.serializeTransaction(
-                    instructions: signersAndInstructions.instructions,
-                    recentBlockhash: nil,
-                    signers: signersAndInstructions.signers,
-                    feePayer: params.feePayer
-                )
-            }
-            .flatMap {transaction -> Single<Lamports> in
-                
-                return self.client.simulateTransaction(transaction: transaction)
-                    .map {$0.logs}
-                    .map {logs -> DidSwap in
-                        guard let log = logs.first(where: {$0.starts(with: "Program log: 4ZfIrPLY4R'")})?
-                                .replacingOccurrences(of: "Program log: ", with: ""),
-                              let data = Data(base64Encoded: log)?[8...] // logArr.slice(8)
-                        else {throw SerumSwapError("Could not estimate minimum expected amount")}
-                        return try DidSwap(buffer: data)
-                    }
-                    .map {$0.toAmount}
-            }
+        fatalError()
+//        var params = params
+//        params.minExpectedSwapAmount = 1
+//        return prepareForSwap(params)
+//            .flatMap {signersAndInstructions -> Single<String> in
+//
+//                return self.client.serializeTransaction(
+//                    instructions: signersAndInstructions.instructions,
+//                    recentBlockhash: nil,
+//                    signers: signersAndInstructions.signers,
+//                    feePayer: params.feePayer
+//                )
+//            }
+//            .flatMap {transaction -> Single<Lamports> in
+//
+//                return self.client.simulateTransaction(transaction: transaction)
+//                    .map {$0.logs}
+//                    .map {logs -> DidSwap in
+//                        guard let log = logs.first(where: {$0.starts(with: "Program log: 4ZfIrPLY4R'")})?
+//                                .replacingOccurrences(of: "Program log: ", with: ""),
+//                              let data = Data(base64Encoded: log)?[8...] // logArr.slice(8)
+//                        else {throw SerumSwapError("Could not estimate minimum expected amount")}
+//                        return try DidSwap(buffer: data)
+//                    }
+//                    .map {$0.toAmount}
+//            }
         
     }
     
     private func prepareForSwap(_ params: SwapParams) -> Single<SignersAndInstructions> {
-        guard let owner = accountProvider.getNativeWalletAddress()
-        else {return .error(SerumSwapError.unauthorized)}
-        
-        // min expected swap amount
-        let requestMinExpectedSwapAmount: Single<Lamports>
-        if let minExpectedSwapAmount = params.minExpectedSwapAmount {
-            requestMinExpectedSwapAmount = .just(minExpectedSwapAmount)
-        } else {
-            requestMinExpectedSwapAmount = estimate(params)
-                .map {estimated in
-                    // Defaults to 0.5% error off the estimate, if not provided.
-                    SerumSwap.Lamports(BInt(estimated) * BInt(995) / BInt(1000))
-                }
-        }
-        
-        // Prepare source account, create and init new account if fromWallet is native.
-        let requestSourceAccount = client.prepareSourceAccountAndInstructions(
-            myNativeWallet: owner,
-            source: params.fromWallet,
-            sourceMint: params.fromMint,
-            amount: params.amount,
-            feePayer: params.feePayer ?? owner
-        )
-        
-        // Prepare destination account, create associated token if toWallet is native.
-        let requestDestinationAccount = client.prepareDestinationAccountAndInstructions(
-            myAccount: owner,
-            destination: params.toWallet,
-            destinationMint: params.toMint,
-            feePayer: params.feePayer ?? owner
-        )
-        
-        // Swap
-        return Single.zip(
-            requestMinExpectedSwapAmount,
-            requestSourceAccount,
-            requestDestinationAccount
-        )
-        .flatMap {minExpectedSwapAmount, sourceAccountInstructions, destinationAccountInstructions in
-            let signers = sourceAccountInstructions.signers + destinationAccountInstructions.signers
-            let instructions = sourceAccountInstructions.instructions + destinationAccountInstructions.instructions
-            let cleanupInstructions = sourceAccountInstructions.cleanupInstructions + destinationAccountInstructions.cleanupInstructions
+        fatalError()
+//        guard let owner = accountProvider.getNativeWalletAddress()
+//        else {return .error(SerumSwapError.unauthorized)}
+//
+//        // min expected swap amount
+//        let requestMinExpectedSwapAmount: Single<Lamports>
+//        if let minExpectedSwapAmount = params.minExpectedSwapAmount {
+//            requestMinExpectedSwapAmount = .just(minExpectedSwapAmount)
+//        } else {
+//            requestMinExpectedSwapAmount = estimate(params)
+//                .map {estimated in
+//                    // Defaults to 0.5% error off the estimate, if not provided.
+//                    SerumSwap.Lamports(BInt(estimated) * BInt(995) / BInt(1000))
+//                }
+//        }
+//
+//        // Prepare source account, create and init new account if fromWallet is native.
+//        let requestSourceAccount = client.prepareSourceAccountAndInstructions(
+//            myNativeWallet: owner,
+//            source: params.fromWallet,
+//            sourceMint: params.fromMint,
+//            amount: params.amount,
+//            feePayer: params.feePayer ?? owner
+//        )
+//
+//        // Prepare destination account, create associated token if toWallet is native.
+//        let requestDestinationAccount = client.prepareDestinationAccountAndInstructions(
+//            myAccount: owner,
+//            destination: params.toWallet,
+//            destinationMint: params.toMint,
+//            feePayer: params.feePayer ?? owner
+//        )
+//
+//        // Swap
+//        return Single.zip(
+//            requestMinExpectedSwapAmount,
+//            requestSourceAccount,
+//            requestDestinationAccount
+//        )
+//        .flatMap {minExpectedSwapAmount, sourceAccountInstructions, destinationAccountInstructions in
+//            let signers = sourceAccountInstructions.signers + destinationAccountInstructions.signers
+//            let instructions = sourceAccountInstructions.instructions + destinationAccountInstructions.instructions
+//            let cleanupInstructions = sourceAccountInstructions.cleanupInstructions + destinationAccountInstructions.cleanupInstructions
+//
+//            // If swapping to/from a USD(x) token, then swap directly on the market.
+//            if params.fromMint == .usdcMint || params.fromMint == .usdtMint {
+//                return self.swapDirect(
+//                    coinWallet: destinationAccountInstructions.account,
+//                    pcWallet: sourceAccountInstructions.account,
+//                    baseMint: params.toMint,
+//                    quoteMint: params.fromMint,
+//                    side: .bid,
+//                    amount: params.amount,
+//                    minExpectedSwapAmount: minExpectedSwapAmount,
+//                    referral: params.referral,
+//                    currentSigners: signers,
+//                    currentInstructions: instructions,
+//                    cleanupInstructions: cleanupInstructions
+//                )
+//            }
+//            else if params.toMint == .usdcMint || params.toMint == .usdtMint {
+//                return self.swapDirect(
+//                    coinWallet: sourceAccountInstructions.account,
+//                    pcWallet: destinationAccountInstructions.account,
+//                    baseMint: params.fromMint,
+//                    quoteMint: params.toMint,
+//                    side: .ask,
+//                    amount: params.amount,
+//                    minExpectedSwapAmount: minExpectedSwapAmount,
+//                    referral: params.referral,
+//                    currentSigners: signers,
+//                    currentInstructions: instructions,
+//                    cleanupInstructions: cleanupInstructions
+//                )
+//            }
+//
+//            // Neither wallet is a USD stable coin. So perform a transitive swap.
+//            let requestQuoteWallet: Single<PublicKey>
+//            if let quoteWallet = params.quoteWallet {
+//                requestQuoteWallet = .just(quoteWallet)
+//            } else {
+//                requestQuoteWallet = self.client.usdcPathExists(
+//                    fromMint: params.fromMint,
+//                    toMint: params.toMint
+//                )
+//                .map { usdcPathExists in
+//                    if usdcPathExists {
+//                        return try PublicKey.associatedTokenAddress(
+//                            walletAddress: owner,
+//                            tokenMintAddress: .usdcMint
+//                        )
+//                    } else {
+//                        return try PublicKey.associatedTokenAddress(
+//                            walletAddress: owner,
+//                            tokenMintAddress: .usdtMint
+//                        )
+//                    }
+//                }
+//            }
+//
+//            return requestQuoteWallet
+//                .flatMap {quoteWallet in
+//                    swapTransitive(
+//                        fromMint: params.fromMint,
+//                        toMint: params.toMint,
+//                        fromWallet: sourceAccountInstructions.account,
+//                        toWallet: destinationAccountInstructions.account,
+//                        pcWallet: quoteWallet,
+//                        amount: params.amount,
+//                        minExpectedSwapAmount: minExpectedSwapAmount,
+//                        referral: params.referral,
+//                        currentSigners: signers,
+//                        currentInstructions: instructions,
+//                        cleanupInstructions: cleanupInstructions
+//                    )
+//                }
             
-            // If swapping to/from a USD(x) token, then swap directly on the market.
-            if params.fromMint == .usdcMint || params.fromMint == .usdtMint {
-                return self.swapDirect(
-                    coinWallet: destinationAccountInstructions.account,
-                    pcWallet: sourceAccountInstructions.account,
-                    baseMint: params.toMint,
-                    quoteMint: params.fromMint,
-                    side: .bid,
-                    amount: params.amount,
-                    minExpectedSwapAmount: minExpectedSwapAmount,
-                    referral: params.referral,
-                    currentSigners: signers,
-                    currentInstructions: instructions,
-                    cleanupInstructions: cleanupInstructions
-                )
-            }
-            else if params.toMint == .usdcMint || params.toMint == .usdtMint {
-                return self.swapDirect(
-                    coinWallet: sourceAccountInstructions.account,
-                    pcWallet: destinationAccountInstructions.account,
-                    baseMint: params.fromMint,
-                    quoteMint: params.toMint,
-                    side: .ask,
-                    amount: params.amount,
-                    minExpectedSwapAmount: minExpectedSwapAmount,
-                    referral: params.referral,
-                    currentSigners: signers,
-                    currentInstructions: instructions,
-                    cleanupInstructions: cleanupInstructions
-                )
-            }
-            
-            // Neither wallet is a USD stable coin. So perform a transitive swap.
-            let requestQuoteWallet: Single<PublicKey>
-            if let quoteWallet = params.quoteWallet {
-                requestQuoteWallet = .just(quoteWallet)
-            } else {
-                requestQuoteWallet = self.client.usdcPathExists(
-                    fromMint: params.fromMint,
-                    toMint: params.toMint
-                )
-                .map { usdcPathExists in
-                    if usdcPathExists {
-                        return try PublicKey.associatedTokenAddress(
-                            walletAddress: owner,
-                            tokenMintAddress: .usdcMint
-                        )
-                    } else {
-                        return try PublicKey.associatedTokenAddress(
-                            walletAddress: owner,
-                            tokenMintAddress: .usdtMint
-                        )
-                    }
-                }
-            }
-            
-            return requestQuoteWallet
-                .flatMap {quoteWallet in
-                    swapTransitive(
-                        fromMint: params.fromMint,
-                        toMint: params.toMint,
-                        fromWallet: sourceAccountInstructions.account,
-                        toWallet: destinationAccountInstructions.account,
-                        pcWallet: quoteWallet,
-                        amount: params.amount,
-                        minExpectedSwapAmount: minExpectedSwapAmount,
-                        referral: params.referral,
-                        currentSigners: signers,
-                        currentInstructions: instructions,
-                        cleanupInstructions: cleanupInstructions
-                    )
-                }
-            
-        }
+//        }
     }
     
     private func swapDirect(
