@@ -503,7 +503,7 @@ public struct SerumSwap {
             data: [
                 side.byte,
                 amount,
-                minExchangeRate.rate // TODO: - Fix later
+                minExchangeRate
             ]
         )
     }
