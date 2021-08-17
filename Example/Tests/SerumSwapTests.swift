@@ -23,20 +23,20 @@ class SerumSwapTests: RestAPITests {
     }
 
     func testDirectSwap() throws {
-        let request = serumSwap.swap(
-            .init(
-                fromMint: try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
-                toMint: try SolanaSDK.PublicKey(string: "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"),
-                amount: 1000,
-                referral: nil,
-                quoteWallet: nil,
-                fromWallet: try SolanaSDK.PublicKey(string: "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch"),
-                toWallet: nil,
-                feePayer: nil
-            )
-        )
-        
-        let result = try request.toBlocking().first()
+//        let request = serumSwap.swap(
+//            .init(
+//                fromMint: try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
+//                toMint: try SolanaSDK.PublicKey(string: "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"),
+//                amount: 1000,
+//                referral: nil,
+//                quoteWallet: nil,
+//                fromWallet: try SolanaSDK.PublicKey(string: "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch"),
+//                toWallet: nil,
+//                feePayer: nil
+//            )
+//        )
+//        
+//        let result = try request.toBlocking().first()
         
         
     }

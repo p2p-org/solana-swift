@@ -12,7 +12,7 @@ extension SerumSwap {
     /// Return the program derived address used by the serum DEX to control token vaults.
     static func getVaultOwnerAndNonce(
         marketPublicKey: PublicKey,
-        dexProgramId: PublicKey
+        dexProgramId: PublicKey = .dexPID
     ) -> Single<(vaultOwner: PublicKey, nonce: UInt8)> {
         Single.create { observer in
             do {

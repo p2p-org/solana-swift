@@ -43,103 +43,13 @@ extension SerumSwap {
             getLayoutType(programId: programId).span
         }
         
-        static func findForOwner(
-            client: SerumSwapAPIClient,
-            ownerAddress: PublicKey,
-            programId: PublicKey
-        ) -> Single<[OpenOrders]> {
-            
-            let memcmp = EncodableWrapper(
-                wrapped: [
-                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
-                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
-                ]
-            )
-            
-            return getFilteredProgramAccounts(
-                client: client,
-                ownerAddress: ownerAddress,
-                filter: [["memcmp": memcmp]],
-                programId: programId
-            )
-        }
-        
-        static func findAnOpenOrderOrCreateOne(
+        static func makeCreateAccountInstructions(
             client: SerumSwapAPIClient,
             marketAddress: PublicKey,
             ownerAddress: PublicKey,
             programId: PublicKey,
             minRentExemption: UInt64? = nil
-        ) -> Single<GetOpenOrderResult> {
-            findForMarketAndOwner(
-                client: client,
-                marketAddress: marketAddress,
-                ownerAddress: ownerAddress,
-                programId: programId
-            )
-            .map {$0.first?.address}
-            .flatMap { openOrder in
-                if let openOrder = openOrder {
-                    return .just((existingOpenOrder: openOrder, newOpenOrder: nil))
-                }
-                let newOpenOrder = try Account(network: .mainnetBeta)
-                return makeCreateAccountInstruction(
-                    client: client,
-                    marketAddress: marketAddress,
-                    ownerAddress: ownerAddress,
-                    newAccountAddress: newOpenOrder.publicKey,
-                    programId: programId,
-                    minRentExemption: minRentExemption
-                )
-                    .map {(
-                        existingOpenOrder: nil,
-                        newOpenOrder: .init(
-                            signers: [newOpenOrder],
-                            instructions: [$0]
-                        )
-                    )}
-            }
-        }
-        
-        static func findForMarketAndOwner(
-            client: SerumSwapAPIClient,
-            marketAddress: PublicKey,
-            ownerAddress: PublicKey,
-            programId: PublicKey
-        ) -> Single<[OpenOrders]> {
-            let memcmp1 = EncodableWrapper(
-                wrapped: [
-                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
-                     "bytes": EncodableWrapper(wrapped: marketAddress.base58EncodedString)
-                ]
-            )
-            
-            let memcmp2 = EncodableWrapper(
-                wrapped: [
-                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
-                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
-                ]
-            )
-            
-            return getFilteredProgramAccounts(
-                client: client,
-                ownerAddress: ownerAddress,
-                filter: [
-                    ["memcmp": memcmp1],
-                    ["memcmp": memcmp2]
-                ],
-                programId: programId
-            )
-        }
-        
-        static func makeCreateAccountInstruction(
-            client: SerumSwapAPIClient,
-            marketAddress: PublicKey,
-            ownerAddress: PublicKey,
-            newAccountAddress: PublicKey,
-            programId: PublicKey,
-            minRentExemption: UInt64? = nil
-        ) -> Single<TransactionInstruction> {
+        ) -> Single<AccountInstructions> {
             let span = getLayoutSpan(programId: programId.base58EncodedString)
             let requestMinRentExemption: Single<UInt64>
             if let minRentExemption = minRentExemption {
@@ -148,14 +58,43 @@ extension SerumSwap {
                 requestMinRentExemption = client.getMinimumBalanceForRentExemption(span: span)
             }
             
-            return requestMinRentExemption
-                .map {minRentExemption in
-                    SystemProgram.createAccountInstruction(
-                        from: ownerAddress,
-                        toNewPubkey: newAccountAddress,
-                        lamports: minRentExemption,
-                        space: span,
-                        programPubkey: programId
+            let requestNewAccount = Single<Account>.create { observer in
+                DispatchQueue(label: "create account", qos: .userInteractive)
+                    .async {
+                        do {
+                            let newAccount = try Account(network: .mainnetBeta)
+                            observer(.success(newAccount))
+                        } catch {
+                            observer(.failure(error))
+                        }
+                    }
+                return Disposables.create()
+            }
+            
+            return Single.zip(
+                requestMinRentExemption,
+                requestNewAccount
+            )
+                .map {minRentExemption, newAccount in
+                    .init(
+                        account: newAccount.publicKey,
+                        instructions: [
+                            SystemProgram.createAccountInstruction(
+                                from: ownerAddress,
+                                toNewPubkey: newAccount.publicKey,
+                                lamports: minRentExemption,
+                                space: span,
+                                programPubkey: programId
+                            )
+                        ],
+                        cleanupInstructions: [
+                            Self.closeAccountInstruction(
+                                order: newAccount.publicKey,
+                                marketAddress: marketAddress,
+                                owner: ownerAddress
+                            )
+                        ],
+                        signers: [newAccount]
                     )
                 }
         }
@@ -167,6 +106,27 @@ extension SerumSwap {
             let span = getLayoutSpan(programId: programId.base58EncodedString)
             return client.getMinimumBalanceForRentExemption(span: span)
         }
+        
+        // https://github.com/project-serum/serum-dex/blob/e7214bbc455d37a483427a5c37c194246d457502/dex/src/instruction.rs
+        static func closeAccountInstruction(
+            order: PublicKey,
+            marketAddress: PublicKey,
+            owner: PublicKey
+        ) -> TransactionInstruction {
+            TransactionInstruction(
+                keys: [
+                    .init(publicKey: order, isSigner: false, isWritable: true),
+                    .init(publicKey: owner, isSigner: true, isWritable: false),
+                    .init(publicKey: marketAddress, isSigner: false, isWritable: false),
+                    .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
+    //                .init(publicKey: <#T##SolanaSDK.PublicKey#>, isSigner: <#T##Bool#>, isWritable: <#T##Bool#>) // 4. `[signer]` open orders market authority (optional).
+                ],
+                programId: .dexPID,
+                data: [UInt8(14)]
+            )
+        }
+        
+        // MARK: - Old
         
         private static func getFilteredProgramAccounts(
             client: SerumSwapAPIClient,
@@ -216,6 +176,95 @@ extension SerumSwap {
                     )
                 }
             }
+        }
+        static func findForOwner(
+            client: SerumSwapAPIClient,
+            ownerAddress: PublicKey,
+            programId: PublicKey
+        ) -> Single<[OpenOrders]> {
+            
+            let memcmp = EncodableWrapper(
+                wrapped: [
+                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
+                ]
+            )
+            
+            return getFilteredProgramAccounts(
+                client: client,
+                ownerAddress: ownerAddress,
+                filter: [["memcmp": memcmp]],
+                programId: programId
+            )
+        }
+        
+        static func findAnOpenOrderOrCreateOne(
+            client: SerumSwapAPIClient,
+            marketAddress: PublicKey,
+            ownerAddress: PublicKey,
+            programId: PublicKey,
+            minRentExemption: UInt64? = nil
+        ) -> Single<GetOpenOrderResult> {
+            fatalError()
+//            findForMarketAndOwner(
+//                client: client,
+//                marketAddress: marketAddress,
+//                ownerAddress: ownerAddress,
+//                programId: programId
+//            )
+//            .map {$0.first?.address}
+//            .flatMap { openOrder in
+//                if let openOrder = openOrder {
+//                    return .just((existingOpenOrder: openOrder, newOpenOrder: nil))
+//                }
+//                let newOpenOrder = try Account(network: .mainnetBeta)
+//                return makeCreateAccountInstruction(
+//                    client: client,
+//                    marketAddress: marketAddress,
+//                    ownerAddress: ownerAddress,
+//                    newAccountAddress: newOpenOrder.publicKey,
+//                    programId: programId,
+//                    minRentExemption: minRentExemption
+//                )
+//                    .map {(
+//                        existingOpenOrder: nil,
+//                        newOpenOrder: .init(
+//                            signers: [newOpenOrder],
+//                            instructions: [$0]
+//                        )
+//                    )}
+//            }
+        }
+        
+        static func findForMarketAndOwner(
+            client: SerumSwapAPIClient,
+            marketAddress: PublicKey,
+            ownerAddress: PublicKey,
+            programId: PublicKey
+        ) -> Single<[OpenOrders]> {
+            let memcmp1 = EncodableWrapper(
+                wrapped: [
+                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                     "bytes": EncodableWrapper(wrapped: marketAddress.base58EncodedString)
+                ]
+            )
+            
+            let memcmp2 = EncodableWrapper(
+                wrapped: [
+                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
+                ]
+            )
+            
+            return getFilteredProgramAccounts(
+                client: client,
+                ownerAddress: ownerAddress,
+                filter: [
+                    ["memcmp": memcmp1],
+                    ["memcmp": memcmp2]
+                ],
+                programId: programId
+            )
         }
     }
 }

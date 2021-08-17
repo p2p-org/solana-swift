@@ -11,12 +11,12 @@ import RxSwift
 // Close account feature flag.
 //
 // TODO: enable once the DEX supports closing open orders accounts.
-let CLOSE_ENABLED = false;
+let CLOSE_ENABLED = false
 
 // Initialize open orders feature flag.
 //
 // TODO: enable once the DEX supports initializing open orders accounts.
-let OPEN_ENABLED = false;
+let OPEN_ENABLED = false
 
 public struct SerumSwap {
     // MARK: - Properties
@@ -55,6 +55,235 @@ public struct SerumSwap {
     }
     
     private func swapTxs(_ params: SwapParams) -> Single<SignersAndInstructions> {
+        // check if fromMint and toMint are equal
+        guard params.fromMint != params.toMint else {return .error(SerumSwapError("Can not swap \(params.fromMint) to itself"))}
+        
+        // If swapping to/from a USD(x) token, then swap directly on the market.
+        if params.fromMint.isUsdx {
+            var coinWallet = params.toWallet
+            var pcWallet = params.fromWallet
+            var baseMint = params.toMint
+            var quoteMint: PublicKey?
+            var side = Side.bid
+            
+            // Special case USDT/USDC market since the coin is always USDT and
+            // the pc is always USDC.
+            if params.toMint == .usdcMint {
+                coinWallet = params.fromWallet
+                pcWallet = params.toWallet
+                baseMint = params.fromMint
+                quoteMint = params.toMint
+                side = .ask
+            }
+            // Special case USDC/USDT market since the coin is always USDC and
+            // the pc is always USDT.
+            else if params.toMint == .usdtMint {
+                coinWallet = params.toWallet
+                pcWallet = params.fromWallet
+                baseMint = params.toMint
+                quoteMint = params.quoteMint
+                side = .bid
+            }
+            
+            return swapDirectTxs(
+                coinWallet: coinWallet,
+                pcWallet: pcWallet,
+                baseMint: baseMint,
+                quoteMint: quoteMint ?? params.fromMint,
+                side: side,
+                amount: params.amount,
+                minExchangeRate: params.minExchangeRate,
+                referral: params.referral,
+                close: params.close,
+                fromMarket: params.fromMarket,
+                fromOpenOrders: params.fromOpenOrders,
+                feePayer: params.feePayer
+            )
+        }
+        else if params.toMint.isUsdx {
+            return swapDirectTxs(
+                coinWallet: params.fromWallet,
+                pcWallet: params.toWallet,
+                baseMint: params.fromMint,
+                quoteMint: params.toMint,
+                side: .ask,
+                amount: params.amount,
+                minExchangeRate: params.minExchangeRate,
+                referral: params.referral,
+                close: params.close,
+                fromMarket: params.fromMarket,
+                fromOpenOrders: params.fromOpenOrders,
+                feePayer: params.feePayer
+            )
+        }
+        
+        // Direct swap market explicitly given.
+        if params.toMarket == nil {
+            return swapDirectTxs(
+                coinWallet: params.fromWallet,
+                pcWallet: params.toWallet,
+                baseMint: params.fromMint,
+                quoteMint: params.toMint,
+                side: params.fromMint == params.fromMarket.baseMintAddress ? .ask: .bid,
+                amount: params.amount,
+                minExchangeRate: params.minExchangeRate,
+                referral: params.referral,
+                close: params.close,
+                fromMarket: params.fromMarket,
+                fromOpenOrders: params.fromOpenOrders,
+                feePayer: params.feePayer
+            )
+        }
+        
+        // Neither wallet is a USD stable coin. So perform a transitive swap.
+        guard let quoteMint = params.quoteMint else {
+            return .error(SerumSwapError("quoteMint must be provided for a transitive swap"))
+        }
+        guard let toMarket = params.toMarket else {
+            return .error(SerumSwapError("toMarket must be provided for transitive swaps"))
+        }
+        
+        return swapTransitiveTxs(
+            fromMint: params.fromMint,
+            toMint: params.toMint,
+            pcMint: quoteMint,
+            fromWallet: params.fromWallet,
+            toWallet: params.toWallet,
+            pcWallet: params.quoteWallet,
+            amount: params.amount,
+            minExchangeRate: params.minExchangeRate,
+            referral: params.referral,
+            close: params.close,
+            fromMarket: params.fromMarket,
+            toMarket: toMarket,
+            fromOpenOrders: params.fromOpenOrders,
+            toOpenOrders: params.toOpenOrders
+        )
+    }
+    
+    private func swapDirectTxs(
+        coinWallet: PublicKey?,
+        pcWallet: PublicKey?,
+        baseMint: PublicKey,
+        quoteMint: PublicKey,
+        side: Side,
+        amount: Lamports,
+        minExchangeRate: ExchangeRate,
+        referral: PublicKey?,
+        close: Bool?,
+        fromMarket: Market,
+        fromOpenOrders: PublicKey?,
+        feePayer: PublicKey?
+    ) -> Single<SignersAndInstructions> {
+        guard let owner = accountProvider.getNativeWalletAddress()
+        else {return .error(SerumSwapError.unauthorized)}
+        
+        // get vaultSigner
+        let requestVaultSigner = Self.getVaultOwnerAndNonce(
+            marketPublicKey: fromMarket.address
+        )
+            .map {$0.vaultOwner}
+        
+        // prepare source account, create associated token address if source wallet is native
+        let requestSourceAccount = client.prepareValidAccountAndInstructions(
+            myAccount: owner,
+            address: coinWallet ?? owner,
+            mint: baseMint,
+            feePayer: feePayer ?? owner,
+            closeAfterward: baseMint == .wrappedSOLMint
+        )
+
+        // prepare destination account, create associated token if destination wallet is native or nil.
+        let requestDestinationAccount = client.prepareValidAccountAndInstructions(
+            myAccount: owner,
+            address: pcWallet,
+            mint: quoteMint,
+            feePayer: feePayer ?? owner,
+            closeAfterward: quoteMint == .wrappedSOLMint
+        )
+        
+        // get open order
+        let requestOpenOrders: Single<AccountInstructions>
+        if let openOrders = fromOpenOrders {
+            requestOpenOrders = .just(
+                .init(
+                    account: openOrders,
+                    cleanupInstructions: [
+                        OpenOrders.closeAccountInstruction(
+                            order: openOrders,
+                            marketAddress: fromMarket.address,
+                            owner: owner
+                        )
+                    ]
+                )
+            )
+        } else {
+            requestOpenOrders = OpenOrders.makeCreateAccountInstructions(
+                client: client,
+                marketAddress: fromMarket.address,
+                ownerAddress: owner,
+                programId: .dexPID
+            )
+        }
+        
+        return Single.zip(
+            requestVaultSigner,
+            requestSourceAccount,
+            requestDestinationAccount,
+            requestOpenOrders
+        )
+        .map { vaultSigner, sourceAccountInstructions, destinationAccountInstructions, openOrdersAccountInstructions in
+            var signers = [Account]()
+            var instructions = [TransactionInstruction]()
+            signers += sourceAccountInstructions.signers
+            signers += destinationAccountInstructions.signers
+            signers += openOrdersAccountInstructions.signers
+            
+            instructions += sourceAccountInstructions.instructions
+            instructions += destinationAccountInstructions.instructions
+            instructions += openOrdersAccountInstructions.instructions
+            
+            instructions.append(
+                directSwapInstruction(
+                    authority: owner,
+                    side: side,
+                    amount: amount,
+                    minExchangeRate: minExchangeRate,
+                    market: fromMarket,
+                    vaultSigner: vaultSigner,
+                    openOrders: openOrdersAccountInstructions.account,
+                    pcWallet: destinationAccountInstructions.account,
+                    coinWallet: sourceAccountInstructions.account,
+                    referral: referral
+                )
+            )
+            
+            instructions += sourceAccountInstructions.cleanupInstructions
+            instructions += destinationAccountInstructions.cleanupInstructions
+            if CLOSE_ENABLED && close == true {
+                instructions += openOrdersAccountInstructions.cleanupInstructions
+            }
+            
+            return .init(signers: signers, instructions: instructions)
+        }
+    }
+    
+    private func swapTransitiveTxs(
+        fromMint: PublicKey,
+        toMint: PublicKey,
+        pcMint: PublicKey,
+        fromWallet: PublicKey?,
+        toWallet: PublicKey?,
+        pcWallet: PublicKey?,
+        amount: Lamports,
+        minExchangeRate: ExchangeRate,
+        referral: PublicKey?,
+        close: Bool?,
+        fromMarket: Market,
+        toMarket: Market,
+        fromOpenOrders: PublicKey?,
+        toOpenOrders: PublicKey?
+    ) -> Single<SignersAndInstructions> {
         fatalError()
     }
     
@@ -151,39 +380,40 @@ public struct SerumSwap {
     private func createAndInitAccount(
         marketAddress: PublicKey
     ) -> Single<SignersAndInstructions> {
-        // create new account
-        let newAccount: Account
-        do {
-            newAccount = try Account(network: .mainnetBeta)
-        } catch {
-            return .error(error)
-        }
-        
-        guard let ownerAddress = accountProvider.getNativeWalletAddress()
-        else {
-            return .error(SerumSwapError.unauthorized)
-        }
-        
-        // form instruction
-        return OpenOrders.makeCreateAccountInstruction(
-            client: client,
-            marketAddress: marketAddress,
-            ownerAddress: ownerAddress,
-            newAccountAddress: newAccount.publicKey,
-            programId: .dexPID
-        )
-        .map {createAccountInstruction in
-            
-            var instructions = [createAccountInstruction]
-            instructions.append(
-                self.initAccountInstruction(
-                    order: newAccount.publicKey,
-                    marketAddress: marketAddress
-                )
-            )
-            let signers = [newAccount]
-            return .init(signers: signers, instructions: instructions)
-        }
+        fatalError()
+//        // create new account
+//        let newAccount: Account
+//        do {
+//            newAccount = try Account(network: .mainnetBeta)
+//        } catch {
+//            return .error(error)
+//        }
+//
+//        guard let ownerAddress = accountProvider.getNativeWalletAddress()
+//        else {
+//            return .error(SerumSwapError.unauthorized)
+//        }
+//
+//        // form instruction
+//        return OpenOrders.makeCreateAccountInstruction(
+//            client: client,
+//            marketAddress: marketAddress,
+//            ownerAddress: ownerAddress,
+//            newAccountAddress: newAccount.publicKey,
+//            programId: .dexPID
+//        )
+//        .map {createAccountInstruction in
+//
+//            var instructions = [createAccountInstruction]
+//            instructions.append(
+//                self.initAccountInstruction(
+//                    order: newAccount.publicKey,
+//                    marketAddress: marketAddress
+//                )
+//            )
+//            let signers = [newAccount]
+//            return .init(signers: signers, instructions: instructions)
+//        }
     }
     
     // MARK: - CloseAccount
@@ -243,29 +473,29 @@ public struct SerumSwap {
         fromMint: PublicKey,
         toMint: PublicKey
     ) -> Single<TransactionInstruction> {
-        
-        findMarketsAndOpenOrders(
-            usdxMint: usdxMint,
-            fromMint: fromMint,
-            toMint: toMint
-        )
-        .map { marketFrom, marketTo, ooAccsFrom, ooAccsTo  in
-            
-            guard let owner = self.accountProvider.getNativeWalletAddress() else {throw SerumSwapError.unauthorized}
-            
-            if ooAccsFrom.first == nil && ooAccsTo.first == nil {
-                throw SerumSwapError("No open orders accounts left to close")
-            }
-            if let order = ooAccsFrom.first {
-                return self.closeAccountInstruction(order: order.address, marketAddress: marketFrom, owner: owner)
-            }
-            
-            if let order = ooAccsTo.first {
-                return self.closeAccountInstruction(order: order.address, marketAddress: marketTo, owner: owner)
-            }
-            
-            throw SerumSwapError.unknown
-        }
+        fatalError()
+//        findMarketsAndOpenOrders(
+//            usdxMint: usdxMint,
+//            fromMint: fromMint,
+//            toMint: toMint
+//        )
+//        .map { marketFrom, marketTo, ooAccsFrom, ooAccsTo  in
+//
+//            guard let owner = self.accountProvider.getNativeWalletAddress() else {throw SerumSwapError.unauthorized}
+//
+//            if ooAccsFrom.first == nil && ooAccsTo.first == nil {
+//                throw SerumSwapError("No open orders accounts left to close")
+//            }
+//            if let order = ooAccsFrom.first {
+//                return self.closeAccountInstruction(order: order.address, marketAddress: marketFrom, owner: owner)
+//            }
+//
+//            if let order = ooAccsTo.first {
+//                return self.closeAccountInstruction(order: order.address, marketAddress: marketTo, owner: owner)
+//            }
+//
+//            throw SerumSwapError.unknown
+//        }
     }
     
     private func closeAccountForDirectSwapOnUSDX(
@@ -273,28 +503,29 @@ public struct SerumSwap {
         toMint: PublicKey
     ) -> Single<TransactionInstruction>
     {
-        guard let ownerAddress = self.accountProvider.getNativeWalletAddress()
-        else {return .error(SerumSwapError.unauthorized)}
-        
-        return client.getMarketAddress(usdxMint: fromMint, baseMint: toMint)
-            .flatMap {marketAddress -> Single<([OpenOrders], PublicKey)> in
-                
-                return Single.zip(
-                    OpenOrders.findForMarketAndOwner(
-                        client: self.client,
-                        marketAddress: marketAddress,
-                        ownerAddress: ownerAddress,
-                        programId: .dexPID
-                    ),
-                    .just(marketAddress)
-                )
-            }
-            .map {openOrders, marketAddress in
-                
-                guard let owner = self.accountProvider.getNativeWalletAddress() else {throw SerumSwapError.unauthorized}
-                guard let order = openOrders.first else {throw SerumSwapError("Open orders account doesn't exist")}
-                return self.closeAccountInstruction(order: order.publicKey, marketAddress: marketAddress, owner: owner)
-            }
+        fatalError()
+//        guard let ownerAddress = self.accountProvider.getNativeWalletAddress()
+//        else {return .error(SerumSwapError.unauthorized)}
+//
+//        return client.getMarketAddress(usdxMint: fromMint, baseMint: toMint)
+//            .flatMap {marketAddress -> Single<([OpenOrders], PublicKey)> in
+//
+//                return Single.zip(
+//                    OpenOrders.findForMarketAndOwner(
+//                        client: self.client,
+//                        marketAddress: marketAddress,
+//                        ownerAddress: ownerAddress,
+//                        programId: .dexPID
+//                    ),
+//                    .just(marketAddress)
+//                )
+//            }
+//            .map {openOrders, marketAddress in
+//
+//                guard let owner = self.accountProvider.getNativeWalletAddress() else {throw SerumSwapError.unauthorized}
+//                guard let order = openOrders.first else {throw SerumSwapError("Open orders account doesn't exist")}
+//                return self.closeAccountInstruction(order: order.publicKey, marketAddress: marketAddress, owner: owner)
+//            }
     }
     
     
@@ -457,84 +688,83 @@ public struct SerumSwap {
 //        }
     }
     
-    private func swapDirect(
-        coinWallet: PublicKey,
-        pcWallet: PublicKey,
-        baseMint: PublicKey,
-        quoteMint: PublicKey,
-        side: Side,
-        amount: Lamports,
-        minExpectedSwapAmount: Lamports,
-        referral: PublicKey?,
-        currentSigners: [Account],
-        currentInstructions: [TransactionInstruction],
-        cleanupInstructions: [TransactionInstruction]
-    ) -> Single<SignersAndInstructions> {
-        
-        client.getMarketAddresses(
-            usdxMint: quoteMint,
-            baseMint: baseMint
-        )
-            .flatMap {marketAddresses -> Single<(Market, UInt64)> in
-                
-                return Single.zip(
-                    Market.loadAndFindValidMarket(client: self.client, addresses: marketAddresses, programId: .dexPID),
-                    OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: .dexPID)
-                )
-            }
-            .flatMap {marketClient, minRemExemption -> Single<(Market, PublicKey, GetOpenOrderResult)> in
-                
-                
-                guard let owner = self.accountProvider.getNativeWalletAddress()
-                else {throw SerumSwapError.unauthorized}
-                
-                return Single.zip(
-                    .just(marketClient),
-                    Self.getVaultOwnerAndNonce(
-                        marketPublicKey: marketClient.address,
-                        dexProgramId: .dexPID
-                    ).map {$0.vaultOwner},
-                    OpenOrders.findAnOpenOrderOrCreateOne(
-                        client: self.client,
-                        marketAddress: marketClient.address,
-                        ownerAddress: owner,
-                        programId: .dexPID,
-                        minRentExemption: minRemExemption
-                    )
-                )
-            }
-            .map {market, vaultOwner, order -> SignersAndInstructions in
-                
-                guard let openOrder = order.existingOpenOrder ?? order.newOpenOrder?.signers.first?.publicKey
-                else {throw SerumSwapError("Could not find or create new order")}
-                guard let authority = self.accountProvider.getNativeWalletAddress()
-                else { throw SerumSwapError.unauthorized }
-                
-                var signers = currentSigners
-                var instructions = currentInstructions
-                var cleanupInstructions = cleanupInstructions
-                
-                if let newOrder = order.newOpenOrder {
-                    signers += newOrder.signers
-                    instructions += newOrder.instructions
-                    
-                    // TODO: - uncomment once the DEX supports closing open orders accounts.
-//                    cleanupInstructions.append(
-//                        self.closeAccountInstruction(
-//                            order: openOrder,
-//                            marketAddress: market.address
-//                        )
+//    private func swapDirect(
+//        coinWallet: PublicKey,
+//        pcWallet: PublicKey,
+//        baseMint: PublicKey,
+//        quoteMint: PublicKey,
+//        side: Side,
+//        amount: Lamports,
+//        minExpectedSwapAmount: Lamports,
+//        referral: PublicKey?,
+//        currentSigners: [Account],
+//        currentInstructions: [TransactionInstruction],
+//        cleanupInstructions: [TransactionInstruction]
+//    ) -> Single<SignersAndInstructions> {
+//
+//        client.getMarketAddresses(
+//            usdxMint: quoteMint,
+//            baseMint: baseMint
+//        )
+//            .flatMap {marketAddresses -> Single<(Market, UInt64)> in
+//
+//                return Single.zip(
+//                    Market.loadAndFindValidMarket(client: self.client, addresses: marketAddresses, programId: .dexPID),
+//                    OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: .dexPID)
+//                )
+//            }
+//            .flatMap {marketClient, minRemExemption -> Single<(Market, PublicKey, GetOpenOrderResult)> in
+//
+//
+//                guard let owner = self.accountProvider.getNativeWalletAddress()
+//                else {throw SerumSwapError.unauthorized}
+//
+//                return Single.zip(
+//                    .just(marketClient),
+//                    Self.getVaultOwnerAndNonce(
+//                        marketPublicKey: marketClient.address,
+//                        dexProgramId: .dexPID
+//                    ).map {$0.vaultOwner},
+//                    OpenOrders.findAnOpenOrderOrCreateOne(
+//                        client: self.client,
+//                        marketAddress: marketClient.address,
+//                        ownerAddress: owner,
+//                        programId: .dexPID,
+//                        minRentExemption: minRemExemption
 //                    )
-                }
-                
-                // add swap instruction
-                instructions.append(
-                    self.directSwapInstruction(authority: authority, side: side, amount: amount, minExpectedSwapAmount: minExpectedSwapAmount, market: market, vaultSigner: vaultOwner, openOrders: openOrder, pcWallet: pcWallet, coinWallet: coinWallet, referral: referral)
-                )
-                
-                return .init(signers: signers, instructions: instructions + cleanupInstructions)
-            }
-    }
+//                )
+//            }
+//            .map {market, vaultOwner, order -> SignersAndInstructions in
+//
+//                guard let openOrder = order.existingOpenOrder ?? order.newOpenOrder?.signers.first?.publicKey
+//                else {throw SerumSwapError("Could not find or create new order")}
+//                guard let authority = self.accountProvider.getNativeWalletAddress()
+//                else { throw SerumSwapError.unauthorized }
+//
+//                var signers = currentSigners
+//                var instructions = currentInstructions
+//                var cleanupInstructions = cleanupInstructions
+//
+//                if let newOrder = order.newOpenOrder {
+//                    signers += newOrder.signers
+//                    instructions += newOrder.instructions
+//
+////                    cleanupInstructions.append(
+////                        self.closeAccountInstruction(
+////                            order: openOrder,
+////                            marketAddress: market.address
+////                        )
+////                    )
+//                }
+//
+//                // add swap instruction
+//                instructions.append(
+//                    self.directSwapInstruction(authority: authority, side: side, amount: amount, minExpectedSwapAmount: minExpectedSwapAmount, market: market, vaultSigner: vaultOwner, openOrders: openOrder, pcWallet: pcWallet, coinWallet: coinWallet, referral: referral)
+//                )
+//
+//                return .init(signers: signers, instructions: instructions + cleanupInstructions)
+//            }
+//    }
     
     private func swapTransitive(
         fromMint: PublicKey,
@@ -689,25 +919,6 @@ public struct SerumSwap {
     }
     
     // https://github.com/project-serum/serum-dex/blob/e7214bbc455d37a483427a5c37c194246d457502/dex/src/instruction.rs
-    private func closeAccountInstruction(
-        order: PublicKey,
-        marketAddress: PublicKey,
-        owner: PublicKey
-    ) -> TransactionInstruction {
-        TransactionInstruction(
-            keys: [
-                .init(publicKey: order, isSigner: false, isWritable: true),
-                .init(publicKey: owner, isSigner: true, isWritable: false),
-                .init(publicKey: marketAddress, isSigner: false, isWritable: false),
-                .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
-//                .init(publicKey: <#T##SolanaSDK.PublicKey#>, isSigner: <#T##Bool#>, isWritable: <#T##Bool#>) // 4. `[signer]` open orders market authority (optional).
-            ],
-            programId: .dexPID,
-            data: [UInt8(14)]
-        )
-    }
-    
-    // https://github.com/project-serum/serum-dex/blob/e7214bbc455d37a483427a5c37c194246d457502/dex/src/instruction.rs
     private func initAccountInstruction(
         order: PublicKey,
         marketAddress: PublicKey
@@ -729,7 +940,7 @@ public struct SerumSwap {
         authority: PublicKey,
         side: Side,
         amount: Lamports,
-        minExpectedSwapAmount: Lamports,
+        minExchangeRate: ExchangeRate,
         market: Market,
         vaultSigner: PublicKey,
         openOrders: PublicKey,
@@ -759,7 +970,7 @@ public struct SerumSwap {
             data: [
                 side.byte,
                 amount,
-                minExpectedSwapAmount
+                minExchangeRate.rate // TODO: - Fix later
             ]
         )
     }

@@ -107,6 +107,12 @@ extension SerumSwap {
         let close: Bool?
         
         /**
+         * The payer that pays the creation transaction.
+         * nil if the current user is the payer
+         */
+        let feePayer: PublicKey? = nil
+        
+        /**
          * Additional transactions to bundle into the swap transaction
          */
         let additionalTransactions: [SignersAndInstructions]? = nil

@@ -43,18 +43,12 @@ public protocol SerumSwapAPIClient {
         fromMint: SerumSwap.PublicKey,
         toMint: SerumSwap.PublicKey
     ) -> Single<Bool>
-    func prepareSourceAccountAndInstructions(
-        myNativeWallet: SerumSwap.PublicKey,
-        source: SerumSwap.PublicKey,
-        sourceMint: SerumSwap.PublicKey,
-        amount: SerumSwap.Lamports,
-        feePayer: SerumSwap.PublicKey
-    ) -> Single<SerumSwap.AccountInstructions>
-    func prepareDestinationAccountAndInstructions(
+    func prepareValidAccountAndInstructions(
         myAccount: SerumSwap.PublicKey,
-        destination: SerumSwap.PublicKey?,
-        destinationMint: SerumSwap.PublicKey,
-        feePayer: SerumSwap.PublicKey
+        address: SerumSwap.PublicKey?,
+        mint: SerumSwap.PublicKey,
+        feePayer: SerumSwap.PublicKey,
+        closeAfterward: Bool
     ) -> Single<SerumSwap.AccountInstructions>
     func serializeTransaction(
         instructions: [SerumSwap.TransactionInstruction],

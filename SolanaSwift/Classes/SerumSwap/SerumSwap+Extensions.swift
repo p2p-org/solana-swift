@@ -12,4 +12,7 @@ extension SolanaSDK.PublicKey {
     static var usdtMint: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB") }
     static var dexPID: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin") }
     static var serumSwapPID: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "22Y43yTVxuUkoRKdm9thyRhQ3SdgQS7c7kB6UNCiaczD") }
+    var isUsdx: Bool {
+        self == .usdcMint || self == .usdtMint
+    }
 }

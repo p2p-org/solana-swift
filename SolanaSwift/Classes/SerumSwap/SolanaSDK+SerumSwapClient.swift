@@ -29,6 +29,10 @@ extension SerumSwap {
 }
 
 extension SolanaSDK: SerumSwapAPIClient {
+    public func prepareValidAccountAndInstructions(myAccount: SerumSwap.PublicKey, address: SerumSwap.PublicKey?, mint: SerumSwap.PublicKey, feePayer: SerumSwap.PublicKey, closeAfterward: Bool) -> Single<SerumSwap.AccountInstructions> {
+        prepareDestinationAccountAndInstructions(myAccount: myAccount, destination: address, destinationMint: mint, feePayer: feePayer, closeAfterward: closeAfterward)
+    }
+    
     public func simulateTransaction(transaction: String) -> Single<TransactionStatus> {
         simulateTransaction(transaction: transaction, configs: .init(encoding: "base64")!)
     }
