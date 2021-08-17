@@ -50,12 +50,14 @@ extension SerumSwap {
             programId: PublicKey,
             minRentExemption: UInt64? = nil
         ) -> Single<AccountInstructions> {
-            let span = getLayoutSpan(programId: programId.base58EncodedString)
             let requestMinRentExemption: Single<UInt64>
             if let minRentExemption = minRentExemption {
                 requestMinRentExemption = .just(minRentExemption)
             } else {
-                requestMinRentExemption = client.getMinimumBalanceForRentExemption(span: span)
+                requestMinRentExemption = Self.getMinimumBalanceForRentExemption(
+                    client: client,
+                    programId: programId
+                )
             }
             
             let requestNewAccount = Single<Account>.create { observer in
@@ -83,7 +85,7 @@ extension SerumSwap {
                                 from: ownerAddress,
                                 toNewPubkey: newAccount.publicKey,
                                 lamports: minRentExemption,
-                                space: span,
+                                space: getLayoutSpan(programId: programId.base58EncodedString),
                                 programPubkey: programId
                             )
                         ],

@@ -157,7 +157,8 @@ public struct SerumSwap {
             fromMarket: params.fromMarket,
             toMarket: toMarket,
             fromOpenOrders: params.fromOpenOrders,
-            toOpenOrders: params.toOpenOrders
+            toOpenOrders: params.toOpenOrders,
+            feePayer: params.feePayer
         )
     }
     
@@ -203,28 +204,10 @@ public struct SerumSwap {
         )
         
         // get open order
-        let requestOpenOrders: Single<AccountInstructions>
-        if let openOrders = fromOpenOrders {
-            requestOpenOrders = .just(
-                .init(
-                    account: openOrders,
-                    cleanupInstructions: [
-                        OpenOrders.closeAccountInstruction(
-                            order: openOrders,
-                            marketAddress: fromMarket.address,
-                            owner: owner
-                        )
-                    ]
-                )
-            )
-        } else {
-            requestOpenOrders = OpenOrders.makeCreateAccountInstructions(
-                client: client,
-                marketAddress: fromMarket.address,
-                ownerAddress: owner,
-                programId: .dexPID
-            )
-        }
+        let requestOpenOrders = prepareOpenOrder(
+            orders: fromOpenOrders,
+            market: fromMarket
+        )
         
         return Single.zip(
             requestVaultSigner,
@@ -282,9 +265,153 @@ public struct SerumSwap {
         fromMarket: Market,
         toMarket: Market,
         fromOpenOrders: PublicKey?,
-        toOpenOrders: PublicKey?
+        toOpenOrders: PublicKey?,
+        feePayer: PublicKey?
     ) -> Single<SignersAndInstructions> {
-        fatalError()
+        guard let owner = accountProvider.getNativeWalletAddress()
+        else {return .error(SerumSwapError.unauthorized)}
+        
+        // Calculate the vault signers for each market.
+        let requestFromVaultSigner = Self.getVaultOwnerAndNonce(marketPublicKey: fromMarket.address)
+            .map {$0.vaultOwner}
+        let requestToVaultSigner = Self.getVaultOwnerAndNonce(marketPublicKey: toMarket.address)
+            .map {$0.vaultOwner}
+        
+        // Prepare source, destination and pc wallets
+        let requestSourceAccountInstructions = client.prepareValidAccountAndInstructions(
+            myAccount: owner,
+            address: fromWallet,
+            mint: fromMint,
+            feePayer: feePayer ?? owner,
+            closeAfterward: fromMint == .wrappedSOLMint
+        )
+        let requestDestinationAccountInstructions = client.prepareValidAccountAndInstructions(
+            myAccount: owner,
+            address: toWallet,
+            mint: toMint,
+            feePayer: feePayer ?? owner,
+            closeAfterward: toMint == .wrappedSOLMint
+        )
+        let requestPcAccountInstructions = client.prepareValidAccountAndInstructions(
+            myAccount: owner,
+            address: pcWallet,
+            mint: pcMint,
+            feePayer: feePayer ?? owner,
+            closeAfterward: pcMint == .wrappedSOLMint
+        )
+        
+        // Prepare open orders
+        let requestOpenOrders = OpenOrders.getMinimumBalanceForRentExemption(client: client, programId: .dexPID)
+            .flatMap {minRentExemption in
+                Single.zip(
+                    prepareOpenOrder(
+                        orders: fromOpenOrders,
+                        market: fromMarket,
+                        minRentExemption: minRentExemption
+                    ),
+                    prepareOpenOrder(
+                        orders: toOpenOrders,
+                        market: toMarket,
+                        minRentExemption: minRentExemption
+                    )
+                )
+            }
+        
+        return Single.zip(
+            requestFromVaultSigner,
+            requestToVaultSigner,
+            requestSourceAccountInstructions,
+            requestDestinationAccountInstructions,
+            requestPcAccountInstructions,
+            requestOpenOrders
+        )
+        .map { fromVaultSigner, toVaultSigner, sourceAccountInstructions, destinationAccountInstructions, pcAccountInstructions, openOrdersAccountInstructions in
+            let fromOpenOrdersAccountInstructions = openOrdersAccountInstructions.0
+            let toOpenOrdersAccountInstructions = openOrdersAccountInstructions.1
+            
+            var signers = [Account]()
+            var instructions = [TransactionInstruction]()
+            signers += sourceAccountInstructions.signers
+            signers += destinationAccountInstructions.signers
+            signers += pcAccountInstructions.signers
+            signers += fromOpenOrdersAccountInstructions.signers
+            signers += toOpenOrdersAccountInstructions.signers
+            
+            instructions += sourceAccountInstructions.instructions
+            instructions += destinationAccountInstructions.instructions
+            instructions += pcAccountInstructions.instructions
+            instructions += fromOpenOrdersAccountInstructions.instructions
+            instructions += toOpenOrdersAccountInstructions.instructions
+            
+            instructions.append(
+                transitiveSwapInstruction(
+                    fromMarketClient: fromMarket,
+                    toMarketClient: toMarket,
+                    fromVaultSigner: fromVaultSigner,
+                    toVaultSigner: toVaultSigner,
+                    fromOpenOrder: fromOpenOrdersAccountInstructions.account,
+                    toOpenOrder: toOpenOrdersAccountInstructions.account,
+                    fromWallet: sourceAccountInstructions.account,
+                    toWallet: destinationAccountInstructions.account,
+                    pcWallet: pcAccountInstructions.account,
+                    referral: referral
+                )
+            )
+            
+            instructions += sourceAccountInstructions.cleanupInstructions
+            instructions += destinationAccountInstructions.cleanupInstructions
+            instructions += pcAccountInstructions.cleanupInstructions
+            if CLOSE_ENABLED && close == true {
+                instructions += fromOpenOrdersAccountInstructions.cleanupInstructions
+                instructions += toOpenOrdersAccountInstructions.cleanupInstructions
+            }
+            
+            return .init(signers: signers, instructions: instructions)
+        }
+    }
+    
+    private func prepareOpenOrder(
+        orders: PublicKey?,
+        market: Market,
+        minRentExemption: Lamports? = nil
+    ) -> Single<AccountInstructions> {
+        guard let owner = accountProvider.getNativeWalletAddress()
+        else {return .error(SerumSwapError.unauthorized)}
+        
+        if let order = orders {
+            return .just(
+                .init(
+                    account: order,
+                    cleanupInstructions: [
+                        OpenOrders.closeAccountInstruction(
+                            order: order,
+                            marketAddress: market.address,
+                            owner: owner
+                        )
+                    ]
+                )
+            )
+        } else {
+            return OpenOrders.makeCreateAccountInstructions(
+                client: client,
+                marketAddress: market.address,
+                ownerAddress: owner,
+                programId: .dexPID,
+                minRentExemption: minRentExemption
+            )
+            .map {accountInstructions in
+                var accountInstructions = accountInstructions
+                if OPEN_ENABLED {
+                    accountInstructions.instructions.append(
+                        initAccountInstruction(
+                            order: accountInstructions.account,
+                            marketAddress: market.address
+                        )
+                    )
+                }
+                return accountInstructions
+            }
+        }
     }
     
     // MARK: - InitAccount

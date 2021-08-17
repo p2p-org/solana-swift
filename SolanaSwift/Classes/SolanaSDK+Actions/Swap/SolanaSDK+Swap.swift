@@ -32,7 +32,7 @@ extension SolanaSDK {
         }
         
         let account: PublicKey
-        let instructions: [TransactionInstruction]
+        var instructions: [TransactionInstruction]
         let cleanupInstructions: [TransactionInstruction]
         let signers: [Account]
         
