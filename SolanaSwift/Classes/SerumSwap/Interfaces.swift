@@ -13,70 +13,74 @@ public protocol SerumSwapAPIClient {
     func getAccountInfo<T: DecodableBufferLayout>(
         account: String,
         decodedTo: T.Type
-    ) -> Single<SolanaSDK.BufferInfo<T>>
+    ) -> Single<SerumSwap.BufferInfo<T>>
     func getMintData(
         mintAddress: String,
         programId: String
-    ) -> Single<SolanaSDK.Mint>
+    ) -> Single<SerumSwap.Mint>
     func getMinimumBalanceForRentExemption(
         span: UInt64
     ) -> Single<UInt64>
     func getProgramAccounts<T: DecodableBufferLayout>(
         publicKey: String,
-        configs: SolanaSDK.RequestConfiguration?,
+        configs: SerumSwap.RequestConfiguration?,
         decodedTo: T.Type
-    ) -> Single<SolanaSDK.ProgramAccounts<T>>
+    ) -> Single<SerumSwap.ProgramAccounts<T>>
     // Returns the `usdxMint` quoted market address *if* no open orders account already exists.
     func getMarketAddressIfNeeded(
-        usdxMint: SolanaSDK.PublicKey,
-        baseMint: SolanaSDK.PublicKey
-    ) -> Single<SolanaSDK.PublicKey>
+        usdxMint: SerumSwap.PublicKey,
+        baseMint: SerumSwap.PublicKey
+    ) -> Single<SerumSwap.PublicKey>
     func getMarketAddress(
-        usdxMint: SolanaSDK.PublicKey,
-        baseMint: SolanaSDK.PublicKey
-    ) -> Single<SolanaSDK.PublicKey>
+        usdxMint: SerumSwap.PublicKey,
+        baseMint: SerumSwap.PublicKey
+    ) -> Single<SerumSwap.PublicKey>
     func getMarketAddresses(
-        usdxMint: SolanaSDK.PublicKey,
-        baseMint: SolanaSDK.PublicKey
-    ) -> Single<[SolanaSDK.PublicKey]>
+        usdxMint: SerumSwap.PublicKey,
+        baseMint: SerumSwap.PublicKey
+    ) -> Single<[SerumSwap.PublicKey]>
     func usdcPathExists(
-        fromMint: SolanaSDK.PublicKey,
-        toMint: SolanaSDK.PublicKey
+        fromMint: SerumSwap.PublicKey,
+        toMint: SerumSwap.PublicKey
     ) -> Single<Bool>
     func prepareSourceAccountAndInstructions(
-        myNativeWallet: SolanaSDK.PublicKey,
-        source: SolanaSDK.PublicKey,
-        sourceMint: SolanaSDK.PublicKey,
-        amount: SolanaSDK.Lamports,
-        feePayer: SolanaSDK.PublicKey
-    ) -> Single<SolanaSDK.AccountInstructions>
+        myNativeWallet: SerumSwap.PublicKey,
+        source: SerumSwap.PublicKey,
+        sourceMint: SerumSwap.PublicKey,
+        amount: SerumSwap.Lamports,
+        feePayer: SerumSwap.PublicKey
+    ) -> Single<SerumSwap.AccountInstructions>
     func prepareDestinationAccountAndInstructions(
-        myAccount: SolanaSDK.PublicKey,
-        destination: SolanaSDK.PublicKey?,
-        destinationMint: SolanaSDK.PublicKey,
-        feePayer: SolanaSDK.PublicKey
-    ) -> Single<SolanaSDK.AccountInstructions>
+        myAccount: SerumSwap.PublicKey,
+        destination: SerumSwap.PublicKey?,
+        destinationMint: SerumSwap.PublicKey,
+        feePayer: SerumSwap.PublicKey
+    ) -> Single<SerumSwap.AccountInstructions>
     func serializeTransaction(
-        instructions: [SolanaSDK.TransactionInstruction],
+        instructions: [SerumSwap.TransactionInstruction],
         recentBlockhash: String?,
-        signers: [SolanaSDK.Account],
-        feePayer: SolanaSDK.PublicKey?
+        signers: [SerumSwap.Account],
+        feePayer: SerumSwap.PublicKey?
     ) -> Single<String>
     func simulateTransaction(
         transaction: String
-    ) -> Single<SolanaSDK.TransactionStatus>
+    ) -> Single<SerumSwap.TransactionStatus>
 }
 
 extension SerumSwapAPIClient {
-    func getDecimals(mintAddress: SolanaSDK.PublicKey) -> Single<SolanaSDK.Decimals> {
+    func getDecimals(mintAddress: SerumSwap.PublicKey) -> Single<SerumSwap.Decimals> {
         getMintData(
             mintAddress: mintAddress.base58EncodedString,
-            programId: SolanaSDK.PublicKey.tokenProgramId.base58EncodedString
+            programId: SerumSwap.PublicKey.tokenProgramId.base58EncodedString
         )
             .map {$0.decimals}
     }
 }
 
 public protocol SerumSwapAccountProvider {
-    func getNativeWalletAddress() -> SolanaSDK.PublicKey?
+    func getNativeWalletAddress() -> SerumSwap.PublicKey?
+}
+
+public protocol SerumSwapTokenListContainer {
+    
 }

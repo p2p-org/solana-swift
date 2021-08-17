@@ -19,7 +19,7 @@ class SerumSwapTests: RestAPITests {
     
     override func setUpWithError() throws {
         try super.setUpWithError()
-        serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK)
+        serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK)
     }
 
     func testDirectSwap() throws {

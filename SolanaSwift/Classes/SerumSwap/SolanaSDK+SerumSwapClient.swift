@@ -20,6 +20,11 @@ extension SerumSwap {
     public typealias Decimals = SolanaSDK.Decimals
     public typealias EncodableWrapper = SolanaSDK.EncodableWrapper
     public typealias BufferInfo = SolanaSDK.BufferInfo
+    public typealias Mint = SolanaSDK.Mint
+    public typealias RequestConfiguration = SolanaSDK.RequestConfiguration
+    public typealias ProgramAccounts = SolanaSDK.ProgramAccounts
+    public typealias AccountInstructions = SolanaSDK.AccountInstructions
+    public typealias TransactionStatus = SolanaSDK.TransactionStatus
 }
 
 extension SolanaSDK: SerumSwapAPIClient {
@@ -110,4 +115,8 @@ extension SolanaSDK: SerumSwapAccountProvider {
     public func getNativeWalletAddress() -> PublicKey? {
         accountStorage.account?.publicKey
     }
+}
+
+extension SolanaSDK: SerumSwapTokenListContainer {
+    
 }

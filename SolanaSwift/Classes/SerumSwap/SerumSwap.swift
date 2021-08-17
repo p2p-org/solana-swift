@@ -18,15 +18,21 @@ let CLOSE_ENABLED = false;
 // TODO: enable once the DEX supports initializing open orders accounts.
 let OPEN_ENABLED = false;
 
-public class SerumSwap {
+public struct SerumSwap {
     // MARK: - Properties
     let client: SerumSwapAPIClient
     let accountProvider: SerumSwapAccountProvider
+    let tokenListContainer: SerumSwapTokenListContainer
     
     // MARK: - Initializers
-    public init(client: SerumSwapAPIClient, accountProvider: SerumSwapAccountProvider) {
+    public init(
+        client: SerumSwapAPIClient,
+        accountProvider: SerumSwapAccountProvider,
+        tokenListContainer: SerumSwapTokenListContainer
+    ) {
         self.client = client
         self.accountProvider = accountProvider
+        self.tokenListContainer = tokenListContainer
     }
     
     // MARK: - InitAccount
@@ -63,8 +69,7 @@ public class SerumSwap {
                 fromMint: fromMint,
                 toMint: toMint
             )
-            .catch {[weak self] _ in
-                guard let self = self else {return .error(SerumSwapError.unknown)}
+            .catch {_ in
                 // Retry with building transitive with usdtMint
                 return self.buildTransitiveForInitAccounts(
                     usdxMint: .usdtMint,
@@ -85,9 +90,8 @@ public class SerumSwap {
             usdxMint: fromMint,
             baseMint: toMint
         )
-        .flatMap {[weak self] marketAddress in
-            guard let self = self else {throw SerumSwapError.unknown}
-            return self.createAndInitAccount(marketAddress: marketAddress)
+        .flatMap { marketAddress in
+            createAndInitAccount(marketAddress: marketAddress)
         }
     }
     
@@ -102,8 +106,8 @@ public class SerumSwap {
             fromMint: fromMint,
             toMint: toMint
         )
-            .flatMap { [weak self] marketFrom, marketTo, ooAccsFrom, ooAccsTo  in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .flatMap { marketFrom, marketTo, ooAccsFrom, ooAccsTo  in
+                
                 
                 if ooAccsFrom.first != nil && ooAccsTo.first != nil {
                     throw SerumSwapError("Open orders already exist")
@@ -145,8 +149,8 @@ public class SerumSwap {
             newAccountAddress: newAccount.publicKey,
             programId: .dexPID
         )
-        .map {[weak self] createAccountInstruction in
-            guard let self = self else {throw SerumSwapError.unknown}
+        .map {createAccountInstruction in
+            
             var instructions = [createAccountInstruction]
             instructions.append(
                 self.initAccountInstruction(
@@ -192,10 +196,9 @@ public class SerumSwap {
                 fromMint: fromMint,
                 toMint: toMint
             )
-            .catch {[weak self] _ in
-                guard let self = self else {return .error(SerumSwapError.unknown)}
+            .catch {_ in
                 // Retry with building transitive with usdtMint
-                return self.buildTransitiveForCloseAccount(
+                buildTransitiveForCloseAccount(
                     usdxMint: .usdtMint,
                     fromMint: fromMint,
                     toMint: toMint
@@ -223,8 +226,8 @@ public class SerumSwap {
             fromMint: fromMint,
             toMint: toMint
         )
-        .map { [weak self] marketFrom, marketTo, ooAccsFrom, ooAccsTo  in
-            guard let self = self else {throw SerumSwapError.unknown}
+        .map { marketFrom, marketTo, ooAccsFrom, ooAccsTo  in
+            
             guard let owner = self.accountProvider.getNativeWalletAddress() else {throw SerumSwapError.unauthorized}
             
             if ooAccsFrom.first == nil && ooAccsTo.first == nil {
@@ -251,8 +254,8 @@ public class SerumSwap {
         else {return .error(SerumSwapError.unauthorized)}
         
         return client.getMarketAddress(usdxMint: fromMint, baseMint: toMint)
-            .flatMap {[weak self] marketAddress -> Single<([OpenOrders], PublicKey)> in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .flatMap {marketAddress -> Single<([OpenOrders], PublicKey)> in
+                
                 return Single.zip(
                     OpenOrders.findForMarketAndOwner(
                         client: self.client,
@@ -263,8 +266,8 @@ public class SerumSwap {
                     .just(marketAddress)
                 )
             }
-            .map {[weak self] openOrders, marketAddress in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .map {openOrders, marketAddress in
+                
                 guard let owner = self.accountProvider.getNativeWalletAddress() else {throw SerumSwapError.unauthorized}
                 guard let order = openOrders.first else {throw SerumSwapError("Open orders account doesn't exist")}
                 return self.closeAccountInstruction(order: order.publicKey, marketAddress: marketAddress, owner: owner)
@@ -309,8 +312,8 @@ public class SerumSwap {
         var params = params
         params.minExpectedSwapAmount = 1
         return prepareForSwap(params)
-            .flatMap {[weak self] signersAndInstructions -> Single<String> in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .flatMap {signersAndInstructions -> Single<String> in
+                
                 return self.client.serializeTransaction(
                     instructions: signersAndInstructions.instructions,
                     recentBlockhash: nil,
@@ -318,8 +321,8 @@ public class SerumSwap {
                     feePayer: params.feePayer
                 )
             }
-            .flatMap {[weak self] transaction -> Single<Lamports> in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .flatMap {transaction -> Single<Lamports> in
+                
                 return self.client.simulateTransaction(transaction: transaction)
                     .map {$0.logs}
                     .map {logs -> DidSwap in
@@ -373,9 +376,7 @@ public class SerumSwap {
             requestSourceAccount,
             requestDestinationAccount
         )
-        .flatMap {[weak self] minExpectedSwapAmount, sourceAccountInstructions, destinationAccountInstructions in
-            guard let self = self else { throw SerumSwapError.unknown }
-            
+        .flatMap {minExpectedSwapAmount, sourceAccountInstructions, destinationAccountInstructions in
             let signers = sourceAccountInstructions.signers + destinationAccountInstructions.signers
             let instructions = sourceAccountInstructions.instructions + destinationAccountInstructions.instructions
             let cleanupInstructions = sourceAccountInstructions.cleanupInstructions + destinationAccountInstructions.cleanupInstructions
@@ -437,9 +438,8 @@ public class SerumSwap {
             }
             
             return requestQuoteWallet
-                .flatMap {[weak self] quoteWallet in
-                    guard let self = self else { throw SerumSwapError.unknown }
-                    return self.swapTransitive(
+                .flatMap {quoteWallet in
+                    swapTransitive(
                         fromMint: params.fromMint,
                         toMint: params.toMint,
                         fromWallet: sourceAccountInstructions.account,
@@ -475,15 +475,15 @@ public class SerumSwap {
             usdxMint: quoteMint,
             baseMint: baseMint
         )
-            .flatMap {[weak self] marketAddresses -> Single<(Market, UInt64)> in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .flatMap {marketAddresses -> Single<(Market, UInt64)> in
+                
                 return Single.zip(
                     Market.loadAndFindValidMarket(client: self.client, addresses: marketAddresses, programId: .dexPID),
                     OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: .dexPID)
                 )
             }
-            .flatMap {[weak self] marketClient, minRemExemption -> Single<(Market, PublicKey, GetOpenOrderResult)> in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .flatMap {marketClient, minRemExemption -> Single<(Market, PublicKey, GetOpenOrderResult)> in
+                
                 
                 guard let owner = self.accountProvider.getNativeWalletAddress()
                 else {throw SerumSwapError.unauthorized}
@@ -503,8 +503,8 @@ public class SerumSwap {
                     )
                 )
             }
-            .map {[weak self] market, vaultOwner, order -> SignersAndInstructions in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .map {market, vaultOwner, order -> SignersAndInstructions in
+                
                 guard let openOrder = order.existingOpenOrder ?? order.newOpenOrder?.signers.first?.publicKey
                 else {throw SerumSwapError("Could not find or create new order")}
                 guard let authority = self.accountProvider.getNativeWalletAddress()
@@ -554,23 +554,23 @@ public class SerumSwap {
             client.getMarketAddress(usdxMint: .usdcMint, baseMint: fromMint),
             client.getMarketAddress(usdxMint: .usdcMint, baseMint: toMint)
         )
-            .catch {[weak self] _ in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .catch {_ in
+                
                 return Single.zip(
                     self.client.getMarketAddress(usdxMint: .usdtMint, baseMint: fromMint),
                     self.client.getMarketAddress(usdxMint: .usdtMint, baseMint: toMint)
                 )
             }
-            .flatMap {[weak self] fromMarketAddress, toMarketAddress -> Single<(Market, Market, UInt64)> in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .flatMap {fromMarketAddress, toMarketAddress -> Single<(Market, Market, UInt64)> in
+                
                 return Single.zip(
                     Market.load(client: self.client, address: fromMarketAddress, programId: .dexPID),
                     Market.load(client: self.client, address: toMarketAddress, programId: .dexPID),
                     OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: .dexPID)
                 )
             }
-            .flatMap {[weak self] fromMarket, toMarket, minRentExemption -> Single<(fromMarket: Market, toMarket: Market, fromVaultSigner: PublicKey, toVaultSigner: PublicKey, fromOpenOrder: GetOpenOrderResult, toOpenOrder: GetOpenOrderResult)> in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .flatMap {fromMarket, toMarket, minRentExemption -> Single<(fromMarket: Market, toMarket: Market, fromVaultSigner: PublicKey, toVaultSigner: PublicKey, fromOpenOrder: GetOpenOrderResult, toOpenOrder: GetOpenOrderResult)> in
+                
                 
                 guard let owner = self.accountProvider.getNativeWalletAddress()
                 else {throw SerumSwapError.unauthorized}
@@ -603,8 +603,8 @@ public class SerumSwap {
                 )
                     .map {(fromMarket: $0, toMarket: $1, fromVaultSigner: $2, toVaultSigner: $3, fromOpenOrder: $4, toOpenOrder: $5)}
             }
-            .map {[weak self] params -> SignersAndInstructions in
-                guard let self = self else {throw SerumSwapError.unknown}
+            .map {params -> SignersAndInstructions in
+                
                 
                 guard let fromOpenOrder = params.fromOpenOrder.existingOpenOrder ?? params.fromOpenOrder.newOpenOrder?.signers.first?.publicKey,
                       
@@ -662,8 +662,8 @@ public class SerumSwap {
             client.getMarketAddress(usdxMint: usdxMint, baseMint: fromMint),
             client.getMarketAddress(usdxMint: usdxMint, baseMint: toMint)
         )
-        .flatMap {[weak self] marketFrom, marketTo -> Single<(PublicKey, PublicKey, [OpenOrders], [OpenOrders])> in
-            guard let self = self else {throw SerumSwapError.unknown}
+        .flatMap {marketFrom, marketTo -> Single<(PublicKey, PublicKey, [OpenOrders], [OpenOrders])> in
+            
             
             guard let owner = self.accountProvider.getNativeWalletAddress()
             else {throw SerumSwapError.unauthorized}
