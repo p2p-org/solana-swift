@@ -80,7 +80,8 @@ extension SolanaSDK {
             forMinimumReceiveAmount minimumReceiveAmount: Lamports,
             slippage: Double,
             roundRules: FloatingPointRoundingRule? = nil,
-            includeFees: Bool
+            includeFees: Bool,
+            replaceZeroWithMinimum: Bool = false
         ) -> Lamports? {
             guard let tokenABalance = tokenABalance?.amountInUInt64,
                   let tokenBBalance = tokenBBalance?.amountInUInt64
@@ -105,7 +106,12 @@ extension SolanaSDK {
                 float.round(rule)
             }
             
-            return Lamports(float)
+            let lamport = Lamports(float)
+            
+            if lamport == 0 && replaceZeroWithMinimum {
+                return 1
+            }
+            return lamport
         }
         
         public func minimumReceiveAmount(
