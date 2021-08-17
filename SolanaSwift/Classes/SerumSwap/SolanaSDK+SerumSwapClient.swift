@@ -8,6 +8,20 @@
 import Foundation
 import RxSwift
 
+extension SerumSwap {
+    public typealias Account = SolanaSDK.Account
+    public typealias TransactionInstruction = SolanaSDK.TransactionInstruction
+    public typealias PublicKey = SolanaSDK.PublicKey
+    public typealias TransactionID = SolanaSDK.TransactionID
+    public typealias AccountInfo = SolanaSDK.AccountInfo
+    public typealias SystemProgram = SolanaSDK.SystemProgram
+    public typealias TokenProgram = SolanaSDK.TokenProgram
+    public typealias Lamports = SolanaSDK.Lamports
+    public typealias Decimals = SolanaSDK.Decimals
+    public typealias EncodableWrapper = SolanaSDK.EncodableWrapper
+    public typealias BufferInfo = SolanaSDK.BufferInfo
+}
+
 extension SolanaSDK: SerumSwapAPIClient {
     public func simulateTransaction(transaction: String) -> Single<TransactionStatus> {
         simulateTransaction(transaction: transaction, configs: .init(encoding: "base64")!)
@@ -29,7 +43,7 @@ extension SolanaSDK: SerumSwapAPIClient {
                     client: self,
                     marketAddress: marketAddress,
                     ownerAddress: owner,
-                    programId: dexPID
+                    programId: .dexPID
                 )
                     .map {markets -> PublicKey in
                         if markets.first != nil {
@@ -45,21 +59,21 @@ extension SolanaSDK: SerumSwapAPIClient {
             .map {list in
                 list.filter { token in
                     if token.address != baseMint.base58EncodedString {return false}
-                    if usdxMint == usdcMint {return token.extensions?.serumV3Usdc != nil}
-                    if usdxMint == usdtMint {return token.extensions?.serumV3Usdt != nil}
+                    if usdxMint == .usdcMint {return token.extensions?.serumV3Usdc != nil}
+                    if usdxMint == .usdtMint {return token.extensions?.serumV3Usdt != nil}
                     return false
                 }
             }
             .map {list in
                 let list = list.reduce([PublicKey]()) { result, token in
                     var result = result
-                    if usdxMint == usdcMint,
+                    if usdxMint == .usdcMint,
                        let string = token.extensions?.serumV3Usdc,
                        let address = try? PublicKey(string: string)
                     {
                         result.append(address)
                     }
-                    if usdxMint == usdtMint,
+                    if usdxMint == .usdtMint,
                        let string = token.extensions?.serumV3Usdt,
                        let address = try? PublicKey(string: string)
                     {

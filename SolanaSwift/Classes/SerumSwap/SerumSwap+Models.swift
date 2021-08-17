@@ -9,6 +9,11 @@ import Foundation
 import BufferLayoutSwift
 
 extension SerumSwap {
+    public struct SignersAndInstructions {
+        let signers: [Account]
+        let instructions: [TransactionInstruction]
+    }
+    
     public struct SwapParams {
         public init(fromMint: SerumSwap.PublicKey, toMint: SerumSwap.PublicKey, amount: SerumSwap.Lamports, minExpectedSwapAmount: SerumSwap.Lamports? = nil, referral: SerumSwap.PublicKey?, quoteWallet: SerumSwap.PublicKey?, fromWallet: SerumSwap.PublicKey, toWallet: SerumSwap.PublicKey?, feePayer: SerumSwap.PublicKey?, configs: SolanaSDK.RequestConfiguration? = nil) {
             self.fromMint = fromMint
@@ -45,6 +50,27 @@ extension SerumSwap {
         public let toMint: PublicKey
         public let quoteMint: PublicKey
         public let authority: PublicKey
+    }
+    
+    // Side rust enum used for the program's RPC API.
+    public enum Side {
+        case bid, ask
+        var params: [String: [String: String]] {
+            switch self {
+            case .bid:
+                return ["bid": [:]]
+            case .ask:
+                return ["ask": [:]]
+            }
+        }
+        var byte: UInt8 {
+            switch self {
+            case .bid:
+                return 0
+            case .ask:
+                return 1
+            }
+        }
     }
 }
 

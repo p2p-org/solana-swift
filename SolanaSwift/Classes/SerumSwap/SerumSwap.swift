@@ -8,52 +8,17 @@
 import Foundation
 import RxSwift
 
-// MARK: - Constants
-var usdcMint: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") }
-var usdtMint: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB") }
-var dexPID: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin") }
-var serumSwapPID: SolanaSDK.PublicKey { try! SolanaSDK.PublicKey(string: "22Y43yTVxuUkoRKdm9thyRhQ3SdgQS7c7kB6UNCiaczD") }
+// Close account feature flag.
+//
+// TODO: enable once the DEX supports closing open orders accounts.
+let CLOSE_ENABLED = false;
+
+// Initialize open orders feature flag.
+//
+// TODO: enable once the DEX supports initializing open orders accounts.
+let OPEN_ENABLED = false;
 
 public class SerumSwap {
-    public typealias Account = SolanaSDK.Account
-    public typealias TransactionInstruction = SolanaSDK.TransactionInstruction
-    public typealias PublicKey = SolanaSDK.PublicKey
-    public typealias TransactionID = SolanaSDK.TransactionID
-    public typealias AccountInfo = SolanaSDK.AccountInfo
-    public typealias SystemProgram = SolanaSDK.SystemProgram
-    public typealias TokenProgram = SolanaSDK.TokenProgram
-    public typealias Lamports = SolanaSDK.Lamports
-    public typealias Decimals = SolanaSDK.Decimals
-    public typealias EncodableWrapper = SolanaSDK.EncodableWrapper
-    public typealias BufferInfo = SolanaSDK.BufferInfo
-    
-    // MARK: - Nested type
-    public struct SignersAndInstructions {
-        let signers: [Account]
-        let instructions: [TransactionInstruction]
-    }
-    
-    // Side rust enum used for the program's RPC API.
-    public enum Side {
-        case bid, ask
-        var params: [String: [String: String]] {
-            switch self {
-            case .bid:
-                return ["bid": [:]]
-            case .ask:
-                return ["ask": [:]]
-            }
-        }
-        var byte: UInt8 {
-            switch self {
-            case .bid:
-                return 0
-            case .ask:
-                return 1
-            }
-        }
-    }
-    
     // MARK: - Properties
     let client: SerumSwapAPIClient
     let accountProvider: SerumSwapAccountProvider
@@ -77,13 +42,13 @@ public class SerumSwap {
     ) -> Single<SignersAndInstructions> {
         
         // Direct swap on USD(x).
-        if fromMint == usdcMint || fromMint == usdtMint {
+        if fromMint == .usdcMint || fromMint == .usdtMint {
             return createAndInitAccountForDirectSwapOnUSDX(
                 fromMint: fromMint,
                 toMint: toMint
             )
         }
-        else if toMint == usdcMint || toMint == usdtMint {
+        else if toMint == .usdcMint || toMint == .usdtMint {
             return createAndInitAccountForDirectSwapOnUSDX(
                 fromMint: toMint,
                 toMint: fromMint
@@ -94,7 +59,7 @@ public class SerumSwap {
             // Builds the instructions for initializing open orders for a transitive swap.
             // Build transitive with usdcMint
             return buildTransitiveForInitAccounts(
-                usdxMint: usdcMint,
+                usdxMint: .usdcMint,
                 fromMint: fromMint,
                 toMint: toMint
             )
@@ -102,7 +67,7 @@ public class SerumSwap {
                 guard let self = self else {return .error(SerumSwapError.unknown)}
                 // Retry with building transitive with usdtMint
                 return self.buildTransitiveForInitAccounts(
-                    usdxMint: usdtMint,
+                    usdxMint: .usdtMint,
                     fromMint: fromMint,
                     toMint: toMint
                 )
@@ -178,7 +143,7 @@ public class SerumSwap {
             marketAddress: marketAddress,
             ownerAddress: ownerAddress,
             newAccountAddress: newAccount.publicKey,
-            programId: dexPID
+            programId: .dexPID
         )
         .map {[weak self] createAccountInstruction in
             guard let self = self else {throw SerumSwapError.unknown}
@@ -208,13 +173,13 @@ public class SerumSwap {
     ) -> Single<SignersAndInstructions> {
         let instructionRequest: Single<TransactionInstruction>
         
-        if fromMint == usdcMint || fromMint == usdtMint {
+        if fromMint == .usdcMint || fromMint == .usdtMint {
             instructionRequest = closeAccountForDirectSwapOnUSDX(
                 fromMint: fromMint,
                 toMint: toMint
             )
         }
-        else if toMint == usdcMint || toMint == usdtMint {
+        else if toMint == .usdcMint || toMint == .usdtMint {
             instructionRequest = closeAccountForDirectSwapOnUSDX(
                 fromMint: toMint,
                 toMint: fromMint
@@ -223,7 +188,7 @@ public class SerumSwap {
         // Transitive swap across USD(x).
         else {
             instructionRequest = buildTransitiveForCloseAccount(
-                usdxMint: usdcMint,
+                usdxMint: .usdcMint,
                 fromMint: fromMint,
                 toMint: toMint
             )
@@ -231,7 +196,7 @@ public class SerumSwap {
                 guard let self = self else {return .error(SerumSwapError.unknown)}
                 // Retry with building transitive with usdtMint
                 return self.buildTransitiveForCloseAccount(
-                    usdxMint: usdtMint,
+                    usdxMint: .usdtMint,
                     fromMint: fromMint,
                     toMint: toMint
                 )
@@ -293,7 +258,7 @@ public class SerumSwap {
                         client: self.client,
                         marketAddress: marketAddress,
                         ownerAddress: ownerAddress,
-                        programId: dexPID
+                        programId: .dexPID
                     ),
                     .just(marketAddress)
                 )
@@ -416,7 +381,7 @@ public class SerumSwap {
             let cleanupInstructions = sourceAccountInstructions.cleanupInstructions + destinationAccountInstructions.cleanupInstructions
             
             // If swapping to/from a USD(x) token, then swap directly on the market.
-            if params.fromMint == usdcMint || params.fromMint == usdtMint {
+            if params.fromMint == .usdcMint || params.fromMint == .usdtMint {
                 return self.swapDirect(
                     coinWallet: destinationAccountInstructions.account,
                     pcWallet: sourceAccountInstructions.account,
@@ -431,7 +396,7 @@ public class SerumSwap {
                     cleanupInstructions: cleanupInstructions
                 )
             }
-            else if params.toMint == usdcMint || params.toMint == usdtMint {
+            else if params.toMint == .usdcMint || params.toMint == .usdtMint {
                 return self.swapDirect(
                     coinWallet: sourceAccountInstructions.account,
                     pcWallet: destinationAccountInstructions.account,
@@ -460,12 +425,12 @@ public class SerumSwap {
                     if usdcPathExists {
                         return try PublicKey.associatedTokenAddress(
                             walletAddress: owner,
-                            tokenMintAddress: usdcMint
+                            tokenMintAddress: .usdcMint
                         )
                     } else {
                         return try PublicKey.associatedTokenAddress(
                             walletAddress: owner,
-                            tokenMintAddress: usdtMint
+                            tokenMintAddress: .usdtMint
                         )
                     }
                 }
@@ -513,8 +478,8 @@ public class SerumSwap {
             .flatMap {[weak self] marketAddresses -> Single<(Market, UInt64)> in
                 guard let self = self else {throw SerumSwapError.unknown}
                 return Single.zip(
-                    Market.loadAndFindValidMarket(client: self.client, addresses: marketAddresses, programId: dexPID),
-                    OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: dexPID)
+                    Market.loadAndFindValidMarket(client: self.client, addresses: marketAddresses, programId: .dexPID),
+                    OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: .dexPID)
                 )
             }
             .flatMap {[weak self] marketClient, minRemExemption -> Single<(Market, PublicKey, GetOpenOrderResult)> in
@@ -527,13 +492,13 @@ public class SerumSwap {
                     .just(marketClient),
                     Self.getVaultOwnerAndNonce(
                         marketPublicKey: marketClient.address,
-                        dexProgramId: dexPID
+                        dexProgramId: .dexPID
                     ).map {$0.vaultOwner},
                     OpenOrders.findAnOpenOrderOrCreateOne(
                         client: self.client,
                         marketAddress: marketClient.address,
                         ownerAddress: owner,
-                        programId: dexPID,
+                        programId: .dexPID,
                         minRentExemption: minRemExemption
                     )
                 )
@@ -586,22 +551,22 @@ public class SerumSwap {
     ) -> Single<SignersAndInstructions> {
         // Try usdc market first, then usdt
         Single.zip(
-            client.getMarketAddress(usdxMint: usdcMint, baseMint: fromMint),
-            client.getMarketAddress(usdxMint: usdtMint, baseMint: toMint)
+            client.getMarketAddress(usdxMint: .usdcMint, baseMint: fromMint),
+            client.getMarketAddress(usdxMint: .usdcMint, baseMint: toMint)
         )
             .catch {[weak self] _ in
                 guard let self = self else {throw SerumSwapError.unknown}
                 return Single.zip(
-                    self.client.getMarketAddress(usdxMint: usdtMint, baseMint: fromMint),
-                    self.client.getMarketAddress(usdxMint: usdtMint, baseMint: toMint)
+                    self.client.getMarketAddress(usdxMint: .usdtMint, baseMint: fromMint),
+                    self.client.getMarketAddress(usdxMint: .usdtMint, baseMint: toMint)
                 )
             }
             .flatMap {[weak self] fromMarketAddress, toMarketAddress -> Single<(Market, Market, UInt64)> in
                 guard let self = self else {throw SerumSwapError.unknown}
                 return Single.zip(
-                    Market.load(client: self.client, address: fromMarketAddress, programId: dexPID),
-                    Market.load(client: self.client, address: toMarketAddress, programId: dexPID),
-                    OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: dexPID)
+                    Market.load(client: self.client, address: fromMarketAddress, programId: .dexPID),
+                    Market.load(client: self.client, address: toMarketAddress, programId: .dexPID),
+                    OpenOrders.getMinimumBalanceForRentExemption(client: self.client, programId: .dexPID)
                 )
             }
             .flatMap {[weak self] fromMarket, toMarket, minRentExemption -> Single<(fromMarket: Market, toMarket: Market, fromVaultSigner: PublicKey, toVaultSigner: PublicKey, fromOpenOrder: GetOpenOrderResult, toOpenOrder: GetOpenOrderResult)> in
@@ -615,24 +580,24 @@ public class SerumSwap {
                     .just(toMarket),
                     Self.getVaultOwnerAndNonce(
                         marketPublicKey: fromMarket.publicKey,
-                        dexProgramId: dexPID
+                        dexProgramId: .dexPID
                     ).map {$0.vaultOwner},
                     Self.getVaultOwnerAndNonce(
                         marketPublicKey: toMarket.publicKey,
-                        dexProgramId: dexPID
+                        dexProgramId: .dexPID
                     ).map {$0.vaultOwner},
                     OpenOrders.findAnOpenOrderOrCreateOne(
                         client: self.client,
                         marketAddress: fromMarket.address,
                         ownerAddress: owner,
-                        programId: dexPID,
+                        programId: .dexPID,
                         minRentExemption: minRentExemption
                     ),
                     OpenOrders.findAnOpenOrderOrCreateOne(
                         client: self.client,
                         marketAddress: toMarket.address,
                         ownerAddress: owner,
-                        programId: dexPID,
+                        programId: .dexPID,
                         minRentExemption: minRentExemption
                     )
                 )
@@ -710,13 +675,13 @@ public class SerumSwap {
                     client: self.client,
                     marketAddress: marketFrom,
                     ownerAddress: owner,
-                    programId: dexPID
+                    programId: .dexPID
                 ),
                 OpenOrders.findForMarketAndOwner(
                     client: self.client,
                     marketAddress: marketTo,
                     ownerAddress: owner,
-                    programId: dexPID
+                    programId: .dexPID
                 )
             )
         }
@@ -737,7 +702,7 @@ public class SerumSwap {
                 .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
 //                .init(publicKey: <#T##SolanaSDK.PublicKey#>, isSigner: <#T##Bool#>, isWritable: <#T##Bool#>) // 4. `[signer]` open orders market authority (optional).
             ],
-            programId: dexPID,
+            programId: .dexPID,
             data: [UInt8(14)]
         )
     }
@@ -786,11 +751,11 @@ public class SerumSwap {
                 .init(publicKey: coinWallet, isSigner: false, isWritable: true),
                 .init(publicKey: authority, isSigner: true, isWritable: false),
                 .init(publicKey: pcWallet, isSigner: false, isWritable: true),
-                .init(publicKey: dexPID, isSigner: false, isWritable: false),
+                .init(publicKey: .dexPID, isSigner: false, isWritable: false),
                 .init(publicKey: .tokenProgramId, isSigner: false, isWritable: false),
                 .init(publicKey: .sysvarRent, isSigner: false, isWritable: false)
             ],
-            programId: serumSwapPID,
+            programId: .serumSwapPID,
             data: [
                 side.byte,
                 amount,
