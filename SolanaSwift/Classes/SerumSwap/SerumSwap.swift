@@ -41,6 +41,15 @@ public struct SerumSwap {
         swapMarkets.route(fromMint: fromMint, toMint: toMint)
     }
     
+    /// Load a market base on its address
+    public func loadMarket(address: PublicKey) -> Single<Market> {
+        Market.load(
+            client: client,
+            address: address,
+            programId: .dexPID
+        )
+    }
+    
     /// Executes a swap against the Serum DEX.
     /// - Parameter params: SwapParams
     /// - Returns: Signers and instructions for creating multiple transactions

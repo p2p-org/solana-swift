@@ -30,6 +30,10 @@ class SerumSwapTests: RestAPITests {
 
     func testDirectSwap() throws {
         // Swaps SRM -> USDC on the Serum orderbook.
+        let marketAddresses = try serumSwap.route(fromMint: SRM, toMint: USDC).toBlocking().first()!!
+        let marketAddress = marketAddresses[0]
+        let market = try serumSwap.loadMarket(address: marketAddress).toBlocking().first()
+        
         let request = serumSwap.swap(
             .init(
                 fromMint: SRM,
@@ -46,13 +50,15 @@ class SerumSwapTests: RestAPITests {
                 fromWallet: "D2RGqjKxvP1At8BwSx95FUYwbgwLK1N9jB7QH5Lt3UQw",
                 toWallet: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3",
                 quoteWallet: nil,
-                fromMarket: <#T##SerumSwap.Market#>,
+                fromMarket: market!,
                 toMarket: nil,
                 fromOpenOrders: nil,
                 toOpenOrders: nil,
                 close: true
             )
         )
+        let signersAndInstructions = try request.toBlocking().first()
+        
     }
     
     func testTransitiveSwap() throws {
