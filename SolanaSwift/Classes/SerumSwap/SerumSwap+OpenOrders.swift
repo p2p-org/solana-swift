@@ -49,7 +49,8 @@ extension SerumSwap {
             ownerAddress: PublicKey,
             programId: PublicKey,
             minRentExemption: UInt64? = nil,
-            shouldInitAccount: Bool
+            shouldInitAccount: Bool,
+            closeAfterward: Bool
         ) -> Single<AccountInstructions> {
             let requestMinRentExemption: Single<UInt64>
             if let minRentExemption = minRentExemption {
@@ -99,17 +100,22 @@ extension SerumSwap {
                         )
                     }
                     
-                    return .init(
-                        account: order.publicKey,
-                        instructions: instructions,
-                        cleanupInstructions: [
+                    var cleanupInstructions = [TransactionInstruction]()
+                    if closeAfterward {
+                        cleanupInstructions.append(
                             closeOrderInstruction(
                                 order: order.publicKey,
                                 marketAddress: marketAddress,
                                 owner: ownerAddress,
                                 destination: ownerAddress
                             )
-                        ],
+                        )
+                    }
+                    
+                    return .init(
+                        account: order.publicKey,
+                        instructions: instructions,
+                        cleanupInstructions: cleanupInstructions,
                         signers: [order]
                     )
                 }

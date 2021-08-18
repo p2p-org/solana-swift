@@ -188,7 +188,7 @@ public struct SerumSwap {
         // prepare source account, create associated token address if source wallet is native
         let requestSourceAccount = client.prepareValidAccountAndInstructions(
             myAccount: owner,
-            address: coinWallet ?? owner,
+            address: coinWallet,
             mint: baseMint,
             feePayer: feePayer ?? owner,
             closeAfterward: baseMint == .wrappedSOLMint
@@ -206,7 +206,8 @@ public struct SerumSwap {
         // get open order
         let requestOpenOrders = prepareOpenOrder(
             orders: fromOpenOrders,
-            market: fromMarket
+            market: fromMarket,
+            closeAfterward: CLOSE_ENABLED && close == true && fromOpenOrders == nil
         )
         
         return Single.zip(
@@ -217,14 +218,18 @@ public struct SerumSwap {
         )
         .map { vaultSigner, sourceAccountInstructions, destinationAccountInstructions, openOrdersAccountInstructions in
             var signers = [Account]()
-            var instructions = [TransactionInstruction]()
             signers += sourceAccountInstructions.signers
             signers += destinationAccountInstructions.signers
             signers += openOrdersAccountInstructions.signers
             
+            var instructions = [TransactionInstruction]()
             instructions += sourceAccountInstructions.instructions
             instructions += destinationAccountInstructions.instructions
             instructions += openOrdersAccountInstructions.instructions
+            
+            let coinWallet = sourceAccountInstructions.account
+            let pcWallet = destinationAccountInstructions.account
+            let openOrders = openOrdersAccountInstructions.account
             
             instructions.append(
                 Self.directSwapInstruction(
@@ -234,18 +239,16 @@ public struct SerumSwap {
                     minExchangeRate: minExchangeRate,
                     market: fromMarket,
                     vaultSigner: vaultSigner,
-                    openOrders: openOrdersAccountInstructions.account,
-                    pcWallet: destinationAccountInstructions.account,
-                    coinWallet: sourceAccountInstructions.account,
+                    openOrders: openOrders,
+                    pcWallet: pcWallet,
+                    coinWallet: coinWallet,
                     referral: referral
                 )
             )
             
             instructions += sourceAccountInstructions.cleanupInstructions
             instructions += destinationAccountInstructions.cleanupInstructions
-            if CLOSE_ENABLED && close == true {
-                instructions += openOrdersAccountInstructions.cleanupInstructions
-            }
+            instructions += openOrdersAccountInstructions.cleanupInstructions
             
             return .init(signers: signers, instructions: instructions)
         }
@@ -307,12 +310,14 @@ public struct SerumSwap {
                     prepareOpenOrder(
                         orders: fromOpenOrders,
                         market: fromMarket,
-                        minRentExemption: minRentExemption
+                        minRentExemption: minRentExemption,
+                        closeAfterward: CLOSE_ENABLED && close == true && fromOpenOrders == nil
                     ),
                     prepareOpenOrder(
                         orders: toOpenOrders,
                         market: toMarket,
-                        minRentExemption: minRentExemption
+                        minRentExemption: minRentExemption,
+                        closeAfterward: CLOSE_ENABLED && close == true && toOpenOrders == nil
                     )
                 )
             }
@@ -376,23 +381,28 @@ public struct SerumSwap {
     private func prepareOpenOrder(
         orders: PublicKey?,
         market: Market,
-        minRentExemption: Lamports? = nil
+        minRentExemption: Lamports? = nil,
+        closeAfterward: Bool
     ) -> Single<AccountInstructions> {
         guard let owner = accountProvider.getNativeWalletAddress()
         else {return .error(SerumSwapError.unauthorized)}
         
         if let order = orders {
+            var cleanupInstructions = [TransactionInstruction]()
+            if closeAfterward {
+                cleanupInstructions.append(
+                    Self.closeOrderInstruction(
+                        order: order,
+                        marketAddress: market.address,
+                        owner: owner,
+                        destination: owner
+                    )
+                )
+            }
             return .just(
                 .init(
                     account: order,
-                    cleanupInstructions: [
-                        Self.closeOrderInstruction(
-                            order: order,
-                            marketAddress: market.address,
-                            owner: owner,
-                            destination: owner
-                        )
-                    ]
+                    cleanupInstructions: cleanupInstructions
                 )
             )
         } else {
@@ -402,7 +412,8 @@ public struct SerumSwap {
                 ownerAddress: owner,
                 programId: .dexPID,
                 minRentExemption: minRentExemption,
-                shouldInitAccount: OPEN_ENABLED
+                shouldInitAccount: OPEN_ENABLED,
+                closeAfterward: closeAfterward
             )
         }
     }
