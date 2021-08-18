@@ -227,7 +227,7 @@ public struct SerumSwap {
             instructions += openOrdersAccountInstructions.instructions
             
             instructions.append(
-                directSwapInstruction(
+                Self.directSwapInstruction(
                     authority: owner,
                     side: side,
                     amount: amount,
@@ -344,7 +344,7 @@ public struct SerumSwap {
             instructions += toOpenOrdersAccountInstructions.instructions
             
             instructions.append(
-                transitiveSwapInstruction(
+                Self.transitiveSwapInstruction(
                     authority: owner,
                     fromMarket: fromMarket,
                     toMarket: toMarket,
@@ -386,10 +386,11 @@ public struct SerumSwap {
                 .init(
                     account: order,
                     cleanupInstructions: [
-                        OpenOrders.closeAccountInstruction(
+                        Self.closeOrderInstruction(
                             order: order,
                             marketAddress: market.address,
-                            owner: owner
+                            owner: owner,
+                            destination: owner
                         )
                     ]
                 )
@@ -400,20 +401,9 @@ public struct SerumSwap {
                 marketAddress: market.address,
                 ownerAddress: owner,
                 programId: .dexPID,
-                minRentExemption: minRentExemption
+                minRentExemption: minRentExemption,
+                shouldInitAccount: OPEN_ENABLED
             )
-            .map {accountInstructions in
-                var accountInstructions = accountInstructions
-                if OPEN_ENABLED {
-                    accountInstructions.instructions.append(
-                        initAccountInstruction(
-                            order: accountInstructions.account,
-                            marketAddress: market.address
-                        )
-                    )
-                }
-                return accountInstructions
-            }
         }
     }
     
@@ -452,116 +442,5 @@ public struct SerumSwap {
             )
         }
         .map {(marketFrom: $0, marketTo: $1, marketFromOrders: $2, marketToOrders: $3)}
-    }
-    
-    // https://github.com/project-serum/serum-dex/blob/e7214bbc455d37a483427a5c37c194246d457502/dex/src/instruction.rs
-    private func initAccountInstruction(
-        order: PublicKey,
-        marketAddress: PublicKey
-    ) -> TransactionInstruction {
-        // TODO: - initAccount instruction
-//        this.program.instruction.initAccount({
-//            accounts: {
-//                openOrders: openOrders.publicKey,
-//                authority: this.program.provider.wallet.publicKey,
-//                market: marketAddress,
-//                dexProgram: DEX_PID,
-//                rent: SYSVAR_RENT_PUBKEY,
-//            },
-//        }),
-        fatalError()
-    }
-    
-    private func directSwapInstruction(
-        authority: PublicKey,
-        side: Side,
-        amount: Lamports,
-        minExchangeRate: ExchangeRate,
-        market: Market,
-        vaultSigner: PublicKey,
-        openOrders: PublicKey,
-        pcWallet: PublicKey,
-        coinWallet: PublicKey,
-        referral: PublicKey?
-    ) -> TransactionInstruction {
-        .init(
-            keys: [
-                .init(publicKey: market.address, isSigner: false, isWritable: true),
-                .init(publicKey: openOrders, isSigner: false, isWritable: true),
-                .init(publicKey: market.requestQueue, isSigner: false, isWritable: true),
-                .init(publicKey: market.eventQueue, isSigner: false, isWritable: true),
-                .init(publicKey: market.bidsAddress, isSigner: false, isWritable: true),
-                .init(publicKey: market.asksAddress, isSigner: false, isWritable: true),
-                .init(publicKey: side == .bid ? pcWallet: coinWallet, isSigner: false, isWritable: true), // market.order_payer_token_account
-                .init(publicKey: market.coinVault, isSigner: false, isWritable: true),
-                .init(publicKey: market.pcVault, isSigner: false, isWritable: true),
-                .init(publicKey: vaultSigner, isSigner: false, isWritable: false),
-                .init(publicKey: coinWallet, isSigner: false, isWritable: true),
-                .init(publicKey: authority, isSigner: true, isWritable: false),
-                .init(publicKey: pcWallet, isSigner: false, isWritable: true),
-                .init(publicKey: .dexPID, isSigner: false, isWritable: false),
-                .init(publicKey: .tokenProgramId, isSigner: false, isWritable: false),
-                .init(publicKey: .sysvarRent, isSigner: false, isWritable: false)
-            ],
-            programId: .serumSwapPID,
-            data: [
-                side.byte,
-                amount,
-                minExchangeRate
-            ]
-        )
-    }
-    
-    private func transitiveSwapInstruction(
-        authority: PublicKey,
-        fromMarket: Market,
-        toMarket: Market,
-        fromVaultSigner: PublicKey,
-        toVaultSigner: PublicKey,
-        fromOpenOrder: PublicKey,
-        toOpenOrder: PublicKey,
-        fromWallet: PublicKey,
-        toWallet: PublicKey,
-        amount: Lamports,
-        minExchangeRate: ExchangeRate,
-        pcWallet: PublicKey,
-        referral: PublicKey?
-    ) -> TransactionInstruction {
-        .init(
-            keys: [
-                .init(publicKey: fromMarket.address, isSigner: false, isWritable: true),
-                .init(publicKey: fromOpenOrder, isSigner: false, isWritable: true),
-                .init(publicKey: fromMarket.requestQueue, isSigner: false, isWritable: true),
-                .init(publicKey: fromMarket.eventQueue, isSigner: false, isWritable: true),
-                .init(publicKey: fromMarket.bidsAddress, isSigner: false, isWritable: true),
-                .init(publicKey: fromMarket.asksAddress, isSigner: false, isWritable: true),
-                .init(publicKey: fromWallet, isSigner: false, isWritable: true), // from.order_payer_token_account
-                .init(publicKey: fromMarket.coinVault, isSigner: false, isWritable: true),
-                .init(publicKey: fromMarket.pcVault, isSigner: false, isWritable: true),
-                .init(publicKey: fromVaultSigner, isSigner: false, isWritable: false),
-                .init(publicKey: fromWallet, isSigner: false, isWritable: true),
-                .init(publicKey: toMarket.address, isSigner: false, isWritable: true),
-                .init(publicKey: toOpenOrder, isSigner: false, isWritable: true),
-                .init(publicKey: toMarket.requestQueue, isSigner: false, isWritable: true),
-                .init(publicKey: toMarket.eventQueue, isSigner: false, isWritable: true),
-                .init(publicKey: toMarket.bidsAddress, isSigner: false, isWritable: true),
-                .init(publicKey: toMarket.asksAddress, isSigner: false, isWritable: true),
-                .init(publicKey: fromWallet, isSigner: false, isWritable: true), // to.order_payer_token_account
-                .init(publicKey: toMarket.coinVault, isSigner: false, isWritable: true),
-                .init(publicKey: toMarket.pcVault, isSigner: false, isWritable: true),
-                .init(publicKey: toVaultSigner, isSigner: false, isWritable: false),
-                .init(publicKey: toWallet, isSigner: false, isWritable: true),
-                .init(publicKey: authority, isSigner: true, isWritable: false),
-                .init(publicKey: pcWallet, isSigner: false, isWritable: true),
-                .init(publicKey: .dexPID, isSigner: false, isWritable: false),
-                .init(publicKey: .tokenProgramId, isSigner: false, isWritable: false),
-                .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
-            ],
-            programId: .serumSwapPID,
-            data: [
-                amount,
-                minExchangeRate
-            ]
-        )
     }
 }

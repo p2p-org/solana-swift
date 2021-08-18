@@ -48,7 +48,8 @@ extension SerumSwap {
             marketAddress: PublicKey,
             ownerAddress: PublicKey,
             programId: PublicKey,
-            minRentExemption: UInt64? = nil
+            minRentExemption: UInt64? = nil,
+            shouldInitAccount: Bool
         ) -> Single<AccountInstructions> {
             let requestMinRentExemption: Single<UInt64>
             if let minRentExemption = minRentExemption {
@@ -77,26 +78,39 @@ extension SerumSwap {
                 requestMinRentExemption,
                 requestNewAccount
             )
-                .map {minRentExemption, newAccount in
-                    .init(
-                        account: newAccount.publicKey,
-                        instructions: [
-                            SystemProgram.createAccountInstruction(
-                                from: ownerAddress,
-                                toNewPubkey: newAccount.publicKey,
-                                lamports: minRentExemption,
-                                space: getLayoutSpan(programId: programId.base58EncodedString),
-                                programPubkey: programId
-                            )
-                        ],
-                        cleanupInstructions: [
-                            Self.closeAccountInstruction(
-                                order: newAccount.publicKey,
+                .map {minRentExemption, order in
+                    var instructions = [
+                        SystemProgram.createAccountInstruction(
+                            from: ownerAddress,
+                            toNewPubkey: order.publicKey,
+                            lamports: minRentExemption,
+                            space: getLayoutSpan(programId: programId.base58EncodedString),
+                            programPubkey: programId
+                        )
+                    ]
+                    
+                    if shouldInitAccount {
+                        instructions.append (
+                            initOrderInstruction(
+                                order: order.publicKey,
                                 marketAddress: marketAddress,
                                 owner: ownerAddress
                             )
+                        )
+                    }
+                    
+                    return .init(
+                        account: order.publicKey,
+                        instructions: instructions,
+                        cleanupInstructions: [
+                            closeOrderInstruction(
+                                order: order.publicKey,
+                                marketAddress: marketAddress,
+                                owner: ownerAddress,
+                                destination: ownerAddress
+                            )
                         ],
-                        signers: [newAccount]
+                        signers: [order]
                     )
                 }
         }
@@ -107,25 +121,6 @@ extension SerumSwap {
         ) -> Single<UInt64> {
             let span = getLayoutSpan(programId: programId.base58EncodedString)
             return client.getMinimumBalanceForRentExemption(span: span)
-        }
-        
-        // https://github.com/project-serum/serum-dex/blob/e7214bbc455d37a483427a5c37c194246d457502/dex/src/instruction.rs
-        static func closeAccountInstruction(
-            order: PublicKey,
-            marketAddress: PublicKey,
-            owner: PublicKey
-        ) -> TransactionInstruction {
-            TransactionInstruction(
-                keys: [
-                    .init(publicKey: order, isSigner: false, isWritable: true),
-                    .init(publicKey: owner, isSigner: true, isWritable: false),
-                    .init(publicKey: marketAddress, isSigner: false, isWritable: false),
-                    .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
-    //                .init(publicKey: <#T##SolanaSDK.PublicKey#>, isSigner: <#T##Bool#>, isWritable: <#T##Bool#>) // 4. `[signer]` open orders market authority (optional).
-                ],
-                programId: .dexPID,
-                data: [UInt8(14)]
-            )
         }
         
         // MARK: - Old
