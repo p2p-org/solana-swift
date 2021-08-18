@@ -18,6 +18,7 @@
 		BC3F719A261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3F7199261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift */; };
 		BC3F71D0261AF25600DFDFD0 /* SwapTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC3F71CF261AF25600DFDFD0 /* SwapTransaction.json */; };
 		BC44FC5B265B9866008BEE84 /* SendTokenToNewAssociatedTokenAddressTransferChecked.json in Resources */ = {isa = PBXBuildFile; fileRef = BC44FC5A265B9866008BEE84 /* SendTokenToNewAssociatedTokenAddressTransferChecked.json */; };
+		BC46DF4726CD1F17002F59B9 /* SerumSwapMarketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC46DF4626CD1F17002F59B9 /* SerumSwapMarketTests.swift */; };
 		BC4F6F1A25B80FD2002BA313 /* TokenSwapProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4F6F1925B80FD2002BA313 /* TokenSwapProgramTests.swift */; };
 		BC51E54B26847D6900C9B05D /* SendSPLTokenParsedInNativeSOLWallet.json in Resources */ = {isa = PBXBuildFile; fileRef = BC51E54A26847D6900C9B05D /* SendSPLTokenParsedInNativeSOLWallet.json */; };
 		BC53E22B26565CD0005624CC /* SendTokenToNewAssociatedTokenAddress.json in Resources */ = {isa = PBXBuildFile; fileRef = BC53E22A26565CD0005624CC /* SendTokenToNewAssociatedTokenAddress.json */; };
@@ -174,6 +175,7 @@
 		BC3F7199261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingConfirmedTransactionTests.swift; sourceTree = "<group>"; };
 		BC3F71CF261AF25600DFDFD0 /* SwapTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SwapTransaction.json; sourceTree = "<group>"; };
 		BC44FC5A265B9866008BEE84 /* SendTokenToNewAssociatedTokenAddressTransferChecked.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendTokenToNewAssociatedTokenAddressTransferChecked.json; sourceTree = "<group>"; };
+		BC46DF4626CD1F17002F59B9 /* SerumSwapMarketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerumSwapMarketTests.swift; sourceTree = "<group>"; };
 		BC4F6F1925B80FD2002BA313 /* TokenSwapProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSwapProgramTests.swift; sourceTree = "<group>"; };
 		BC51E54A26847D6900C9B05D /* SendSPLTokenParsedInNativeSOLWallet.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSPLTokenParsedInNativeSOLWallet.json; sourceTree = "<group>"; };
 		BC53E22A26565CD0005624CC /* SendTokenToNewAssociatedTokenAddress.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendTokenToNewAssociatedTokenAddress.json; sourceTree = "<group>"; };
@@ -357,6 +359,7 @@
 			isa = PBXGroup;
 			children = (
 				BC87FCA326CA3D830097A32B /* SerumSwapTests.swift */,
+				BC46DF4626CD1F17002F59B9 /* SerumSwapMarketTests.swift */,
 			);
 			name = SerumSwap;
 			sourceTree = "<group>";
@@ -680,6 +683,7 @@
 				BC3F719A261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift in Sources */,
 				BC4F6F1A25B80FD2002BA313 /* TokenSwapProgramTests.swift in Sources */,
 				BCF1E80426BCCCB300589134 /* BufferLayoutTests.swift in Sources */,
+				BC46DF4726CD1F17002F59B9 /* SerumSwapMarketTests.swift in Sources */,
 				BC1ABC4E255CC075002FCE65 /* DecodingTests.swift in Sources */,
 				BC8B53042664D25B00CA93DE /* DecodingSocketResponsesTests.swift in Sources */,
 				BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */,

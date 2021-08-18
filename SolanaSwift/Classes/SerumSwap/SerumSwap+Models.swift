@@ -197,19 +197,40 @@ extension SerumSwap {
         }
     }
     
-    public struct AccountFlags: Codable, BufferLayoutProperty {
-        private(set) var initialized: Bool
-        private(set) var market: Bool
-        private(set) var openOrders: Bool
-        private(set) var requestQueue: Bool
-        private(set) var eventQueue: Bool
-        private(set) var bids: Bool
-        private(set) var asks: Bool
+    struct AccountFlagsOption: OptionSet {
+        let rawValue: Int
+        static let initialized  = Self(rawValue: 1 << 0)
+        static let market       = Self(rawValue: 1 << 1)
+        static let openOrders   = Self(rawValue: 1 << 2)
+        static let requestQueue = Self(rawValue: 1 << 3)
+        static let eventQueue   = Self(rawValue: 1 << 4)
+        static let bids         = Self(rawValue: 1 << 5)
+        static let asks         = Self(rawValue: 1 << 6)
+    }
+    
+    public struct AccountFlags: Codable, Equatable, BufferLayoutProperty {
+        public private(set) var initialized: Bool
+        public private(set) var market: Bool
+        public private(set) var openOrders: Bool
+        public private(set) var requestQueue: Bool
+        public private(set) var eventQueue: Bool
+        public private(set) var bids: Bool
+        public private(set) var asks: Bool
         
         public static var numberOfBytes: Int { 8 }
         
         public static func fromBytes(bytes: [UInt8]) throws -> AccountFlags {
-            
+            let number = try Int.fromBytes(bytes: bytes)
+            let flags = AccountFlagsOption(rawValue: number)
+            return .init(
+                initialized: flags.contains(.initialized),
+                market: flags.contains(.market),
+                openOrders: flags.contains(.openOrders),
+                requestQueue: flags.contains(.requestQueue),
+                eventQueue: flags.contains(.eventQueue),
+                bids: flags.contains(.bids),
+                asks: flags.contains(.asks)
+            )
         }
     }
     
