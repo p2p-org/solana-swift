@@ -136,6 +136,13 @@ extension SerumSwap {
     }
     
     public struct ExchangeRate: BytesEncodable {
+        public init(rate: SerumSwap.Lamports, fromDecimals: SerumSwap.Decimals, quoteDecimals: SerumSwap.Decimals, strict: Bool) {
+            self.rate = rate
+            self.fromDecimals = fromDecimals
+            self.quoteDecimals = quoteDecimals
+            self.strict = strict
+        }
+        
         let rate: Lamports
         let fromDecimals: Decimals
         let quoteDecimals: Decimals
