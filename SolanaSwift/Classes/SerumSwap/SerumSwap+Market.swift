@@ -221,7 +221,7 @@ extension SerumSwap {
 
 
 // MARK: - Models
-protocol SerumSwapMarketStatLayout {
+protocol SerumSwapMarketStatLayout: Codable {
     static var span: UInt64 {get}
     var accountFlags: SerumSwap.AccountFlags {get}
     var ownAddress: SerumSwap.PublicKey {get}

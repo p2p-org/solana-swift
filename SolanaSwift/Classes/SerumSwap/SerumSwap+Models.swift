@@ -189,7 +189,7 @@ extension SerumSwap {
 
 // MARK: - BufferLayout properties
 extension SerumSwap {
-    public struct Blob5: BufferLayoutProperty {
+    public struct Blob5: Codable, BufferLayoutProperty {
         public static var numberOfBytes: Int {5}
         
         public static func fromBytes(bytes: [UInt8]) throws -> Blob5 {
@@ -197,7 +197,7 @@ extension SerumSwap {
         }
     }
     
-    public struct AccountFlags: BufferLayout, BufferLayoutProperty {
+    public struct AccountFlags: Codable, BufferLayoutProperty {
         private(set) var initialized: Bool
         private(set) var market: Bool
         private(set) var openOrders: Bool
@@ -209,7 +209,7 @@ extension SerumSwap {
         public static var numberOfBytes: Int { 8 }
         
         public static func fromBytes(bytes: [UInt8]) throws -> AccountFlags {
-            try .init(buffer: Data(bytes))
+            
         }
     }
     
@@ -243,7 +243,7 @@ extension SerumSwap {
         }
     }
     
-    public struct Blob7: BufferLayoutProperty {
+    public struct Blob7: Codable, BufferLayoutProperty {
         public static var numberOfBytes: Int {7}
         
         public static func fromBytes(bytes: [UInt8]) throws -> Blob7 {
