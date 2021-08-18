@@ -93,44 +93,6 @@ extension SerumSwap {
 //
 //        }
         
-        static func loadAndFindValidMarket(
-            client: SerumSwapAPIClient,
-            addresses: [PublicKey],
-            currentIndex: Int = 0,
-            skipPreflight: Bool = false,
-            commitment: SolanaSDK.Commitment = "recent",
-            programId: PublicKey,
-            layoutOverride: SerumSwapMarketStatLayout.Type? = nil
-        ) -> Single<Market> {
-            guard let address = addresses[safe: currentIndex] else {
-                return .error(SerumSwapError("No market found"))
-            }
-            return load(
-                client: client,
-                address: address,
-                skipPreflight: skipPreflight,
-                commitment: commitment,
-                programId: programId,
-                layoutOverride: layoutOverride
-            )
-            .catch {error in
-                if let error = error as? SerumSwapError,
-                   error == .invalidMarket
-                {
-                    return loadAndFindValidMarket(
-                        client: client,
-                        addresses: addresses,
-                        currentIndex: currentIndex+1,
-                        skipPreflight: skipPreflight,
-                        commitment: commitment,
-                        programId: programId,
-                        layoutOverride: layoutOverride
-                    )
-                }
-                throw error
-            }
-        }
-        
         static func load(
             client: SerumSwapAPIClient,
             address: PublicKey,
@@ -153,20 +115,12 @@ extension SerumSwap {
                     decodedTo: MarketStatLayoutV1.self
                 )
                 .map {$0 as SerumSwapMarketStatLayout}
-            } else if layoutType == MarketStatLayoutV2.self {
-                requestAddressInfo = getAccountInfoAndVerifyOwner(
-                    client: client,
-                    account: address,
-                    owner: programId,
-                    decodedTo: MarketStatLayoutV2.self
-                )
-                .map {$0 as SerumSwapMarketStatLayout}
             } else {
                 requestAddressInfo = getAccountInfoAndVerifyOwner(
                     client: client,
                     account: address,
                     owner: programId,
-                    decodedTo: MarketStatLayoutV3.self
+                    decodedTo: MarketStatLayoutV2.self
                 )
                 .map {$0 as SerumSwapMarketStatLayout}
             }
@@ -196,7 +150,6 @@ extension SerumSwap {
                         layoutOverride: layoutOverride
                     )
                 }
-            
         }
         
         private static func getAccountInfoAndVerifyOwner<T: DecodableBufferLayout>(
@@ -291,34 +244,6 @@ extension SerumSwap {
         let quoteLotSize: UInt64
         let feeRateBps: UInt64
         let referrerRebatesAccrued: UInt64
-        let blob7: Blob7
-    }
-    
-    struct MarketStatLayoutV3: SerumSwapMarketStatLayout, DecodableBufferLayout {
-        let blob5: Blob5
-        let accountFlags: AccountFlags
-        let ownAddress: PublicKey
-        let vaultSignerNonce: UInt64
-        let baseMint: PublicKey
-        let quoteMint: PublicKey
-        let baseVault: PublicKey
-        let baseDepositsTotal: UInt64
-        let baseFeesAccrued: UInt64
-        let quoteVault: PublicKey
-        let quoteDepositsTotal: UInt64
-        let quoteFeesAccrued: UInt64
-        let quoteDustThreshold: UInt64
-        let requestQueue: PublicKey
-        let eventQueue: PublicKey
-        let bids: PublicKey
-        let asks: PublicKey
-        let baseLotSize: UInt64
-        let quoteLotSize: UInt64
-        let feeRateBps: UInt64
-        let referrerRebatesAccrued: UInt64
-        let authority: PublicKey
-        let pruneAuthority: PublicKey
-        let blob1024: Blob1024
         let blob7: Blob7
     }
     
