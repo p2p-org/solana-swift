@@ -12,7 +12,7 @@ extension Error {
         (self as? LocalizedError)?.errorDescription ?? localizedDescription
     }
     
-    var isCouldNotRetrieveAccountInfoError: Bool {
-        (self as? SolanaSDK.Error) == SolanaSDK.Error.other("Could not retrieve account info")
+    public func isEqualTo(_ error: SolanaSDK.Error) -> Bool {
+        (self as? SolanaSDK.Error) == error
     }
 }
