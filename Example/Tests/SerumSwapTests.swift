@@ -17,32 +17,46 @@ class SerumSwapTests: RestAPITests {
     
     var serumSwap: SerumSwap!
     
+    let SRM: SolanaSDK.PublicKey = "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt"
+    let USDC: SolanaSDK.PublicKey = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    let USDT: SolanaSDK.PublicKey = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+    let WBTC: SolanaSDK.PublicKey = "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"
+    let decimals: SolanaSDK.Decimals = 6
+    
     override func setUpWithError() throws {
         try super.setUpWithError()
         serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK)
     }
 
     func testDirectSwap() throws {
-//        let request = serumSwap.swap(
-//            .init(
-//                fromMint: try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
-//                toMint: try SolanaSDK.PublicKey(string: "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"),
-//                amount: 1000,
-//                referral: nil,
-//                quoteWallet: nil,
-//                fromWallet: try SolanaSDK.PublicKey(string: "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch"),
-//                toWallet: nil,
-//                feePayer: nil
-//            )
-//        )
-//        
-//        let result = try request.toBlocking().first()
-        
-        
+        // Swaps SRM -> USDC on the Serum orderbook.
+        let request = serumSwap.swap(
+            .init(
+                fromMint: SRM,
+                toMint: USDC,
+                quoteMint: nil,
+                amount: 1,
+                minExchangeRate: .init(
+                    rate: 1,
+                    fromDecimals: decimals,
+                    quoteDecimals: decimals,
+                    strict: false
+                ),
+                referral: nil,
+                fromWallet: "D2RGqjKxvP1At8BwSx95FUYwbgwLK1N9jB7QH5Lt3UQw",
+                toWallet: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3",
+                quoteWallet: nil,
+                fromMarket: <#T##SerumSwap.Market#>,
+                toMarket: nil,
+                fromOpenOrders: nil,
+                toOpenOrders: nil,
+                close: true
+            )
+        )
     }
     
     func testTransitiveSwap() throws {
-        
+        // Transitive swap from SRM -> USDC -> BTC.
     }
 
 }
