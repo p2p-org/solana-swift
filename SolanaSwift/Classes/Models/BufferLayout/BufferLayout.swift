@@ -12,6 +12,9 @@ extension SolanaSDK.PublicKey: BufferLayoutProperty {
     public static func fromBytes(bytes: [UInt8]) throws -> SolanaSDK.PublicKey {
         try .init(bytes: bytes)
     }
+    public func encode() throws -> Data {
+        Data(bytes)
+    }
 }
 
 public protocol DecodableBufferLayout: BufferLayout, Decodable {}

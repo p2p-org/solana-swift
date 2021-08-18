@@ -188,13 +188,25 @@ extension SerumSwap {
 }
 
 // MARK: - BufferLayout properties
+private protocol BlobType: Codable, BufferLayoutProperty {
+    init(bytes: [UInt8])
+    var bytes: [UInt8] {get}
+    static var numberOfBytes: Int {get}
+}
+
+extension BlobType {
+    public static func fromBytes(bytes: [UInt8]) throws -> Self {
+        Self(bytes: bytes)
+    }
+    public func encode() throws -> Data {
+        Data(bytes)
+    }
+}
+
 extension SerumSwap {
-    public struct Blob5: Codable, BufferLayoutProperty {
+    public struct Blob5: BlobType {
+        let bytes: [UInt8]
         public static var numberOfBytes: Int {5}
-        
-        public static func fromBytes(bytes: [UInt8]) throws -> Blob5 {
-            Blob5()
-        }
     }
     
     struct AccountFlagsOption: OptionSet {
@@ -232,6 +244,32 @@ extension SerumSwap {
                 asks: flags.contains(.asks)
             )
         }
+        
+        public func encode() throws -> Data {
+            var options = AccountFlagsOption()
+            if initialized {
+                options.insert(.initialized)
+            }
+            if market {
+                options.insert(.market)
+            }
+            if openOrders {
+                options.insert(.openOrders)
+            }
+            if requestQueue {
+                options.insert(.requestQueue)
+            }
+            if eventQueue {
+                options.insert(.eventQueue)
+            }
+            if bids {
+                options.insert(.bids)
+            }
+            if asks {
+                options.insert(.asks)
+            }
+            return try options.rawValue.encode()
+        }
     }
     
     public struct Seq128Elements<T: FixedWidthInteger>: BufferLayoutProperty {
@@ -254,22 +292,20 @@ extension SerumSwap {
             }
             return .init(elements: elements)
         }
+        
+        public func encode() throws -> Data {
+            try elements.reduce(Data(), { $0 + (try $1.encode()) })
+        }
     }
     
-    public struct Blob1024: BufferLayoutProperty {
+    public struct Blob1024: BlobType {
+        let bytes: [UInt8]
         public static var numberOfBytes: Int {1024}
-        
-        public static func fromBytes(bytes: [UInt8]) throws -> Blob1024 {
-            Blob1024()
-        }
     }
     
-    public struct Blob7: Codable, BufferLayoutProperty {
+    public struct Blob7: BlobType {
+        let bytes: [UInt8]
         public static var numberOfBytes: Int {7}
-        
-        public static func fromBytes(bytes: [UInt8]) throws -> Blob7 {
-            Blob7()
-        }
     }
 }
 

@@ -66,7 +66,57 @@ class SerumSwapMarketTests: XCTestCase {
         )
         
         // Encode
+        XCTAssertEqual(
+            try SerumSwap.AccountFlags(
+                initialized: false,
+                market: false,
+                openOrders: false,
+                requestQueue: false,
+                eventQueue: false,
+                bids: false,
+                asks: false
+            ).encode().hexString,
+            "0000000000000000"
+        )
         
+        XCTAssertEqual(
+            try SerumSwap.AccountFlags(
+                initialized: true,
+                market: true,
+                openOrders: false,
+                requestQueue: false,
+                eventQueue: false,
+                bids: false,
+                asks: false
+            ).encode().hexString,
+            "0300000000000000"
+        )
+        
+        XCTAssertEqual(
+            try SerumSwap.AccountFlags(
+                initialized: true,
+                market: false,
+                openOrders: true,
+                requestQueue: false,
+                eventQueue: false,
+                bids: false,
+                asks: false
+            ).encode().hexString,
+            "0500000000000000"
+        )
+        
+        XCTAssertEqual(
+            try SerumSwap.AccountFlags(
+                initialized: true,
+                market: false,
+                openOrders: false,
+                requestQueue: false,
+                eventQueue: false,
+                bids: false,
+                asks: true
+            ).encode().hexString,
+            "4100000000000000"
+        )
     }
 
     func testPerformanceExample() throws {
