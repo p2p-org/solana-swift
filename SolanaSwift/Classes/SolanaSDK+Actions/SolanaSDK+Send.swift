@@ -43,7 +43,7 @@ extension SolanaSDK {
                     return
                 }
                 .catch { error in
-                    if error.isCouldNotRetrieveAccountInfoError {
+                    if error.isEqualTo(.couldNotRetrieveAccountInfo) {
                         // let request through
                         return .just(())
                     }
@@ -280,7 +280,7 @@ extension SolanaSDK {
             }
             .catch { error in
                 // let request through if result of getAccountInfo is null (it may be a new SOL address)
-                if error.isCouldNotRetrieveAccountInfoError {
+                if error.isEqualTo(.couldNotRetrieveAccountInfo) {
                     let owner = try PublicKey(string: destinationAddress)
                     let tokenMint = try PublicKey(string: mintAddress)
                     

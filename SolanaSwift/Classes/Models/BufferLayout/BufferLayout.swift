@@ -29,7 +29,7 @@ public extension DecodableBufferLayout {
         guard let string = stringData,
               let data = Data(base64Encoded: string)
         else {
-            throw BufferLayoutSwift.Error.bytesLengthIsNotValid
+            throw SolanaSDK.Error.couldNotRetrieveAccountInfo
         }
         
         try self.init(buffer: data)

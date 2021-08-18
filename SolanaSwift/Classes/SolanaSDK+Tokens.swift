@@ -101,7 +101,7 @@ extension SolanaSDK {
         getAccountInfo(account: account, decodedTo: EmptyInfo.self)
             .map {_ in true}
             .catch {error in
-                if error.isCouldNotRetrieveAccountInfoError {
+                if error.isEqualTo(.couldNotRetrieveAccountInfo) {
                     return .just(false)
                 }
                 throw error

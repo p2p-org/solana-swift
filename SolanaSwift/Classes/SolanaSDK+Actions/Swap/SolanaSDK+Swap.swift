@@ -362,7 +362,7 @@ extension SolanaSDK {
                 }
                 .catch { error in
                     // associated address is not available
-                    if error.isCouldNotRetrieveAccountInfoError {
+                    if error.isEqualTo(.couldNotRetrieveAccountInfo) {
                         return .just(false)
                     }
                     throw error
