@@ -15,7 +15,7 @@ extension SerumSwap {
         private typealias FeeDiscountKeysCache = [String: (accounts: [FeeDiscountAccount], ts: UInt64)]
                 
         // MARK: - Properties
-        let decoded: SerumSwapMarketStatLayout
+        private let decoded: SerumSwapMarketStatLayout
         private let baseSplTokenDecimals: Decimals
         private let quoteSplTokenDecimals: Decimals
         private let skipPreflight: Bool
@@ -31,6 +31,10 @@ extension SerumSwap {
         var quoteMintAddress: PublicKey {decoded.quoteMint}
         var bidsAddress: PublicKey {decoded.bids}
         var asksAddress: PublicKey {decoded.asks}
+        var eventQueue: PublicKey {decoded.eventQueue}
+        var requestQueue: PublicKey {decoded.requestQueue}
+        var coinVault: PublicKey {decoded.baseVault}
+        var pcVault: PublicKey {decoded.quoteVault}
         
         
         // MARK: - Initializer

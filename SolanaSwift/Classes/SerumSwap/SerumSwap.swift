@@ -345,14 +345,17 @@ public struct SerumSwap {
             
             instructions.append(
                 transitiveSwapInstruction(
-                    fromMarketClient: fromMarket,
-                    toMarketClient: toMarket,
+                    authority: owner,
+                    fromMarket: fromMarket,
+                    toMarket: toMarket,
                     fromVaultSigner: fromVaultSigner,
                     toVaultSigner: toVaultSigner,
                     fromOpenOrder: fromOpenOrdersAccountInstructions.account,
                     toOpenOrder: toOpenOrdersAccountInstructions.account,
                     fromWallet: sourceAccountInstructions.account,
                     toWallet: destinationAccountInstructions.account,
+                    amount: amount,
+                    minExchangeRate: minExchangeRate,
                     pcWallet: pcAccountInstructions.account,
                     referral: referral
                 )
@@ -481,16 +484,17 @@ public struct SerumSwap {
         coinWallet: PublicKey,
         referral: PublicKey?
     ) -> TransactionInstruction {
-        TransactionInstruction(
+        .init(
             keys: [
                 .init(publicKey: market.address, isSigner: false, isWritable: true),
                 .init(publicKey: openOrders, isSigner: false, isWritable: true),
-                .init(publicKey: market.decoded.requestQueue, isSigner: false, isWritable: true),
-                .init(publicKey: market.decoded.eventQueue, isSigner: false, isWritable: true),
+                .init(publicKey: market.requestQueue, isSigner: false, isWritable: true),
+                .init(publicKey: market.eventQueue, isSigner: false, isWritable: true),
                 .init(publicKey: market.bidsAddress, isSigner: false, isWritable: true),
                 .init(publicKey: market.asksAddress, isSigner: false, isWritable: true),
-                .init(publicKey: side == .bid ? pcWallet: coinWallet, isSigner: false, isWritable: true),
-                .init(publicKey: market.decoded.baseVault, isSigner: false, isWritable: true),
+                .init(publicKey: side == .bid ? pcWallet: coinWallet, isSigner: false, isWritable: true), // market.order_payer_token_account
+                .init(publicKey: market.coinVault, isSigner: false, isWritable: true),
+                .init(publicKey: market.pcVault, isSigner: false, isWritable: true),
                 .init(publicKey: vaultSigner, isSigner: false, isWritable: false),
                 .init(publicKey: coinWallet, isSigner: false, isWritable: true),
                 .init(publicKey: authority, isSigner: true, isWritable: false),
@@ -509,44 +513,55 @@ public struct SerumSwap {
     }
     
     private func transitiveSwapInstruction(
-        fromMarketClient: Market,
-        toMarketClient: Market,
+        authority: PublicKey,
+        fromMarket: Market,
+        toMarket: Market,
         fromVaultSigner: PublicKey,
         toVaultSigner: PublicKey,
         fromOpenOrder: PublicKey,
         toOpenOrder: PublicKey,
         fromWallet: PublicKey,
         toWallet: PublicKey,
+        amount: Lamports,
+        minExchangeRate: ExchangeRate,
         pcWallet: PublicKey,
         referral: PublicKey?
     ) -> TransactionInstruction {
-//        this.program.instruction.swap(side, amount, minExpectedSwapAmount, {
-//            accounts: {
-//              market: {
-//                market: marketClient.address,
-//                // @ts-ignore
-//                requestQueue: marketClient._decoded.requestQueue,
-//                // @ts-ignore
-//                eventQueue: marketClient._decoded.eventQueue,
-//                bids: marketClient.bidsAddress,
-//                asks: marketClient.asksAddress,
-//                // @ts-ignore
-//                coinVault: marketClient._decoded.baseVault,
-//                // @ts-ignore
-//                pcVault: marketClient._decoded.quoteVault,
-//                vaultSigner,
-//                openOrders,
-//                orderPayerTokenAccount: side.bid ? pcWallet : coinWallet,
-//                coinWallet: coinWallet,
-//              },
-//              pcWallet,
-//              authority: this.program.provider.wallet.publicKey,
-//              dexProgram: DEX_PID,
-//              tokenProgram: TOKEN_PROGRAM_ID,
-//              rent: SYSVAR_RENT_PUBKEY,
-//            },
-//            remainingAccounts: referral && [referral],
-//        }),
-        fatalError()
+        .init(
+            keys: [
+                .init(publicKey: fromMarket.address, isSigner: false, isWritable: true),
+                .init(publicKey: fromOpenOrder, isSigner: false, isWritable: true),
+                .init(publicKey: fromMarket.requestQueue, isSigner: false, isWritable: true),
+                .init(publicKey: fromMarket.eventQueue, isSigner: false, isWritable: true),
+                .init(publicKey: fromMarket.bidsAddress, isSigner: false, isWritable: true),
+                .init(publicKey: fromMarket.asksAddress, isSigner: false, isWritable: true),
+                .init(publicKey: fromWallet, isSigner: false, isWritable: true), // from.order_payer_token_account
+                .init(publicKey: fromMarket.coinVault, isSigner: false, isWritable: true),
+                .init(publicKey: fromMarket.pcVault, isSigner: false, isWritable: true),
+                .init(publicKey: fromVaultSigner, isSigner: false, isWritable: false),
+                .init(publicKey: fromWallet, isSigner: false, isWritable: true),
+                .init(publicKey: toMarket.address, isSigner: false, isWritable: true),
+                .init(publicKey: toOpenOrder, isSigner: false, isWritable: true),
+                .init(publicKey: toMarket.requestQueue, isSigner: false, isWritable: true),
+                .init(publicKey: toMarket.eventQueue, isSigner: false, isWritable: true),
+                .init(publicKey: toMarket.bidsAddress, isSigner: false, isWritable: true),
+                .init(publicKey: toMarket.asksAddress, isSigner: false, isWritable: true),
+                .init(publicKey: fromWallet, isSigner: false, isWritable: true), // to.order_payer_token_account
+                .init(publicKey: toMarket.coinVault, isSigner: false, isWritable: true),
+                .init(publicKey: toMarket.pcVault, isSigner: false, isWritable: true),
+                .init(publicKey: toVaultSigner, isSigner: false, isWritable: false),
+                .init(publicKey: toWallet, isSigner: false, isWritable: true),
+                .init(publicKey: authority, isSigner: true, isWritable: false),
+                .init(publicKey: pcWallet, isSigner: false, isWritable: true),
+                .init(publicKey: .dexPID, isSigner: false, isWritable: false),
+                .init(publicKey: .tokenProgramId, isSigner: false, isWritable: false),
+                .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
+            ],
+            programId: .serumSwapPID,
+            data: [
+                amount,
+                minExchangeRate
+            ]
+        )
     }
 }
