@@ -10,8 +10,8 @@ import BufferLayoutSwift
 
 extension SerumSwap {
     public struct SignersAndInstructions {
-        let signers: [Account]
-        let instructions: [TransactionInstruction]
+        public let signers: [Account]
+        public let instructions: [TransactionInstruction]
     }
     
     /**

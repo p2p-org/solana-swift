@@ -58,7 +58,8 @@ class SerumSwapTests: RestAPITests {
             )
         )
         let signersAndInstructions = try request.toBlocking().first()
-        
+        let tx = try solanaSDK.serializeTransaction(instructions: signersAndInstructions!.first!.instructions, signers: signersAndInstructions!.first!.signers).toBlocking().first()
+        let txID = try solanaSDK.simulateTransaction(transaction: tx!).toBlocking().first()
     }
     
     func testTransitiveSwap() throws {
