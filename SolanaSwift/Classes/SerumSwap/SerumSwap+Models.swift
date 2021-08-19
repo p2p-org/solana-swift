@@ -209,17 +209,6 @@ extension SerumSwap {
         public static var numberOfBytes: Int {5}
     }
     
-    struct AccountFlagsOption: OptionSet {
-        let rawValue: Int
-        static let initialized  = Self(rawValue: 1 << 0)
-        static let market       = Self(rawValue: 1 << 1)
-        static let openOrders   = Self(rawValue: 1 << 2)
-        static let requestQueue = Self(rawValue: 1 << 3)
-        static let eventQueue   = Self(rawValue: 1 << 4)
-        static let bids         = Self(rawValue: 1 << 5)
-        static let asks         = Self(rawValue: 1 << 6)
-    }
-    
     public struct AccountFlags: Codable, Equatable, BufferLayoutProperty {
         public private(set) var initialized: Bool
         public private(set) var market: Bool
@@ -232,43 +221,36 @@ extension SerumSwap {
         public static var numberOfBytes: Int { 8 }
         
         public static func fromBytes(bytes: [UInt8]) throws -> AccountFlags {
-            let number = try Int.fromBytes(bytes: bytes)
-            let flags = AccountFlagsOption(rawValue: number)
+            var number = try UInt64.fromBytes(bytes: bytes)
+            
+            let variablesCount = 7
+            var bits = [Bool]()
+            for _ in 0..<variablesCount {
+                bits.append(number % 2 != 0)
+                number /= 2
+            }
+            
             return .init(
-                initialized: flags.contains(.initialized),
-                market: flags.contains(.market),
-                openOrders: flags.contains(.openOrders),
-                requestQueue: flags.contains(.requestQueue),
-                eventQueue: flags.contains(.eventQueue),
-                bids: flags.contains(.bids),
-                asks: flags.contains(.asks)
+                initialized:    bits[0],
+                market:         bits[1],
+                openOrders:     bits[2],
+                requestQueue:   bits[3],
+                eventQueue:     bits[4],
+                bids:           bits[5],
+                asks:           bits[6]
             )
         }
         
         public func encode() throws -> Data {
-            var options = AccountFlagsOption()
-            if initialized {
-                options.insert(.initialized)
-            }
-            if market {
-                options.insert(.market)
-            }
-            if openOrders {
-                options.insert(.openOrders)
-            }
-            if requestQueue {
-                options.insert(.requestQueue)
-            }
-            if eventQueue {
-                options.insert(.eventQueue)
-            }
-            if bids {
-                options.insert(.bids)
-            }
-            if asks {
-                options.insert(.asks)
-            }
-            return try options.rawValue.encode()
+            var number: UInt64 = 0
+            if initialized      { number += 1 << 0 }
+            if market           { number += 1 << 1 }
+            if openOrders       { number += 1 << 2 }
+            if requestQueue     { number += 1 << 3 }
+            if eventQueue       { number += 1 << 4 }
+            if bids             { number += 1 << 5 }
+            if asks             { number += 1 << 6 }
+            return try number.encode()
         }
     }
     
