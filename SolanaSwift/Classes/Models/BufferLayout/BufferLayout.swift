@@ -30,12 +30,17 @@ public extension DecodableBufferLayout {
         // Unable to get parsed data, fallback to decoding base64
         let stringData = (try? container.decode([String].self).first) ?? (try? container.decode(String.self))
         guard let string = stringData,
+              !string.isEmpty,
               let data = Data(base64Encoded: string)
         else {
             throw SolanaSDK.Error.couldNotRetrieveAccountInfo
         }
         
-        try self.init(buffer: data)
+        do {
+            try self.init(buffer: data)
+        } catch {
+            throw SolanaSDK.Error.couldNotRetrieveAccountInfo
+        }
     }
     
     static var BUFFER_LENGTH: Int {
