@@ -9,7 +9,7 @@ import Foundation
 import TweetNacl
 
 extension SolanaSDK {
-    struct Transaction {
+    struct Transaction: Encodable {
         private var signatures = [Signature]()
         let feePayer: PublicKey
         var instructions = [TransactionInstruction]()
@@ -273,8 +273,18 @@ extension SolanaSDK {
 }
 
 extension SolanaSDK.Transaction {
-    struct Signature {
+    struct Signature: Encodable {
         var signature: Data?
         var publicKey: SolanaSDK.PublicKey
+        
+        enum CodingKeys: String, CodingKey {
+            case signature, publicKey
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(Base58.encode((signature?.bytes ?? [])), forKey: .signature)
+            try container.encode(publicKey.base58EncodedString, forKey: .publicKey)
+        }
     }
 }
