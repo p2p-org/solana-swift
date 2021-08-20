@@ -35,8 +35,8 @@ extension SerumSwap {
         
         private static func getLayoutType(programId: String) -> SerumSwapOpenOrdersLayoutType.Type {
             let version = SerumSwap.getVersion(programId: programId)
-            if version == 1 {return OpenOrdersLayoutV1.self}
-            return OpenOrdersLayoutV2.self
+            if version == 1 {return LayoutV1.self}
+            return LayoutV2.self
         }
 
         private static func getLayoutSpan(programId: String) -> UInt64 {
@@ -146,7 +146,7 @@ extension SerumSwap {
                 return client.getProgramAccounts(
                     publicKey: programId.base58EncodedString,
                     configs: .init(filters: filter),
-                    decodedTo: OpenOrdersLayoutV1.self
+                    decodedTo: LayoutV1.self
                 )
                 .map {
                     try $0.accounts.map {
@@ -165,7 +165,7 @@ extension SerumSwap {
             return client.getProgramAccounts(
                 publicKey: programId.base58EncodedString,
                 configs: .init(filters: filter),
-                decodedTo: OpenOrdersLayoutV2.self
+                decodedTo: LayoutV2.self
             )
             .map {
                 try $0.accounts.map {
@@ -290,10 +290,10 @@ public protocol SerumSwapOpenOrdersLayoutType {
     var blob7: SerumSwap.Blob7 {get}
 }
 
-extension SerumSwap {
-    struct OpenOrdersLayoutV1: SerumSwapOpenOrdersLayoutType, DecodableBufferLayout {
-        let blob5: Blob5
-        let accountFlags: AccountFlags
+extension SerumSwap.OpenOrders {
+    struct LayoutV1: SerumSwapOpenOrdersLayoutType, DecodableBufferLayout {
+        let blob5: SerumSwap.Blob5
+        let accountFlags: SerumSwap.AccountFlags
         let market: SolanaSDK.PublicKey
         let owner: SolanaSDK.PublicKey
         let baseTokenFree: UInt64
@@ -304,15 +304,15 @@ extension SerumSwap {
         let freeSlotBits: UInt128
         let isBidBits: UInt128
         
-        let orders: Seq128Elements<UInt128>
-        let clientIds: Seq128Elements<UInt64>
+        let orders: SerumSwap.Seq128Elements<UInt128>
+        let clientIds: SerumSwap.Seq128Elements<UInt64>
         
-        let blob7: Blob7
+        let blob7: SerumSwap.Blob7
     }
 
-    struct OpenOrdersLayoutV2: SerumSwapOpenOrdersLayoutType, DecodableBufferLayout {
-        let blob5: Blob5
-        let accountFlags: AccountFlags
+    struct LayoutV2: SerumSwapOpenOrdersLayoutType, DecodableBufferLayout {
+        let blob5: SerumSwap.Blob5
+        let accountFlags: SerumSwap.AccountFlags
         let market: SolanaSDK.PublicKey
         let owner: SolanaSDK.PublicKey
         let baseTokenFree: UInt64
@@ -323,14 +323,14 @@ extension SerumSwap {
         let freeSlotBits: UInt128
         let isBidBits: UInt128
         
-        let orders: Seq128Elements<UInt128>
-        let clientIds: Seq128Elements<UInt64>
+        let orders: SerumSwap.Seq128Elements<UInt128>
+        let clientIds: SerumSwap.Seq128Elements<UInt64>
         
         let referrerRebatesAccrued: UInt64
         
-        let blob7: Blob7
+        let blob7: SerumSwap.Blob7
     }
     
-    typealias GetOpenOrderResult = (existingOpenOrder: PublicKey?, newOpenOrder: SignersAndInstructions?)
+    typealias GetOpenOrderResult = (existingOpenOrder: SerumSwap.PublicKey?, newOpenOrder: SerumSwap.SignersAndInstructions?)
 }
 
