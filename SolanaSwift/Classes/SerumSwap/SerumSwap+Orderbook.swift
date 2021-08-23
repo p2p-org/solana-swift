@@ -56,9 +56,9 @@ extension SerumSwap.Orderbook {
 //        }
 //    }
 
-    struct SlabNode: BufferLayoutProperty {
+    struct SlabNodeLayout: BufferLayoutProperty {
         let tag: UInt32
-        let value: SerumSwapSlabNodeType
+        let value: SerumSwapSlabNodeLayoutType
         
         static func getNumberOfBytes() throws -> Int {
             4 // tag
@@ -74,15 +74,15 @@ extension SerumSwap.Orderbook {
             let buffer = buffer[4...]
             switch tag {
             case 0:
-                self.value = UninitializedNode()
+                self.value = UninitializedNodeLayout()
             case 1:
-                self.value = try InnerNode(buffer: buffer)
+                self.value = try InnerNodeLayout(buffer: buffer)
             case 2:
-                self.value = try LeafNode(buffer: buffer)
+                self.value = try LeafNodeLayout(buffer: buffer)
             case 3:
-                self.value = try FreeNode(buffer: buffer)
+                self.value = try FreeNodeLayout(buffer: buffer)
             case 4:
-                self.value = try LastFreeNode(buffer: buffer)
+                self.value = try LastFreeNodeLayout(buffer: buffer)
             default:
                 throw SerumSwapError("Unsupported node")
             }
@@ -93,15 +93,15 @@ extension SerumSwap.Orderbook {
             
             var nodeData = Data()
             switch value {
-            case is UninitializedNode:
+            case is UninitializedNodeLayout:
                 break
-            case let value as InnerNode:
+            case let value as InnerNodeLayout:
                 nodeData += try value.encode()
-            case let value as LeafNode:
+            case let value as LeafNodeLayout:
                 nodeData += try value.encode()
-            case let value as FreeNode:
+            case let value as FreeNodeLayout:
                 nodeData += try value.encode()
-            case is LastFreeNode:
+            case is LastFreeNodeLayout:
                 break
             default:
                 throw SerumSwapError("Unsupported node")
@@ -113,15 +113,15 @@ extension SerumSwap.Orderbook {
         }
     }
     
-    struct UninitializedNode: SerumSwapSlabNodeType {}
+    struct UninitializedNodeLayout: SerumSwapSlabNodeLayoutType {}
     
-    struct InnerNode: SerumSwapSlabNodeType, BufferLayout {
+    struct InnerNodeLayout: SerumSwapSlabNodeLayoutType, BufferLayout {
         let prefixLen: UInt32
         let key: UInt128
         let children: [UInt32]
     }
     
-    struct LeafNode: SerumSwapSlabNodeType, BufferLayout {
+    struct LeafNodeLayout: SerumSwapSlabNodeLayoutType, BufferLayout {
         let ownerSlot: UInt8
         let feeTier: UInt8
         let blob2: SerumSwap.Blob2
@@ -131,11 +131,11 @@ extension SerumSwap.Orderbook {
         let clientOrderId: UInt64
     }
     
-    struct FreeNode: SerumSwapSlabNodeType, BufferLayout {
+    struct FreeNodeLayout: SerumSwapSlabNodeLayoutType, BufferLayout {
         let next: UInt32
     }
     
-    struct LastFreeNode: SerumSwapSlabNodeType, BufferLayout {}
+    struct LastFreeNodeLayout: SerumSwapSlabNodeLayoutType, BufferLayout {}
 }
 
-protocol SerumSwapSlabNodeType {}
+protocol SerumSwapSlabNodeLayoutType {}
