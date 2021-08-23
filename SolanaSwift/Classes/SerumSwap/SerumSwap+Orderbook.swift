@@ -38,6 +38,28 @@ extension SerumSwap {
             }
             self.nodes = nodes
         }
+        
+//        func get(_ searchKey: BInt) throws -> SerumSwapSlabNodeLayoutType? {
+//            guard header.leafCount > 0 else {return nil}
+//            let index = header.root
+//            while true {
+//                guard let node = nodes[safe: Int(index)] else {
+//                    return nil
+//                }
+//                switch node.value {
+//                case let node as LeafNodeLayout:
+//                    if BInt(node.key) == searchKey {
+//                        return node
+//                    }
+//                    return nil
+//                case let node as InnerNodeLayout:
+//                    let xor = BInt(node.key) ^ searchKey
+//                    let iushrn =
+//                default:
+//                    throw SerumSwapError("Invalid slab")
+//                }
+//            }
+//        }
     }
 }
 
@@ -163,3 +185,28 @@ extension SerumSwap {
 }
 
 protocol SerumSwapSlabNodeLayoutType {}
+
+//extension BInt {
+//    func iushrn(bits: BInt, hint: BInt) {
+//        let r = bits % 26
+//        let s = (bits - r) / 26
+//        var carryMask: UInt = UInt((0x3ffffff >>> (26 - Int(r))) << (26 - r))
+//
+//
+//        var words = self.words
+////        let i
+//        if r != 0 {
+//            var carry = 0
+//            for i in 0..<self.bitWidth {
+//                var newCarry = words[i] & carryMask
+//                let c = ((words[i] | 0) - newCarry) << r
+//                words[i] = c | UInt(carry)
+//                carry = newCarry >>> 26 - Int(r)
+//            }
+//            if ((carry) != 0) {
+//                words[i] = carry
+//
+//            }
+//        }
+//    }
+//}
