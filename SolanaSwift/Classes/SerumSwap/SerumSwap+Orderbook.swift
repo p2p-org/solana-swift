@@ -115,10 +115,29 @@ extension SerumSwap.Orderbook {
     
     struct UninitializedNodeLayout: SerumSwapSlabNodeLayoutType {}
     
-    struct InnerNodeLayout: SerumSwapSlabNodeLayoutType, BufferLayout {
+    struct InnerNodeLayout: SerumSwapSlabNodeLayoutType, BufferLayoutProperty {
         let prefixLen: UInt32
         let key: UInt128
         let children: [UInt32]
+        static func getNumberOfBytes() throws -> Int {
+            4+16+4+4
+        }
+        
+        init(buffer: Data) throws {
+            guard buffer.count >= 28 else {
+                throw BufferLayoutSwift.Error.bytesLengthIsNotValid
+            }
+            self.prefixLen = try UInt32(buffer: buffer[0..<4])
+            self.key = try UInt128(buffer: buffer[4..<20])
+            self.children = [
+                try UInt32(buffer: buffer[20..<24]),
+                try UInt32(buffer: buffer[24..<28])
+            ]
+        }
+        
+        func encode() throws -> Data {
+            Data() + (try prefixLen.encode()) + (try key.encode()) + (try children.reduce(Data(), {$0 + (try $1.encode())}))
+        }
     }
     
     struct LeafNodeLayout: SerumSwapSlabNodeLayoutType, BufferLayout {
