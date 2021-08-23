@@ -12,16 +12,8 @@ extension SerumSwap {
     public struct Orderbook {
         
     }
-}
-
-extension SerumSwap.Orderbook {
-    struct Layout: BufferLayout {
-        let blob5: SerumSwap.Blob5
-        let accountFlags: SerumSwap.AccountFlags
-        let slab: SlabLayout
-    }
     
-    struct SlabLayout {
+    struct Slab {
         let header: SlabHeaderLayout
         let nodes: [SlabNodeLayout]
         init(buffer: Data) throws {
@@ -47,7 +39,17 @@ extension SerumSwap.Orderbook {
             self.nodes = nodes
         }
     }
-    
+}
+
+extension SerumSwap.Orderbook {
+    struct Layout: BufferLayout {
+        let blob5: SerumSwap.Blob5
+        let accountFlags: SerumSwap.AccountFlags
+        let slab: SerumSwap.Slab
+    }
+}
+
+extension SerumSwap {
     struct SlabHeaderLayout: BufferLayout {
         let bumpIndex: UInt32
         let zeros: UInt32
