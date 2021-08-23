@@ -203,6 +203,11 @@ extension BlobType {
 }
 
 extension SerumSwap {
+    public struct Blob2: BlobType {
+        public static func getNumberOfBytes() throws -> Int { 2 }
+        let bytes: [UInt8]
+    }
+    
     public struct Blob5: BlobType {
         public static func getNumberOfBytes() throws -> Int { 5 }
         let bytes: [UInt8]

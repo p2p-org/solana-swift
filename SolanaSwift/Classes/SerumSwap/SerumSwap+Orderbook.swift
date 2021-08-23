@@ -55,22 +55,87 @@ extension SerumSwap.Orderbook {
 //            <#code#>
 //        }
 //    }
+
+    struct SlabNode: BufferLayoutProperty {
+        let tag: UInt32
+        let value: SerumSwapSlabNodeType
+        
+        static func getNumberOfBytes() throws -> Int {
+            4 // tag
+            + 68 // node
+        }
+        
+        init(buffer: Data) throws {
+            guard buffer.count >= (try Self.getNumberOfBytes()) else {
+                throw BufferLayoutSwift.Error.bytesLengthIsNotValid
+            }
+            self.tag = try UInt32(buffer: Data(buffer[0..<4]))
+            
+            let buffer = buffer[4...]
+            switch tag {
+            case 0:
+                self.value = UninitializedNode()
+            case 1:
+                self.value = try InnerNode(buffer: buffer)
+            case 2:
+                self.value = try LeafNode(buffer: buffer)
+            case 3:
+                self.value = try FreeNode(buffer: buffer)
+            case 4:
+                self.value = try LastFreeNode(buffer: buffer)
+            default:
+                throw SerumSwapError("Unsupported node")
+            }
+        }
+        
+        func encode() throws -> Data {
+            var data = Data(tag.bytes)
+            
+            var nodeData = Data()
+            switch value {
+            case is UninitializedNode:
+                break
+            case let value as InnerNode:
+                nodeData += try value.encode()
+            case let value as LeafNode:
+                nodeData += try value.encode()
+            case let value as FreeNode:
+                nodeData += try value.encode()
+            case is LastFreeNode:
+                break
+            default:
+                throw SerumSwapError("Unsupported node")
+            }
+            data += nodeData
+            
+            let zeros = [UInt8](repeating: 0, count: (try Self.getNumberOfBytes())-4-nodeData.count)
+            return data + zeros
+        }
+    }
     
-//    struct SlabNode: BufferLayoutProperty {
-//        static var numberOfBytes: Int {
-//            MemoryLayout<UInt32>.size // tag
-//            + 68 // Node
-//        }
-//        
-//        static func fromBytes(bytes: [UInt8]) throws -> SerumSwap.Orderbook.SlabNode {
-//            // get tag
-//            
-//        }
-//        
-//        func encode() throws -> Data {
-//            <#code#>
-//        }
-//        
-//        let tag: UInt32
-//    }
+    struct UninitializedNode: SerumSwapSlabNodeType {}
+    
+    struct InnerNode: SerumSwapSlabNodeType, BufferLayout {
+        let prefixLen: UInt32
+        let key: UInt128
+        let children: [UInt32]
+    }
+    
+    struct LeafNode: SerumSwapSlabNodeType, BufferLayout {
+        let ownerSlot: UInt8
+        let feeTier: UInt8
+        let blob2: SerumSwap.Blob2
+        let key: UInt128
+        let owner: SerumSwap.PublicKey
+        let quantity: UInt64
+        let clientOrderId: UInt64
+    }
+    
+    struct FreeNode: SerumSwapSlabNodeType, BufferLayout {
+        let next: UInt32
+    }
+    
+    struct LastFreeNode: SerumSwapSlabNodeType, BufferLayout {}
 }
+
+protocol SerumSwapSlabNodeType {}
