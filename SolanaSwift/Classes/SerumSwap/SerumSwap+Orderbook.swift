@@ -18,16 +18,37 @@ extension SerumSwap.Orderbook {
     struct Layout: BufferLayout {
         let blob5: SerumSwap.Blob5
         let accountFlags: SerumSwap.AccountFlags
-        let slab: Slab
-        let blob7: SerumSwap.Blob7
+        let slab: SlabLayout
     }
     
-    struct Slab: BufferLayout {
-        let header: SlabHeader
-//        let nodes: SlabNodes
+    struct SlabLayout {
+        let header: SlabHeaderLayout
+        let nodes: [SlabNodeLayout]
+        init(buffer: Data) throws {
+            let headerLength = try SlabHeaderLayout.getNumberOfBytes()
+            guard buffer.count >= headerLength else {
+                throw BufferLayoutSwift.Error.bytesLengthIsNotValid
+            }
+            header = try .init(buffer: buffer[0..<headerLength])
+            
+            var nodes = [SlabNodeLayout]()
+            var pointer = headerLength
+            for _ in 0..<header.bumpIndex {
+                let endIndex = pointer + (try SlabNodeLayout.getNumberOfBytes())
+                guard buffer.count >= endIndex else {
+                    throw BufferLayoutSwift.Error.bytesLengthIsNotValid
+                }
+                let nodeData = Array(buffer[pointer..<endIndex])
+                nodes.append(
+                    try SlabNodeLayout(buffer: Data(nodeData))
+                )
+                pointer = endIndex
+            }
+            self.nodes = nodes
+        }
     }
     
-    struct SlabHeader: BufferLayout {
+    struct SlabHeaderLayout: BufferLayout {
         let bumpIndex: UInt32
         let zeros: UInt32
         let freeListLen: UInt32
@@ -37,24 +58,6 @@ extension SerumSwap.Orderbook {
         let leafCount: UInt32
         let zeros3: UInt32
     }
-    
-//    struct SlabNodes: BufferLayoutProperty {
-//        static var numberOfNodes: Int {
-//
-//        }
-//
-//        static var numberOfBytes: Int {
-//            numberOfNodes *
-//        }
-//
-//        static func fromBytes(bytes: [UInt8]) throws -> SerumSwap.Orderbook.SlabNodes {
-//            <#code#>
-//        }
-//
-//        func encode() throws -> Data {
-//            <#code#>
-//        }
-//    }
 
     struct SlabNodeLayout: BufferLayoutProperty {
         let tag: UInt32
@@ -69,9 +72,9 @@ extension SerumSwap.Orderbook {
             guard buffer.count >= (try Self.getNumberOfBytes()) else {
                 throw BufferLayoutSwift.Error.bytesLengthIsNotValid
             }
-            self.tag = try UInt32(buffer: Data(buffer[0..<4]))
+            self.tag = try UInt32(buffer: buffer[0..<4])
             
-            let buffer = buffer[4...]
+            let buffer = Data(Array(buffer[4...]))
             switch tag {
             case 0:
                 self.value = UninitializedNodeLayout()

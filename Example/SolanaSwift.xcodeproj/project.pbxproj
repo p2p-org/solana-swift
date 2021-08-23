@@ -40,6 +40,7 @@
 		BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */; };
 		BCBBE23E25650A1700533F6B /* RegexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBBE23D25650A1700533F6B /* RegexTests.swift */; };
 		BCC49C1225BE864200D4D336 /* EncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCC49C1125BE864200D4D336 /* EncodingTests.swift */; };
+		BCECD43D26D385ED00642346 /* SerumSwapOrderbookTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCECD43C26D385ED00642346 /* SerumSwapOrderbookTests.swift */; };
 		BCF1E80426BCCCB300589134 /* BufferLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF1E80326BCCCB300589134 /* BufferLayoutTests.swift */; };
 		BCF5795A262ECD6C00E73226 /* PoolsAmountCalculationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF57959262ECD6C00E73226 /* PoolsAmountCalculationTests.swift */; };
 		BCFCB4D8268B01C400EF02DF /* SwapErrorTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BCFCB4D7268B01C400EF02DF /* SwapErrorTransaction.json */; };
@@ -197,6 +198,7 @@
 		BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITransactionTests.swift; sourceTree = "<group>"; };
 		BCBBE23D25650A1700533F6B /* RegexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegexTests.swift; sourceTree = "<group>"; };
 		BCC49C1125BE864200D4D336 /* EncodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingTests.swift; sourceTree = "<group>"; };
+		BCECD43C26D385ED00642346 /* SerumSwapOrderbookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerumSwapOrderbookTests.swift; sourceTree = "<group>"; };
 		BCF1E80326BCCCB300589134 /* BufferLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferLayoutTests.swift; sourceTree = "<group>"; };
 		BCF57959262ECD6C00E73226 /* PoolsAmountCalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoolsAmountCalculationTests.swift; sourceTree = "<group>"; };
 		BCFCB4D7268B01C400EF02DF /* SwapErrorTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SwapErrorTransaction.json; sourceTree = "<group>"; };
@@ -360,6 +362,7 @@
 			children = (
 				BC87FCA326CA3D830097A32B /* SerumSwapTests.swift */,
 				BC46DF4626CD1F17002F59B9 /* SerumSwapMarketTests.swift */,
+				BCECD43C26D385ED00642346 /* SerumSwapOrderbookTests.swift */,
 			);
 			name = SerumSwap;
 			sourceTree = "<group>";
@@ -667,6 +670,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC3174342670B48200B60E3F /* RestAPIGetAccountInfoTests.swift in Sources */,
+				BCECD43D26D385ED00642346 /* SerumSwapOrderbookTests.swift in Sources */,
 				BC81A2AB25BE628700664A2C /* Constants.swift in Sources */,
 				BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */,
 				BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */,
