@@ -94,7 +94,7 @@ extension SolanaSDK {
                 try transaction.sign(signers: signers)
                 let serializedTransaction = try transaction.serialize().bytes.toBase64()
                 
-                if let decodedTransaction = try? transaction.jsonString {
+                if let decodedTransaction = transaction.jsonString {
                     Logger.log(message: decodedTransaction, event: .info)
                 }
                 
