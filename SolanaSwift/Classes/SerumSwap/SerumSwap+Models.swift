@@ -191,12 +191,11 @@ extension SerumSwap {
 private protocol BlobType: Codable, BufferLayoutProperty {
     init(bytes: [UInt8])
     var bytes: [UInt8] {get}
-    static var numberOfBytes: Int {get}
 }
 
 extension BlobType {
-    public static func fromBytes(bytes: [UInt8]) throws -> Self {
-        Self(bytes: bytes)
+    public init(buffer: Data) throws {
+        self.init(bytes: [UInt8](buffer))
     }
     public func encode() throws -> Data {
         Data(bytes)
@@ -205,11 +204,21 @@ extension BlobType {
 
 extension SerumSwap {
     public struct Blob5: BlobType {
+        public static func getNumberOfBytes() throws -> Int { 5 }
         let bytes: [UInt8]
-        public static var numberOfBytes: Int {5}
     }
     
     public struct AccountFlags: Codable, Equatable, BufferLayoutProperty {
+        public init(initialized: Bool, market: Bool, openOrders: Bool, requestQueue: Bool, eventQueue: Bool, bids: Bool, asks: Bool) {
+            self.initialized = initialized
+            self.market = market
+            self.openOrders = openOrders
+            self.requestQueue = requestQueue
+            self.eventQueue = eventQueue
+            self.bids = bids
+            self.asks = asks
+        }
+        
         public private(set) var initialized: Bool
         public private(set) var market: Bool
         public private(set) var openOrders: Bool
@@ -217,29 +226,6 @@ extension SerumSwap {
         public private(set) var eventQueue: Bool
         public private(set) var bids: Bool
         public private(set) var asks: Bool
-        
-        public static var numberOfBytes: Int { 8 }
-        
-        public static func fromBytes(bytes: [UInt8]) throws -> AccountFlags {
-            var number = try UInt64.fromBytes(bytes: bytes)
-            
-            let variablesCount = 7
-            var bits = [Bool]()
-            for _ in 0..<variablesCount {
-                bits.append(number % 2 != 0)
-                number /= 2
-            }
-            
-            return .init(
-                initialized:    bits[0],
-                market:         bits[1],
-                openOrders:     bits[2],
-                requestQueue:   bits[3],
-                eventQueue:     bits[4],
-                bids:           bits[5],
-                asks:           bits[6]
-            )
-        }
         
         public func encode() throws -> Data {
             var number: UInt64 = 0
@@ -252,17 +238,43 @@ extension SerumSwap {
             if asks             { number += 1 << 6 }
             return try number.encode()
         }
+        
+        public static func getNumberOfBytes() throws -> Int {
+            8
+        }
+        
+        public init(buffer: Data) throws {
+            var number = try UInt64(buffer: buffer)
+            
+            let variablesCount = 7
+            var bits = [Bool]()
+            for _ in 0..<variablesCount {
+                bits.append(number % 2 != 0)
+                number /= 2
+            }
+            
+            self.init(
+                initialized:    bits[0],
+                market:         bits[1],
+                openOrders:     bits[2],
+                requestQueue:   bits[3],
+                eventQueue:     bits[4],
+                bids:           bits[5],
+                asks:           bits[6]
+            )
+        }
     }
     
     public struct Seq128Elements<T: FixedWidthInteger>: BufferLayoutProperty {
         var elements: [T]
         
-        public static var numberOfBytes: Int {
+        public static func getNumberOfBytes() throws -> Int {
             128 * MemoryLayout<T>.size
         }
         
-        public static func fromBytes(bytes: [UInt8]) throws -> Seq128Elements<T> {
-            guard bytes.count > Self.numberOfBytes else {
+        public init(buffer: Data) throws {
+            let bytes = [UInt8](buffer)
+            guard buffer.count > (try Self.getNumberOfBytes()) else {
                 throw BufferLayoutSwift.Error.bytesLengthIsNotValid
             }
             var elements = [T]()
@@ -272,7 +284,8 @@ extension SerumSwap {
                 let num = T(littleEndian: data.withUnsafeBytes { $0.load(as: T.self) })
                 elements.append(num)
             }
-            return .init(elements: elements)
+            
+            self.elements = elements
         }
         
         public func encode() throws -> Data {
@@ -282,12 +295,16 @@ extension SerumSwap {
     
     public struct Blob1024: BlobType {
         let bytes: [UInt8]
-        public static var numberOfBytes: Int {1024}
+        public static func getNumberOfBytes() throws -> Int {
+            1024
+        }
     }
     
     public struct Blob7: BlobType {
         let bytes: [UInt8]
-        public static var numberOfBytes: Int {7}
+        public static func getNumberOfBytes() throws -> Int {
+            7
+        }
     }
 }
 

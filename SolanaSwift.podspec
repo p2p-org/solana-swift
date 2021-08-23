@@ -46,5 +46,5 @@ Solana-blockchain client, written in pure swift, which supports keypair generati
   s.dependency "ASKSecp256k1", '~> 0.0.6'
   s.dependency 'Starscream', '~> 4.0.4'
   s.dependency 'RxCocoa', '~> 6.2.0'
-  s.dependency 'BufferLayoutSwift', '~> 0.7.0'
+  s.dependency 'BufferLayoutSwift', '~> 0.8.1'
 end

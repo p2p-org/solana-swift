@@ -9,8 +9,12 @@ import Foundation
 import BufferLayoutSwift
 
 extension SolanaSDK.PublicKey: BufferLayoutProperty {
-    public static func fromBytes(bytes: [UInt8]) throws -> SolanaSDK.PublicKey {
-        try .init(bytes: bytes)
+    public static func getNumberOfBytes() throws -> Int {
+        numberOfBytes
+    }
+    
+    public init(buffer: Data) throws {
+        try self.init(data: buffer)
     }
     public func encode() throws -> Data {
         Data(bytes)

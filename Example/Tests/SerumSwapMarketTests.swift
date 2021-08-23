@@ -14,7 +14,7 @@ class SerumSwapMarketTests: XCTestCase {
     func testAccountFlags() throws {
         // Decode
         XCTAssertEqual(
-            try SerumSwap.AccountFlags.fromBytes(bytes: Data(hex: "0000000000000000").bytes),
+            try SerumSwap.AccountFlags(buffer: Data(hex: "0000000000000000")),
             .init(
                 initialized: false,
                 market: false,
@@ -27,7 +27,7 @@ class SerumSwapMarketTests: XCTestCase {
         )
         
         XCTAssertEqual(
-            try SerumSwap.AccountFlags.fromBytes(bytes: Data(hex: "0300000000000000").bytes),
+            try SerumSwap.AccountFlags(buffer: Data(hex: "0300000000000000")),
             .init(
                 initialized: true,
                 market: true,
@@ -40,7 +40,7 @@ class SerumSwapMarketTests: XCTestCase {
         )
         
         XCTAssertEqual(
-            try SerumSwap.AccountFlags.fromBytes(bytes: Data(hex: "0500000000000000").bytes),
+            try SerumSwap.AccountFlags(buffer: Data(hex: "0500000000000000")),
             .init(
                 initialized: true,
                 market: false,
@@ -53,7 +53,7 @@ class SerumSwapMarketTests: XCTestCase {
         )
         
         XCTAssertEqual(
-            try SerumSwap.AccountFlags.fromBytes(bytes: Data(hex: "4100000000000000").bytes),
+            try SerumSwap.AccountFlags(buffer: Data(hex: "4100000000000000")),
             .init(
                 initialized: true,
                 market: false,
