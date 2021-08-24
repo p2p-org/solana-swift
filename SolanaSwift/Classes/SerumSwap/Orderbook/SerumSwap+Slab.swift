@@ -1,18 +1,14 @@
 //
-//  SerumSwap+Orderbook.swift
+//  SerumSwap+Slab.swift
 //  SolanaSwift
 //
-//  Created by Chung Tran on 20/08/2021.
+//  Created by Chung Tran on 24/08/2021.
 //
 
 import Foundation
 import BufferLayoutSwift
 
 extension SerumSwap {
-    public struct Orderbook {
-        
-    }
-    
     struct Slab {
         let header: SlabHeaderLayout
         let nodes: [SlabNodeLayout]
@@ -39,6 +35,35 @@ extension SerumSwap {
             self.nodes = nodes
         }
         
+        func getNodeList(descending: Bool = false) -> LinkedList<SerumSwapSlabNodeLayoutType> {
+            let list = LinkedList<SerumSwapSlabNodeLayoutType>()
+            if header.leafCount == 0 {
+                return list
+            }
+            var stack = [header.root]
+            while stack.count > 0 {
+                let index = stack.removeLast()
+                guard let node = nodes[safe: Int(index)]?.value else {continue}
+                switch node {
+                case let leafNode as LeafNodeLayout:
+                    list.append(leafNode)
+                case let innerNode as InnerNodeLayout:
+                    var nodeToAdd = [UInt32]()
+                    if let child = innerNode.children[safe: 1] {
+                        nodeToAdd.append(child)
+                    }
+                    if let child = innerNode.children[safe: 0] {
+                        nodeToAdd.append(child)
+                    }
+                    if descending {nodeToAdd.reverse()}
+                    stack += nodeToAdd
+                default:
+                    break
+                }
+            }
+            return list
+        }
+        
 //        func get(_ searchKey: BInt) throws -> SerumSwapSlabNodeLayoutType? {
 //            guard header.leafCount > 0 else {return nil}
 //            let index = header.root
@@ -60,14 +85,6 @@ extension SerumSwap {
 //                }
 //            }
 //        }
-    }
-}
-
-extension SerumSwap.Orderbook {
-    struct Layout: BufferLayout {
-        let blob5: SerumSwap.Blob5
-        let accountFlags: SerumSwap.AccountFlags
-        let slab: SerumSwap.Slab
     }
 }
 
