@@ -106,6 +106,7 @@ extension SerumSwap {
             guard buffer.count >= pointer + Self.length else {
                 throw BufferLayoutSwift.Error.bytesLengthIsNotValid
             }
+            let startIndex = pointer
             self.tag = try UInt32(buffer: buffer, pointer: &pointer)
             switch tag {
             case 0:
@@ -121,6 +122,7 @@ extension SerumSwap {
             default:
                 throw SerumSwapError("Unsupported node")
             }
+            pointer = startIndex + Self.length
         }
         
         func serialize() throws -> Data {
