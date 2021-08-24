@@ -22,6 +22,34 @@ extension SerumSwap {
             self.isBids = accountFlags.bids
             self.slab = slab
         }
+        
+        func getList(descending: Bool = false) -> LinkedList<ListItem> {
+            let list = LinkedList<ListItem>()
+            for item in self.slab.getNodeList(descending: descending) {
+                let key = item.key
+                let price = getPriceFromKey(key: key)
+                list.append(
+                    .init(orderId: key,
+                          clientId: item.clientOrderId,
+                          openOrdersAddress: item.owner,
+                          openOrdersSlot: item.ownerSlot,
+                          feeTier: item.feeTier,
+                          price: market.priceLotsToNumber(price: price),
+                          priceLots: price,
+                          size: market.baseSizeLotsToNumber(quantity: item.quantity),
+                          sizeLots: item.quantity,
+                          side: isBids ? .buy: .sell
+                    )
+                )
+            }
+            
+            return list
+        }
+        
+        func getPriceFromKey(key: UInt128) -> UInt64 {
+//            return key.ushrn(64);
+            fatalError()
+        }
     }
 }
 
@@ -31,6 +59,23 @@ extension SerumSwap.Orderbook {
         let accountFlags: SerumSwap.AccountFlags
         let slab: SerumSwap.Slab
         let blob7: SerumSwap.Blob7
+    }
+    
+    struct ListItem {
+        let orderId: UInt128    //key
+        let clientId: UInt64    //clientOrderId
+        let openOrdersAddress: SerumSwap.PublicKey  //owner
+        let openOrdersSlot: UInt8   //ownerSlot
+        let feeTier: UInt8
+        let price: UInt64       //this.market.priceLotsToNumber(price)
+        let priceLots: UInt64   //price
+        let size: UInt64        //this.market.baseSizeLotsToNumber(quantity)
+        let sizeLots: UInt64    //quantity
+        let side: Side          //(this.isBids ? 'buy' : 'sell')
+    }
+    
+    enum Side {
+        case buy, sell
     }
 }
 

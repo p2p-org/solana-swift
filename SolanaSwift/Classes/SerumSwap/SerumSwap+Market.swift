@@ -36,6 +36,14 @@ extension SerumSwap {
         var coinVault: PublicKey {decoded.baseVault}
         var pcVault: PublicKey {decoded.quoteVault}
         
+        private var baseSplTokenMultiplier: BInt {
+            BInt(10)^BInt(self.baseSplTokenDecimals)
+        }
+        
+        private var quoteSplTokenMultiplier: BInt {
+            BInt(10)^BInt(self.quoteSplTokenDecimals)
+        }
+        
         
         // MARK: - Initializer
         init(
@@ -116,6 +124,15 @@ extension SerumSwap {
                 .map {layout in
                     try Orderbook(market: self, accountFlags: layout.data.accountFlags, slab: layout.data.slab)
                 }
+        }
+        
+        func priceLotsToNumber(price: UInt64) -> UInt64 {
+            UInt64((BInt(price) * BInt(decoded.quoteLotSize) * baseSplTokenMultiplier) /
+                (BInt(decoded.baseLotSize) * quoteSplTokenMultiplier))
+        }
+        
+        func baseSizeLotsToNumber(quantity: UInt64) -> UInt64 {
+            UInt64((BInt(quantity) * BInt(decoded.baseLotSize)) / baseSplTokenMultiplier)
         }
         
         static func load(

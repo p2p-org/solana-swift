@@ -28,8 +28,8 @@ extension SerumSwap {
             (try header.serialize()) + (try nodes.reduce(Data(), {$0 + (try $1.serialize())}))
         }
         
-        func getNodeList(descending: Bool = false) -> LinkedList<SerumSwapSlabNodeLayoutType> {
-            let list = LinkedList<SerumSwapSlabNodeLayoutType>()
+        func getNodeList(descending: Bool = false) -> LinkedList<LeafNodeLayout> {
+            let list = LinkedList<LeafNodeLayout>()
             if header.leafCount == 0 {
                 return list
             }
