@@ -10,15 +10,15 @@ import BufferLayoutSwift
 
 extension SerumSwap {
     struct Slab: BufferLayout {
-        let header: SlabHeaderLayout
-        let nodes: [SlabNodeLayout]
+        let header: HeaderLayout
+        let nodes: [NodeLayout]
         init(buffer: Data, pointer: inout Int) throws {
             header = try .init(buffer: buffer, pointer: &pointer)
             
-            var nodes = [SlabNodeLayout]()
+            var nodes = [NodeLayout]()
             for _ in 0..<header.bumpIndex {
                 nodes.append(
-                    try SlabNodeLayout(buffer: buffer, pointer: &pointer)
+                    try NodeLayout(buffer: buffer, pointer: &pointer)
                 )
             }
             self.nodes = nodes
@@ -81,8 +81,8 @@ extension SerumSwap {
     }
 }
 
-extension SerumSwap {
-    struct SlabHeaderLayout: BufferLayout {
+extension SerumSwap.Slab {
+    struct HeaderLayout: BufferLayout {
         let bumpIndex: UInt32
         let zeros: UInt32
         let freeListLen: UInt32
@@ -93,7 +93,7 @@ extension SerumSwap {
         let zeros3: UInt32
     }
 
-    struct SlabNodeLayout: BufferLayoutProperty {
+    struct NodeLayout: BufferLayoutProperty {
         let tag: UInt32
         let value: SerumSwapSlabNodeLayoutType
         
