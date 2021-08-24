@@ -47,7 +47,7 @@ extension SerumSwap {
         }
         
         func getPriceFromKey(key: UInt128) -> BInt {
-            BInt(key) >> 64
+            BInt(key.toString()) >> 64
         }
     }
 }

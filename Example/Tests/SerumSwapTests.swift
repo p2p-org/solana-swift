@@ -33,6 +33,8 @@ class SerumSwapTests: RestAPITests {
         let marketAddresses = try serumSwap.route(fromMint: SRM, toMint: USDC).toBlocking().first()!!
         let marketAddress = marketAddresses[0]
         let market = try serumSwap.loadMarket(address: marketAddress).toBlocking().first()
+        let orderbookPair = try serumSwap.loadOrderbook(market: market!).toBlocking().first()
+        let price = serumSwap.loadBbo(orderbookPair: orderbookPair!)
         
         let request = serumSwap.swap(
             .init(
