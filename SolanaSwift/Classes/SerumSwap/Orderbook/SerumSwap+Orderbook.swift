@@ -19,5 +19,6 @@ extension SerumSwap.Orderbook {
         let blob5: SerumSwap.Blob5
         let accountFlags: SerumSwap.AccountFlags
         let slab: SerumSwap.Slab
+        let blob7: SerumSwap.Blob7
     }
 }
