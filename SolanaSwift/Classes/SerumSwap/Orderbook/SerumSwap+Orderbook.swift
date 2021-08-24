@@ -46,8 +46,8 @@ extension SerumSwap {
             return list
         }
         
-        func getPriceFromKey(key: UInt128) -> UInt64 {
-            UInt64(BInt(key).ushrn(bits: 64))
+        func getPriceFromKey(key: UInt128) -> BInt {
+            BInt(key) >> 64
         }
     }
 }
@@ -66,8 +66,8 @@ extension SerumSwap.Orderbook {
         let openOrdersAddress: SerumSwap.PublicKey  //owner
         let openOrdersSlot: UInt8   //ownerSlot
         let feeTier: UInt8
-        let price: UInt64       //this.market.priceLotsToNumber(price)
-        let priceLots: UInt64   //price
+        let price: BInt       //this.market.priceLotsToNumber(price)
+        let priceLots: BInt   //price
         let size: UInt64        //this.market.baseSizeLotsToNumber(quantity)
         let sizeLots: UInt64    //quantity
         let side: Side          //(this.isBids ? 'buy' : 'sell')

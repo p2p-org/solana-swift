@@ -126,9 +126,9 @@ extension SerumSwap {
                 }
         }
         
-        func priceLotsToNumber(price: UInt64) -> UInt64 {
-            UInt64((BInt(price) * BInt(decoded.quoteLotSize) * baseSplTokenMultiplier) /
-                (BInt(decoded.baseLotSize) * quoteSplTokenMultiplier))
+        func priceLotsToNumber(price: BInt) -> BInt {
+            (BInt(price) * BInt(decoded.quoteLotSize) * baseSplTokenMultiplier) /
+                (BInt(decoded.baseLotSize) * quoteSplTokenMultiplier)
         }
         
         func baseSizeLotsToNumber(quantity: UInt64) -> UInt64 {

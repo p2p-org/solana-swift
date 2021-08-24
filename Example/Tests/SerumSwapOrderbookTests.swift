@@ -19,7 +19,16 @@ class SerumSwapOrderbookTests: XCTestCase {
         
         XCTAssertEqual(slab.header.bumpIndex, 9)
         XCTAssertEqual(slab.nodes.count, 9)
+    }
+    
+    func testFunctionUshrn() throws {
+        var num = BInt("131234131234123441234123412341234")
+        XCTAssertEqual(num >> 64, 7114216509414)
         
+        num = BInt("1")
+        XCTAssertEqual(num >> 64, 0)
         
+        num = BInt("451358847718415878145787853434132412341234")
+        XCTAssertEqual(num >> 64, BInt("24468212163343023069036"))
     }
 }
