@@ -80,7 +80,7 @@ public struct SerumSwap {
     /// - Parameter orderbookPair: asks and bids
     /// - Returns: best bids price, best asks price and middle
     public func loadBbo(orderbookPair: OrderbookPair) -> Single<Bbo> {
-        
+        fatalError()
     }
     
     /// Executes a swap against the Serum DEX.

@@ -47,8 +47,7 @@ extension SerumSwap {
         }
         
         func getPriceFromKey(key: UInt128) -> UInt64 {
-//            return key.ushrn(64);
-            fatalError()
+            UInt64(BInt(key).ushrn(bits: 64))
         }
     }
 }
