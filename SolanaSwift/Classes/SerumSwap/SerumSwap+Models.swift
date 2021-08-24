@@ -191,25 +191,27 @@ extension SerumSwap {
 private protocol BlobType: Codable, BufferLayoutProperty {
     init(bytes: [UInt8])
     var bytes: [UInt8] {get}
+    static var length: Int {get}
 }
 
 extension BlobType {
-    public init(buffer: Data) throws {
-        self.init(bytes: [UInt8](buffer))
+    public init(buffer: Data, pointer: inout Int) throws {
+        self.init(bytes: [UInt8](buffer[pointer..<pointer+Self.length]))
+        pointer += Self.length
     }
-    public func encode() throws -> Data {
+    public func serialize() throws -> Data {
         Data(bytes)
     }
 }
 
 extension SerumSwap {
     public struct Blob2: BlobType {
-        public static func getNumberOfBytes() throws -> Int { 2 }
+        static var length: Int {2}
         let bytes: [UInt8]
     }
     
     public struct Blob5: BlobType {
-        public static func getNumberOfBytes() throws -> Int { 5 }
+        static var length: Int {5}
         let bytes: [UInt8]
     }
     
@@ -232,24 +234,10 @@ extension SerumSwap {
         public private(set) var bids: Bool
         public private(set) var asks: Bool
         
-        public func encode() throws -> Data {
-            var number: UInt64 = 0
-            if initialized      { number += 1 << 0 }
-            if market           { number += 1 << 1 }
-            if openOrders       { number += 1 << 2 }
-            if requestQueue     { number += 1 << 3 }
-            if eventQueue       { number += 1 << 4 }
-            if bids             { number += 1 << 5 }
-            if asks             { number += 1 << 6 }
-            return try number.encode()
-        }
+        public static var length: Int {8}
         
-        public static func getNumberOfBytes() throws -> Int {
-            8
-        }
-        
-        public init(buffer: Data) throws {
-            var number = try UInt64(buffer: buffer)
+        public init(buffer: Data, pointer: inout Int) throws {
+            var number = try UInt64(buffer: buffer, pointer: &pointer)
             
             let variablesCount = 7
             var bits = [Bool]()
@@ -268,20 +256,32 @@ extension SerumSwap {
                 asks:           bits[6]
             )
         }
+        
+        public func serialize() throws -> Data {
+            var number: UInt64 = 0
+            if initialized      { number += 1 << 0 }
+            if market           { number += 1 << 1 }
+            if openOrders       { number += 1 << 2 }
+            if requestQueue     { number += 1 << 3 }
+            if eventQueue       { number += 1 << 4 }
+            if bids             { number += 1 << 5 }
+            if asks             { number += 1 << 6 }
+            return try number.serialize()
+        }
     }
     
     public struct Seq128Elements<T: FixedWidthInteger>: BufferLayoutProperty {
         var elements: [T]
         
-        public static func getNumberOfBytes() throws -> Int {
-            128 * MemoryLayout<T>.size
-        }
+        public static var length: Int { 128 * MemoryLayout<T>.size }
         
-        public init(buffer: Data) throws {
-            let bytes = [UInt8](buffer)
-            guard buffer.count > (try Self.getNumberOfBytes()) else {
+        public init(buffer: Data, pointer: inout Int) throws {
+            let endIndex = pointer+Self.length
+            guard buffer.count > endIndex else {
                 throw BufferLayoutSwift.Error.bytesLengthIsNotValid
             }
+            let bytes = [UInt8](buffer[pointer..<endIndex])
+            
             var elements = [T]()
             let chunkedArray = bytes.chunked(into: MemoryLayout<T>.size)
             for element in chunkedArray {
@@ -291,25 +291,22 @@ extension SerumSwap {
             }
             
             self.elements = elements
+            pointer += Self.length
         }
         
-        public func encode() throws -> Data {
-            try elements.reduce(Data(), { $0 + (try $1.encode()) })
+        public func serialize() throws -> Data {
+            try elements.reduce(Data(), { $0 + (try $1.serialize()) })
         }
     }
     
     public struct Blob1024: BlobType {
         let bytes: [UInt8]
-        public static func getNumberOfBytes() throws -> Int {
-            1024
-        }
+        static var length: Int {1024}
     }
     
     public struct Blob7: BlobType {
         let bytes: [UInt8]
-        public static func getNumberOfBytes() throws -> Int {
-            7
-        }
+        static var length: Int {7}
     }
 }
 

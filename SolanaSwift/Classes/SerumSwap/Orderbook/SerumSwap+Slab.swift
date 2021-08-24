@@ -9,30 +9,23 @@ import Foundation
 import BufferLayoutSwift
 
 extension SerumSwap {
-    struct Slab {
+    struct Slab: BufferLayout {
         let header: SlabHeaderLayout
         let nodes: [SlabNodeLayout]
-        init(buffer: Data) throws {
-            let headerLength = try SlabHeaderLayout.getNumberOfBytes()
-            guard buffer.count >= headerLength else {
-                throw BufferLayoutSwift.Error.bytesLengthIsNotValid
-            }
-            header = try .init(buffer: buffer[0..<headerLength])
+        init(buffer: Data, pointer: inout Int) throws {
+            header = try .init(buffer: buffer, pointer: &pointer)
             
             var nodes = [SlabNodeLayout]()
-            var pointer = headerLength
             for _ in 0..<header.bumpIndex {
-                let endIndex = pointer + (try SlabNodeLayout.getNumberOfBytes())
-                guard buffer.count >= endIndex else {
-                    throw BufferLayoutSwift.Error.bytesLengthIsNotValid
-                }
-                let nodeData = Array(buffer[pointer..<endIndex])
                 nodes.append(
-                    try SlabNodeLayout(buffer: Data(nodeData))
+                    try SlabNodeLayout(buffer: buffer, pointer: &pointer)
                 )
-                pointer = endIndex
             }
             self.nodes = nodes
+        }
+        
+        func serialize() throws -> Data {
+            (try header.serialize()) + (try nodes.reduce(Data(), {$0 + (try $1.serialize())}))
         }
         
         func getNodeList(descending: Bool = false) -> LinkedList<SerumSwapSlabNodeLayoutType> {
@@ -104,56 +97,50 @@ extension SerumSwap {
         let tag: UInt32
         let value: SerumSwapSlabNodeLayoutType
         
-        static func getNumberOfBytes() throws -> Int {
+        static var length: Int {
             4 // tag
             + 68 // node
         }
         
-        init(buffer: Data) throws {
-            guard buffer.count >= (try Self.getNumberOfBytes()) else {
+        init(buffer: Data, pointer: inout Int) throws {
+            guard buffer.count >= pointer + Self.length else {
                 throw BufferLayoutSwift.Error.bytesLengthIsNotValid
             }
-            self.tag = try UInt32(buffer: buffer[0..<4])
-            
-            let buffer = Data(Array(buffer[4...]))
+            self.tag = try UInt32(buffer: buffer, pointer: &pointer)
             switch tag {
             case 0:
                 self.value = UninitializedNodeLayout()
             case 1:
-                self.value = try InnerNodeLayout(buffer: buffer)
+                self.value = try InnerNodeLayout(buffer: buffer, pointer: &pointer)
             case 2:
-                self.value = try LeafNodeLayout(buffer: buffer)
+                self.value = try LeafNodeLayout(buffer: buffer, pointer: &pointer)
             case 3:
-                self.value = try FreeNodeLayout(buffer: buffer)
+                self.value = try FreeNodeLayout(buffer: buffer, pointer: &pointer)
             case 4:
-                self.value = try LastFreeNodeLayout(buffer: buffer)
+                self.value = try LastFreeNodeLayout(buffer: buffer, pointer: &pointer)
             default:
                 throw SerumSwapError("Unsupported node")
             }
         }
         
-        func encode() throws -> Data {
-            var data = Data(tag.bytes)
-            
+        func serialize() throws -> Data {
             var nodeData = Data()
             switch value {
             case is UninitializedNodeLayout:
                 break
             case let value as InnerNodeLayout:
-                nodeData += try value.encode()
+                nodeData += try value.serialize()
             case let value as LeafNodeLayout:
-                nodeData += try value.encode()
+                nodeData += try value.serialize()
             case let value as FreeNodeLayout:
-                nodeData += try value.encode()
+                nodeData += try value.serialize()
             case is LastFreeNodeLayout:
                 break
             default:
                 throw SerumSwapError("Unsupported node")
             }
-            data += nodeData
             
-            let zeros = [UInt8](repeating: 0, count: (try Self.getNumberOfBytes())-4-nodeData.count)
-            return data + zeros
+            return tag.bytes + nodeData
         }
     }
     
@@ -163,24 +150,22 @@ extension SerumSwap {
         let prefixLen: UInt32
         let key: UInt128
         let children: [UInt32]
-        static func getNumberOfBytes() throws -> Int {
-            4+16+4+4
-        }
+        static var length: Int {28}
         
-        init(buffer: Data) throws {
-            guard buffer.count >= 28 else {
+        init(buffer: Data, pointer: inout Int) throws {
+            guard buffer.count >= pointer + Self.length else {
                 throw BufferLayoutSwift.Error.bytesLengthIsNotValid
             }
-            self.prefixLen = try UInt32(buffer: buffer[0..<4])
-            self.key = try UInt128(buffer: buffer[4..<20])
+            self.prefixLen = try UInt32(buffer: buffer, pointer: &pointer)
+            self.key = try UInt128(buffer: buffer, pointer: &pointer)
             self.children = [
-                try UInt32(buffer: buffer[20..<24]),
-                try UInt32(buffer: buffer[24..<28])
+                try UInt32(buffer: buffer, pointer: &pointer),
+                try UInt32(buffer: buffer, pointer: &pointer)
             ]
         }
         
-        func encode() throws -> Data {
-            Data() + (try prefixLen.encode()) + (try key.encode()) + (try children.reduce(Data(), {$0 + (try $1.encode())}))
+        func serialize() throws -> Data {
+            Data() + (try prefixLen.serialize()) + (try key.serialize()) + (try children.reduce(Data(), {$0 + (try $1.serialize())}))
         }
     }
     

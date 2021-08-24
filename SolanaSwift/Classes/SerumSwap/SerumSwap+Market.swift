@@ -199,6 +199,7 @@ protocol SerumSwapMarketStatLayout: Codable {
 
 extension SerumSwap {
     struct MarketStatLayoutV1: SerumSwapMarketStatLayout, DecodableBufferLayout {
+        static var span: UInt64 {380}
         let blob5: Blob5
         let accountFlags: AccountFlags
         let ownAddress: PublicKey
@@ -223,6 +224,7 @@ extension SerumSwap {
     }
     
     struct MarketStatLayoutV2: SerumSwapMarketStatLayout, DecodableBufferLayout {
+        static var span: UInt64 {MarketStatLayoutV1.span + 8}
         let blob5: Blob5
         let accountFlags: AccountFlags
         let ownAddress: PublicKey

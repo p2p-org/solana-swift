@@ -292,6 +292,12 @@ public protocol SerumSwapOpenOrdersLayoutType {
 
 extension SerumSwap.OpenOrders {
     struct LayoutV1: SerumSwapOpenOrdersLayoutType, DecodableBufferLayout {
+        static var span: UInt64 {
+            UInt64(141) +
+            UInt64(SerumSwap.Seq128Elements<UInt128>.length) +
+            UInt64(SerumSwap.Seq128Elements<UInt64>.length) +
+            UInt64(7)
+        }
         let blob5: SerumSwap.Blob5
         let accountFlags: SerumSwap.AccountFlags
         let market: SolanaSDK.PublicKey
@@ -311,6 +317,8 @@ extension SerumSwap.OpenOrders {
     }
 
     struct LayoutV2: SerumSwapOpenOrdersLayoutType, DecodableBufferLayout {
+        static var span: UInt64 {LayoutV1.span + 8}
+        
         let blob5: SerumSwap.Blob5
         let accountFlags: SerumSwap.AccountFlags
         let market: SolanaSDK.PublicKey

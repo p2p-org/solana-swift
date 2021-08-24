@@ -9,14 +9,11 @@ import Foundation
 import BufferLayoutSwift
 
 extension SolanaSDK.PublicKey: BufferLayoutProperty {
-    public static func getNumberOfBytes() throws -> Int {
-        numberOfBytes
+    public init(buffer: Data, pointer: inout Int) throws {
+        try self.init(data: buffer[pointer..<pointer+Self.numberOfBytes])
+        pointer += Self.numberOfBytes
     }
-    
-    public init(buffer: Data) throws {
-        try self.init(data: buffer)
-    }
-    public func encode() throws -> Data {
+    public func serialize() throws -> Data {
         Data(bytes)
     }
 }
@@ -41,22 +38,11 @@ public extension DecodableBufferLayout {
         }
         
         do {
-            try self.init(buffer: data)
+            var pointer = 0
+            try self.init(buffer: data, pointer: &pointer)
         } catch {
             throw SolanaSDK.Error.couldNotRetrieveAccountInfo
         }
-    }
-    
-    static var BUFFER_LENGTH: Int {
-        let fakeData = Data(repeating: 0, count: 10000)
-        guard let data = try? Self.init(buffer: fakeData),
-              let encoded = try? data.encode()
-        else {return 0}
-        return encoded.count
-    }
-    
-    static var span: UInt64 {
-        UInt64(BUFFER_LENGTH)
     }
 }
 

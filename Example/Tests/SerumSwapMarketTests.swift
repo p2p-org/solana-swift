@@ -13,8 +13,9 @@ class SerumSwapMarketTests: XCTestCase {
 
     func testAccountFlags() throws {
         // Decode
+        var pointer = 0
         XCTAssertEqual(
-            try SerumSwap.AccountFlags(buffer: Data(hex: "0000000000000000")),
+            try SerumSwap.AccountFlags(buffer: Data(hex: "0000000000000000"), pointer: &pointer),
             .init(
                 initialized: false,
                 market: false,
@@ -26,8 +27,9 @@ class SerumSwapMarketTests: XCTestCase {
             )
         )
         
+        pointer = 0
         XCTAssertEqual(
-            try SerumSwap.AccountFlags(buffer: Data(hex: "0300000000000000")),
+            try SerumSwap.AccountFlags(buffer: Data(hex: "0300000000000000"), pointer: &pointer),
             .init(
                 initialized: true,
                 market: true,
@@ -39,8 +41,9 @@ class SerumSwapMarketTests: XCTestCase {
             )
         )
         
+        pointer = 0
         XCTAssertEqual(
-            try SerumSwap.AccountFlags(buffer: Data(hex: "0500000000000000")),
+            try SerumSwap.AccountFlags(buffer: Data(hex: "0500000000000000"), pointer: &pointer),
             .init(
                 initialized: true,
                 market: false,
@@ -52,8 +55,9 @@ class SerumSwapMarketTests: XCTestCase {
             )
         )
         
+        pointer = 0
         XCTAssertEqual(
-            try SerumSwap.AccountFlags(buffer: Data(hex: "4100000000000000")),
+            try SerumSwap.AccountFlags(buffer: Data(hex: "4100000000000000"), pointer: &pointer),
             .init(
                 initialized: true,
                 market: false,
@@ -75,7 +79,7 @@ class SerumSwapMarketTests: XCTestCase {
                 eventQueue: false,
                 bids: false,
                 asks: false
-            ).encode().hexString,
+            ).serialize().hexString,
             "0000000000000000"
         )
         
@@ -88,7 +92,7 @@ class SerumSwapMarketTests: XCTestCase {
                 eventQueue: false,
                 bids: false,
                 asks: false
-            ).encode().hexString,
+            ).serialize().hexString,
             "0300000000000000"
         )
         
@@ -101,7 +105,7 @@ class SerumSwapMarketTests: XCTestCase {
                 eventQueue: false,
                 bids: false,
                 asks: false
-            ).encode().hexString,
+            ).serialize().hexString,
             "0500000000000000"
         )
         
@@ -114,7 +118,7 @@ class SerumSwapMarketTests: XCTestCase {
                 eventQueue: false,
                 bids: false,
                 asks: true
-            ).encode().hexString,
+            ).serialize().hexString,
             "4100000000000000"
         )
     }
