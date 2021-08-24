@@ -48,8 +48,11 @@ public extension DecodableBufferLayout {
     }
     
     static var BUFFER_LENGTH: Int {
-        guard let length = try? Self.getBufferLength() else {return 0}
-        return length
+        let fakeData = Data(repeating: 0, count: 10000)
+        guard let data = try? Self.init(buffer: fakeData),
+              let encoded = try? data.encode()
+        else {return 0}
+        return encoded.count
     }
     
     static var span: UInt64 {
