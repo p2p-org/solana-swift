@@ -18,6 +18,9 @@ private let CLOSE_ENABLED = false
 // TODO: enable once the DEX supports initializing open orders accounts.
 private let OPEN_ENABLED = false
 
+private var _marketsCache = [SerumSwap.PublicKey: SerumSwap.Market]()
+private var _orderbooksCache = [SerumSwap.PublicKey: SerumSwap.OrderbookPair]()
+
 public struct SerumSwap {
     // MARK: - Properties
     let client: SerumSwapAPIClient
@@ -43,11 +46,41 @@ public struct SerumSwap {
     
     /// Load a market base on its address
     public func loadMarket(address: PublicKey) -> Single<Market> {
-        Market.load(
+        if let market = _marketsCache[address] {
+            return .just(market)
+        }
+        
+        return Market.load(
             client: client,
             address: address,
             programId: .dexPID
         )
+            .do(onSuccess: {market in
+                _marketsCache[address] = market
+            })
+    }
+    
+    
+    /// Load orderbook for current market
+    /// - Parameter market: market instance
+    /// - Returns: OrderbookPair
+    public func loadOrderbook(market: Market) -> Single<OrderbookPair> {
+        if let pair = _orderbooksCache[market.address] {
+            return .just(pair)
+        }
+        
+        return Single.zip(
+            market.loadBids(client: client),
+            market.loadAsks(client: client)
+        )
+            .map {OrderbookPair(bids: $0, asks: $1)}
+    }
+    
+    /// Load fair price for a given market, as defined by the mid
+    /// - Parameter orderbookPair: asks and bids
+    /// - Returns: best bids price, best asks price and middle
+    public func loadBbo(orderbookPair: OrderbookPair) -> Single<Bbo> {
+        
     }
     
     /// Executes a swap against the Serum DEX.

@@ -185,6 +185,27 @@ extension SerumSwap {
             }
         }
     }
+    
+    public struct OrderbookPair {
+        let bids: Orderbook
+        let asks: Orderbook
+    }
+    
+    public struct Bbo {
+        let bestBids: Double?
+        let bestAsks: Double?
+        var mid: Double? {
+            var d: Double = 2
+            if bestBids == nil {
+                d -= 1
+            }
+            if bestAsks == nil {
+                d -= 1
+            }
+            if d == 0 {return nil}
+            return ((bestBids ?? 0) + (bestAsks ?? 0)) / d
+        }
+    }
 }
 
 // MARK: - BufferLayout properties
