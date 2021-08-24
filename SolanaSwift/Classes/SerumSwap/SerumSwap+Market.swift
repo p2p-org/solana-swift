@@ -152,6 +152,31 @@ extension SerumSwap {
                 }
         }
         
+        func loadBids(
+            client: SerumSwapAPIClient
+        ) -> Single<Orderbook> {
+            loadOrderbook(client: client, address: bidsAddress)
+        }
+        
+        func loadAsks(
+            client: SerumSwapAPIClient
+        ) -> Single<Orderbook> {
+            loadOrderbook(client: client, address: asksAddress)
+        }
+        
+        private func loadOrderbook(
+            client: SerumSwapAPIClient,
+            address: PublicKey
+        ) -> Single<Orderbook> {
+            client.getAccountInfo(
+                account: address.base58EncodedString,
+                decodedTo: Orderbook.Layout.self
+            )
+                .map {layout in
+                    try Orderbook(market: self, accountFlags: layout.data.accountFlags, slab: layout.data.slab)
+                }
+        }
+        
         private static func getAccountInfoAndVerifyOwner<T: DecodableBufferLayout>(
             client: SerumSwapAPIClient,
             account: PublicKey,

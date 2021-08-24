@@ -26,7 +26,7 @@ extension SerumSwap {
 }
 
 extension SerumSwap.Orderbook {
-    struct Layout: BufferLayout {
+    struct Layout: DecodableBufferLayout {
         let blob5: SerumSwap.Blob5
         let accountFlags: SerumSwap.AccountFlags
         let slab: SerumSwap.Slab
