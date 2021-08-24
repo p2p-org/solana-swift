@@ -31,9 +31,12 @@ public extension DecodableBufferLayout {
         // Unable to get parsed data, fallback to decoding base64
         let stringData = (try? container.decode([String].self).first) ?? (try? container.decode(String.self))
         guard let string = stringData,
-              !string.isEmpty,
               let data = Data(base64Encoded: string)
         else {
+            throw SolanaSDK.Error.couldNotRetrieveAccountInfo
+        }
+        
+        if string.isEmpty && !(Self.self == SolanaSDK.EmptyInfo.self) {
             throw SolanaSDK.Error.couldNotRetrieveAccountInfo
         }
         
