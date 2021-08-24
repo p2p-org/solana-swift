@@ -193,17 +193,17 @@ extension SerumSwap {
     
     public struct Bbo {
         let bestBids: Double?
-        let bestAsks: Double?
+        let bestOffer: Double?
         var mid: Double? {
             var d: Double = 2
             if bestBids == nil {
                 d -= 1
             }
-            if bestAsks == nil {
+            if bestOffer == nil {
                 d -= 1
             }
             if d == 0 {return nil}
-            return ((bestBids ?? 0) + (bestAsks ?? 0)) / d
+            return ((bestBids ?? 0) + (bestOffer ?? 0)) / d
         }
     }
 }

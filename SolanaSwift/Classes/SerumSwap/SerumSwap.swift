@@ -79,8 +79,15 @@ public struct SerumSwap {
     /// Load fair price for a given market, as defined by the mid
     /// - Parameter orderbookPair: asks and bids
     /// - Returns: best bids price, best asks price and middle
-    public func loadBbo(orderbookPair: OrderbookPair) -> Single<Bbo> {
-        fatalError()
+    public func loadBbo(orderbookPair: OrderbookPair) -> Bbo? {
+        let bestBid = orderbookPair.bids.getList(descending: true).first
+        let bestOffer = orderbookPair.asks.getList().first
+        
+        if bestBid == nil && bestOffer == nil {return nil}
+        return .init(
+            bestBids: bestBid == nil ? nil: Double(bestBid!.price),
+            bestOffer: bestOffer == nil ? nil: Double(bestOffer!.price)
+        )
     }
     
     /// Executes a swap against the Serum DEX.
