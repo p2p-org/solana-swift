@@ -36,12 +36,12 @@ extension SerumSwap {
         var coinVault: PublicKey {decoded.baseVault}
         var pcVault: PublicKey {decoded.quoteVault}
         
-        private var baseSplTokenMultiplier: BInt {
-            BInt(10)^BInt(self.baseSplTokenDecimals)
+        private var baseSplTokenMultiplier: Decimal {
+            pow(10, Int(baseSplTokenDecimals))
         }
         
-        private var quoteSplTokenMultiplier: BInt {
-            BInt(10)^BInt(self.quoteSplTokenDecimals)
+        private var quoteSplTokenMultiplier: Decimal {
+            pow(10, Int(quoteSplTokenDecimals))
         }
         
         
@@ -126,13 +126,13 @@ extension SerumSwap {
                 }
         }
         
-        func priceLotsToNumber(price: BInt) -> BInt {
-            (BInt(price) * BInt(decoded.quoteLotSize) * baseSplTokenMultiplier) /
-                (BInt(decoded.baseLotSize) * quoteSplTokenMultiplier)
+        func priceLotsToNumber(price: UInt64) -> Decimal {
+            (Decimal(price) * Decimal(decoded.quoteLotSize) * baseSplTokenMultiplier) /
+                (Decimal(decoded.baseLotSize) * quoteSplTokenMultiplier)
         }
         
-        func baseSizeLotsToNumber(quantity: UInt64) -> UInt64 {
-            UInt64((BInt(quantity) * BInt(decoded.baseLotSize)) / baseSplTokenMultiplier)
+        func baseSizeLotsToNumber(quantity: UInt64) -> Decimal {
+            (Decimal(quantity) * Decimal(decoded.baseLotSize)) / baseSplTokenMultiplier
         }
         
         static func load(

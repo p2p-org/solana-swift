@@ -192,10 +192,10 @@ extension SerumSwap {
     }
     
     public struct Bbo {
-        let bestBids: Double?
-        let bestOffer: Double?
-        var mid: Double? {
-            var d: Double = 2
+        let bestBids: Decimal?
+        let bestOffer: Decimal?
+        var mid: Decimal? {
+            var d: Decimal = 2
             if bestBids == nil {
                 d -= 1
             }

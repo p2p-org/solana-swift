@@ -85,8 +85,8 @@ public struct SerumSwap {
         
         if bestBid == nil && bestOffer == nil {return nil}
         return .init(
-            bestBids: bestBid == nil ? nil: Double(bestBid!.price),
-            bestOffer: bestOffer == nil ? nil: Double(bestOffer!.price)
+            bestBids: bestBid == nil ? nil: bestBid!.price,
+            bestOffer: bestOffer == nil ? nil: bestOffer!.price
         )
     }
     
