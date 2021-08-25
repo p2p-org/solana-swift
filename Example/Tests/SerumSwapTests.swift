@@ -22,6 +22,7 @@ class SerumSwapTests: RestAPITests {
     }
     
     var SRM: SolanaSDK.PublicKey { "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" }
+    var BTC: SolanaSDK.PublicKey { "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E" }
     var USDC: SolanaSDK.PublicKey { "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"}
     var USDT: SolanaSDK.PublicKey { "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"}
     var WBTC: SolanaSDK.PublicKey { "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"}
@@ -61,6 +62,46 @@ class SerumSwapTests: RestAPITests {
                 feeRateBps: 0,
                 referrerRebatesAccrued: 1119325855,
                 blob7: .init(bytes: [112, 97, 100, 100, 105, 110, 103])
+            ),
+            baseMintDecimals: 6,
+            quoteMintDecimals: 6,
+            programId: .dexPID
+        )
+    }
+    
+    var BTCUSDCMarket: SerumSwap.Market {
+        SerumSwap.Market(
+            decoded: SerumSwap.MarketStatLayoutV2(
+                blob5: .init(bytes: [115, 101, 114, 117, 109]),
+                accountFlags: .init(
+                    initialized: true,
+                    market: true,
+                    openOrders: false,
+                    requestQueue: false,
+                    eventQueue: false,
+                    bids: false,
+                    asks: false
+                ),
+                ownAddress: "A8YFbxQYFVqKZaoYJLLUVcQiWP7G2MeEgW5wsAQgMvFw",
+                vaultSignerNonce: 0,
+                baseMint: "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E",
+                quoteMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                baseVault: "GZ1YSupuUq9kB28kX9t1j9qCpN67AMMwn4Q72BzeSpfR",
+                baseDepositsTotal: 537318800,
+                baseFeesAccrued: 0,
+                quoteVault: "7sP9fug8rqZFLbXoEj8DETF81KasaRA1fr6jQb6ScKc5",
+                quoteDepositsTotal: 12634544048534,
+                quoteFeesAccrued: 5387527075,
+                quoteDustThreshold: 100,
+                requestQueue: "H6UaUrNVELJgTqao1CNL4252kShLKSfwoboT8tF7HNtB",
+                eventQueue: "6NQqaa48SnBBJZt9HyVPngcZFW81JfDv9EjRX2M4WkbP",
+                bids: "6wLt7CX1zZdFpa6uGJJpZfzWvG6W9rxXjquJDYiFwf9K",
+                asks: "6EyVXMMA58Nf6MScqeLpw1jS12RCpry23u9VMfy8b65Y",
+                baseLotSize: 100,
+                quoteLotSize: 10,
+                feeRateBps: 0,
+                referrerRebatesAccrued: 1466925674,
+                blob7: .init(bytes: [112, 97, 100, 100, 105, 110])
             ),
             baseMintDecimals: 6,
             quoteMintDecimals: 6,
