@@ -9,118 +9,19 @@
 import XCTest
 @testable import SolanaSwift
 
-class SerumSwapMarketTests: XCTestCase {
-
-    func testAccountFlags() throws {
-        // Decode
-        var pointer = 0
-        XCTAssertEqual(
-            try SerumSwap.AccountFlags(buffer: Data(hex: "0000000000000000"), pointer: &pointer),
-            .init(
-                initialized: false,
-                market: false,
-                openOrders: false,
-                requestQueue: false,
-                eventQueue: false,
-                bids: false,
-                asks: false
-            )
-        )
-        
-        pointer = 0
-        XCTAssertEqual(
-            try SerumSwap.AccountFlags(buffer: Data(hex: "0300000000000000"), pointer: &pointer),
-            .init(
-                initialized: true,
-                market: true,
-                openOrders: false,
-                requestQueue: false,
-                eventQueue: false,
-                bids: false,
-                asks: false
-            )
-        )
-        
-        pointer = 0
-        XCTAssertEqual(
-            try SerumSwap.AccountFlags(buffer: Data(hex: "0500000000000000"), pointer: &pointer),
-            .init(
-                initialized: true,
-                market: false,
-                openOrders: true,
-                requestQueue: false,
-                eventQueue: false,
-                bids: false,
-                asks: false
-            )
-        )
-        
-        pointer = 0
-        XCTAssertEqual(
-            try SerumSwap.AccountFlags(buffer: Data(hex: "4100000000000000"), pointer: &pointer),
-            .init(
-                initialized: true,
-                market: false,
-                openOrders: false,
-                requestQueue: false,
-                eventQueue: false,
-                bids: false,
-                asks: true
-            )
-        )
-        
-        // Encode
-        XCTAssertEqual(
-            try SerumSwap.AccountFlags(
-                initialized: false,
-                market: false,
-                openOrders: false,
-                requestQueue: false,
-                eventQueue: false,
-                bids: false,
-                asks: false
-            ).serialize().hexString,
-            "0000000000000000"
-        )
-        
-        XCTAssertEqual(
-            try SerumSwap.AccountFlags(
-                initialized: true,
-                market: true,
-                openOrders: false,
-                requestQueue: false,
-                eventQueue: false,
-                bids: false,
-                asks: false
-            ).serialize().hexString,
-            "0300000000000000"
-        )
-        
-        XCTAssertEqual(
-            try SerumSwap.AccountFlags(
-                initialized: true,
-                market: false,
-                openOrders: true,
-                requestQueue: false,
-                eventQueue: false,
-                bids: false,
-                asks: false
-            ).serialize().hexString,
-            "0500000000000000"
-        )
-        
-        XCTAssertEqual(
-            try SerumSwap.AccountFlags(
-                initialized: true,
-                market: false,
-                openOrders: false,
-                requestQueue: false,
-                eventQueue: false,
-                bids: false,
-                asks: true
-            ).serialize().hexString,
-            "4100000000000000"
-        )
+class SerumSwapMarketTests: SerumSwapTests {
+    var market: SerumSwap.Market {SRMUSDCMarket}
+    
+    func testGetMarket() throws {
+        // Swaps SRM -> USDC on the Serum orderbook.
+        let marketAddresses = try serumSwap.route(fromMint: SRM, toMint: USDC).toBlocking().first()!!
+        let marketAddress = marketAddresses[0]
+        let marketRequest = serumSwap.loadMarket(address: marketAddress)
+        XCTAssertNoThrow(try marketRequest.toBlocking().first())
     }
-
+    
+    func testGetPrice() throws {
+        let price = market.priceLotsToNumber(price: 7122)
+        XCTAssertEqual(price, 7.122)
+    }
 }

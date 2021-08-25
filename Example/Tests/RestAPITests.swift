@@ -28,12 +28,4 @@ class RestAPITests: XCTestCase {
         let account = try SolanaSDK.Account(phrase: (overridingAccount ?? endpoint.network.testAccount).components(separatedBy: " "), network: endpoint.network)
         try accountStorage.save(account)
     }
-    
-    func testGetTokenAccountBalance() throws {
-        let balance = try solanaSDK.getTokenAccountBalance(pubkey: "1dmDx6xPCaHE3wBTyGLASy3BHuvNVFiVBvrtg4X9sxa").toBlocking().first()
-        XCTAssertNotNil(balance?.uiAmount)
-        XCTAssertNotNil(balance?.amount)
-        XCTAssertNotNil(balance?.decimals)
-    }
-
 }

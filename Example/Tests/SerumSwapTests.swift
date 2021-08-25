@@ -2,12 +2,11 @@
 //  SerumSwapTests.swift
 //  SolanaSwift_Tests
 //
-//  Created by Chung Tran on 16/08/2021.
+//  Created by Chung Tran on 25/08/2021.
 //  Copyright © 2021 CocoaPods. All rights reserved.
 //
 
-import XCTest
-import RxBlocking
+import Foundation
 @testable import SolanaSwift
 
 class SerumSwapTests: RestAPITests {
@@ -22,56 +21,50 @@ class SerumSwapTests: RestAPITests {
         serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK)
     }
     
-    func testGetMarket() throws {
-        // Swaps SRM -> USDC on the Serum orderbook.
-        let marketAddresses = try serumSwap.route(fromMint: SRM, toMint: USDC).toBlocking().first()!!
-        let marketAddress = marketAddresses[0]
-        let marketRequest = serumSwap.loadMarket(address: marketAddress)
-        XCTAssertNoThrow(try marketRequest.toBlocking().first())
-    }
-    
-    func testGetOrderbookPair() throws {
-        let orderbookPairRequest = serumSwap.loadOrderbook(market: market)
-        XCTAssertNoThrow(try orderbookPairRequest.toBlocking().first())
-    }
-    
-    func testGetPrice() throws {
-        let price = market.priceLotsToNumber(price: 7122)
-        XCTAssertEqual(price, 7.122)
-    }
+    var SRM: SolanaSDK.PublicKey { "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" }
+    var USDC: SolanaSDK.PublicKey { "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"}
+    var USDT: SolanaSDK.PublicKey { "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"}
+    var WBTC: SolanaSDK.PublicKey { "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"}
+    var SRMDecimals: SolanaSDK.Decimals { 6 }
+    var USDCDecimals: SolanaSDK.Decimals { 6 }
 
-    func testDirectSwap() throws {
-        // Swaps SRM -> USDC on the Serum orderbook.
-        let request = serumSwap.swap(
-            .init(
-                fromMint: SRM,
-                toMint: USDC,
-                quoteMint: nil,
-                amount: 1,
-                minExchangeRate: .init(
-                    rate: 7122000,
-                    fromDecimals: SRMDecimals,
-                    quoteDecimals: USDCDecimals,
-                    strict: false
+    var SRMUSDCMarket: SerumSwap.Market {
+        SerumSwap.Market(
+            decoded: SerumSwap.MarketStatLayoutV2(
+                blob5: .init(bytes: [115, 101, 114, 117, 109]),
+                accountFlags: .init(
+                    initialized: true,
+                    market: true,
+                    openOrders: false,
+                    requestQueue: false,
+                    eventQueue: false,
+                    bids: false,
+                    asks: false
                 ),
-                referral: nil,
-                fromWallet: "D2RGqjKxvP1At8BwSx95FUYwbgwLK1N9jB7QH5Lt3UQw",
-                toWallet: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3",
-                quoteWallet: nil,
-                fromMarket: market,
-                toMarket: nil,
-                fromOpenOrders: nil,
-                toOpenOrders: nil,
-                close: true
-            )
+                ownAddress: "ByRys5tuUWDgL73G8JBAEfkdFf8JWBzPBDHsBVQ5vbQA",
+                vaultSignerNonce: 0,
+                baseMint: "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt",
+                quoteMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                baseVault: "Ecfy8et9Mft9Dkavnuh4mzHMa2KWYUbBTA5oDZNoWu84",
+                baseDepositsTotal: 31441200000,
+                baseFeesAccrued: 0,
+                quoteVault: "hUgoKy5wjeFbZrXDW4ecr42T4F5Z1Tos31g68s5EHbP",
+                quoteDepositsTotal: 605943927629,
+                quoteFeesAccrued: 2314109580,
+                quoteDustThreshold: 100,
+                requestQueue: "Hr8Z93aWe4hhJbC5i7YTsPaSToziVh3vyMfv9GRqKFCh",
+                eventQueue: "6o44a9xdzKKDNY7Ff2Qb129mktWbsCT4vKJcg2uk41uy",
+                bids: "AuL9JzRJ55MdqzubK4EutJgAumtkuFcRVuPUvTX39pN8",
+                asks: "8Lx9U9wdE3afdqih1mCAXy3unJDfzSaXFqAvoLMjhwoD",
+                baseLotSize: 100000,
+                quoteLotSize: 100,
+                feeRateBps: 0,
+                referrerRebatesAccrued: 1119325855,
+                blob7: .init(bytes: [112, 97, 100, 100, 105, 110, 103])
+            ),
+            baseMintDecimals: 6,
+            quoteMintDecimals: 6,
+            programId: .dexPID
         )
-        let signersAndInstructions = try request.toBlocking().first()
-        let tx = try solanaSDK.serializeTransaction(instructions: signersAndInstructions!.first!.instructions, signers: signersAndInstructions!.first!.signers).toBlocking().first()
-        let txID = try solanaSDK.simulateTransaction(transaction: tx!).toBlocking().first()
     }
-    
-    func testTransitiveSwap() throws {
-        // Transitive swap from SRM -> USDC -> BTC.
-    }
-
 }
