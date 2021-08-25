@@ -8,7 +8,6 @@
 import Foundation
 
 extension SolanaSDK {
-    // MARK: - Private
     public struct EncodableWrapper: Encodable {
         let wrapped: Encodable
         
