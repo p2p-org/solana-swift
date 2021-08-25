@@ -38,6 +38,7 @@
 		BC8B53042664D25B00CA93DE /* DecodingSocketResponsesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8B53032664D25B00CA93DE /* DecodingSocketResponsesTests.swift */; };
 		BC966DB425BFDCA100F2AB36 /* RestAPIPoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC966DB325BFDCA100F2AB36 /* RestAPIPoolTests.swift */; };
 		BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */; };
+		BCB3AF7426D5EF7500DAD0DC /* SerumSwapConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB3AF7326D5EF7500DAD0DC /* SerumSwapConstants.swift */; };
 		BCBBE23E25650A1700533F6B /* RegexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBBE23D25650A1700533F6B /* RegexTests.swift */; };
 		BCC49C1225BE864200D4D336 /* EncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCC49C1125BE864200D4D336 /* EncodingTests.swift */; };
 		BCECD43D26D385ED00642346 /* SerumSwapOrderbookTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCECD43C26D385ED00642346 /* SerumSwapOrderbookTests.swift */; };
@@ -196,6 +197,7 @@
 		BC8B53032664D25B00CA93DE /* DecodingSocketResponsesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingSocketResponsesTests.swift; sourceTree = "<group>"; };
 		BC966DB325BFDCA100F2AB36 /* RestAPIPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPIPoolTests.swift; sourceTree = "<group>"; };
 		BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITransactionTests.swift; sourceTree = "<group>"; };
+		BCB3AF7326D5EF7500DAD0DC /* SerumSwapConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerumSwapConstants.swift; sourceTree = "<group>"; };
 		BCBBE23D25650A1700533F6B /* RegexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegexTests.swift; sourceTree = "<group>"; };
 		BCC49C1125BE864200D4D336 /* EncodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingTests.swift; sourceTree = "<group>"; };
 		BCECD43C26D385ED00642346 /* SerumSwapOrderbookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerumSwapOrderbookTests.swift; sourceTree = "<group>"; };
@@ -360,6 +362,7 @@
 		BC87FC8F26CA3D630097A32B /* SerumSwap */ = {
 			isa = PBXGroup;
 			children = (
+				BCB3AF7326D5EF7500DAD0DC /* SerumSwapConstants.swift */,
 				BC87FCA326CA3D830097A32B /* SerumSwapTests.swift */,
 				BC46DF4626CD1F17002F59B9 /* SerumSwapMarketTests.swift */,
 				BCECD43C26D385ED00642346 /* SerumSwapOrderbookTests.swift */,
@@ -672,6 +675,7 @@
 				BC3174342670B48200B60E3F /* RestAPIGetAccountInfoTests.swift in Sources */,
 				BCECD43D26D385ED00642346 /* SerumSwapOrderbookTests.swift in Sources */,
 				BC81A2AB25BE628700664A2C /* Constants.swift in Sources */,
+				BCB3AF7426D5EF7500DAD0DC /* SerumSwapConstants.swift in Sources */,
 				BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */,
 				BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */,
 				BC966DB425BFDCA100F2AB36 /* RestAPIPoolTests.swift in Sources */,

@@ -8,7 +8,7 @@
 
 import XCTest
 import RxBlocking
-import SolanaSwift
+@testable import SolanaSwift
 
 class SerumSwapTests: RestAPITests {
     override var overridingAccount: String? {
@@ -17,25 +17,31 @@ class SerumSwapTests: RestAPITests {
     
     var serumSwap: SerumSwap!
     
-    let SRM: SolanaSDK.PublicKey = "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt"
-    let USDC: SolanaSDK.PublicKey = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-    let USDT: SolanaSDK.PublicKey = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
-    let WBTC: SolanaSDK.PublicKey = "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"
-    let decimals: SolanaSDK.Decimals = 6
-    
     override func setUpWithError() throws {
         try super.setUpWithError()
         serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK)
     }
-
-    func testDirectSwap() throws {
+    
+    func testGetMarket() throws {
         // Swaps SRM -> USDC on the Serum orderbook.
         let marketAddresses = try serumSwap.route(fromMint: SRM, toMint: USDC).toBlocking().first()!!
         let marketAddress = marketAddresses[0]
-        let market = try serumSwap.loadMarket(address: marketAddress).toBlocking().first()
-        let orderbookPair = try serumSwap.loadOrderbook(market: market!).toBlocking().first()
-        let price = serumSwap.loadBbo(orderbookPair: orderbookPair!)
-        
+        let marketRequest = serumSwap.loadMarket(address: marketAddress)
+        XCTAssertNoThrow(try marketRequest.toBlocking().first())
+    }
+    
+    func testGetOrderbookPair() throws {
+        let orderbookPairRequest = serumSwap.loadOrderbook(market: market)
+        XCTAssertNoThrow(try orderbookPairRequest.toBlocking().first())
+    }
+    
+    func testGetPrice() throws {
+        let price = market.priceLotsToNumber(price: 7122)
+        XCTAssertEqual(price, 7.122)
+    }
+
+    func testDirectSwap() throws {
+        // Swaps SRM -> USDC on the Serum orderbook.
         let request = serumSwap.swap(
             .init(
                 fromMint: SRM,
@@ -43,16 +49,16 @@ class SerumSwapTests: RestAPITests {
                 quoteMint: nil,
                 amount: 1,
                 minExchangeRate: .init(
-                    rate: 1,
-                    fromDecimals: decimals,
-                    quoteDecimals: decimals,
+                    rate: 7122000,
+                    fromDecimals: SRMDecimals,
+                    quoteDecimals: USDCDecimals,
                     strict: false
                 ),
                 referral: nil,
                 fromWallet: "D2RGqjKxvP1At8BwSx95FUYwbgwLK1N9jB7QH5Lt3UQw",
                 toWallet: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3",
                 quoteWallet: nil,
-                fromMarket: market!,
+                fromMarket: market,
                 toMarket: nil,
                 fromOpenOrders: nil,
                 toOpenOrders: nil,
