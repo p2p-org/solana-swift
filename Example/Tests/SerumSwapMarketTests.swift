@@ -18,7 +18,7 @@ class SerumSwapMarketTests: SerumSwapTests {
         XCTAssertNotNil(market)
     }
     
-    func testGetPrice() throws {
+    func testGetPriceFromCachedMarket() throws {
         let srmUSDCPair = try serumSwap.loadOrderbook(market: SRMUSDCMarket).toBlocking().first()
         XCTAssertNotNil(srmUSDCPair)
         
@@ -30,5 +30,11 @@ class SerumSwapMarketTests: SerumSwapTests {
         let btcBbo = serumSwap.loadBbo(orderbookPair: btcUSDCPair!)
         print(srmBbo!)
         print(btcBbo!)
+    }
+    
+    func testGetPriceFromNewMarket() throws {
+        let price = try serumSwap.loadPrice(fromMint: SOL, toMint: SRM).toBlocking().first()
+        print(price)
+        
     }
 }
