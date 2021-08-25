@@ -25,6 +25,8 @@ public extension SolanaSDK {
                 return rs1 == rs2
             case (.unknown, .unknown):
                 return true
+            case (.transactionError(let err1), .transactionError(let err2)):
+                return err1.jsonString == err2.jsonString
             default:
                 return false
             }
@@ -38,6 +40,9 @@ public extension SolanaSDK {
         
         // Invalid responses
         case invalidResponse(ResponseError)
+        
+        // Transaction error
+        case transactionError(TransactionError)
         
         // Socket error
         case socket(Swift.Error)

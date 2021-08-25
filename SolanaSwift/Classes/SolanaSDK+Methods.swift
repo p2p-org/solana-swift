@@ -235,6 +235,12 @@ public extension SolanaSDK {
 	func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<TransactionStatus> {
 		(request(parameters: [transaction, configs]) as Single<Rpc<TransactionStatus>>)
 			.map {$0.value}
+            .map {status in
+                if let err = status.err {
+                    throw Error.transactionError(err)
+                }
+                return status
+            }
 	}
 	func setLogFilter(filter: String) -> Single<String?> {
 		request(parameters: [filter])

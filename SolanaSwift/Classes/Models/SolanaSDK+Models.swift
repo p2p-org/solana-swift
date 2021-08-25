@@ -156,7 +156,7 @@ public extension SolanaSDK {
 		public let samplePeriodSecs: UInt
 		public let slot: UInt64
 	}
-    struct SignatureInfo: Decodable, Hashable {
+    struct SignatureInfo: Decodable {
         public let signature: String
         public let slot: UInt64?
         public let err: TransactionError?
@@ -190,9 +190,36 @@ public extension SolanaSDK {
         public let preBalances: [Lamports]?
         public let preTokenBalances: [TokenBalance]?
     }
-    struct TransactionError: Decodable, Hashable {
+    typealias TransactionError = [String: [ErrorDetail]]
+    struct ErrorDetail: Codable {
+        let wrapped: Any
         
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let value = try? container.decode(Bool.self) {
+                wrapped = value
+            } else if let value = try? container.decode(Double.self) {
+                wrapped = value
+            } else if let value = try? container.decode(String.self) {
+                wrapped = value
+            } else if let value = try? container.decode(Int.self) {
+                wrapped = value
+            } else if let value = try? container.decode(Dictionary<String, Int>.self) {
+                wrapped = value
+            } else {
+                wrapped = ""
+            }
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            if let wrapped = wrapped as? Encodable {
+                let wrapper = EncodableWrapper(wrapped: wrapped)
+                try container.encode(wrapper)
+            }
+        }
     }
+    
     struct InnerInstruction: Decodable {
         let index: UInt32
         let instructions: [ParsedInstruction]
