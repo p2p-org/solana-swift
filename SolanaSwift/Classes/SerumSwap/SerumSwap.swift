@@ -39,55 +39,47 @@ public struct SerumSwap {
     }
     
     // MARK: - Methods
-    /// Returns a list of markets to trade across to swap `fromMint` to `toMint`.
-    public func route(fromMint: PublicKey, toMint: PublicKey) -> Single<[PublicKey]?> {
-        swapMarkets.route(fromMint: fromMint, toMint: toMint)
+    public func loadMarket(fromMint: PublicKey, toMint: PublicKey) -> Single<[Market]> {
+        route(fromMint: fromMint, toMint: toMint)
+            .flatMap {route -> Single<[Market]> in
+                guard let route = route else {
+                    throw SerumSwapError.couldNotRetrieveExchangeRate
+                }
+                let singles = route.map {loadMarket(address: $0)}
+                return Single.zip(singles)
+            }
     }
     
-    /// Load a market base on its address
-    public func loadMarket(address: PublicKey) -> Single<Market> {
-        if let market = _marketsCache[address] {
-            return .just(market)
-        }
-        
-        return Market.load(
-            client: client,
-            address: address,
-            programId: .dexPID
-        )
-            .do(onSuccess: {market in
-                _marketsCache[address] = market
-            })
-    }
-    
-    
-    /// Load orderbook for current market
-    /// - Parameter market: market instance
-    /// - Returns: OrderbookPair
-    public func loadOrderbook(market: Market) -> Single<OrderbookPair> {
-        if let pair = _orderbooksCache[market.address] {
-            return .just(pair)
-        }
-        
-        return Single.zip(
-            market.loadBids(client: client),
-            market.loadAsks(client: client)
-        )
-            .map {OrderbookPair(bids: $0, asks: $1)}
-    }
-    
-    /// Load fair price for a given market, as defined by the mid
-    /// - Parameter orderbookPair: asks and bids
-    /// - Returns: best bids price, best asks price and middle
-    public func loadBbo(orderbookPair: OrderbookPair) -> Bbo? {
-        let bestBid = orderbookPair.bids.getList(descending: true).first
-        let bestOffer = orderbookPair.asks.getList().first
-        
-        if bestBid == nil && bestOffer == nil {return nil}
-        return .init(
-            bestBids: bestBid == nil ? nil: bestBid!.price,
-            bestOffer: bestOffer == nil ? nil: bestOffer!.price
-        )
+    /// Load price of current two pair
+    public func loadPrice(fromMint: PublicKey, toMint: PublicKey) -> Single<Decimal> {
+        loadMarket(fromMint: fromMint, toMint: toMint)
+            .flatMap {markets -> Single<[OrderbookPair]> in
+                let singles = markets.map {loadOrderbook(market: $0)}
+                return Single.zip(singles)
+            }
+            .map {orderbookPairs -> Decimal in
+                guard orderbookPairs.count > 0 else {
+                    throw SerumSwapError.couldNotRetrieveExchangeRate
+                }
+                // direct
+                if orderbookPairs.count == 1 {
+                    let pair = orderbookPairs[0]
+                    guard let bbo = loadBbo(orderbookPair: pair) else {
+                        throw SerumSwapError.couldNotRetrieveExchangeRate
+                    }
+                    return try bbo.definePrice(fromMint: fromMint, toMint: toMint)
+                }
+                // transitive
+                guard let fromBbo = loadBbo(orderbookPair: orderbookPairs[0]),
+                      let toBbo = loadBbo(orderbookPair: orderbookPairs[1]),
+                      let bestOffer = toBbo.bestOffer,
+                      let bestBids = fromBbo.bestBids,
+                      bestBids != 0
+                else {
+                    throw SerumSwapError.couldNotRetrieveExchangeRate
+                }
+                return bestOffer / bestBids
+            }
     }
     
     /// Executes a swap against the Serum DEX.
@@ -502,5 +494,55 @@ public struct SerumSwap {
             )
         }
         .map {(marketFrom: $0, marketTo: $1, marketFromOrders: $2, marketToOrders: $3)}
+    }
+    
+    /// Returns a list of markets to trade across to swap `fromMint` to `toMint`.
+    func route(fromMint: PublicKey, toMint: PublicKey) -> Single<[PublicKey]?> {
+        swapMarkets.route(fromMint: fromMint, toMint: toMint)
+    }
+    
+    /// Load a market base on its address
+    func loadMarket(address: PublicKey) -> Single<Market> {
+        if let market = _marketsCache[address] {
+            return .just(market)
+        }
+        
+        return Market.load(
+            client: client,
+            address: address,
+            programId: .dexPID
+        )
+            .do(onSuccess: {market in
+                _marketsCache[address] = market
+            })
+    }
+    
+    /// Load orderbook for current market
+    /// - Parameter market: market instance
+    /// - Returns: OrderbookPair
+    func loadOrderbook(market: Market) -> Single<OrderbookPair> {
+        if let pair = _orderbooksCache[market.address] {
+            return .just(pair)
+        }
+        
+        return Single.zip(
+            market.loadBids(client: client),
+            market.loadAsks(client: client)
+        )
+            .map {OrderbookPair(bids: $0, asks: $1)}
+    }
+    
+    /// Load fair price for a given market, as defined by the mid
+    /// - Parameter orderbookPair: asks and bids
+    /// - Returns: best bids price, best asks price and middle
+    func loadBbo(orderbookPair: OrderbookPair) -> Bbo? {
+        let bestBid = orderbookPair.bids.getList(descending: true).first
+        let bestOffer = orderbookPair.asks.getList().first
+        
+        if bestBid == nil && bestOffer == nil {return nil}
+        return .init(
+            bestBids: bestBid == nil ? nil: bestBid!.price,
+            bestOffer: bestOffer == nil ? nil: bestOffer!.price
+        )
     }
 }

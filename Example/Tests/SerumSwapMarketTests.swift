@@ -23,12 +23,12 @@ class SerumSwapMarketTests: SerumSwapTests {
         XCTAssertNotNil(srmUSDCPair)
         
         let srmBbo = serumSwap.loadBbo(orderbookPair: srmUSDCPair!)
-        print(srmBbo!)
         
         let btcUSDCPair = try serumSwap.loadOrderbook(market: BTCUSDCMarket).toBlocking().first()
         XCTAssertNotNil(btcUSDCPair)
         
         let btcBbo = serumSwap.loadBbo(orderbookPair: btcUSDCPair!)
+        print(srmBbo!)
         print(btcBbo!)
     }
 }

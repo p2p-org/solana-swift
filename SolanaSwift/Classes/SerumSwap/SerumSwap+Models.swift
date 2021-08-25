@@ -205,6 +205,25 @@ extension SerumSwap {
             if d == 0 {return nil}
             return ((bestBids ?? 0) + (bestOffer ?? 0)) / d
         }
+        
+        func definePrice(
+            fromMint: PublicKey,
+            toMint: PublicKey
+        ) throws -> Decimal {
+            // USD(x) -> SPL
+            if fromMint.isUsdx {
+                guard let bestOffer = bestOffer else {
+                    throw SerumSwapError.couldNotRetrieveExchangeRate
+                }
+                return bestOffer
+            }
+            
+            // SPL -> USD(x)
+            guard let bestBids = bestBids, bestBids != 0 else {
+                throw SerumSwapError.couldNotRetrieveExchangeRate
+            }
+            return 1 / bestBids
+        }
     }
 }
 
