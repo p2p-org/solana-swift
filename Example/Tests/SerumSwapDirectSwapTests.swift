@@ -17,7 +17,7 @@ class SerumSwapDirectSwapTests: SerumSwapTests {
     
     func testDirectSwap() throws {
         var pointer = 0
-        let number = try UInt64(buffer: Data([UInt8]([109,31,0,0,0,0,0,0])), pointer: &pointer)
+        let number = try UInt64(buffer: Data([UInt8]([248,198,158,145,225,117,135,200])), pointer: &pointer)
         
         // Swaps SRM -> USDC on the Serum orderbook.
         let market = SRMUSDCMarket
@@ -26,9 +26,9 @@ class SerumSwapDirectSwapTests: SerumSwapTests {
                 fromMint: SRM,
                 toMint: USDC,
                 quoteMint: nil,
-                amount: 8046,
+                amount: 8045,
                 minExchangeRate: .init(
-                    rate: 8045,
+                    rate: 6446321,
                     fromDecimals: SRMDecimals,
                     quoteDecimals: USDCDecimals,
                     strict: false

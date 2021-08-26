@@ -17,7 +17,6 @@ extension SerumSwap {
         Single.create { observer in
             var nonce: UInt64 = 0
             while nonce < 255 {
-                print(nonce)
                 do {
                     let vaultOwner = try PublicKey.createProgramAddress(
                         seeds: [marketPublicKey.data, Data(nonce.bytes)],
