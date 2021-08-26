@@ -572,6 +572,9 @@ public struct SerumSwap {
             market.loadAsks(client: client)
         )
             .map {OrderbookPair(bids: $0, asks: $1)}
+            .do(onSuccess: {pair in
+                _orderbooksCache[market.address] = pair
+            })
     }
     
     /// Load fair price for a given market, as defined by the mid
