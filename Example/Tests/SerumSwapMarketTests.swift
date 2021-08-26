@@ -33,7 +33,7 @@ class SerumSwapMarketTests: SerumSwapTests {
     }
     
     func testGetPriceFromNewMarket() throws {
-        let price = try serumSwap.loadPrice(fromMint: SOL, toMint: SRM).toBlocking().first()
+        let price = try serumSwap.loadFair(fromMint: SOL, toMint: SRM).toBlocking().first()
         print(price)
         
     }

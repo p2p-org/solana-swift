@@ -51,7 +51,7 @@ public struct SerumSwap {
     }
     
     /// Load price of current two pair
-    public func loadPrice(fromMint: PublicKey, toMint: PublicKey) -> Single<Decimal> {
+    public func loadFair(fromMint: PublicKey, toMint: PublicKey) -> Single<Double> {
         loadMarket(fromMint: fromMint, toMint: toMint)
             .flatMap {markets -> Single<[OrderbookPair]> in
                 let singles = markets.map {loadOrderbook(market: $0)}
@@ -67,7 +67,20 @@ public struct SerumSwap {
                     guard let bbo = loadBbo(orderbookPair: pair) else {
                         throw SerumSwapError.couldNotRetrieveExchangeRate
                     }
-                    return try bbo.definePrice(fromMint: fromMint, toMint: toMint)
+                    let market = pair.asks.market // the same market as bids
+                    if market.baseMintAddress == fromMint ||
+                        (market.baseMintAddress == .wrappedSOLMint && fromMint == .solMint)
+                    {
+                        if let bestBids = bbo.bestBids, bestBids != 0 {
+                            return 1 / bestBids
+                        }
+                    } else {
+                        if let bestOffer = bbo.bestOffer {
+                            return bestOffer
+                        }
+                    }
+                    
+                    throw SerumSwapError.couldNotRetrieveExchangeRate
                 }
                 // transitive
                 guard let fromBbo = loadBbo(orderbookPair: orderbookPairs[0]),
@@ -80,6 +93,35 @@ public struct SerumSwap {
                 }
                 return bestOffer / bestBids
             }
+            .map {$0.doubleValue}
+    }
+    
+    /// Calculate minExchangeRate needed for swap
+    /// - Parameters:
+    ///   - fair: fair which is gotten from loadFair(fromMint:toMint)
+    ///   - slippage: user input slippage
+    ///   - fromDecimals: from token decimal
+    ///   - toDecimal: to token decimal
+    ///   - strict: strict
+    /// - Returns: ExchangeRate
+    public func calculateExchangeRate(
+        fair: Double,
+        slippage: Double,
+        fromDecimals: Decimals,
+        toDecimal: Decimals,
+        strict: Bool
+    ) -> ExchangeRate {
+        let BASE_TAKER_FEE_BPS = 0.0022
+        let FEE_MULTIPLIER = 1 - BASE_TAKER_FEE_BPS
+        var number = (pow(Double(10), Double(toDecimal)) * FEE_MULTIPLIER) / fair
+        number *= (100-slippage)
+        number /= 100
+        return .init(
+            rate: Lamports(number),
+            fromDecimals: fromDecimals,
+            quoteDecimals: toDecimal,
+            strict: strict
+        )
     }
     
     /// Executes a swap against the Serum DEX.
@@ -544,5 +586,11 @@ public struct SerumSwap {
             bestBids: bestBid == nil ? nil: bestBid!.price,
             bestOffer: bestOffer == nil ? nil: bestOffer!.price
         )
+    }
+}
+
+private extension Decimal {
+    var doubleValue: Double {
+        return NSDecimalNumber(decimal:self).doubleValue
     }
 }

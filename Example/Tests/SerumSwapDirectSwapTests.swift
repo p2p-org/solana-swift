@@ -16,28 +16,35 @@ class SerumSwapDirectSwapTests: SerumSwapTests {
     }
     
     func testDirectSwap() throws {
-        var pointer = 0
-        let number = try UInt64(buffer: Data([UInt8]([248,198,158,145,225,117,135,200])), pointer: &pointer)
-        
         // Swaps SRM -> USDC on the Serum orderbook.
-        let market = SRMUSDCMarket
+        
+        // Input
+        let amount = 0.001
+        let slippage = 0.005 // 0.5 %
+        
+        // Load market, fair and exchange rate
+        let market = try serumSwap.loadMarket(fromMint: SRM, toMint: USDC).toBlocking().first()
+        let fair = try serumSwap.loadFair(fromMint: SRM, toMint: USDC).toBlocking().first()
+        let exchangeRate = serumSwap.calculateExchangeRate(
+            fair: fair!,
+            slippage: slippage,
+            fromDecimals: SRMDecimals,
+            toDecimal: USDCDecimals,
+            strict: false
+        )
+        
         let request = serumSwap.swap(
             .init(
                 fromMint: SRM,
                 toMint: USDC,
                 quoteMint: nil,
-                amount: 8045,
-                minExchangeRate: .init(
-                    rate: 6446321,
-                    fromDecimals: SRMDecimals,
-                    quoteDecimals: USDCDecimals,
-                    strict: false
-                ),
+                amount: amount.toLamport(decimals: SRMDecimals),
+                minExchangeRate: exchangeRate,
                 referral: nil,
                 fromWallet: "FhLHuY5iREGpp2ft5w7gNfbxYWmjWzGuRs14P2bdZzde",
                 toWallet: "8TnZDzWSzkSrRVxwGY6uPTaPSt2NDBvKD6uA5SZD3P87",
                 quoteWallet: nil,
-                fromMarket: market,
+                fromMarket: market!.first!,
                 toMarket: nil,
                 fromOpenOrders: nil,
                 toOpenOrders: nil,
