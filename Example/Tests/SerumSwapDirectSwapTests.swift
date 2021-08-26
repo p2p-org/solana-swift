@@ -16,33 +16,44 @@ class SerumSwapDirectSwapTests: SerumSwapTests {
     }
     
     func testDirectSwap() throws {
-        // Swaps SRM -> USDC on the Serum orderbook.
+        // Swaps SRM <-> USDC on the Serum orderbook.
+        let reversed = true
         
+        let fromMint        = reversed ? USDC: SRM
+        let toMint          = reversed ? SRM: USDC
+        let fromDecimal     = reversed ? USDCDecimals: SRMDecimals
+        let toDecimal       = reversed ? SRMDecimals: USDCDecimals
+        var fromWallet: SolanaSDK.PublicKey = "FhLHuY5iREGpp2ft5w7gNfbxYWmjWzGuRs14P2bdZzde"
+        var toWallet: SolanaSDK.PublicKey = "8TnZDzWSzkSrRVxwGY6uPTaPSt2NDBvKD6uA5SZD3P87"
+        
+        if reversed {
+            swap(&fromWallet, &toWallet)
+        }
         // Input
         let amount = 0.001
         let slippage = 0.005 // 0.5 %
         
         // Load market, fair and exchange rate
-        let market = try serumSwap.loadMarket(fromMint: SRM, toMint: USDC).toBlocking().first()
-        let fair = try serumSwap.loadFair(fromMint: SRM, toMint: USDC).toBlocking().first()
+        let market = try serumSwap.loadMarket(fromMint: fromMint, toMint: toMint).toBlocking().first()
+        let fair = try serumSwap.loadFair(fromMint: fromMint, toMint: toMint).toBlocking().first()
         let exchangeRate = serumSwap.calculateExchangeRate(
             fair: fair!,
             slippage: slippage,
-            fromDecimals: SRMDecimals,
-            toDecimal: USDCDecimals,
+            fromDecimals: fromDecimal,
+            toDecimal: toDecimal,
             strict: false
         )
         
         let request = serumSwap.swap(
             .init(
-                fromMint: SRM,
-                toMint: USDC,
+                fromMint: fromMint,
+                toMint: toMint,
                 quoteMint: nil,
-                amount: amount.toLamport(decimals: SRMDecimals),
+                amount: amount.toLamport(decimals: fromDecimal),
                 minExchangeRate: exchangeRate,
                 referral: nil,
-                fromWallet: "FhLHuY5iREGpp2ft5w7gNfbxYWmjWzGuRs14P2bdZzde",
-                toWallet: "8TnZDzWSzkSrRVxwGY6uPTaPSt2NDBvKD6uA5SZD3P87",
+                fromWallet: fromWallet,
+                toWallet: toWallet,
                 quoteWallet: nil,
                 fromMarket: market!.first!,
                 toMarket: nil,
