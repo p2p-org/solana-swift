@@ -11,7 +11,14 @@ import RxBlocking
 @testable import SolanaSwift
 
 class SerumSwapDirectSwapTests: SerumSwapTests {
+    override var overridingAccount: String? {
+        "oval you token plug copper visa employ link sell asset kick sausage"
+    }
+    
     func testDirectSwap() throws {
+        var pointer = 0
+        let number = try UInt64(buffer: Data([UInt8]([109,31,0,0,0,0,0,0])), pointer: &pointer)
+        
         // Swaps SRM -> USDC on the Serum orderbook.
         let market = SRMUSDCMarket
         let request = serumSwap.swap(
@@ -19,16 +26,16 @@ class SerumSwapDirectSwapTests: SerumSwapTests {
                 fromMint: SRM,
                 toMint: USDC,
                 quoteMint: nil,
-                amount: 1,
+                amount: 8046,
                 minExchangeRate: .init(
-                    rate: 7122000,
+                    rate: 8045,
                     fromDecimals: SRMDecimals,
                     quoteDecimals: USDCDecimals,
                     strict: false
                 ),
                 referral: nil,
-                fromWallet: "D2RGqjKxvP1At8BwSx95FUYwbgwLK1N9jB7QH5Lt3UQw",
-                toWallet: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3",
+                fromWallet: "FhLHuY5iREGpp2ft5w7gNfbxYWmjWzGuRs14P2bdZzde",
+                toWallet: "8TnZDzWSzkSrRVxwGY6uPTaPSt2NDBvKD6uA5SZD3P87",
                 quoteWallet: nil,
                 fromMarket: market,
                 toMarket: nil,

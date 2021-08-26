@@ -15,16 +15,23 @@ extension SerumSwap {
         dexProgramId: PublicKey = .dexPID
     ) -> Single<(vaultOwner: PublicKey, nonce: UInt8)> {
         Single.create { observer in
-            do {
-                let address = try PublicKey.findProgramAddress(
-                    seeds: [marketPublicKey.data],
-                    programId: dexProgramId
-                )
-                observer(.success(address))
-            } catch {
-                observer(.failure(error))
+            var nonce: UInt64 = 0
+            while nonce < 255 {
+                print(nonce)
+                do {
+                    let vaultOwner = try PublicKey.createProgramAddress(
+                        seeds: [marketPublicKey.data, Data(nonce.bytes)],
+                        programId: dexProgramId
+                    )
+                    observer(.success((vaultOwner: vaultOwner, nonce: UInt8(nonce))))
+                    break
+                } catch {
+                    nonce += 1
+                }
             }
-            
+            if nonce >= 255 {
+                observer(.failure(SerumSwapError("Could not find vault owner")))
+            }
             return Disposables.create()
         }
     }
