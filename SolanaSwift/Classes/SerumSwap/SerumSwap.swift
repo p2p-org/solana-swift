@@ -26,6 +26,8 @@ public struct SerumSwap {
     let client: SerumSwapAPIClient
     let accountProvider: SerumSwapAccountProvider
     let swapMarkets: SwapMarkets
+    public let BASE_TAKER_FEE_BPS = 0.0022
+    public var FEE_MULTIPLIER: Double {1 - BASE_TAKER_FEE_BPS}
     
     // MARK: - Initializers
     public init(
@@ -111,8 +113,6 @@ public struct SerumSwap {
         toDecimal: Decimals,
         strict: Bool
     ) -> ExchangeRate {
-        let BASE_TAKER_FEE_BPS = 0.0022
-        let FEE_MULTIPLIER = 1 - BASE_TAKER_FEE_BPS
         var number = (pow(Double(10), Double(toDecimal)) * FEE_MULTIPLIER) / fair
         number *= (100-slippage)
         number /= 100
