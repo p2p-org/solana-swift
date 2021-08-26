@@ -95,6 +95,7 @@ extension SolanaSDK {
                 
                 if let decodedTransaction = transaction.jsonString {
                     Logger.log(message: decodedTransaction, event: .info)
+                    Logger.log(message: serializedTransaction, event: .info)
                 }
                 
                 return serializedTransaction

@@ -82,6 +82,7 @@ extension SerumSwap {
             ],
             programId: .serumSwapPID,
             data: [
+                UInt64(14449647541112719096), // ? UNKNOWN: got from anchor's tx
                 side.byte,
                 amount,
                 minExchangeRate
