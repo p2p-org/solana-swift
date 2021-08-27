@@ -30,7 +30,7 @@ class SerumSwapDirectSwapTests: SerumSwapTests {
             swap(&fromWallet, &toWallet)
         }
         // Input
-        let amount = 0.001
+        let amount: Double = 1
         let slippage = 0.005 // 0.5 %
         
         // Load market, fair and exchange rate
