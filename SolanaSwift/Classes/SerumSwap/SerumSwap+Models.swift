@@ -40,7 +40,6 @@ extension SerumSwap {
         public init(
             fromMint: SerumSwap.PublicKey,
             toMint: SerumSwap.PublicKey,
-            quoteMint: SerumSwap.PublicKey?,
             amount: SerumSwap.Lamports,
             minExchangeRate: SerumSwap.ExchangeRate,
             referral: SerumSwap.PublicKey?,
@@ -58,7 +57,6 @@ extension SerumSwap {
         ) {
             self.fromMint = fromMint
             self.toMint = toMint
-            self.quoteMint = quoteMint
             self.amount = amount
             self.minExchangeRate = minExchangeRate
             self.referral = referral
@@ -77,7 +75,6 @@ extension SerumSwap {
         
         let fromMint: PublicKey
         let toMint: PublicKey
-        let quoteMint: PublicKey?
         let amount: Lamports
         let minExchangeRate: ExchangeRate
         let referral: PublicKey?

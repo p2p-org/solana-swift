@@ -28,10 +28,16 @@ class SerumSwapTests: RestAPITests {
     var USDC: SolanaSDK.PublicKey { "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"}
     var USDT: SolanaSDK.PublicKey { "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"}
     var WBTC: SolanaSDK.PublicKey { "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"}
+    
     var SRMDecimals: SolanaSDK.Decimals { 6 }
     var USDCDecimals: SolanaSDK.Decimals { 6 }
+    var USDTDecimals: SolanaSDK.Decimals { 6 }
     var ETHDecimals: SolanaSDK.Decimals { 6 }
     var BTCDecimals: SolanaSDK.Decimals { 6 }
+    
+    var SRMWallet: SolanaSDK.PublicKey { "FhLHuY5iREGpp2ft5w7gNfbxYWmjWzGuRs14P2bdZzde" }
+    var USDCWallet: SolanaSDK.PublicKey { "8TnZDzWSzkSrRVxwGY6uPTaPSt2NDBvKD6uA5SZD3P87" }
+    var USDTWallet: SolanaSDK.PublicKey { "GFhgDmiw7gQDx2kma2DByeP6ubYfy3bxdJYEAucCaXFp" }
 
     var SRMUSDCMarket: SerumSwap.Market {
         SerumSwap.Market(

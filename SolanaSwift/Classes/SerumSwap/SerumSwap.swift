@@ -174,7 +174,7 @@ public struct SerumSwap {
                 coinWallet = params.toWallet
                 pcWallet = params.fromWallet
                 baseMint = params.toMint
-                quoteMint = params.quoteMint
+                quoteMint = params.toMarket?.quoteMintAddress
                 side = .bid
             }
             
@@ -229,9 +229,7 @@ public struct SerumSwap {
         }
         
         // Neither wallet is a USD stable coin. So perform a transitive swap.
-        guard let quoteMint = params.quoteMint else {
-            return .error(SerumSwapError("quoteMint must be provided for a transitive swap"))
-        }
+        let quoteMint = params.fromMarket.quoteMintAddress
         guard let toMarket = params.toMarket else {
             return .error(SerumSwapError("toMarket must be provided for transitive swaps"))
         }

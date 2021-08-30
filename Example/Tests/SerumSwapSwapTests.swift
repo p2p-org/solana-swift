@@ -17,10 +17,37 @@ class SerumSwapSwapTests: SerumSwapTests {
     
     func testDirectSwap() throws {
         // Swaps SRM -> USDC on the Serum orderbook.
-        try directSwap(reversed: false, amount: 0.1)
+        try directSwap(
+            fromMint: SRM,
+            toMint: USDC,
+            fromDecimals: SRMDecimals,
+            toDecimals: USDCDecimals,
+            fromWallet: SRMWallet,
+            toWallet: USDCWallet,
+            amount: 0.1
+        )
         
         // Swaps USDC -> SRM on the Serum orderbook.
-        try directSwap(reversed: true, amount: 1)
+        try directSwap(
+            fromMint: USDC,
+            toMint: SRM,
+            fromDecimals: USDCDecimals,
+            toDecimals: SRMDecimals,
+            fromWallet: USDCWallet,
+            toWallet: SRMWallet,
+            amount: 1
+        )
+        
+        // USDC -> USDT special case
+        try directSwap(
+            fromMint: USDC,
+            toMint: USDT,
+            fromDecimals: USDCDecimals,
+            toDecimals: USDTDecimals,
+            fromWallet: USDCWallet,
+            toWallet: USDTWallet,
+            amount: 1
+        )
     }
     
     func testTransitiveSwap() throws {
@@ -46,49 +73,44 @@ class SerumSwapSwapTests: SerumSwapTests {
             strict: false
         )
         
-        let request = serumSwap.swap(
-            .init(
-                fromMint: fromMint,
-                toMint: toMint,
-                quoteMint: <#T##SerumSwap.PublicKey?#>,
-                amount: amount.toLamport(decimals: fromDecimal),
-                minExchangeRate: exchangeRate,
-                referral: nil,
-                fromWallet: "4ELaJvAe18EX4vb3wddGtveQuSMLw599t7Syc3L3wYsf",
-                toWallet: <#T##SerumSwap.PublicKey?#>,
-                quoteWallet: <#T##SerumSwap.PublicKey?#>,
-                fromMarket: fromMarket,
-                toMarket: toMarket,
-                fromOpenOrders: nil,
-                toOpenOrders: nil,
-                close: true
-            )
-        )
+//        let request = serumSwap.swap(
+//            .init(
+//                fromMint: fromMint,
+//                toMint: toMint,
+//                amount: amount.toLamport(decimals: fromDecimal),
+//                minExchangeRate: exchangeRate,
+//                referral: nil,
+//                fromWallet: "4ELaJvAe18EX4vb3wddGtveQuSMLw599t7Syc3L3wYsf",
+//                toWallet: <#T##SerumSwap.PublicKey?#>,
+//                quoteWallet: <#T##SerumSwap.PublicKey?#>,
+//                fromMarket: fromMarket,
+//                toMarket: toMarket,
+//                fromOpenOrders: nil,
+//                toOpenOrders: nil,
+//                close: true
+//            )
+//        )
     }
     
     // MARK: - Helpers
-    func directSwap(reversed: Bool, amount: Double) throws {
-        let fromMint        = reversed ? USDC: SRM
-        let toMint          = reversed ? SRM: USDC
-        let fromDecimal     = reversed ? USDCDecimals: SRMDecimals
-        let toDecimal       = reversed ? SRMDecimals: USDCDecimals
-        var fromWallet: SolanaSDK.PublicKey = "FhLHuY5iREGpp2ft5w7gNfbxYWmjWzGuRs14P2bdZzde"
-        var toWallet: SolanaSDK.PublicKey = "8TnZDzWSzkSrRVxwGY6uPTaPSt2NDBvKD6uA5SZD3P87"
-        
-        if reversed {
-            swap(&fromWallet, &toWallet)
-        }
-        // Input
-        let slippage = 0.005 // 0.5 %
-        
+    func directSwap(
+        fromMint: SerumSwap.PublicKey,
+        toMint: SerumSwap.PublicKey,
+        fromDecimals: SerumSwap.Decimals,
+        toDecimals: SerumSwap.Decimals,
+        fromWallet: SerumSwap.PublicKey,
+        toWallet: SerumSwap.PublicKey,
+        amount: Double,
+        slippage: Double = 0.005 // 0.5 %
+    ) throws {
         // Load market, fair and exchange rate
         let markets = try serumSwap.loadMarket(fromMint: fromMint, toMint: toMint).toBlocking().first()
         let fair = try serumSwap.loadFair(fromMint: fromMint, toMint: toMint, markets: markets).toBlocking().first()
         let exchangeRate = serumSwap.calculateExchangeRate(
             fair: fair!,
             slippage: slippage,
-            fromDecimals: fromDecimal,
-            toDecimal: toDecimal,
+            fromDecimals: fromDecimals,
+            toDecimal: toDecimals,
             strict: false
         )
         
@@ -96,8 +118,7 @@ class SerumSwapSwapTests: SerumSwapTests {
             .init(
                 fromMint: fromMint,
                 toMint: toMint,
-                quoteMint: nil,
-                amount: amount.toLamport(decimals: fromDecimal),
+                amount: amount.toLamport(decimals: fromDecimals),
                 minExchangeRate: exchangeRate,
                 referral: nil,
                 fromWallet: fromWallet,
