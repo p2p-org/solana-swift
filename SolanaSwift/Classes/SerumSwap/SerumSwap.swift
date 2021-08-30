@@ -135,16 +135,16 @@ public struct SerumSwap {
         )
     }
     
-    
     /// Executes a swap against the Serum DEX.
     /// - Returns: Signers and instructions for creating multiple transactions
     public func swap(
         fromWallet: Wallet,
         toWallet: Wallet,
         amount: Double,
-        slippage: Double
-    ) -> Single<[SignersAndInstructions]> {
-        guard let owner = accountProvider.getNativeWalletAddress() else {
+        slippage: Double,
+        isSimulation: Bool = false
+    ) -> Single<TransactionID> {
+        guard let owner = accountProvider.getAccount() else {
             return .error(SerumSwapError.unauthorized)
         }
         
@@ -173,7 +173,7 @@ public struct SerumSwap {
                         OpenOrders.findForMarketAndOwner(
                             client: client,
                             marketAddress: $0.address,
-                            ownerAddress: owner
+                            ownerAddress: owner.publicKey
                         )
                             .map {$0.first}
                     }
@@ -219,12 +219,35 @@ public struct SerumSwap {
                     )
                 )
             }
+            .flatMap {signersAndInstructions -> Single<String> in
+                let instructions = Array(signersAndInstructions.map{ $0.instructions }.joined())
+                var signers = Array(signersAndInstructions.map{ $0.signers }.joined())
+                
+                // TODO: If fee relayer is available, remove account as signer
+                signers.insert(owner, at: 0)
+                
+                // serialize transaction
+                return client.serializeTransaction(
+                    instructions: instructions,
+                    recentBlockhash: nil,
+                    signers: signers,
+                    feePayer: nil // TODO: modify for fee relayer
+                )
+                    .flatMap {serializedTransaction in
+                        if isSimulation {
+                            return client.simulateTransaction(transaction: serializedTransaction)
+                                .map {_ in ""}
+                        }
+                        // TODO: fee relayer
+                        return client.sendTransaction(serializedTransaction: serializedTransaction)
+                    }
+            }
     }
     
     /// Executes a swap against the Serum DEX.
     /// - Parameter params: SwapParams
     /// - Returns: Signers and instructions for creating multiple transactions
-    public func swap(_ params: SwapParams) -> Single<[SignersAndInstructions]> {
+    func swap(_ params: SwapParams) -> Single<[SignersAndInstructions]> {
         swapTxs(params)
             .map {tx in
                 if let additionalTxs = params.additionalTransactions {

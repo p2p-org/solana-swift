@@ -59,6 +59,9 @@ public protocol SerumSwapAPIClient {
     func simulateTransaction(
         transaction: String
     ) -> Single<SerumSwap.TransactionStatus>
+    func sendTransaction(
+        serializedTransaction: String
+    ) -> Single<SerumSwap.TransactionID>
 }
 
 extension SerumSwapAPIClient {
@@ -72,6 +75,7 @@ extension SerumSwapAPIClient {
 }
 
 public protocol SerumSwapAccountProvider {
+    func getAccount() -> SerumSwap.Account?
     func getNativeWalletAddress() -> SerumSwap.PublicKey?
 }
 

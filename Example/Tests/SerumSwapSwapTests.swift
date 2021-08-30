@@ -8,45 +8,70 @@
 
 import XCTest
 import RxBlocking
-@testable import SolanaSwift
+import SolanaSwift
 
 class SerumSwapSwapTests: SerumSwapTests {
-    func testDirectSwap() throws {
-        // Swaps SRM -> USDC on the Serum orderbook.
-        try swap(fromWallet: srmWallet, toWallet: usdcWallet, amount: 0.1)
-
-        // Swaps USDC -> SRM on the Serum orderbook.
-        try swap(fromWallet: usdcWallet, toWallet: srmWallet, amount: 1)
-        
-//        // USDC -> USDT special case
-//        try swap(fromWallet: usdcWallet, toWallet: usdtWallet, amount: 1)
-//
-//        // USDT -> USDC special case
-//        try swap(fromWallet: usdtWallet, toWallet: usdcWallet, amount: 0.1)
+    // MARK: - Direct swap
+    
+    /// Swaps SRM -> USDC on the Serum orderbook.
+    func testSwapSRMToUSDC() throws {
+        let tx = try serumSwap.swap(
+            fromWallet: srmWallet,
+            toWallet: usdcWallet,
+            amount: 0.1,
+            slippage: defaultSlippage,
+            isSimulation: true
+        ).toBlocking().first()
+        XCTAssertNotNil(tx)
     }
     
+    /// Swaps USDC -> SRM on the Serum orderbook.
+    func testSwapUSDCToSRM() throws {
+        let tx = try serumSwap.swap(
+            fromWallet: usdcWallet,
+            toWallet: srmWallet,
+            amount: 2,
+            slippage: defaultSlippage,
+            isSimulation: true
+        ).toBlocking().first()
+        XCTAssertNotNil(tx)
+    }
+    
+    /// Special case: Swaps USDT -> USDC on the Serum orderbook.
+    func testSwapUSDTToUSDC() throws {
+        let tx = try serumSwap.swap(
+            fromWallet: usdtWallet,
+            toWallet: usdcWallet,
+            amount: 5,
+            slippage: defaultSlippage,
+            isSimulation: true
+        ).toBlocking().first()
+        XCTAssertNotNil(tx)
+    }
+    
+    /// Special case: Swaps USDС -> USDT on the Serum orderbook.
+    func testSwapUSDCToUSDT() throws {
+        let tx = try serumSwap.swap(
+            fromWallet: usdcWallet,
+            toWallet: usdtWallet,
+            amount: 5,
+            slippage: defaultSlippage,
+            isSimulation: true
+        ).toBlocking().first()
+        XCTAssertNotNil(tx)
+    }
+    
+    // MARK: - Transitive swap
+    
+    /// Swaps ETH -> BTC on the Serum orderbook.
     func testTransitiveSwap() throws {
-        // Swaps ETH -> BTC on the Serum orderbook.
-        try swap(fromWallet: ethWallet, toWallet: btcWallet, amount: 0.00005)
-    }
-    
-    // MARK: - Helpers
-    func swap(
-        fromWallet: SolanaSDK.Wallet,
-        toWallet: SolanaSDK.Wallet,
-        amount: Double,
-        slippage: Double = 0.05
-    ) throws {
-        
-        let request = serumSwap.swap(
-            fromWallet: fromWallet,
-            toWallet: toWallet,
-            amount: amount,
-            slippage: slippage
-        )
-        
-        let signersAndInstructions = try request.toBlocking().first()
-        let tx = try solanaSDK.serializeTransaction(instructions: signersAndInstructions!.first!.instructions, signers: [solanaSDK.accountStorage.account!] + signersAndInstructions!.first!.signers).toBlocking().first()
-        let txID = try solanaSDK.simulateTransaction(transaction: tx!).toBlocking().first()
+        let tx = try serumSwap.swap(
+            fromWallet: ethWallet,
+            toWallet: btcWallet,
+            amount: 0.00005,
+            slippage: defaultSlippage,
+            isSimulation: true
+        ).toBlocking().first()
+        XCTAssertNotNil(tx)
     }
 }

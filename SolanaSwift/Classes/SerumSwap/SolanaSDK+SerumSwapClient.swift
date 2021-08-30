@@ -30,6 +30,10 @@ extension SerumSwap {
 }
 
 extension SolanaSDK: SerumSwapAPIClient {
+    public func sendTransaction(serializedTransaction: String) -> Single<SerumSwap.TransactionID> {
+        sendTransaction(serializedTransaction: serializedTransaction, configs: .init(encoding: "base64")!)
+    }
+    
     public func prepareValidAccountAndInstructions(myAccount: SerumSwap.PublicKey, address: SerumSwap.PublicKey?, mint: SerumSwap.PublicKey, feePayer: SerumSwap.PublicKey, closeAfterward: Bool) -> Single<SerumSwap.AccountInstructions> {
         prepareDestinationAccountAndInstructions(myAccount: myAccount, destination: address, destinationMint: mint, feePayer: feePayer, closeAfterward: closeAfterward)
     }
@@ -118,6 +122,10 @@ extension SolanaSDK: SerumSwapAPIClient {
 }
 
 extension SolanaSDK: SerumSwapAccountProvider {
+    public func getAccount() -> SerumSwap.Account? {
+        accountStorage.account
+    }
+    
     public func getNativeWalletAddress() -> PublicKey? {
         accountStorage.account?.publicKey
     }

@@ -17,7 +17,7 @@ extension SerumSwap {
     /**
      * Parameters to perform a swap.
      */
-    public struct SwapParams {
+    struct SwapParams {
         /// Swap params
         /// - Parameters:
         ///   - fromMint: Token mint to swap from.

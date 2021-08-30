@@ -23,6 +23,8 @@ class SerumSwapTests: RestAPITests {
         wallets = try solanaSDK.getTokenWallets().toBlocking().first()
     }
     
+    let defaultSlippage = 0.005
+    
     var srmWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == SRM.base58EncodedString})!}
     var usdcWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == USDC.base58EncodedString})!}
     var usdtWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == USDT.base58EncodedString})!}
