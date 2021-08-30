@@ -1,5 +1,5 @@
 //
-//  SerumSwapTests.swift
+//  SerumSwapSwapTests.swift
 //  SolanaSwift_Tests
 //
 //  Created by Chung Tran on 16/08/2021.
@@ -10,7 +10,7 @@ import XCTest
 import RxBlocking
 @testable import SolanaSwift
 
-class SerumSwapDirectSwapTests: SerumSwapTests {
+class SerumSwapSwapTests: SerumSwapTests {
     override var overridingAccount: String? {
         "oval you token plug copper visa employ link sell asset kick sausage"
     }
@@ -65,5 +65,9 @@ class SerumSwapDirectSwapTests: SerumSwapTests {
         let signersAndInstructions = try request.toBlocking().first()
         let tx = try solanaSDK.serializeTransaction(instructions: signersAndInstructions!.first!.instructions, signers: [solanaSDK.accountStorage.account!] + signersAndInstructions!.first!.signers).toBlocking().first()
         let txID = try solanaSDK.simulateTransaction(transaction: tx!).toBlocking().first()
+    }
+    
+    func testTransitiveSwap() throws {
+        // Swaps SRM <-> USDC on the Serum orderbook.
     }
 }
