@@ -11,7 +11,7 @@ import Foundation
 
 class SerumSwapTests: RestAPITests {
     override var overridingAccount: String? {
-        "miracle pizza supply useful steak border same again youth silver access hundred"
+        "oval you token plug copper visa employ link sell asset kick sausage"
     }
     
     var serumSwap: SerumSwap!
@@ -38,6 +38,8 @@ class SerumSwapTests: RestAPITests {
     var SRMWallet: SolanaSDK.PublicKey { "FhLHuY5iREGpp2ft5w7gNfbxYWmjWzGuRs14P2bdZzde" }
     var USDCWallet: SolanaSDK.PublicKey { "8TnZDzWSzkSrRVxwGY6uPTaPSt2NDBvKD6uA5SZD3P87" }
     var USDTWallet: SolanaSDK.PublicKey { "GFhgDmiw7gQDx2kma2DByeP6ubYfy3bxdJYEAucCaXFp" }
+    var ETHWallet: SolanaSDK.PublicKey { "4ELaJvAe18EX4vb3wddGtveQuSMLw599t7Syc3L3wYsf" }
+    var BTCWallet: SolanaSDK.PublicKey { "CtbEQCA3razpNYiDWHrkPi6CknH68Kmi5mVeihL3qzA6" }
 
     var SRMUSDCMarket: SerumSwap.Market {
         SerumSwap.Market(

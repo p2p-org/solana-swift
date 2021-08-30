@@ -174,7 +174,7 @@ public struct SerumSwap {
                 coinWallet = params.toWallet
                 pcWallet = params.fromWallet
                 baseMint = params.toMint
-                quoteMint = params.toMarket?.quoteMintAddress
+                quoteMint = params.fromMint
                 side = .bid
             }
             
