@@ -16,9 +16,20 @@ class SerumSwapSwapTests: SerumSwapTests {
     }
     
     func testDirectSwap() throws {
-        // Swaps SRM <-> USDC on the Serum orderbook.
-        let reversed = true
+        // Swaps SRM -> USDC on the Serum orderbook.
+        try directSwap(reversed: false, amount: 0.1)
         
+        // Swaps USDC -> SRM on the Serum orderbook.
+        try directSwap(reversed: true, amount: 1)
+    }
+    
+    func testTransitiveSwap() throws {
+        // Swaps ETH <-> BTC on the Serum orderbook.
+        
+    }
+    
+    // MARK: - Helpers
+    func directSwap(reversed: Bool, amount: Double) throws {
         let fromMint        = reversed ? USDC: SRM
         let toMint          = reversed ? SRM: USDC
         let fromDecimal     = reversed ? USDCDecimals: SRMDecimals
@@ -30,7 +41,6 @@ class SerumSwapSwapTests: SerumSwapTests {
             swap(&fromWallet, &toWallet)
         }
         // Input
-        let amount: Double = 1
         let slippage = 0.005 // 0.5 %
         
         // Load market, fair and exchange rate
@@ -65,10 +75,5 @@ class SerumSwapSwapTests: SerumSwapTests {
         let signersAndInstructions = try request.toBlocking().first()
         let tx = try solanaSDK.serializeTransaction(instructions: signersAndInstructions!.first!.instructions, signers: [solanaSDK.accountStorage.account!] + signersAndInstructions!.first!.signers).toBlocking().first()
         let txID = try solanaSDK.simulateTransaction(transaction: tx!).toBlocking().first()
-    }
-    
-    func testTransitiveSwap() throws {
-        // Swaps ETH <-> BTC on the Serum orderbook.
-        
     }
 }
