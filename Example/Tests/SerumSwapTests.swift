@@ -30,6 +30,8 @@ class SerumSwapTests: RestAPITests {
     var WBTC: SolanaSDK.PublicKey { "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"}
     var SRMDecimals: SolanaSDK.Decimals { 6 }
     var USDCDecimals: SolanaSDK.Decimals { 6 }
+    var ETHDecimals: SolanaSDK.Decimals { 6 }
+    var BTCDecimals: SolanaSDK.Decimals { 6 }
 
     var SRMUSDCMarket: SerumSwap.Market {
         SerumSwap.Market(

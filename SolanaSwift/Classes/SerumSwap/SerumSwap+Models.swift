@@ -18,7 +18,44 @@ extension SerumSwap {
      * Parameters to perform a swap.
      */
     public struct SwapParams {
-        public init(fromMint: SerumSwap.PublicKey, toMint: SerumSwap.PublicKey, quoteMint: SerumSwap.PublicKey?, amount: SerumSwap.Lamports, minExchangeRate: SerumSwap.ExchangeRate, referral: SerumSwap.PublicKey?, fromWallet: SerumSwap.PublicKey?, toWallet: SerumSwap.PublicKey?, quoteWallet: SerumSwap.PublicKey?, fromMarket: SerumSwap.Market, toMarket: SerumSwap.Market?, fromOpenOrders: SerumSwap.PublicKey?, toOpenOrders: SerumSwap.PublicKey?, close: Bool?) {
+        /// Swap params
+        /// - Parameters:
+        ///   - fromMint: Token mint to swap from.
+        ///   - toMint: Token mint to swap to.
+        ///   - quoteMint: Token mint used as the quote currency for a transitive swap, i.e., the connecting currency.
+        ///   - amount: Amount of `fromMint` to swap in exchange for `toMint`.
+        ///   - minExchangeRate: The minimum rate used to calculate the number of tokens one should receive for the swap. This is a safety mechanism to prevent one from performing an unexpecteed trade.
+        ///   - referral: Token account to receive the Serum referral fee. The mint must be in the quote currency of the trade (USDC or USDT).
+        ///   - fromWallet: Wallet for `fromMint`. If not provided, uses an associated token address for the configured provider.
+        ///   - toWallet: Wallet for `toMint`. If not provided, an associated token account will be created for the configured provider.
+        ///   - quoteWallet: Wallet of the quote currency to use in a transitive swap. Should be either a USDC or USDT wallet. If not provided an associated token account will be created for the configured provider.
+        ///   - fromMarket: Market client for the first leg of the swap. Can be given to prevent the client from making unnecessary network requests.
+        ///   - toMarket: Market client for the second leg of the swap. Can be given to prevent the client from making unnecessary network requests.
+        ///   - fromOpenOrders: Open orders account for the first leg of the swap. If not given, an open orders account will be created.
+        ///   - toOpenOrders: Open orders account for the second leg of the swap. If not given, an open orders account will be created.
+        ///   - options: RPC options. If not given the options on the program's provider are used.
+        ///   - close: True if all new open orders accounts should be automatically closed. Currently disabled.
+        ///   - feePayer: The payer that pays the creation transaction. Nil if the current user is the payer
+        ///   - additionalTransactions: Additional transactions to bundle into the swap transaction
+        public init(
+            fromMint: SerumSwap.PublicKey,
+            toMint: SerumSwap.PublicKey,
+            quoteMint: SerumSwap.PublicKey?,
+            amount: SerumSwap.Lamports,
+            minExchangeRate: SerumSwap.ExchangeRate,
+            referral: SerumSwap.PublicKey?,
+            fromWallet: SerumSwap.PublicKey?,
+            toWallet: SerumSwap.PublicKey?,
+            quoteWallet: SerumSwap.PublicKey?,
+            fromMarket: SerumSwap.Market,
+            toMarket: SerumSwap.Market?,
+            fromOpenOrders: SerumSwap.PublicKey?,
+            toOpenOrders: SerumSwap.PublicKey?,
+            options: SolanaSDK.RequestConfiguration? = nil,
+            close: Bool?,
+            feePayer: SerumSwap.PublicKey? = nil,
+            additionalTransactions: [SerumSwap.SignersAndInstructions]? = nil
+        ) {
             self.fromMint = fromMint
             self.toMint = toMint
             self.quoteMint = quoteMint
@@ -32,107 +69,29 @@ extension SerumSwap {
             self.toMarket = toMarket
             self.fromOpenOrders = fromOpenOrders
             self.toOpenOrders = toOpenOrders
+            self.options = options
             self.close = close
+            self.feePayer = feePayer
+            self.additionalTransactions = additionalTransactions
         }
         
-        /**
-         * Token mint to swap from.
-         */
         let fromMint: PublicKey
-        
-        /**
-         * Token mint to swap to.
-         */
         let toMint: PublicKey
-        
-        /**
-         * Token mint used as the quote currency for a transitive swap, i.e., the
-         * connecting currency.
-         */
         let quoteMint: PublicKey?
-        
-        /**
-         * Amount of `fromMint` to swap in exchange for `toMint`.
-         */
         let amount: Lamports
-        
-        /**
-         * The minimum rate used to calculate the number of tokens one
-         * should receive for the swap. This is a safety mechanism to prevent one
-         * from performing an unexpecteed trade.
-         */
         let minExchangeRate: ExchangeRate
-        
-        /**
-         * Token account to receive the Serum referral fee. The mint must be in the
-         * quote currency of the trade (USDC or USDT).
-         */
         let referral: PublicKey?
-        
-        /**
-         * Wallet for `fromMint`. If not provided, uses an associated token address
-         * for the configured provider.
-         */
         let fromWallet: PublicKey?
-        
-        /**
-         * Wallet for `toMint`. If not provided, an associated token account will
-         * be created for the configured provider.
-         */
         let toWallet: PublicKey?
-        
-        /**
-         * Wallet of the quote currency to use in a transitive swap. Should be either
-         * a USDC or USDT wallet. If not provided an associated token account will
-         * be created for the configured provider.
-         */
         let quoteWallet: PublicKey?
-        
-        /**
-         * Market client for the first leg of the swap. Can be given to prevent
-         * the client from making unnecessary network requests.
-         */
         let fromMarket: Market
-        
-        /**
-         * Market client for the second leg of the swap. Can be given to prevent
-         * the client from making unnecessary network requests.
-         */
         let toMarket: Market?
-        
-        /**
-         * Open orders account for the first leg of the swap. If not given, an
-         * open orders account will be created.
-         */
         let fromOpenOrders: PublicKey?
-        
-        /**
-         * Open orders account for the second leg of the swap. If not given, an
-         * open orders account will be created.
-         */
         let toOpenOrders: PublicKey?
-        
-        /**
-         * RPC options. If not given the options on the program's provider are used.
-         */
-        let options: SolanaSDK.RequestConfiguration? = nil
-        
-        /**
-         * True if all new open orders accounts should be automatically closed.
-         * Currently disabled.
-         */
+        let options: SolanaSDK.RequestConfiguration?
         let close: Bool?
-        
-        /**
-         * The payer that pays the creation transaction.
-         * nil if the current user is the payer
-         */
-        let feePayer: PublicKey? = nil
-        
-        /**
-         * Additional transactions to bundle into the swap transaction
-         */
-        let additionalTransactions: [SignersAndInstructions]? = nil
+        let feePayer: PublicKey?
+        let additionalTransactions: [SignersAndInstructions]?
     }
     
     public struct ExchangeRate: BytesEncodable {

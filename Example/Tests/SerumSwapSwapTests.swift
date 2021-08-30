@@ -24,8 +24,46 @@ class SerumSwapSwapTests: SerumSwapTests {
     }
     
     func testTransitiveSwap() throws {
-        // Swaps ETH <-> BTC on the Serum orderbook.
+        // Swaps ETH -> BTC on the Serum orderbook.
+        let fromMint    = ETH
+        let toMint      = BTC
+        let fromDecimal = ETHDecimals
+        let toDecimal   = BTCDecimals
         
+        let amount: Double = 0.00005
+        let slippage = 0.05 // 5%
+        
+        // Load market, fair and exchange rate
+        let markets = try serumSwap.loadMarket(fromMint: fromMint, toMint: toMint).toBlocking().first()
+        let fromMarket = markets!.first!
+        let toMarket = markets!.last!
+        let fair = try serumSwap.loadFair(fromMint: fromMint, toMint: toMint, markets: markets).toBlocking().first()
+        let exchangeRate = serumSwap.calculateExchangeRate(
+            fair: fair!,
+            slippage: slippage,
+            fromDecimals: fromDecimal,
+            toDecimal: toDecimal,
+            strict: false
+        )
+        
+        let request = serumSwap.swap(
+            .init(
+                fromMint: fromMint,
+                toMint: toMint,
+                quoteMint: <#T##SerumSwap.PublicKey?#>,
+                amount: amount.toLamport(decimals: fromDecimal),
+                minExchangeRate: exchangeRate,
+                referral: nil,
+                fromWallet: "4ELaJvAe18EX4vb3wddGtveQuSMLw599t7Syc3L3wYsf",
+                toWallet: <#T##SerumSwap.PublicKey?#>,
+                quoteWallet: <#T##SerumSwap.PublicKey?#>,
+                fromMarket: fromMarket,
+                toMarket: toMarket,
+                fromOpenOrders: nil,
+                toOpenOrders: nil,
+                close: true
+            )
+        )
     }
     
     // MARK: - Helpers
@@ -44,8 +82,8 @@ class SerumSwapSwapTests: SerumSwapTests {
         let slippage = 0.005 // 0.5 %
         
         // Load market, fair and exchange rate
-        let market = try serumSwap.loadMarket(fromMint: fromMint, toMint: toMint).toBlocking().first()
-        let fair = try serumSwap.loadFair(fromMint: fromMint, toMint: toMint).toBlocking().first()
+        let markets = try serumSwap.loadMarket(fromMint: fromMint, toMint: toMint).toBlocking().first()
+        let fair = try serumSwap.loadFair(fromMint: fromMint, toMint: toMint, markets: markets).toBlocking().first()
         let exchangeRate = serumSwap.calculateExchangeRate(
             fair: fair!,
             slippage: slippage,
@@ -65,7 +103,7 @@ class SerumSwapSwapTests: SerumSwapTests {
                 fromWallet: fromWallet,
                 toWallet: toWallet,
                 quoteWallet: nil,
-                fromMarket: market!.first!,
+                fromMarket: markets!.first!,
                 toMarket: nil,
                 fromOpenOrders: nil,
                 toOpenOrders: nil,

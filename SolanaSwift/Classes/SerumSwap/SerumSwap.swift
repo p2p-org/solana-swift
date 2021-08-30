@@ -52,9 +52,19 @@ public struct SerumSwap {
             }
     }
     
-    /// Load price of current two pair
-    public func loadFair(fromMint: PublicKey, toMint: PublicKey) -> Single<Double> {
-        loadMarket(fromMint: fromMint, toMint: toMint)
+    /// Load price of current markets
+    public func loadFair(
+        fromMint: PublicKey,
+        toMint: PublicKey,
+        markets: [Market]? = nil
+    ) -> Single<Double> {
+        let loadMarketsRequest: Single<[Market]>
+        if let markets = markets {
+            loadMarketsRequest = .just(markets)
+        } else {
+            loadMarketsRequest = loadMarket(fromMint: fromMint, toMint: toMint)
+        }
+        return loadMarketsRequest
             .flatMap {markets -> Single<[OrderbookPair]> in
                 let singles = markets.map {loadOrderbook(market: $0)}
                 return Single.zip(singles)
