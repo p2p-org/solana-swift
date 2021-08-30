@@ -129,8 +129,38 @@ extension SerumSwap {
             return client.getMinimumBalanceForRentExemption(span: span)
         }
         
-        // MARK: - Old
+        static func findForMarketAndOwner(
+            client: SerumSwapAPIClient,
+            marketAddress: PublicKey,
+            ownerAddress: PublicKey,
+            programId: PublicKey = .dexPID
+        ) -> Single<[OpenOrders]> {
+            let memcmp1 = EncodableWrapper(
+                wrapped: [
+                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                     "bytes": EncodableWrapper(wrapped: marketAddress.base58EncodedString)
+                ]
+            )
+            
+            let memcmp2 = EncodableWrapper(
+                wrapped: [
+                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
+                ]
+            )
+            
+            return getFilteredProgramAccounts(
+                client: client,
+                ownerAddress: ownerAddress,
+                filter: [
+                    ["memcmp": memcmp1],
+                    ["memcmp": memcmp2]
+                ],
+                programId: programId
+            )
+        }
         
+        // MARK: - Old
         private static func getFilteredProgramAccounts(
             client: SerumSwapAPIClient,
             ownerAddress: PublicKey,
@@ -205,7 +235,7 @@ extension SerumSwap {
             client: SerumSwapAPIClient,
             marketAddress: PublicKey,
             ownerAddress: PublicKey,
-            programId: PublicKey,
+            programId: PublicKey = .dexPID,
             minRentExemption: UInt64? = nil
         ) -> Single<GetOpenOrderResult> {
             fatalError()
@@ -237,37 +267,6 @@ extension SerumSwap {
 //                        )
 //                    )}
 //            }
-        }
-        
-        static func findForMarketAndOwner(
-            client: SerumSwapAPIClient,
-            marketAddress: PublicKey,
-            ownerAddress: PublicKey,
-            programId: PublicKey
-        ) -> Single<[OpenOrders]> {
-            let memcmp1 = EncodableWrapper(
-                wrapped: [
-                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
-                     "bytes": EncodableWrapper(wrapped: marketAddress.base58EncodedString)
-                ]
-            )
-            
-            let memcmp2 = EncodableWrapper(
-                wrapped: [
-                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
-                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
-                ]
-            )
-            
-            return getFilteredProgramAccounts(
-                client: client,
-                ownerAddress: ownerAddress,
-                filter: [
-                    ["memcmp": memcmp1],
-                    ["memcmp": memcmp2]
-                ],
-                programId: programId
-            )
         }
     }
 }

@@ -82,6 +82,18 @@ class SerumSwapSwapTests: SerumSwapTests {
             strict: false
         )
         
+        let fromOpenOrder = try SerumSwap.OpenOrders.findForMarketAndOwner(
+            client: serumSwap.client,
+            marketAddress: fromMarket.address,
+            ownerAddress: account.publicKey
+        ).toBlocking().first()
+        
+        let toOpenOrder = try SerumSwap.OpenOrders.findForMarketAndOwner(
+            client: serumSwap.client,
+            marketAddress: toMarket.address,
+            ownerAddress: account.publicKey
+        ).toBlocking().first()
+        
         let request = serumSwap.swap(
             .init(
                 fromMint: fromMint,
@@ -94,8 +106,8 @@ class SerumSwapSwapTests: SerumSwapTests {
                 quoteWallet: nil,
                 fromMarket: fromMarket,
                 toMarket: toMarket,
-                fromOpenOrders: nil,
-                toOpenOrders: nil,
+                fromOpenOrders: fromOpenOrder?.first?.address,
+                toOpenOrders: toOpenOrder?.first?.address,
                 close: true
             )
         )
@@ -127,6 +139,12 @@ class SerumSwapSwapTests: SerumSwapTests {
             strict: false
         )
         
+        let openOrders = try SerumSwap.OpenOrders.findForMarketAndOwner(
+            client: serumSwap.client,
+            marketAddress: markets!.first!.address,
+            ownerAddress: account.publicKey
+        ).toBlocking().first()
+        
         let request = serumSwap.swap(
             .init(
                 fromMint: fromMint,
@@ -139,7 +157,7 @@ class SerumSwapSwapTests: SerumSwapTests {
                 quoteWallet: nil,
                 fromMarket: markets!.first!,
                 toMarket: nil,
-                fromOpenOrders: nil,
+                fromOpenOrders: openOrders?.first?.address,
                 toOpenOrders: nil,
                 close: true
             )
