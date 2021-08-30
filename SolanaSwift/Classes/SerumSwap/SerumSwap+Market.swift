@@ -66,8 +66,8 @@ extension SerumSwap {
         
         private static func getLayoutType(programId: String) -> SerumSwapMarketStatLayout.Type {
             let version = SerumSwap.getVersion(programId: programId)
-            if version == 1 {return MarketStatLayoutV1.self}
-            return MarketStatLayoutV2.self
+            if version == 1 {return LayoutV1.self}
+            return LayoutV2.self
         }
 
         private static func getLayoutSpan(programId: String) -> UInt64 {
@@ -149,12 +149,12 @@ extension SerumSwap {
             // address info
             let requestAddressInfo: Single<SerumSwapMarketStatLayout>
             
-            if layoutType == MarketStatLayoutV1.self {
+            if layoutType == LayoutV1.self {
                 requestAddressInfo = getAccountInfoAndVerifyOwner(
                     client: client,
                     account: address,
                     owner: programId,
-                    decodedTo: MarketStatLayoutV1.self
+                    decodedTo: LayoutV1.self
                 )
                 .map {$0 as SerumSwapMarketStatLayout}
             } else {
@@ -162,7 +162,7 @@ extension SerumSwap {
                     client: client,
                     account: address,
                     owner: programId,
-                    decodedTo: MarketStatLayoutV2.self
+                    decodedTo: LayoutV2.self
                 )
                 .map {$0 as SerumSwapMarketStatLayout}
             }
@@ -239,62 +239,62 @@ protocol SerumSwapMarketStatLayout: Codable {
     var feeRateBps: UInt64 {get}
 }
 
-extension SerumSwap {
-    struct MarketStatLayoutV1: SerumSwapMarketStatLayout, DecodableBufferLayout {
+extension SerumSwap.Market {
+    struct LayoutV1: SerumSwapMarketStatLayout, DecodableBufferLayout {
         static var span: UInt64 {380}
-        let blob5: Blob5
-        let accountFlags: AccountFlags
-        let ownAddress: PublicKey
+        let blob5: SerumSwap.Blob5
+        let accountFlags: SerumSwap.AccountFlags
+        let ownAddress: SerumSwap.PublicKey
         let vaultSignerNonce: UInt64
-        let baseMint: PublicKey
-        let quoteMint: PublicKey
-        let baseVault: PublicKey
+        let baseMint: SerumSwap.PublicKey
+        let quoteMint: SerumSwap.PublicKey
+        let baseVault: SerumSwap.PublicKey
         let baseDepositsTotal: UInt64
         let baseFeesAccrued: UInt64
-        let quoteVault: PublicKey
+        let quoteVault: SerumSwap.PublicKey
         let quoteDepositsTotal: UInt64
         let quoteFeesAccrued: UInt64
         let quoteDustThreshold: UInt64
-        let requestQueue: PublicKey
-        let eventQueue: PublicKey
-        let bids: PublicKey
-        let asks: PublicKey
+        let requestQueue: SerumSwap.PublicKey
+        let eventQueue: SerumSwap.PublicKey
+        let bids: SerumSwap.PublicKey
+        let asks: SerumSwap.PublicKey
         let baseLotSize: UInt64
         let quoteLotSize: UInt64
         let feeRateBps: UInt64
-        let blob7: Blob7
+        let blob7: SerumSwap.Blob7
     }
     
-    struct MarketStatLayoutV2: SerumSwapMarketStatLayout, DecodableBufferLayout {
-        static var span: UInt64 {MarketStatLayoutV1.span + 8}
-        let blob5: Blob5
-        let accountFlags: AccountFlags
-        let ownAddress: PublicKey
+    struct LayoutV2: SerumSwapMarketStatLayout, DecodableBufferLayout {
+        static var span: UInt64 {LayoutV1.span + 8}
+        let blob5: SerumSwap.Blob5
+        let accountFlags: SerumSwap.AccountFlags
+        let ownAddress: SerumSwap.PublicKey
         let vaultSignerNonce: UInt64
-        let baseMint: PublicKey
-        let quoteMint: PublicKey
-        let baseVault: PublicKey
+        let baseMint: SerumSwap.PublicKey
+        let quoteMint: SerumSwap.PublicKey
+        let baseVault: SerumSwap.PublicKey
         let baseDepositsTotal: UInt64
         let baseFeesAccrued: UInt64
-        let quoteVault: PublicKey
+        let quoteVault: SerumSwap.PublicKey
         let quoteDepositsTotal: UInt64
         let quoteFeesAccrued: UInt64
         let quoteDustThreshold: UInt64
-        let requestQueue: PublicKey
-        let eventQueue: PublicKey
-        let bids: PublicKey
-        let asks: PublicKey
+        let requestQueue: SerumSwap.PublicKey
+        let eventQueue: SerumSwap.PublicKey
+        let bids: SerumSwap.PublicKey
+        let asks: SerumSwap.PublicKey
         let baseLotSize: UInt64
         let quoteLotSize: UInt64
         let feeRateBps: UInt64
         let referrerRebatesAccrued: UInt64
-        let blob7: Blob7
+        let blob7: SerumSwap.Blob7
     }
     
     struct FeeDiscountAccount {
-        let balance: Lamports
-        let mint: PublicKey
-        let pubkey: PublicKey
-        let feeTier: Lamports
+        let balance: SerumSwap.Lamports
+        let mint: SerumSwap.PublicKey
+        let pubkey: SerumSwap.PublicKey
+        let feeTier: SerumSwap.Lamports
     }
 }

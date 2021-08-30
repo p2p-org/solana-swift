@@ -32,7 +32,7 @@ class SerumSwapTests: RestAPITests {
 
     var SRMUSDCMarket: SerumSwap.Market {
         SerumSwap.Market(
-            decoded: SerumSwap.MarketStatLayoutV2(
+            decoded: SerumSwap.Market.LayoutV2(
                 blob5: .init(bytes: [115, 101, 114, 117, 109]),
                 accountFlags: .init(
                     initialized: true,
@@ -72,7 +72,7 @@ class SerumSwapTests: RestAPITests {
     
     var BTCUSDCMarket: SerumSwap.Market {
         SerumSwap.Market(
-            decoded: SerumSwap.MarketStatLayoutV2(
+            decoded: SerumSwap.Market.LayoutV2(
                 blob5: .init(bytes: [115, 101, 114, 117, 109]),
                 accountFlags: .init(
                     initialized: true,

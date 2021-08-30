@@ -68,6 +68,7 @@ class SerumSwapSwapTests: SerumSwapTests {
     }
     
     func testTransitiveSwap() throws {
-        // Swaps SRM <-> USDC on the Serum orderbook.
+        // Swaps ETH <-> BTC on the Serum orderbook.
+        
     }
 }
