@@ -26,6 +26,7 @@ extension SerumSwap {
     public typealias AccountInstructions = SolanaSDK.AccountInstructions
     public typealias TransactionStatus = SolanaSDK.TransactionStatus
     public typealias Token = SolanaSDK.Token
+    public typealias Wallet = SolanaSDK.Wallet
 }
 
 extension SolanaSDK: SerumSwapAPIClient {

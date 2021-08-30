@@ -33,6 +33,14 @@ struct SerumSwapError: Error, Equatable, ExpressibleByStringLiteral {
         .init(stringLiteral: "Could not retrieve exchange rate")
     }
     
+    static var somePublicKeysArentValid: Self {
+        .init(stringLiteral: "Some public keys aren't valid")
+    }
+    
+    static var marketIsNotAvailable: Self {
+        .init(stringLiteral: "Market is not available")
+    }
+    
     init(_ string: String) {
         self.init(stringLiteral: string)
     }

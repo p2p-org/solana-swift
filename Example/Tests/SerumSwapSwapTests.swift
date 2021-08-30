@@ -13,155 +13,38 @@ import RxBlocking
 class SerumSwapSwapTests: SerumSwapTests {
     func testDirectSwap() throws {
         // Swaps SRM -> USDC on the Serum orderbook.
-        try directSwap(
-            fromMint: SRM,
-            toMint: USDC,
-            fromDecimals: SRMDecimals,
-            toDecimals: USDCDecimals,
-            fromWallet: SRMWallet,
-            toWallet: USDCWallet,
-            amount: 0.1
-        )
+        try swap(fromWallet: srmWallet, toWallet: usdcWallet, amount: 0.1)
 
         // Swaps USDC -> SRM on the Serum orderbook.
-        try directSwap(
-            fromMint: USDC,
-            toMint: SRM,
-            fromDecimals: USDCDecimals,
-            toDecimals: SRMDecimals,
-            fromWallet: USDCWallet,
-            toWallet: SRMWallet,
-            amount: 1
-        )
+        try swap(fromWallet: usdcWallet, toWallet: srmWallet, amount: 1)
         
 //        // USDC -> USDT special case
-//        try directSwap(
-//            fromMint: USDC,
-//            toMint: USDT,
-//            fromDecimals: USDCDecimals,
-//            toDecimals: USDTDecimals,
-//            fromWallet: USDCWallet,
-//            toWallet: USDTWallet,
-//            amount: 1
-//        )
+//        try swap(fromWallet: usdcWallet, toWallet: usdtWallet, amount: 1)
 //
 //        // USDT -> USDC special case
-//        try directSwap(
-//            fromMint: USDT,
-//            toMint: USDC,
-//            fromDecimals: USDTDecimals,
-//            toDecimals: USDCDecimals,
-//            fromWallet: USDTWallet,
-//            toWallet: USDCWallet,
-//            amount: 0.1
-//        )
+//        try swap(fromWallet: usdtWallet, toWallet: usdcWallet, amount: 0.1)
     }
     
     func testTransitiveSwap() throws {
         // Swaps ETH -> BTC on the Serum orderbook.
-        let fromMint    = ETH
-        let toMint      = BTC
-        let fromDecimal = ETHDecimals
-        let toDecimal   = BTCDecimals
-        let fromWallet  = ETHWallet
-        let toWallet    = BTCWallet
-        
-        let amount: Double = 0.00005
-        let slippage = 0.05 // 5%
-        
-        // Load market, fair and exchange rate
-        let markets = try serumSwap.loadMarket(fromMint: fromMint, toMint: toMint).toBlocking().first()
-        let fromMarket = markets!.first!
-        let toMarket = markets!.last!
-        let fair = try serumSwap.loadFair(fromMint: fromMint, toMint: toMint, markets: markets).toBlocking().first()
-        let exchangeRate = serumSwap.calculateExchangeRate(
-            fair: fair!,
-            slippage: slippage,
-            fromDecimals: fromDecimal,
-            toDecimal: toDecimal,
-            strict: false
-        )
-        
-        let fromOpenOrder = try SerumSwap.OpenOrders.findForMarketAndOwner(
-            client: serumSwap.client,
-            marketAddress: fromMarket.address,
-            ownerAddress: account.publicKey
-        ).toBlocking().first()
-        
-        let toOpenOrder = try SerumSwap.OpenOrders.findForMarketAndOwner(
-            client: serumSwap.client,
-            marketAddress: toMarket.address,
-            ownerAddress: account.publicKey
-        ).toBlocking().first()
-        
-        let request = serumSwap.swap(
-            .init(
-                fromMint: fromMint,
-                toMint: toMint,
-                amount: amount.toLamport(decimals: fromDecimal),
-                minExchangeRate: exchangeRate,
-                referral: nil,
-                fromWallet: fromWallet,
-                toWallet: toWallet,
-                quoteWallet: nil,
-                fromMarket: fromMarket,
-                toMarket: toMarket,
-                fromOpenOrders: fromOpenOrder?.first?.address,
-                toOpenOrders: toOpenOrder?.first?.address,
-                close: true
-            )
-        )
-        
-        let signersAndInstructions = try request.toBlocking().first()
-        let tx = try solanaSDK.serializeTransaction(instructions: signersAndInstructions!.first!.instructions, signers: [solanaSDK.accountStorage.account!] + signersAndInstructions!.first!.signers).toBlocking().first()
-        let txID = try solanaSDK.simulateTransaction(transaction: tx!).toBlocking().first()
+        try swap(fromWallet: ethWallet, toWallet: btcWallet, amount: 0.00005)
     }
     
     // MARK: - Helpers
-    func directSwap(
-        fromMint: SerumSwap.PublicKey,
-        toMint: SerumSwap.PublicKey,
-        fromDecimals: SerumSwap.Decimals,
-        toDecimals: SerumSwap.Decimals,
-        fromWallet: SerumSwap.PublicKey,
-        toWallet: SerumSwap.PublicKey,
+    func swap(
+        fromWallet: SolanaSDK.Wallet,
+        toWallet: SolanaSDK.Wallet,
         amount: Double,
-        slippage: Double = 0.005 // 0.5 %
+        slippage: Double = 0.05
     ) throws {
-        // Load market, fair and exchange rate
-        let markets = try serumSwap.loadMarket(fromMint: fromMint, toMint: toMint).toBlocking().first()
-        let fair = try serumSwap.loadFair(fromMint: fromMint, toMint: toMint, markets: markets).toBlocking().first()
-        let exchangeRate = serumSwap.calculateExchangeRate(
-            fair: fair!,
-            slippage: slippage,
-            fromDecimals: fromDecimals,
-            toDecimal: toDecimals,
-            strict: false
-        )
-        
-        let openOrders = try SerumSwap.OpenOrders.findForMarketAndOwner(
-            client: serumSwap.client,
-            marketAddress: markets!.first!.address,
-            ownerAddress: account.publicKey
-        ).toBlocking().first()
         
         let request = serumSwap.swap(
-            .init(
-                fromMint: fromMint,
-                toMint: toMint,
-                amount: amount.toLamport(decimals: fromDecimals),
-                minExchangeRate: exchangeRate,
-                referral: nil,
-                fromWallet: fromWallet,
-                toWallet: toWallet,
-                quoteWallet: nil,
-                fromMarket: markets!.first!,
-                toMarket: nil,
-                fromOpenOrders: openOrders?.first?.address,
-                toOpenOrders: nil,
-                close: true
-            )
+            fromWallet: fromWallet,
+            toWallet: toWallet,
+            amount: amount,
+            slippage: slippage
         )
+        
         let signersAndInstructions = try request.toBlocking().first()
         let tx = try solanaSDK.serializeTransaction(instructions: signersAndInstructions!.first!.instructions, signers: [solanaSDK.accountStorage.account!] + signersAndInstructions!.first!.signers).toBlocking().first()
         let txID = try solanaSDK.simulateTransaction(transaction: tx!).toBlocking().first()

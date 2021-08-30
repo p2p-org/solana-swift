@@ -41,17 +41,6 @@ public struct SerumSwap {
     }
     
     // MARK: - Methods
-    public func loadMarket(fromMint: PublicKey, toMint: PublicKey) -> Single<[Market]> {
-        route(fromMint: fromMint, toMint: toMint)
-            .flatMap {route -> Single<[Market]> in
-                guard let route = route else {
-                    throw SerumSwapError.couldNotRetrieveExchangeRate
-                }
-                let singles = route.map {loadMarket(address: $0)}
-                return Single.zip(singles)
-            }
-    }
-    
     /// Load price of current markets
     public func loadFair(
         fromMint: PublicKey,
@@ -108,6 +97,18 @@ public struct SerumSwap {
             .map {$0.doubleValue}
     }
     
+    /// Load price of current markets
+    public func loadFair(
+        fromMint: String,
+        toMint: String,
+        markets: [Market]? = nil
+    ) -> Single<Double> {
+        guard let fromMint = try? PublicKey(string: fromMint),
+              let toMint = try? PublicKey(string: toMint)
+        else {return .error(SerumSwapError.somePublicKeysArentValid)}
+        return loadFair(fromMint: fromMint, toMint: toMint, markets: markets)
+    }
+    
     /// Calculate minExchangeRate needed for swap
     /// - Parameters:
     ///   - fair: fair which is gotten from loadFair(fromMint:toMint)
@@ -132,6 +133,92 @@ public struct SerumSwap {
             quoteDecimals: toDecimal,
             strict: strict
         )
+    }
+    
+    
+    /// Executes a swap against the Serum DEX.
+    /// - Returns: Signers and instructions for creating multiple transactions
+    public func swap(
+        fromWallet: Wallet,
+        toWallet: Wallet,
+        amount: Double,
+        slippage: Double
+    ) -> Single<[SignersAndInstructions]> {
+        guard let owner = accountProvider.getNativeWalletAddress() else {
+            return .error(SerumSwapError.unauthorized)
+        }
+        
+        return loadMarket(
+            fromMint: fromWallet.token.address,
+            toMint: toWallet.token.address
+        )
+            .flatMap {markets -> Single<([Market], ExchangeRate, [OpenOrders?])> in
+                let requestExchangeRate = loadFair(
+                    fromMint: fromWallet.token.address,
+                    toMint: toWallet.token.address,
+                    markets: markets
+                )
+                    .map {fair in
+                        calculateExchangeRate(
+                            fair: fair,
+                            slippage: slippage,
+                            fromDecimals: fromWallet.token.decimals,
+                            toDecimal: toWallet.token.decimals,
+                            strict: false
+                        )
+                    }
+                
+                let requestOpenOrders = Single.zip(
+                    markets.map {
+                        OpenOrders.findForMarketAndOwner(
+                            client: client,
+                            marketAddress: $0.address,
+                            ownerAddress: owner
+                        )
+                            .map {$0.first}
+                    }
+                )
+                
+                
+                return Single.zip(
+                    requestExchangeRate,
+                    requestOpenOrders
+                )
+                    .map {(markets, $0, $1)}
+            }
+            .flatMap {markets, exchangeRate, openOrders -> Single<[SignersAndInstructions]> in
+                guard let fromMint = try? PublicKey(string: fromWallet.token.address),
+                      let toMint = try? PublicKey(string: toWallet.token.address),
+                      let fromWalletPubkey = try? PublicKey(string: fromWallet.pubkey)
+                else {
+                    return .error(SerumSwapError.somePublicKeysArentValid)
+                }
+                
+                guard let fromMarket = markets.first else {
+                    return .error(SerumSwapError.marketIsNotAvailable)
+                }
+                
+                let toWalletPubkey = try? PublicKey(string: toWallet.pubkey)
+                let toMarket: Market? = markets[safe: 1]
+                
+                return swap(
+                    .init(
+                        fromMint: fromMint,
+                        toMint: toMint,
+                        amount: amount.toLamport(decimals: fromWallet.token.decimals),
+                        minExchangeRate: exchangeRate,
+                        referral: nil,
+                        fromWallet: fromWalletPubkey,
+                        toWallet: toWalletPubkey,
+                        quoteWallet: nil,
+                        fromMarket: fromMarket,
+                        toMarket: toMarket,
+                        fromOpenOrders: openOrders[safe: 0]?.map {$0.address},
+                        toOpenOrders: openOrders[safe: 1]?.map {$0.address},
+                        close: true
+                    )
+                )
+            }
     }
     
     /// Executes a swap against the Serum DEX.
@@ -510,45 +597,30 @@ public struct SerumSwap {
     }
     
     // MARK: - Helpers
-    private func findMarketsAndOpenOrders(
-        usdxMint: PublicKey,
-        fromMint: PublicKey,
-        toMint: PublicKey
-    ) -> Single<(marketFrom: PublicKey, marketTo: PublicKey, marketFromOrders: [OpenOrders], marketToOrders: [OpenOrders])>
-    {
-        Single.zip(
-            client.getMarketAddress(usdxMint: usdxMint, baseMint: fromMint),
-            client.getMarketAddress(usdxMint: usdxMint, baseMint: toMint)
-        )
-        .flatMap {marketFrom, marketTo -> Single<(PublicKey, PublicKey, [OpenOrders], [OpenOrders])> in
-            
-            
-            guard let owner = self.accountProvider.getNativeWalletAddress()
-            else {throw SerumSwapError.unauthorized}
-            
-            return Single.zip(
-                .just(marketFrom),
-                .just(marketTo),
-                OpenOrders.findForMarketAndOwner(
-                    client: self.client,
-                    marketAddress: marketFrom,
-                    ownerAddress: owner,
-                    programId: .dexPID
-                ),
-                OpenOrders.findForMarketAndOwner(
-                    client: self.client,
-                    marketAddress: marketTo,
-                    ownerAddress: owner,
-                    programId: .dexPID
-                )
-            )
-        }
-        .map {(marketFrom: $0, marketTo: $1, marketFromOrders: $2, marketToOrders: $3)}
-    }
     
     /// Returns a list of markets to trade across to swap `fromMint` to `toMint`.
     func route(fromMint: PublicKey, toMint: PublicKey) -> Single<[PublicKey]?> {
         swapMarkets.route(fromMint: fromMint, toMint: toMint)
+    }
+    
+    /// Load market with current mint pair
+    func loadMarket(fromMint: PublicKey, toMint: PublicKey) -> Single<[Market]> {
+        route(fromMint: fromMint, toMint: toMint)
+            .flatMap {route -> Single<[Market]> in
+                guard let route = route else {
+                    throw SerumSwapError.couldNotRetrieveExchangeRate
+                }
+                let singles = route.map {loadMarket(address: $0)}
+                return Single.zip(singles)
+            }
+    }
+    
+    /// Load market with current mint pair
+    func loadMarket(fromMint: String, toMint: String) -> Single<[Market]> {
+        guard let fromMint = try? PublicKey(string: fromMint),
+              let toMint = try? PublicKey(string: toMint)
+        else {return .error(SerumSwapError.somePublicKeysArentValid)}
+        return loadMarket(fromMint: fromMint, toMint: toMint)
     }
     
     /// Load a market base on its address

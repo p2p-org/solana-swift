@@ -15,11 +15,19 @@ class SerumSwapTests: RestAPITests {
     }
     
     var serumSwap: SerumSwap!
+    var wallets: [SolanaSDK.Wallet]!
     
     override func setUpWithError() throws {
         try super.setUpWithError()
         serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK)
+        wallets = try solanaSDK.getTokenWallets().toBlocking().first()
     }
+    
+    var srmWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == SRM.base58EncodedString})!}
+    var usdcWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == USDC.base58EncodedString})!}
+    var usdtWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == USDT.base58EncodedString})!}
+    var btcWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == BTC.base58EncodedString})!}
+    var ethWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == ETH.base58EncodedString})!}
     
     var SRM: SolanaSDK.PublicKey { "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" }
     var SOL: SolanaSDK.PublicKey { "So11111111111111111111111111111111111111112" }
@@ -27,19 +35,6 @@ class SerumSwapTests: RestAPITests {
     var ETH: SolanaSDK.PublicKey { "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk" }
     var USDC: SolanaSDK.PublicKey { "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"}
     var USDT: SolanaSDK.PublicKey { "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"}
-    var WBTC: SolanaSDK.PublicKey { "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"}
-    
-    var SRMDecimals: SolanaSDK.Decimals { 6 }
-    var USDCDecimals: SolanaSDK.Decimals { 6 }
-    var USDTDecimals: SolanaSDK.Decimals { 6 }
-    var ETHDecimals: SolanaSDK.Decimals { 6 }
-    var BTCDecimals: SolanaSDK.Decimals { 6 }
-    
-    var SRMWallet: SolanaSDK.PublicKey { "FhLHuY5iREGpp2ft5w7gNfbxYWmjWzGuRs14P2bdZzde" }
-    var USDCWallet: SolanaSDK.PublicKey { "8TnZDzWSzkSrRVxwGY6uPTaPSt2NDBvKD6uA5SZD3P87" }
-    var USDTWallet: SolanaSDK.PublicKey { "GFhgDmiw7gQDx2kma2DByeP6ubYfy3bxdJYEAucCaXFp" }
-    var ETHWallet: SolanaSDK.PublicKey { "4ELaJvAe18EX4vb3wddGtveQuSMLw599t7Syc3L3wYsf" }
-    var BTCWallet: SolanaSDK.PublicKey { "CtbEQCA3razpNYiDWHrkPi6CknH68Kmi5mVeihL3qzA6" }
 
     var SRMUSDCMarket: SerumSwap.Market {
         SerumSwap.Market(
