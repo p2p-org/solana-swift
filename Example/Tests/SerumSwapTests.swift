@@ -16,11 +16,13 @@ class SerumSwapTests: RestAPITests {
     
     var serumSwap: SerumSwap!
     var wallets: [SolanaSDK.Wallet]!
+    var solBalance: SolanaSDK.Lamports!
     
     override func setUpWithError() throws {
         try super.setUpWithError()
         serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK)
         wallets = try solanaSDK.getTokenWallets().toBlocking().first()
+        solBalance = try solanaSDK.getBalance().toBlocking().first()
     }
     
     let defaultSlippage = 0.005
@@ -30,6 +32,7 @@ class SerumSwapTests: RestAPITests {
     var usdtWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == USDT.base58EncodedString})!}
     var btcWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == BTC.base58EncodedString})!}
     var ethWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == ETH.base58EncodedString})!}
+    var solNativeWallet: SolanaSDK.Wallet {.nativeSolana(pubkey: solanaSDK.accountStorage.account!.publicKey.base58EncodedString, lamport: solBalance)}
     
     var SRM: SolanaSDK.PublicKey { "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" }
     var SOL: SolanaSDK.PublicKey { "So11111111111111111111111111111111111111112" }

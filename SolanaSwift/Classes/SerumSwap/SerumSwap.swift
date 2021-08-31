@@ -391,6 +391,7 @@ public struct SerumSwap {
             myAccount: owner,
             address: coinWallet,
             mint: baseMint,
+            initAmount: amount,
             feePayer: feePayer ?? owner,
             closeAfterward: baseMint == .wrappedSOLMint
         )
@@ -400,6 +401,7 @@ public struct SerumSwap {
             myAccount: owner,
             address: pcWallet,
             mint: quoteMint,
+            initAmount: 0,
             feePayer: feePayer ?? owner,
             closeAfterward: quoteMint == .wrappedSOLMint
         )
@@ -486,6 +488,7 @@ public struct SerumSwap {
             myAccount: owner,
             address: fromWallet,
             mint: fromMint,
+            initAmount: amount,
             feePayer: feePayer ?? owner,
             closeAfterward: fromMint == .wrappedSOLMint
         )
@@ -493,6 +496,7 @@ public struct SerumSwap {
             myAccount: owner,
             address: toWallet,
             mint: toMint,
+            initAmount: 0,
             feePayer: feePayer ?? owner,
             closeAfterward: toMint == .wrappedSOLMint
         )
@@ -500,6 +504,7 @@ public struct SerumSwap {
             myAccount: owner,
             address: pcWallet,
             mint: pcMint,
+            initAmount: 0,
             feePayer: feePayer ?? owner,
             closeAfterward: pcMint == .wrappedSOLMint
         )

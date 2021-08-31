@@ -47,6 +47,7 @@ public protocol SerumSwapAPIClient {
         myAccount: SerumSwap.PublicKey,
         address: SerumSwap.PublicKey?,
         mint: SerumSwap.PublicKey,
+        initAmount: SerumSwap.Lamports,
         feePayer: SerumSwap.PublicKey,
         closeAfterward: Bool
     ) -> Single<SerumSwap.AccountInstructions>

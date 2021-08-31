@@ -37,6 +37,30 @@ class SerumSwapSwapTests: SerumSwapTests {
         XCTAssertNotNil(tx)
     }
     
+    /// Swaps SOL -> USDC on the Serum orderbook.
+    func testSwapSOLUSDC() throws {
+        let tx = try serumSwap.swap(
+            fromWallet: solNativeWallet,
+            toWallet: usdcWallet,
+            amount: 0.1,
+            slippage: defaultSlippage,
+            isSimulation: true
+        ).toBlocking().first()
+        XCTAssertNotNil(tx)
+    }
+    
+    /// Swaps USDC -> SOL on the Serum orderbook.
+    func testSwapUSDCSOL() throws {
+        let tx = try serumSwap.swap(
+            fromWallet: usdcWallet,
+            toWallet: solNativeWallet,
+            amount: 5,
+            slippage: defaultSlippage,
+            isSimulation: true
+        ).toBlocking().first()
+        XCTAssertNotNil(tx)
+    }
+    
     /// Special case: Swaps USDT -> USDC on the Serum orderbook.
     func testSwapUSDTToUSDC() throws {
         let tx = try serumSwap.swap(

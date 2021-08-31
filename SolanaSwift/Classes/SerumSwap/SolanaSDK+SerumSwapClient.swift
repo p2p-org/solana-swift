@@ -34,8 +34,32 @@ extension SolanaSDK: SerumSwapAPIClient {
         sendTransaction(serializedTransaction: serializedTransaction, configs: .init(encoding: "base64")!)
     }
     
-    public func prepareValidAccountAndInstructions(myAccount: SerumSwap.PublicKey, address: SerumSwap.PublicKey?, mint: SerumSwap.PublicKey, feePayer: SerumSwap.PublicKey, closeAfterward: Bool) -> Single<SerumSwap.AccountInstructions> {
-        prepareDestinationAccountAndInstructions(myAccount: myAccount, destination: address, destinationMint: mint, feePayer: feePayer, closeAfterward: closeAfterward)
+    public func prepareValidAccountAndInstructions(myAccount: SerumSwap.PublicKey, address: SerumSwap.PublicKey?, mint: SerumSwap.PublicKey, initAmount: SerumSwap.Lamports, feePayer: SerumSwap.PublicKey, closeAfterward: Bool) -> Single<SerumSwap.AccountInstructions> {
+        if mint == .wrappedSOLMint {
+            return prepareSourceAccountAndInstructions(
+                myNativeWallet: myAccount,
+                source: address ?? myAccount,
+                sourceMint: mint,
+                amount: 0,
+                feePayer: feePayer
+            )
+                .map {accountInstructions in
+                    let isCreatingWSOL = myAccount == (address ?? myAccount) &&
+                        accountInstructions.instructions.count > 1
+                    // transfer
+                    var accountInstructions = accountInstructions
+                    if isCreatingWSOL && initAmount != 0 {
+                        let transferInstructions = SystemProgram.transferInstruction(
+                            from: myAccount,
+                            to: accountInstructions.account,
+                            lamports: initAmount
+                        )
+                        accountInstructions.instructions.insert(transferInstructions, at: 1)
+                    }
+                    return accountInstructions
+                }
+        }
+        return prepareDestinationAccountAndInstructions(myAccount: myAccount, destination: address, destinationMint: mint, feePayer: feePayer, closeAfterward: closeAfterward)
     }
     
     public func simulateTransaction(transaction: String) -> Single<TransactionStatus> {
