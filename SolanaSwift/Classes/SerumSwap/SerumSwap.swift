@@ -300,7 +300,8 @@ public struct SerumSwap {
                 close: params.close,
                 fromMarket: params.fromMarket,
                 fromOpenOrders: params.fromOpenOrders,
-                feePayer: params.feePayer
+                feePayer: params.feePayer,
+                fromMintIsUSDx: true
             )
         }
         else if params.toMint.isUsdx {
@@ -316,7 +317,8 @@ public struct SerumSwap {
                 close: params.close,
                 fromMarket: params.fromMarket,
                 fromOpenOrders: params.fromOpenOrders,
-                feePayer: params.feePayer
+                feePayer: params.feePayer,
+                fromMintIsUSDx: false
             )
         }
         
@@ -334,7 +336,8 @@ public struct SerumSwap {
                 close: params.close,
                 fromMarket: params.fromMarket,
                 fromOpenOrders: params.fromOpenOrders,
-                feePayer: params.feePayer
+                feePayer: params.feePayer,
+                fromMintIsUSDx: false
             )
         }
         
@@ -375,7 +378,8 @@ public struct SerumSwap {
         close: Bool?,
         fromMarket: Market,
         fromOpenOrders: PublicKey?,
-        feePayer: PublicKey?
+        feePayer: PublicKey?,
+        fromMintIsUSDx: Bool
     ) -> Single<SignersAndInstructions> {
         guard let owner = accountProvider.getNativeWalletAddress()
         else {return .error(SerumSwapError.unauthorized)}
@@ -391,7 +395,7 @@ public struct SerumSwap {
             myAccount: owner,
             address: coinWallet,
             mint: baseMint,
-            initAmount: amount,
+            initAmount: fromMintIsUSDx ? 0: amount,
             feePayer: feePayer ?? owner,
             closeAfterward: baseMint == .wrappedSOLMint
         )

@@ -54,7 +54,7 @@ class SerumSwapSwapTests: SerumSwapTests {
         let tx = try serumSwap.swap(
             fromWallet: usdcWallet,
             toWallet: solNativeWallet,
-            amount: 5,
+            amount: 10,
             slippage: defaultSlippage,
             isSimulation: true
         ).toBlocking().first()
@@ -66,7 +66,7 @@ class SerumSwapSwapTests: SerumSwapTests {
         let tx = try serumSwap.swap(
             fromWallet: usdtWallet,
             toWallet: usdcWallet,
-            amount: 5,
+            amount: 7,
             slippage: defaultSlippage,
             isSimulation: true
         ).toBlocking().first()
