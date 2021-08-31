@@ -153,6 +153,13 @@ public struct SerumSwap {
             toMint: toWallet.token.address
         )
             .flatMap {markets -> Single<([Market], ExchangeRate, [OpenOrders?])> in
+                var toDecimal = toWallet.token.decimals
+                // For a direct swap, toDecimal should be zero.
+                // https://github.com/project-serum/swap/blob/master/programs/swap/src/lib.rs#L696
+                if markets.count == 1 {
+                    toDecimal = 0
+                }
+                
                 let requestExchangeRate = loadFair(
                     fromMint: fromWallet.token.address,
                     toMint: toWallet.token.address,
@@ -163,7 +170,7 @@ public struct SerumSwap {
                             fair: fair,
                             slippage: slippage,
                             fromDecimals: fromWallet.token.decimals,
-                            toDecimal: toWallet.token.decimals,
+                            toDecimal: toDecimal,
                             strict: false
                         )
                     }

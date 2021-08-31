@@ -1,5 +1,5 @@
 //
-//  SerumSwapSwapTests.swift
+//  SerumSwapDirectSwapTests.swift
 //  SolanaSwift_Tests
 //
 //  Created by Chung Tran on 16/08/2021.
@@ -10,9 +10,7 @@ import XCTest
 import RxBlocking
 import SolanaSwift
 
-class SerumSwapSwapTests: SerumSwapTests {
-    // MARK: - Direct swap
-    
+class SerumSwapDirectSwapTests: SerumSwapTests {
     /// Swaps SRM -> USDC on the Serum orderbook.
     func testSwapSRMToUSDC() throws {
         let tx = try serumSwap.swap(
@@ -54,7 +52,7 @@ class SerumSwapSwapTests: SerumSwapTests {
         let tx = try serumSwap.swap(
             fromWallet: usdcWallet,
             toWallet: solNativeWallet,
-            amount: 10,
+            amount: 4,
             slippage: defaultSlippage,
             isSimulation: true
         ).toBlocking().first()
@@ -79,20 +77,6 @@ class SerumSwapSwapTests: SerumSwapTests {
             fromWallet: usdcWallet,
             toWallet: usdtWallet,
             amount: 5,
-            slippage: defaultSlippage,
-            isSimulation: true
-        ).toBlocking().first()
-        XCTAssertNotNil(tx)
-    }
-    
-    // MARK: - Transitive swap
-    
-    /// Swaps ETH -> BTC on the Serum orderbook.
-    func testTransitiveSwap() throws {
-        let tx = try serumSwap.swap(
-            fromWallet: ethWallet,
-            toWallet: btcWallet,
-            amount: 0.00005,
             slippage: defaultSlippage,
             isSimulation: true
         ).toBlocking().first()
