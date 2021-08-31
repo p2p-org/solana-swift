@@ -9,6 +9,18 @@
 import XCTest
 
 class SerumSwapTransitiveSwapTests: SerumSwapTests {
+    /// Swap SRM -> OXY
+    func testSwapSRMOXY() throws {
+        let tx = try serumSwap.swap(
+            fromWallet: srmWallet,
+            toWallet: oxyWallet,
+            amount: 0.01,
+            slippage: defaultSlippage,
+            isSimulation: true
+        ).toBlocking().first()
+        XCTAssertNotNil(tx)
+    }
+    
     /// Swaps ETH -> BTC on the Serum orderbook.
     func testSwapETHToBTC() throws {
         let tx = try serumSwap.swap(
