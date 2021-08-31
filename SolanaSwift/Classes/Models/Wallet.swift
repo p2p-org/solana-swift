@@ -35,18 +35,7 @@ extension SolanaSDK {
             Wallet(
                 pubkey: pubkey,
                 lamports: lamport,
-                token: .init(
-                    _tags: [],
-                    chainId: 101,
-                    address: "So11111111111111111111111111111111111111112",
-                    symbol: "SOL",
-                    name: "Solana",
-                    decimals: 9,
-                    logoURI: nil,
-                    tags: [],
-                    extensions: nil,
-                    isNative: true
-                )
+                token: .nativeSolana
             )
         }
     }

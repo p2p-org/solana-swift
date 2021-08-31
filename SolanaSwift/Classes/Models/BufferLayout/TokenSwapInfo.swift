@@ -29,5 +29,11 @@ extension SolanaSDK {
         public let hostFeeDenominator: UInt64
         public let curveType: UInt8
         public let payer: PublicKey
+        
+        public static var BUFFER_LENGTH: Int { 324 }
+        
+        public static var span: UInt64 {
+            UInt64(BUFFER_LENGTH)
+        }
     }
 }

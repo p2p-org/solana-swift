@@ -86,16 +86,16 @@ extension SolanaSDK {
         // serialize transaction
         return getRecentBlockhashRequest
             .map {recentBlockhash -> String in
-                var transaction = Transaction(
-                    feePayer: feePayer,
-                    instructions: instructions,
-                    recentBlockhash: recentBlockhash
-                )
+                var transaction = Transaction()
+                transaction.instructions = instructions
+                transaction.feePayer = feePayer
+                transaction.recentBlockhash = recentBlockhash
                 try transaction.sign(signers: signers)
                 let serializedTransaction = try transaction.serialize().bytes.toBase64()
                 
                 if let decodedTransaction = transaction.jsonString {
                     Logger.log(message: decodedTransaction, event: .info)
+                    Logger.log(message: serializedTransaction, event: .info)
                 }
                 
                 return serializedTransaction

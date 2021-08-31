@@ -11,17 +11,10 @@ import TweetNacl
 extension SolanaSDK {
     struct Transaction: Encodable {
         private var signatures = [Signature]()
-        let feePayer: PublicKey
+        var feePayer: PublicKey?
         var instructions = [TransactionInstruction]()
-        let recentBlockhash: String
+        var recentBlockhash: String?
 //        TODO: nonceInfo
-        
-        init(signatures: [SolanaSDK.Transaction.Signature] = [Signature](), feePayer: SolanaSDK.PublicKey, instructions: [SolanaSDK.TransactionInstruction] = [TransactionInstruction](), recentBlockhash: String) {
-            self.signatures = signatures
-            self.feePayer = feePayer
-            self.instructions = instructions
-            self.recentBlockhash = recentBlockhash
-        }
         
         // MARK: - Methods
         mutating func sign(signers: [Account]) throws {
@@ -129,6 +122,12 @@ extension SolanaSDK {
             // verify instructions
             guard instructions.count > 0 else {
                 throw Error.other("No instructions provided")
+            }
+            guard let feePayer = feePayer else {
+                throw Error.other("Fee payer not found")
+            }
+            guard let recentBlockhash = recentBlockhash else {
+                throw Error.other("Recent blockhash not found")
             }
             
             // programIds & accountMetas

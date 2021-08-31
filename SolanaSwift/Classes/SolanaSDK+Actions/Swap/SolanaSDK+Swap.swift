@@ -14,9 +14,25 @@ extension SolanaSDK {
         public let newWalletPubkey: String?
     }
     
-    struct AccountInstructions {
+    public struct AccountInstructions {
+        init(
+            account: SolanaSDK.PublicKey,
+            instructions: [SolanaSDK.TransactionInstruction] = [],
+            cleanupInstructions: [SolanaSDK.TransactionInstruction] = [],
+            signers: [SolanaSDK.Account] = [],
+            newWalletPubkey: String? = nil,
+            secretKey: Data? = nil
+        ) {
+            self.account = account
+            self.instructions = instructions
+            self.cleanupInstructions = cleanupInstructions
+            self.signers = signers
+            self.newWalletPubkey = newWalletPubkey
+            self.secretKey = secretKey
+        }
+        
         let account: PublicKey
-        let instructions: [TransactionInstruction]
+        var instructions: [TransactionInstruction]
         let cleanupInstructions: [TransactionInstruction]
         let signers: [Account]
         
@@ -95,7 +111,8 @@ extension SolanaSDK {
                         myAccount: owner.publicKey,
                         destination: destination,
                         destinationMint: destinationMint,
-                        feePayer: feePayer
+                        feePayer: feePayer,
+                        closeAfterward: destinationMint == .wrappedSOLMint
                     ),
                     
                     .just(feePayer)
@@ -228,7 +245,7 @@ extension SolanaSDK {
     }
     
     // MARK: - Account and instructions
-    func prepareSourceAccountAndInstructions(
+    public func prepareSourceAccountAndInstructions(
         myNativeWallet: PublicKey,
         source: PublicKey,
         sourceMint: PublicKey,
@@ -237,12 +254,9 @@ extension SolanaSDK {
     ) -> Single<AccountInstructions> {
         // if token is non-native
         if source != myNativeWallet {
-            return .just(.init(
-                account: source,
-                instructions: [],
-                cleanupInstructions: [],
-                signers: []
-            ))
+            return .just(
+                .init(account: source)
+            )
         }
         
         // if token is native
@@ -253,30 +267,27 @@ extension SolanaSDK {
         )
     }
     
-    func prepareDestinationAccountAndInstructions(
+    public func prepareDestinationAccountAndInstructions(
         myAccount: PublicKey,
         destination: PublicKey?,
         destinationMint: PublicKey,
-        feePayer: PublicKey
+        feePayer: PublicKey,
+        closeAfterward: Bool
     ) -> Single<AccountInstructions> {
         // if destination is a registered non-native token account
         if let destination = destination, destination != myAccount
         {
             return .just(
-                .init(
-                    account: destination,
-                    instructions: [],
-                    cleanupInstructions: [],
-                    signers: []
-                )
+                .init(account: destination)
             )
         }
         
         // if destination is a native account or is nil
-        return prepareForCreatingAssociatedTokenAccountAndCloseIfNative(
+        return prepareForCreatingAssociatedTokenAccount(
             owner: myAccount,
             mint: destinationMint,
-            feePayer: feePayer
+            feePayer: feePayer,
+            closeAfterward: closeAfterward
         )
     }
     
@@ -323,10 +334,11 @@ extension SolanaSDK {
             }
     }
     
-    private func prepareForCreatingAssociatedTokenAccountAndCloseIfNative(
+    private func prepareForCreatingAssociatedTokenAccount(
         owner: PublicKey,
         mint: PublicKey,
-        feePayer: PublicKey
+        feePayer: PublicKey,
+        closeAfterward: Bool
     ) -> Single<AccountInstructions> {
         do {
             let associatedAddress = try PublicKey.associatedTokenAddress(
@@ -358,7 +370,7 @@ extension SolanaSDK {
                 .map {isRegistered -> AccountInstructions in
                     // cleanup intructions
                     var cleanupInstructions = [TransactionInstruction]()
-                    if mint == .wrappedSOLMint {
+                    if closeAfterward {
                         cleanupInstructions = [
                             TokenProgram.closeAccountInstruction(
                                 account: associatedAddress,
@@ -372,9 +384,7 @@ extension SolanaSDK {
                     if isRegistered {
                         return .init(
                             account: associatedAddress,
-                            instructions: [],
-                            cleanupInstructions: cleanupInstructions,
-                            signers: []
+                            cleanupInstructions: cleanupInstructions
                         )
                     }
                     
@@ -391,7 +401,6 @@ extension SolanaSDK {
                                 )
                         ],
                         cleanupInstructions: cleanupInstructions,
-                        signers: [],
                         newWalletPubkey: associatedAddress.base58EncodedString
                     )
                 }

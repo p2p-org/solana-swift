@@ -12,6 +12,7 @@ Solana-blockchain client, written in pure swift.
 - [x] Create, sign transactions
 - [x] Socket communication
 - [x] Orca swap
+- [x] Serum DEX Swap
 
 ## Example
 
@@ -151,6 +152,26 @@ solanaSDK.observeAccountNotifications() // return an Observable<(pubkey: String,
 solanaSDK.observeSignatureNotification(signature: <SIGNATURE>) // return an Completable
 ```
 
+## How to use Serum swap (DEX)
+* create an instance of SerumSwap
+```swift
+let serumSwap = SerumSwap(client: solanaSDK, accountProvider: solanaSDK)
+```
+* swap
+```swift
+serumSwap.swap(
+    fromMint: <PublicKey>,
+    toMint: <PublicKey>,
+    amount: <Lamports>,
+    minExpectedSwapAmount: <Lamports?>,
+    referral: <PublicKey?>,
+    quoteWallet: <PublicKey?>,
+    fromWallet: <PublicKey>,
+    toWallet: <PublicKey?>,
+    feePayer: <PublicKey?>,
+    configs: <SolanaSDK.RequestConfiguration? = nil>
+)
+```
 
 ## Contribution
 - For supporting new methods, data types, edit `SolanaSDK+Methods` or `SolanaSDK+Models`

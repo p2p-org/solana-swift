@@ -73,6 +73,21 @@ extension SolanaSDK {
             )
         }
         
+        public static var nativeSolana: Self {
+            .init(
+                _tags: [],
+                chainId: 101,
+                address: "So11111111111111111111111111111111111111112",
+                symbol: "SOL",
+                name: "Solana",
+                decimals: 9,
+                logoURI: nil,
+                tags: [],
+                extensions: nil,
+                isNative: true
+            )
+        }
+        
         public var wrappedBy: WrappingToken? {
             if tags.contains(where: {$0.name == "wrapped-sollet"}) {
                 return .sollet

@@ -9,8 +9,12 @@ import Foundation
 import BufferLayoutSwift
 
 extension SolanaSDK.PublicKey: BufferLayoutProperty {
-    public static func fromBytes(bytes: [UInt8]) throws -> SolanaSDK.PublicKey {
-        try .init(bytes: bytes)
+    public init(buffer: Data, pointer: inout Int) throws {
+        try self.init(data: buffer[pointer..<pointer+Self.numberOfBytes])
+        pointer += Self.numberOfBytes
+    }
+    public func serialize() throws -> Data {
+        Data(bytes)
     }
 }
 
@@ -27,26 +31,21 @@ public extension DecodableBufferLayout {
         // Unable to get parsed data, fallback to decoding base64
         let stringData = (try? container.decode([String].self).first) ?? (try? container.decode(String.self))
         guard let string = stringData,
-              !string.isEmpty,
               let data = Data(base64Encoded: string)
         else {
             throw SolanaSDK.Error.couldNotRetrieveAccountInfo
         }
         
+        if string.isEmpty && !(Self.self == SolanaSDK.EmptyInfo.self) {
+            throw SolanaSDK.Error.couldNotRetrieveAccountInfo
+        }
+        
         do {
-            try self.init(buffer: data)
+            var pointer = 0
+            try self.init(buffer: data, pointer: &pointer)
         } catch {
             throw SolanaSDK.Error.couldNotRetrieveAccountInfo
         }
-    }
-    
-    static var BUFFER_LENGTH: Int {
-        guard let length = try? Self.getBufferLength() else {return 0}
-        return length
-    }
-    
-    static var span: UInt64 {
-        UInt64(BUFFER_LENGTH)
     }
 }
 

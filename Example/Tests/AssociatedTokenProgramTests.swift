@@ -10,13 +10,25 @@ import Foundation
 import XCTest
 @testable import SolanaSwift
 
-class AssociatedTokenProgramTests: XCTestCase {
+class AssociatedTokenProgramTests: RestAPITests {
+    override var overridingAccount: String? {
+        "miracle pizza supply useful steak border same again youth silver access hundred"
+    }
+    
     func testFindAssociatedTokenAddress() throws {
         let associatedTokenAddress = try SolanaSDK.PublicKey.associatedTokenAddress(
-            walletAddress: try SolanaSDK.PublicKey(string: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"),
-            tokenMintAddress: try SolanaSDK.PublicKey(string: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+            walletAddress: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
+            tokenMintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
         )
         
         XCTAssertEqual(associatedTokenAddress.base58EncodedString, "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3")
+    }
+    
+    func testCreateAssociatedTokenAddress() throws {
+        let associatedTokenAddress = try solanaSDK.createAssociatedTokenAccount(
+            for: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
+            tokenMint: "FqqVanFZosh4M4zqxzWUmEnky6nVANjghiSLaGqUAYGi",
+            isSimulation: true
+        ).toBlocking().first()
     }
 }

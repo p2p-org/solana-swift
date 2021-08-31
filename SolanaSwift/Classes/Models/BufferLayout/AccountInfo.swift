@@ -51,5 +51,11 @@ extension SolanaSDK {
                 currentInstance.closeAuthority = nil
             }
         }
+        
+        public static var BUFFER_LENGTH: Int { 165 }
+        
+        public static var span: UInt64 {
+            UInt64(BUFFER_LENGTH)
+        }
     }
 }
