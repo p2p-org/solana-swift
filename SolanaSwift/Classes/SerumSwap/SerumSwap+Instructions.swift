@@ -9,8 +9,6 @@ import Foundation
 
 /// https://github.com/p2p-org/serum-rs/blob/master/src/instruction.rs
 extension SerumSwap {
-    static let staticBytes = UInt64(14449647541112719096) // ? UNKNOWN: got from anchor's tx
-    
     // MARK: - Orders
     static func closeOrderInstruction(
         order: PublicKey,
@@ -84,7 +82,7 @@ extension SerumSwap {
             ],
             programId: .serumSwapPID,
             data: [
-                staticBytes,
+                try! sighash(ixName: "swap"),
                 side.byte,
                 amount,
                 minExchangeRate
@@ -139,7 +137,7 @@ extension SerumSwap {
             ],
             programId: .serumSwapPID,
             data: [
-                staticBytes,
+                try! sighash(ixName: "swapTransitive"),
                 amount,
                 minExchangeRate
             ]

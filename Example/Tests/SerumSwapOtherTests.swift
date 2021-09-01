@@ -18,4 +18,11 @@ class SerumSwapOtherTests: XCTestCase {
         XCTAssertEqual(vaultOwner.base58EncodedString, "GVV4ZT9pccwy9d17STafFDuiSqFbXuRTdvKQ1zJX6ttX")
     }
 
+    func testSighash() throws {
+        let swap = try SerumSwap.sighash(ixName: "swap")
+        XCTAssertEqual(swap.bytes, [248, 198, 158, 145, 225, 117, 135, 200])
+        
+        let swapTransitive = try SerumSwap.sighash(ixName: "swapTransitive")
+        XCTAssertEqual(swapTransitive.bytes, [129, 109, 254, 207, 31, 192, 47, 51])
+    }
 }
