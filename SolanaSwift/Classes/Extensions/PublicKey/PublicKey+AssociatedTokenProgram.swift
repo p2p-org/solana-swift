@@ -80,6 +80,22 @@ extension SolanaSDK.PublicKey {
         return try SolanaSDK.PublicKey(data: publicKeyBytes)
     }
     
+    static func createWithSeed(
+        fromPublicKey: SolanaSDK.PublicKey,
+        seed: String,
+        programId: SolanaSDK.PublicKey
+    ) throws -> SolanaSDK.PublicKey {
+        var data = Data()
+        data += fromPublicKey.data
+        guard let seedData = seed.data(using: .utf8) else {
+            throw SolanaSDK.Error.other("Invalid seeds")
+        }
+        data += seedData
+        data += programId.data
+        let hash = data.sha256()
+        return try SolanaSDK.PublicKey(data: hash)
+    }
+    
     private static func isOnCurve(publicKeyBytes: Data) -> Int {
         var r = [[Int64]](repeating: NaclLowLevel.gf(), count: 4)
         

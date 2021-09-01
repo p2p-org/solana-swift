@@ -44,6 +44,7 @@
 		BCC49C1225BE864200D4D336 /* EncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCC49C1125BE864200D4D336 /* EncodingTests.swift */; };
 		BCF1E80426BCCCB300589134 /* BufferLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF1E80326BCCCB300589134 /* BufferLayoutTests.swift */; };
 		BCF3246726DDEB450095A55E /* SerumSwapTransitiveSwapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF3246626DDEB450095A55E /* SerumSwapTransitiveSwapTests.swift */; };
+		BCF3246C26DF83EF0095A55E /* PublicKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF3246B26DF83EF0095A55E /* PublicKeyTests.swift */; };
 		BCF5795A262ECD6C00E73226 /* PoolsAmountCalculationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF57959262ECD6C00E73226 /* PoolsAmountCalculationTests.swift */; };
 		BCFCA1EF26D741B700E84D82 /* SerumSwapOtherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCFCA1EE26D741B700E84D82 /* SerumSwapOtherTests.swift */; };
 		BCFCB4D8268B01C400EF02DF /* SwapErrorTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BCFCB4D7268B01C400EF02DF /* SwapErrorTransaction.json */; };
@@ -205,6 +206,7 @@
 		BCC49C1125BE864200D4D336 /* EncodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingTests.swift; sourceTree = "<group>"; };
 		BCF1E80326BCCCB300589134 /* BufferLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferLayoutTests.swift; sourceTree = "<group>"; };
 		BCF3246626DDEB450095A55E /* SerumSwapTransitiveSwapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerumSwapTransitiveSwapTests.swift; sourceTree = "<group>"; };
+		BCF3246B26DF83EF0095A55E /* PublicKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicKeyTests.swift; sourceTree = "<group>"; };
 		BCF57959262ECD6C00E73226 /* PoolsAmountCalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoolsAmountCalculationTests.swift; sourceTree = "<group>"; };
 		BCFCA1EE26D741B700E84D82 /* SerumSwapOtherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerumSwapOtherTests.swift; sourceTree = "<group>"; };
 		BCFCB4D7268B01C400EF02DF /* SwapErrorTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SwapErrorTransaction.json; sourceTree = "<group>"; };
@@ -256,6 +258,7 @@
 				BC81A2AA25BE628700664A2C /* Constants.swift */,
 				BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */,
 				BC23AEBE254928870029FF0B /* TransactionTests.swift */,
+				BCF3246B26DF83EF0095A55E /* PublicKeyTests.swift */,
 				BCF1E7F526BCCC8500589134 /* BufferLayout */,
 				BC18C9D82631130B0054E624 /* TokensListParserTests */,
 				BCC49C2325BE86F600D4D336 /* CodableTests */,
@@ -688,6 +691,7 @@
 				BCFCA1EF26D741B700E84D82 /* SerumSwapOtherTests.swift in Sources */,
 				BC76B552263806100018A0FF /* AssociatedTokenProgramTests.swift in Sources */,
 				BCC49C1225BE864200D4D336 /* EncodingTests.swift in Sources */,
+				BCF3246C26DF83EF0095A55E /* PublicKeyTests.swift in Sources */,
 				BC87FCA426CA3D830097A32B /* SerumSwapDirectSwapTests.swift in Sources */,
 				BCBBE23E25650A1700533F6B /* RegexTests.swift in Sources */,
 				BC3ADEBB2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift in Sources */,
