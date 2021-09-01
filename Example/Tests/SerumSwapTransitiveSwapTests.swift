@@ -14,7 +14,7 @@ class SerumSwapTransitiveSwapTests: SerumSwapTests {
         let tx = try serumSwap.swap(
             fromWallet: srmWallet,
             toWallet: oxyWallet,
-            amount: 0.01,
+            amount: 1,
             slippage: defaultSlippage,
             isSimulation: true
         ).toBlocking().first()

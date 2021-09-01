@@ -126,7 +126,7 @@ extension SerumSwap {
                 .init(publicKey: toMarket.eventQueue, isSigner: false, isWritable: true),
                 .init(publicKey: toMarket.bidsAddress, isSigner: false, isWritable: true),
                 .init(publicKey: toMarket.asksAddress, isSigner: false, isWritable: true),
-                .init(publicKey: fromWallet, isSigner: false, isWritable: true), // to.order_payer_token_account
+                .init(publicKey: pcWallet, isSigner: false, isWritable: true),
                 .init(publicKey: toMarket.coinVault, isSigner: false, isWritable: true),
                 .init(publicKey: toMarket.pcVault, isSigner: false, isWritable: true),
                 .init(publicKey: toVaultSigner, isSigner: false, isWritable: false),
@@ -135,7 +135,7 @@ extension SerumSwap {
                 .init(publicKey: pcWallet, isSigner: false, isWritable: true),
                 .init(publicKey: .dexPID, isSigner: false, isWritable: false),
                 .init(publicKey: .tokenProgramId, isSigner: false, isWritable: false),
-                .init(publicKey: .tokenProgramId, isSigner: false, isWritable: false),
+                .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
             ],
             programId: .serumSwapPID,
             data: [
