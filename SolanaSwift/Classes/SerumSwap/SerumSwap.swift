@@ -25,6 +25,7 @@ public struct SerumSwap {
     // MARK: - Properties
     let client: SerumSwapAPIClient
     let accountProvider: SerumSwapAccountProvider
+    let signatureNotificationHandler: SerumSwapSignatureNotificationHandler
     let swapMarkets: SwapMarkets
     public let BASE_TAKER_FEE_BPS = 0.0022
     public var FEE_MULTIPLIER: Double {1 - BASE_TAKER_FEE_BPS}
@@ -33,10 +34,12 @@ public struct SerumSwap {
     public init(
         client: SerumSwapAPIClient,
         accountProvider: SerumSwapAccountProvider,
-        tokenListContainer: SerumSwapTokenListContainer
+        tokenListContainer: SerumSwapTokenListContainer,
+        signatureNotificationHandler: SerumSwapSignatureNotificationHandler
     ) {
         self.client = client
         self.accountProvider = accountProvider
+        self.signatureNotificationHandler = signatureNotificationHandler
         self.swapMarkets = SwapMarkets(tokenListContainer: tokenListContainer)
     }
     
@@ -223,7 +226,8 @@ public struct SerumSwap {
                         fromOpenOrders: openOrders[safe: 0]?.map {$0.address},
                         toOpenOrders: openOrders[safe: 1]?.map {$0.address},
                         close: true
-                    )
+                    ),
+                    isSimulation: isSimulation
                 )
             }
             .flatMap {signersAndInstructions -> Single<String> in
@@ -254,8 +258,8 @@ public struct SerumSwap {
     /// Executes a swap against the Serum DEX.
     /// - Parameter params: SwapParams
     /// - Returns: Signers and instructions for creating multiple transactions
-    func swap(_ params: SwapParams) -> Single<[SignersAndInstructions]> {
-        swapTxs(params)
+    func swap(_ params: SwapParams, isSimulation: Bool) -> Single<[SignersAndInstructions]> {
+        swapTxs(params, isSimulation: isSimulation)
             .map {tx in
                 if let additionalTxs = params.additionalTransactions {
                     return [tx] + additionalTxs
@@ -264,7 +268,7 @@ public struct SerumSwap {
             }
     }
     
-    private func swapTxs(_ params: SwapParams) -> Single<SignersAndInstructions> {
+    private func swapTxs(_ params: SwapParams, isSimulation: Bool) -> Single<SignersAndInstructions> {
         // check if fromMint and toMint are equal
         guard params.fromMint != params.toMint else {return .error(SerumSwapError("Can not swap \(params.fromMint) to itself"))}
         
@@ -369,7 +373,8 @@ public struct SerumSwap {
             toMarket: toMarket,
             fromOpenOrders: params.fromOpenOrders,
             toOpenOrders: params.toOpenOrders,
-            feePayer: params.feePayer
+            feePayer: params.feePayer,
+            isSimulation: isSimulation
         )
     }
     
@@ -483,10 +488,20 @@ public struct SerumSwap {
         toMarket: Market,
         fromOpenOrders: PublicKey?,
         toOpenOrders: PublicKey?,
-        feePayer: PublicKey?
+        feePayer: PublicKey?,
+        isSimulation: Bool
     ) -> Single<SignersAndInstructions> {
-        guard let owner = accountProvider.getNativeWalletAddress()
+        guard let owner = accountProvider.getAccount()
         else {return .error(SerumSwapError.unauthorized)}
+        // Request open orders
+        let requestOpenOrders: Single<(from: PublicKey, to: PublicKey, cleanupInstructions: [TransactionInstruction])>
+        if let fromOpenOrders = fromOpenOrders,
+           let toOpenOrders = toOpenOrders
+        {
+            requestOpenOrders = .just((from: fromOpenOrders, to: toOpenOrders, cleanupInstructions: []))
+        } else {
+            requestOpenOrders = createFromAndToOpenOrdersForSwapTransitive()
+        }
         
         // Calculate the vault signers for each market.
         let requestFromVaultSigner = Self.getVaultOwnerAndNonce(marketPublicKey: fromMarket.address)
@@ -496,103 +511,80 @@ public struct SerumSwap {
         
         // Prepare source, destination and pc wallets
         let requestSourceAccountInstructions = client.prepareValidAccountAndInstructions(
-            myAccount: owner,
+            myAccount: owner.publicKey,
             address: fromWallet,
             mint: fromMint,
             initAmount: amount,
-            feePayer: feePayer ?? owner,
+            feePayer: feePayer ?? owner.publicKey,
             closeAfterward: fromMint == .wrappedSOLMint
         )
         let requestDestinationAccountInstructions = client.prepareValidAccountAndInstructions(
-            myAccount: owner,
+            myAccount: owner.publicKey,
             address: toWallet,
             mint: toMint,
             initAmount: 0,
-            feePayer: feePayer ?? owner,
+            feePayer: feePayer ?? owner.publicKey,
             closeAfterward: toMint == .wrappedSOLMint
         )
         let requestPcAccountInstructions = client.prepareValidAccountAndInstructions(
-            myAccount: owner,
+            myAccount: owner.publicKey,
             address: pcWallet,
             mint: pcMint,
             initAmount: 0,
-            feePayer: feePayer ?? owner,
+            feePayer: feePayer ?? owner.publicKey,
             closeAfterward: pcMint == .wrappedSOLMint
         )
         
         // Prepare open orders
-        let requestOpenOrders = OpenOrders.getMinimumBalanceForRentExemption(client: client, programId: .dexPID)
-            .flatMap {minRentExemption in
+        return requestOpenOrders
+            .flatMap { openOrders in
                 Single.zip(
-                    prepareOpenOrder(
-                        orders: fromOpenOrders,
-                        market: fromMarket,
-                        minRentExemption: minRentExemption,
-                        closeAfterward: CLOSE_ENABLED && close == true && fromOpenOrders == nil
-                    ),
-                    prepareOpenOrder(
-                        orders: toOpenOrders,
-                        market: toMarket,
-                        minRentExemption: minRentExemption,
-                        closeAfterward: CLOSE_ENABLED && close == true && toOpenOrders == nil
+                    requestFromVaultSigner,
+                    requestToVaultSigner,
+                    requestSourceAccountInstructions,
+                    requestDestinationAccountInstructions,
+                    requestPcAccountInstructions,
+                    .just(openOrders)
+                )
+            }
+            .map { fromVaultSigner, toVaultSigner, sourceAccountInstructions, destinationAccountInstructions, pcAccountInstructions, openOrders in
+                var signers = [Account]()
+                var instructions = [TransactionInstruction]()
+                signers += sourceAccountInstructions.signers
+                signers += destinationAccountInstructions.signers
+                signers += pcAccountInstructions.signers
+                
+                instructions += sourceAccountInstructions.instructions
+                instructions += destinationAccountInstructions.instructions
+                instructions += pcAccountInstructions.instructions
+                
+                instructions.append(
+                    Self.transitiveSwapInstruction(
+                        authority: owner.publicKey,
+                        fromMarket: fromMarket,
+                        toMarket: toMarket,
+                        fromVaultSigner: fromVaultSigner,
+                        toVaultSigner: toVaultSigner,
+                        fromOpenOrder: openOrders.from,
+                        toOpenOrder: openOrders.to,
+                        fromWallet: sourceAccountInstructions.account,
+                        toWallet: destinationAccountInstructions.account,
+                        amount: amount,
+                        minExchangeRate: minExchangeRate,
+                        pcWallet: pcAccountInstructions.account,
+                        referral: referral
                     )
                 )
+                
+                instructions += sourceAccountInstructions.cleanupInstructions
+                instructions += destinationAccountInstructions.cleanupInstructions
+                instructions += pcAccountInstructions.cleanupInstructions
+                if CLOSE_ENABLED && close == true {
+                    instructions += openOrders.cleanupInstructions
+                }
+                
+                return .init(signers: signers, instructions: instructions)
             }
-        
-        return Single.zip(
-            requestFromVaultSigner,
-            requestToVaultSigner,
-            requestSourceAccountInstructions,
-            requestDestinationAccountInstructions,
-            requestPcAccountInstructions,
-            requestOpenOrders
-        )
-        .map { fromVaultSigner, toVaultSigner, sourceAccountInstructions, destinationAccountInstructions, pcAccountInstructions, openOrdersAccountInstructions in
-            let fromOpenOrdersAccountInstructions = openOrdersAccountInstructions.0
-            let toOpenOrdersAccountInstructions = openOrdersAccountInstructions.1
-            
-            var signers = [Account]()
-            var instructions = [TransactionInstruction]()
-            signers += sourceAccountInstructions.signers
-            signers += destinationAccountInstructions.signers
-            signers += pcAccountInstructions.signers
-            signers += fromOpenOrdersAccountInstructions.signers
-            signers += toOpenOrdersAccountInstructions.signers
-            
-            instructions += sourceAccountInstructions.instructions
-            instructions += destinationAccountInstructions.instructions
-            instructions += pcAccountInstructions.instructions
-            instructions += fromOpenOrdersAccountInstructions.instructions
-            instructions += toOpenOrdersAccountInstructions.instructions
-            
-            instructions.append(
-                Self.transitiveSwapInstruction(
-                    authority: owner,
-                    fromMarket: fromMarket,
-                    toMarket: toMarket,
-                    fromVaultSigner: fromVaultSigner,
-                    toVaultSigner: toVaultSigner,
-                    fromOpenOrder: fromOpenOrdersAccountInstructions.account,
-                    toOpenOrder: toOpenOrdersAccountInstructions.account,
-                    fromWallet: sourceAccountInstructions.account,
-                    toWallet: destinationAccountInstructions.account,
-                    amount: amount,
-                    minExchangeRate: minExchangeRate,
-                    pcWallet: pcAccountInstructions.account,
-                    referral: referral
-                )
-            )
-            
-            instructions += sourceAccountInstructions.cleanupInstructions
-            instructions += destinationAccountInstructions.cleanupInstructions
-            instructions += pcAccountInstructions.cleanupInstructions
-            if CLOSE_ENABLED && close == true {
-                instructions += fromOpenOrdersAccountInstructions.cleanupInstructions
-                instructions += toOpenOrdersAccountInstructions.cleanupInstructions
-            }
-            
-            return .init(signers: signers, instructions: instructions)
-        }
     }
     
     private func prepareOpenOrder(
@@ -708,6 +700,12 @@ public struct SerumSwap {
             bestBids: bestBid == nil ? nil: bestBid!.price,
             bestOffer: bestOffer == nil ? nil: bestOffer!.price
         )
+    }
+    
+    func createFromAndToOpenOrdersForSwapTransitive(
+        
+    ) -> Single<(from: PublicKey, to: PublicKey, cleanupInstructions: [TransactionInstruction])> {
+        fatalError()
     }
 }
 

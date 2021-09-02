@@ -83,3 +83,7 @@ public protocol SerumSwapAccountProvider {
 public protocol SerumSwapTokenListContainer {
     func getTokensList() -> Single<[SerumSwap.Token]>
 }
+
+public protocol SerumSwapSignatureNotificationHandler {
+    func observeSignatureNotification(signature: String) -> Completable
+}

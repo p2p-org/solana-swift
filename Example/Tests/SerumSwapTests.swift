@@ -7,7 +7,14 @@
 //
 
 import Foundation
+import RxSwift
 @testable import SolanaSwift
+
+struct FakeSocket: SerumSwapSignatureNotificationHandler {
+    func observeSignatureNotification(signature: String) -> Completable {
+        .empty().delay(.seconds(2), scheduler: MainScheduler.instance)
+    }
+}
 
 class SerumSwapTests: RestAPITests {
     override var overridingAccount: String? {
@@ -20,7 +27,7 @@ class SerumSwapTests: RestAPITests {
     
     override func setUpWithError() throws {
         try super.setUpWithError()
-        serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK)
+        serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK, signatureNotificationHandler: FakeSocket())
         wallets = try solanaSDK.getTokenWallets().toBlocking().first()
         solBalance = try solanaSDK.getBalance().toBlocking().first()
     }
