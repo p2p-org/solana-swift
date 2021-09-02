@@ -500,7 +500,13 @@ public struct SerumSwap {
         {
             requestOpenOrders = .just((from: fromOpenOrders, to: toOpenOrders, cleanupInstructions: []))
         } else {
-            requestOpenOrders = createFromAndToOpenOrdersForSwapTransitive()
+            requestOpenOrders = createFromAndToOpenOrdersForSwapTransitive(
+                fromMarket: fromMarket,
+                toMarket: toMarket,
+                feePayer: feePayer,
+                close: close,
+                isSimulation: isSimulation
+            )
         }
         
         // Calculate the vault signers for each market.
@@ -702,10 +708,71 @@ public struct SerumSwap {
         )
     }
     
+    /// Create from and to open orders and wait for comfirmation before transitive swaping
     func createFromAndToOpenOrdersForSwapTransitive(
-        
+        fromMarket: Market,
+        toMarket: Market,
+        feePayer: PublicKey?,
+        close: Bool?,
+        isSimulation: Bool
     ) -> Single<(from: PublicKey, to: PublicKey, cleanupInstructions: [TransactionInstruction])> {
-        fatalError()
+        OpenOrders.getMinimumBalanceForRentExemption(client: client, programId: .dexPID)
+            .flatMap {minRentExemption in
+                Single.zip(
+                    prepareOpenOrder(
+                        orders: nil,
+                        market: fromMarket,
+                        minRentExemption: minRentExemption,
+                        closeAfterward: CLOSE_ENABLED && close == true
+                    ),
+                    prepareOpenOrder(
+                        orders: nil,
+                        market: toMarket,
+                        minRentExemption: minRentExemption,
+                        closeAfterward: CLOSE_ENABLED && close == true
+                    )
+                )
+            }
+            .flatMap {from, to in
+                var signers = [Account]()
+                var instructions = [TransactionInstruction]()
+                
+                signers += from.signers
+                signers += to.signers
+                
+                instructions += from.instructions
+                instructions += to.instructions
+                
+                if feePayer == nil, let owner = accountProvider.getAccount()
+                {
+                    signers.insert(owner, at: 1)
+                }
+                
+                // serialize transaction
+                return client.serializeTransaction(
+                    instructions: instructions,
+                    recentBlockhash: nil,
+                    signers: signers,
+                    feePayer: feePayer // TODO: modify for fee relayer
+                )
+                    .flatMap {serializedTransaction -> Single<TransactionID> in
+                        if isSimulation {
+                            return client.simulateTransaction(transaction: serializedTransaction)
+                                .map {_ in ""}
+                        }
+                        // TODO: fee relayer
+                        return client.sendTransaction(serializedTransaction: serializedTransaction)
+                    }
+                    .flatMapCompletable {signature -> Completable in
+                        if isSimulation {
+                            return .empty()
+                        }
+                        return signatureNotificationHandler.observeSignatureNotification(signature: signature)
+                    }
+                    .andThen(
+                        Single<(from: PublicKey, to: PublicKey, cleanupInstructions: [TransactionInstruction])>.just((from: from.account, to: to.account, cleanupInstructions: from.cleanupInstructions + to.cleanupInstructions))
+                    )
+            }
     }
 }
 
