@@ -51,18 +51,18 @@ public protocol SerumSwapAPIClient {
         feePayer: SerumSwap.PublicKey,
         closeAfterward: Bool
     ) -> Single<SerumSwap.AccountInstructions>
+    func serializeAndSend(
+        instructions: [SerumSwap.TransactionInstruction],
+        recentBlockhash: String?,
+        signers: [SerumSwap.Account],
+        isSimulation: Bool
+    ) -> Single<String>
     func serializeTransaction(
         instructions: [SerumSwap.TransactionInstruction],
         recentBlockhash: String?,
         signers: [SerumSwap.Account],
         feePayer: SerumSwap.PublicKey?
     ) -> Single<String>
-    func simulateTransaction(
-        transaction: String
-    ) -> Single<SerumSwap.TransactionStatus>
-    func sendTransaction(
-        serializedTransaction: String
-    ) -> Single<SerumSwap.TransactionID>
 }
 
 extension SerumSwapAPIClient {

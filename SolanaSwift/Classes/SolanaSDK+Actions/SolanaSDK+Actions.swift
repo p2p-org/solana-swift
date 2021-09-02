@@ -16,7 +16,7 @@ extension SolanaSDK {
     ///   - signers: signers
     ///   - isSimulation: define if this is a simulation or real transaction
     /// - Returns: transaction id
-    func serializeAndSend(
+    public func serializeAndSend(
         instructions: [TransactionInstruction],
         recentBlockhash: String? = nil,
         signers: [Account],

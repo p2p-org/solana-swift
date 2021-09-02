@@ -238,20 +238,12 @@ public struct SerumSwap {
                 signers.insert(owner, at: 0)
                 
                 // serialize transaction
-                return client.serializeTransaction(
+                return client.serializeAndSend(
                     instructions: instructions,
                     recentBlockhash: nil,
                     signers: signers,
-                    feePayer: nil // TODO: modify for fee relayer
+                    isSimulation: isSimulation
                 )
-                    .flatMap {serializedTransaction in
-                        if isSimulation {
-                            return client.simulateTransaction(transaction: serializedTransaction)
-                                .map {_ in ""}
-                        }
-                        // TODO: fee relayer
-                        return client.sendTransaction(serializedTransaction: serializedTransaction)
-                    }
             }
     }
     
@@ -743,31 +735,25 @@ public struct SerumSwap {
                 instructions += from.instructions
                 instructions += to.instructions
                 
+                // TODO: feeRelayer
                 if feePayer == nil, let owner = accountProvider.getAccount()
                 {
                     signers.insert(owner, at: 1)
                 }
                 
                 // serialize transaction
-                return client.serializeTransaction(
+                return client.serializeAndSend(
                     instructions: instructions,
                     recentBlockhash: nil,
                     signers: signers,
-                    feePayer: feePayer // TODO: modify for fee relayer
+                    isSimulation: isSimulation
                 )
-                    .flatMap {serializedTransaction -> Single<TransactionID> in
-                        if isSimulation {
-                            return client.simulateTransaction(transaction: serializedTransaction)
-                                .map {_ in ""}
-                        }
-                        // TODO: fee relayer
-                        return client.sendTransaction(serializedTransaction: serializedTransaction)
-                    }
                     .flatMapCompletable {signature -> Completable in
                         if isSimulation {
                             return .empty()
                         }
                         return signatureNotificationHandler.observeSignatureNotification(signature: signature)
+                            .timeout(.seconds(30), scheduler: MainScheduler.instance)
                     }
                     .andThen(
                         Single<(from: PublicKey, to: PublicKey, cleanupInstructions: [TransactionInstruction])>.just((from: from.account, to: to.account, cleanupInstructions: from.cleanupInstructions + to.cleanupInstructions))
