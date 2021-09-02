@@ -133,7 +133,7 @@ extension SerumSwap {
                 .init(publicKey: pcWallet, isSigner: false, isWritable: true),
                 .init(publicKey: .dexPID, isSigner: false, isWritable: false),
                 .init(publicKey: .tokenProgramId, isSigner: false, isWritable: false),
-                .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
+                .init(publicKey: .tokenProgramId, isSigner: false, isWritable: false),
             ],
             programId: .serumSwapPID,
             data: [
