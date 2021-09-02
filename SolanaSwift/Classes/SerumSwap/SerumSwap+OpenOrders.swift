@@ -129,6 +129,28 @@ extension SerumSwap {
             return client.getMinimumBalanceForRentExemption(span: span)
         }
         
+        static func findForOwner(
+            client: SerumSwapAPIClient,
+            ownerAddress: PublicKey,
+            programId: PublicKey
+        ) -> Single<[OpenOrders]> {
+            
+            let memcmp = EncodableWrapper(
+                wrapped: [
+                    "offset": EncodableWrapper(wrapped: 45),
+                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
+                ]
+            )
+            
+            return getFilteredProgramAccounts(
+                client: client,
+                ownerAddress: ownerAddress,
+                filter: [["memcmp": memcmp]],
+                programId: programId
+            )
+        }
+        
+        // MARK: - Old
         static func findForMarketAndOwner(
             client: SerumSwapAPIClient,
             marketAddress: PublicKey,
@@ -137,14 +159,14 @@ extension SerumSwap {
         ) -> Single<[OpenOrders]> {
             let memcmp1 = EncodableWrapper(
                 wrapped: [
-                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                    "offset": EncodableWrapper(wrapped: 45),
                      "bytes": EncodableWrapper(wrapped: marketAddress.base58EncodedString)
                 ]
             )
             
             let memcmp2 = EncodableWrapper(
                 wrapped: [
-                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
+                    "offset": EncodableWrapper(wrapped: 45),
                      "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
                 ]
             )
@@ -160,7 +182,6 @@ extension SerumSwap {
             )
         }
         
-        // MARK: - Old
         private static func getFilteredProgramAccounts(
             client: SerumSwapAPIClient,
             ownerAddress: PublicKey,
@@ -194,7 +215,7 @@ extension SerumSwap {
             
             return client.getProgramAccounts(
                 publicKey: programId.base58EncodedString,
-                configs: .init(filters: filter),
+                configs: .init(encoding: "base64", filters: filter),
                 decodedTo: LayoutV2.self
             )
             .map {
@@ -210,27 +231,6 @@ extension SerumSwap {
                 }
             }
         }
-        static func findForOwner(
-            client: SerumSwapAPIClient,
-            ownerAddress: PublicKey,
-            programId: PublicKey
-        ) -> Single<[OpenOrders]> {
-            
-            let memcmp = EncodableWrapper(
-                wrapped: [
-                    "offset": EncodableWrapper(wrapped: PublicKey.numberOfBytes),
-                     "bytes": EncodableWrapper(wrapped: ownerAddress.base58EncodedString)
-                ]
-            )
-            
-            return getFilteredProgramAccounts(
-                client: client,
-                ownerAddress: ownerAddress,
-                filter: [["memcmp": memcmp]],
-                programId: programId
-            )
-        }
-        
         static func findAnOpenOrderOrCreateOne(
             client: SerumSwapAPIClient,
             marketAddress: PublicKey,

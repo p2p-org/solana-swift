@@ -155,7 +155,7 @@ public struct SerumSwap {
             fromMint: fromWallet.token.address,
             toMint: toWallet.token.address
         )
-            .flatMap {markets -> Single<([Market], ExchangeRate, [OpenOrders?])> in
+            .flatMap {markets -> Single<([Market], ExchangeRate, [OpenOrders])> in
                 var toDecimal = toWallet.token.decimals
                 // For a direct swap, toDecimal should be zero.
                 // https://github.com/project-serum/swap/blob/master/programs/swap/src/lib.rs#L696
@@ -178,15 +178,10 @@ public struct SerumSwap {
                         )
                     }
                 
-                let requestOpenOrders = Single.zip(
-                    markets.map {
-                        OpenOrders.findForMarketAndOwner(
-                            client: client,
-                            marketAddress: $0.address,
-                            ownerAddress: owner.publicKey
-                        )
-                            .map {$0.first}
-                    }
+                let requestOpenOrders = OpenOrders.findForOwner(
+                    client: client,
+                    ownerAddress: owner.publicKey,
+                    programId: .dexPID
                 )
                 
                 
@@ -211,6 +206,9 @@ public struct SerumSwap {
                 let toWalletPubkey = try? PublicKey(string: toWallet.pubkey)
                 let toMarket: Market? = markets[safe: 1]
                 
+                let fromOpenOrder = openOrders.first(where: {$0.data.market == fromMarket.address})
+                let toOpenOrder = openOrders.first(where: {$0.data.market == toMarket?.address})
+                
                 return swap(
                     .init(
                         fromMint: fromMint,
@@ -223,8 +221,8 @@ public struct SerumSwap {
                         quoteWallet: nil,
                         fromMarket: fromMarket,
                         toMarket: toMarket,
-                        fromOpenOrders: openOrders[safe: 0]?.map {$0.address},
-                        toOpenOrders: openOrders[safe: 1]?.map {$0.address},
+                        fromOpenOrders: fromOpenOrder?.address,
+                        toOpenOrders: toOpenOrder?.address,
                         close: true
                     ),
                     isSimulation: isSimulation
