@@ -129,10 +129,10 @@ extension SerumSwap {
             return client.getMinimumBalanceForRentExemption(span: span)
         }
         
-        static func findForOwner(
+        public static func findForOwner(
             client: SerumSwapAPIClient,
             ownerAddress: PublicKey,
-            programId: PublicKey
+            programId: PublicKey = .dexPID
         ) -> Single<[OpenOrders]> {
             
             let memcmp = EncodableWrapper(

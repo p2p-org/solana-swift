@@ -785,6 +785,70 @@ public struct SerumSwap {
                     )
             }
     }
+    
+    /// Calculate network fee
+    public func calculateNetworkFee(
+        fromWallet: Wallet,
+        toWallet: Wallet,
+        lamportsPerSignature: SolanaSDK.Lamports,
+        minRentExemption: SolanaSDK.Lamports,
+        isPayingWithSOL: Bool
+    ) -> Single<Lamports> {
+        
+        guard let owner = accountProvider.getAccount() else {
+            return .error(SerumSwapError.unauthorized)
+        }
+        
+        // get fee for opening orders
+        return loadMarket(
+            fromMint: fromWallet.token.address,
+            toMint: toWallet.token.address
+        )
+        .flatMap {markets -> Single<Lamports> in
+            return OpenOrders.findForOwner(
+                client: client,
+                ownerAddress: owner.publicKey,
+                programId: .dexPID
+            )
+            .map { openOrders in
+                var count: UInt64 = 0
+                if let fromMarket = markets[safe: 0],
+                   openOrders.contains(where: {$0.address == fromMarket.address})
+                {
+                    count += 1
+                }
+                
+                if let toMarket = markets[safe: 1],
+                   openOrders.contains(where: {$0.address == toMarket.address})
+                {
+                    count += 1
+                }
+                
+                return (2 - count) * (minRentExemption + lamportsPerSignature)
+            }
+        }
+        .map {feeForOpeningOrders in
+            var fee = feeForOpeningOrders
+            // if source token is native, a fee for creating wrapped SOL is needed, thus a fee for new account's signature (not associated token address) is also needed
+            if fromWallet.token.isNative {
+                fee += minRentExemption + lamportsPerSignature
+            }
+            
+            // if destination wallet is a wrapped sol or not yet created, a fee for creating it is needed, as new address is an associated token address, the signature fee is NOT needed
+            if toWallet.token.address == SolanaSDK.PublicKey.wrappedSOLMint.base58EncodedString ||
+                toWallet.pubkey == nil
+            {
+                fee += minRentExemption
+            }
+            
+            // fee for signature (if fee relayer is not enabled)
+            if isPayingWithSOL {
+                fee += lamportsPerSignature
+            }
+            
+            return fee
+        }
+    }
 }
 
 private extension Decimal {
