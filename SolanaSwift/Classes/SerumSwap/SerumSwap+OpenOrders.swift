@@ -19,11 +19,11 @@ extension SerumSwap {
         var publicKey: PublicKey {address}
         
         init(
-            address: PublicKey,
+            address: String,
             data: SerumSwapOpenOrdersLayoutType,
             programId: PublicKey
         ) throws {
-            self.address = address
+            self.address = try PublicKey(string: address)
             self.programId = programId
             self.version = getVersion(programId: programId.base58EncodedString)
             if !data.accountFlags.initialized || !data.accountFlags.openOrders
@@ -205,7 +205,7 @@ extension SerumSwap {
                             throw SerumSwapError("The address is not owned by the program")
                         }
                         return try OpenOrders(
-                            address: ownerAddress,
+                            address: $0.pubkey,
                             data: $0.account.data,
                             programId: programId
                         )
@@ -224,7 +224,7 @@ extension SerumSwap {
                         throw SerumSwapError("The address is not owned by the program")
                     }
                     return try OpenOrders(
-                        address: ownerAddress,
+                        address: $0.pubkey,
                         data: $0.account.data,
                         programId: programId
                     )
