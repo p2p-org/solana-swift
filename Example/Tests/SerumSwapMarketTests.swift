@@ -37,4 +37,17 @@ class SerumSwapMarketTests: SerumSwapTests {
         print(price)
         
     }
+    
+//    func testCalculateExchangeRate() throws {
+//        let fair: Double = 0.235583
+//        let expectedRate: UInt64 = 4214277
+//        let realRate = serumSwap.calculateExchangeRate(
+//            fair: fair,
+//            slippage: 0.005,
+//            fromDecimals: 6,
+//            toDecimal: 6,
+//            strict: true
+//        )
+//        XCTAssertEqual(realRate.rate, expectedRate)
+//    }
 }

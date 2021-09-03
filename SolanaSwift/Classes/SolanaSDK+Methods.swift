@@ -237,7 +237,7 @@ public extension SolanaSDK {
 			.map {$0.value}
             .map {status in
                 if let err = status.err {
-                    throw Error.transactionError(err)
+                    throw Error.transactionError(err, logs: status.logs)
                 }
                 return status
             }

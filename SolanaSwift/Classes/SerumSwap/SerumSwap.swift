@@ -123,19 +123,12 @@ public struct SerumSwap {
     public func calculateExchangeRate(
         fair: Double,
         slippage: Double,
-        fromDecimals: Decimals,
-        toDecimal: Decimals,
-        strict: Bool
-    ) -> ExchangeRate {
+        toDecimal: Decimals
+    ) -> Lamports {
         var number = (pow(Double(10), Double(toDecimal)) * FEE_MULTIPLIER) / fair
         number *= (100-slippage)
         number /= 100
-        return .init(
-            rate: Lamports(number),
-            fromDecimals: fromDecimals,
-            quoteDecimals: toDecimal,
-            strict: strict
-        )
+        return Lamports(number)
     }
     
     /// Executes a swap against the Serum DEX.
@@ -155,28 +148,12 @@ public struct SerumSwap {
             fromMint: fromWallet.token.address,
             toMint: toWallet.token.address
         )
-            .flatMap {markets -> Single<([Market], ExchangeRate, [OpenOrders])> in
-                var toDecimal = toWallet.token.decimals
-                // For a direct swap, toDecimal should be zero.
-                // https://github.com/project-serum/swap/blob/master/programs/swap/src/lib.rs#L696
-                if markets.count == 1 {
-                    toDecimal = 0
-                }
-                
-                let requestExchangeRate = loadFair(
+            .flatMap {markets -> Single<([Market], Double, [OpenOrders])> in
+                let requestFair = loadFair(
                     fromMint: fromWallet.token.address,
                     toMint: toWallet.token.address,
                     markets: markets
                 )
-                    .map {fair in
-                        calculateExchangeRate(
-                            fair: fair,
-                            slippage: slippage,
-                            fromDecimals: fromWallet.token.decimals,
-                            toDecimal: toDecimal,
-                            strict: false
-                        )
-                    }
                 
                 let requestOpenOrders = OpenOrders.findForOwner(
                     client: client,
@@ -184,14 +161,13 @@ public struct SerumSwap {
                     programId: .dexPID
                 )
                 
-                
                 return Single.zip(
-                    requestExchangeRate,
+                    requestFair,
                     requestOpenOrders
                 )
                     .map {(markets, $0, $1)}
             }
-            .flatMap {markets, exchangeRate, openOrders -> Single<[SignersAndInstructions]> in
+            .flatMap {markets, fair, openOrders in
                 guard let fromMint = try? PublicKey(string: fromWallet.token.address),
                       let toMint = try? PublicKey(string: toWallet.token.address),
                       let fromWalletPubkey = try? PublicKey(string: fromWallet.pubkey)
@@ -209,40 +185,91 @@ public struct SerumSwap {
                 let fromOpenOrder = openOrders.first(where: {$0.data.market == fromMarket.address})
                 let toOpenOrder = openOrders.first(where: {$0.data.market == toMarket?.address})
                 
-                return swap(
-                    .init(
-                        fromMint: fromMint,
-                        toMint: toMint,
-                        amount: amount.toLamport(decimals: fromWallet.token.decimals),
-                        minExchangeRate: exchangeRate,
-                        referral: nil,
-                        fromWallet: fromWalletPubkey,
-                        toWallet: toWalletPubkey,
-                        quoteWallet: nil,
-                        fromMarket: fromMarket,
-                        toMarket: toMarket,
-                        fromOpenOrders: fromOpenOrder?.address,
-                        toOpenOrders: toOpenOrder?.address,
-                        close: true
-                    ),
-                    isSimulation: isSimulation
+                // calculate
+                var toDecimal = toWallet.token.decimals
+                // For a direct swap, toDecimal should be zero.
+                // https://github.com/project-serum/swap/blob/master/programs/swap/src/lib.rs#L696
+                if markets.count == 1 {
+                    toDecimal = 0
+                }
+                let rate = self.calculateExchangeRate(
+                    fair: fair,
+                    slippage: slippage,
+                    toDecimal: toDecimal
                 )
-            }
-            .flatMap {signersAndInstructions -> Single<String> in
-                let instructions = Array(signersAndInstructions.map{ $0.instructions }.joined())
-                var signers = Array(signersAndInstructions.map{ $0.signers }.joined())
                 
-                // TODO: If fee relayer is available, remove account as signer
-                signers.insert(owner, at: 0)
+                // create request from custom exchange rate
+                let createSwapRequest: (Lamports) -> Single<TransactionID> = {rate in
+                    swap(
+                        .init(
+                            fromMint: fromMint,
+                            toMint: toMint,
+                            amount: amount.toLamport(decimals: fromWallet.token.decimals),
+                            minExchangeRate: .init(
+                                rate: rate,
+                                fromDecimals: fromWallet.token.decimals,
+                                quoteDecimals: toDecimal,
+                                strict: false
+                            ),
+                            referral: nil,
+                            fromWallet: fromWalletPubkey,
+                            toWallet: toWalletPubkey,
+                            quoteWallet: nil,
+                            fromMarket: fromMarket,
+                            toMarket: toMarket,
+                            fromOpenOrders: fromOpenOrder?.address,
+                            toOpenOrders: toOpenOrder?.address,
+                            close: true
+                        ),
+                        isSimulation: isSimulation
+                    )
+                    .flatMap {signersAndInstructions -> Single<String> in
+                        let instructions = Array(signersAndInstructions.map{ $0.instructions }.joined())
+                        var signers = Array(signersAndInstructions.map{ $0.signers }.joined())
+                        
+                        // TODO: If fee relayer is available, remove account as signer
+                        signers.insert(owner, at: 0)
+                        
+                        // serialize transaction
+                        return client.serializeAndSend(
+                            instructions: instructions,
+                            recentBlockhash: nil,
+                            signers: signers,
+                            isSimulation: isSimulation
+                        )
+                    }
+                }
                 
-                // serialize transaction
-                return client.serializeAndSend(
-                    instructions: instructions,
-                    recentBlockhash: nil,
-                    signers: signers,
-                    isSimulation: isSimulation
-                )
+                return createSwapRequest(rate)
+                    .catch {error in
+                        if let error = error as? SolanaSDK.Error {
+                            var logs = [String]()
+                            switch error {
+                            case .invalidResponse(let error):
+                                if let iLogs = error.data?.logs {
+                                    logs = iLogs
+                                }
+                            case .transactionError(_, let iLogs):
+                                logs = iLogs
+                            default:
+                                break
+                            }
+                            if !logs.isEmpty {
+                                if let amounts = logs
+                                    .first(where: {$0.starts(with: "Program log: effective_to_amount, min_expected_amount: ")})?
+                                    .replacingOccurrences(of: "Program log: effective_to_amount, min_expected_amount: ", with: "")
+                                    .components(separatedBy: ", "),
+                                   let effectiveAmount = amounts.first?.prefix(rate.digitsSum),
+                                   let effectiveAmount = UInt64(effectiveAmount)
+                                {
+                                    return createSwapRequest(effectiveAmount)
+                                }
+                            }
+                        }
+                        throw error
+                    }
             }
+            
     }
     
     /// Executes a swap against the Serum DEX.

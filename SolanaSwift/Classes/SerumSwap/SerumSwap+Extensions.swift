@@ -16,3 +16,15 @@ extension SolanaSDK.PublicKey {
         self == .usdcMint || self == .usdtMint
     }
 }
+
+extension UInt64 {
+    var digitsSum: Int {
+        var n = 1
+        var i = self
+        if i >= 100000000 { n += 8; i /= 100000000 }
+        if i >= 10000     { n += 4; i /= 10000 }
+        if i >= 100       { n += 2; i /= 100 }
+        if i >= 10        { n += 1; }
+        return n
+    }
+}

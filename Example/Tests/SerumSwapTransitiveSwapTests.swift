@@ -35,6 +35,18 @@ class SerumSwapTransitiveSwapTests: SerumSwapTests {
         XCTAssertNotNil(tx)
     }
     
+    /// Swap OXY -> SRM
+    func testSwapOXYSRM() throws {
+        let tx = try serumSwap.swap(
+            fromWallet: oxyWallet,
+            toWallet: srmWallet,
+            amount: 5,
+            slippage: defaultSlippage,
+            isSimulation: true
+        ).toBlocking().first()
+        XCTAssertNotNil(tx)
+    }
+    
     /// Swaps ETH -> BTC on the Serum orderbook.
     func testSwapETHToBTC() throws {
         let tx = try serumSwap.swap(
