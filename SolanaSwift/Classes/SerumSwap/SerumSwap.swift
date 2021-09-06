@@ -828,7 +828,12 @@ public struct SerumSwap {
             }
         }
         .map {feeForOpeningOrders in
-            var fee = feeForOpeningOrders
+            // TODO: fix default fee (unknown where)
+            var fee: UInt64 = 17234920 + minRentExemption
+            
+            // plust fee for opening
+            fee += feeForOpeningOrders
+            
             // if source token is native, a fee for creating wrapped SOL is needed, thus a fee for new account's signature (not associated token address) is also needed
             if fromWallet.token.isNative {
                 fee += minRentExemption + lamportsPerSignature
