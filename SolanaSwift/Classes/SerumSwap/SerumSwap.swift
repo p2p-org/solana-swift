@@ -126,8 +126,8 @@ public struct SerumSwap {
         toDecimal: Decimals
     ) -> Lamports {
         var number = (pow(Double(10), Double(toDecimal)) * FEE_MULTIPLIER) / fair
-        number *= (100-slippage)
-        number /= 100
+        number.round(.down)
+        number *= (1-slippage)
         return Lamports(number)
     }
     
