@@ -532,10 +532,24 @@ public extension SolanaSDK {
             myAccountSymbol: String?,
             myWallets: [Wallet]
         ) -> Single<SwapTransaction?> {
-            // get mints
-            guard let mints = preTokenBalances?.map({$0.mint}),
-                  let fromMint = mints.first,
-                  let toMint = mints.last,
+            // get all mints
+            guard var mints = preTokenBalances?.map({$0.mint}).unique,
+                  mints.count >= 2 // max: 3
+            else {return .just(nil)}
+            
+            // transitive swap: remove usdc or usdt if exists
+            if mints.count == 3 {
+                mints.removeAll(
+                    where: {
+                        $0 == PublicKey.usdcMint.base58EncodedString ||
+                            $0 == PublicKey.usdtMint.base58EncodedString
+                    }
+                )
+            }
+            
+            // get fromMint, toMint
+            guard let fromMint = mints.first,
+                  let toMint = mints.last(where: {$0 != fromMint}),
                   let instructions = innerInstructions?
                     .first(where: {$0.instructions.contains(where: {$0.programId == PublicKey.dexPID.base58EncodedString})})?
                     .instructions
@@ -601,5 +615,16 @@ public extension SolanaSDK {
                     return .just($0)
                 }
         }
+    }
+}
+
+private extension Array where Element: Equatable {
+    var unique: [Element] {
+        var uniqueValues: [Element] = []
+        forEach { item in
+            guard !uniqueValues.contains(item) else { return }
+            uniqueValues.append(item)
+        }
+        return uniqueValues
     }
 }
