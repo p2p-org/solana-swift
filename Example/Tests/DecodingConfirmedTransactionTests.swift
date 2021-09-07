@@ -29,18 +29,6 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         parser = SolanaSDK.TransactionParser(solanaSDK: solanaSDK)
     }
     
-    func testDecodingSwapTransaction() throws {
-        let myAccountSymbol = "SOL"
-        let transaction = try parse(fileName: "SwapTransaction", myAccountSymbol: myAccountSymbol).value as! SolanaSDK.SwapTransaction
-        
-        XCTAssertEqual(transaction.source?.token.symbol, "SRM")
-        XCTAssertEqual(transaction.source?.pubkey, "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua")
-        XCTAssertEqual(transaction.sourceAmount, 0.001)
-        
-        XCTAssertEqual(transaction.destination?.token.symbol, myAccountSymbol)
-        XCTAssertEqual(transaction.destinationAmount, 0.000364885)
-    }
-    
     func testDecodingCreateAccountTransaction() throws {
         let transaction = try parse(fileName: "CreateAccountTransaction").value as! SolanaSDK.CreateAccountTransaction
         
@@ -154,6 +142,18 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertNil(transaction.value)
     }
     
+    func testDecodingSwapTransaction() throws {
+        let myAccountSymbol = "SOL"
+        let transaction = try parse(fileName: "SwapTransaction", myAccountSymbol: myAccountSymbol).value as! SolanaSDK.SwapTransaction
+        
+        XCTAssertEqual(transaction.source?.token.symbol, "SRM")
+        XCTAssertEqual(transaction.source?.pubkey, "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua")
+        XCTAssertEqual(transaction.sourceAmount, 0.001)
+        
+        XCTAssertEqual(transaction.destination?.token.symbol, myAccountSymbol)
+        XCTAssertEqual(transaction.destinationAmount, 0.000364885)
+    }
+    
     func testDecodingSwapErrorTransaction() throws {
         let myAccount = "G8PrkEwmVx3kt3rXBin5o1bdDC1cvz7oBnXbHksNg7R4"
         let parsedTransaction = try parse(fileName: "SwapErrorTransaction", myAccount: myAccount)
@@ -166,6 +166,31 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         
         XCTAssertEqual(transaction.destination?.token.symbol, "SOL")
         XCTAssertEqual(transaction.destination?.pubkey, "G8PrkEwmVx3kt3rXBin5o1bdDC1cvz7oBnXbHksNg7R4")
+    }
+    
+    func testDecodingSerumSwapTransaction() throws {
+        let myAccount = "375DTPnEBUjCnvQpGQtg5nRQudwa6oXWEYB15X6MmJs6"
+        let parsedTransaction = try parse(fileName: "SerumSwapTransaction", myAccount: myAccount, myAccountSymbol: "SOL")
+        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        
+        XCTAssertEqual(transaction.source?.token.symbol, "SOL")
+//        XCTAssertEqual(transaction.source?.pubkey, "D7XYERWodEGaoN2X855T2qLvse28BSjfkvfCyW2EDBWy")
+        XCTAssertEqual(transaction.sourceAmount, 0.1)
+        
+        XCTAssertEqual(transaction.destination?.token.symbol, "USDC")
+        XCTAssertEqual(transaction.destinationAmount?.toLamport(decimals: 6), 14198095)
+    }
+    
+    func testDecodingSerumSwapTransaction2() throws {
+        let parsedTransaction = try parse(fileName: "SerumSwapTransaction2")
+        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        
+        XCTAssertEqual(transaction.source?.token.symbol, "BTC")
+//        XCTAssertEqual(transaction.source?.pubkey, "D7XYERWodEGaoN2X855T2qLvse28BSjfkvfCyW2EDBWy")
+        XCTAssertEqual(transaction.sourceAmount, 0.001)
+        
+        XCTAssertEqual(transaction.destination?.token.symbol, "ETH")
+        XCTAssertEqual(transaction.destinationAmount?.toLamport(decimals: transaction.destination?.token.decimals ?? 0), 13000)
     }
     
     private func parse(

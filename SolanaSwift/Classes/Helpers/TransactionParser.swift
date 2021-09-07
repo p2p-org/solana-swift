@@ -37,7 +37,7 @@ public extension SolanaSDK {
             var single: Single<AnyHashable?>
             
             // swap, liquidity (un-parsed type)
-            if let instructionIndex = getSwapInstructionIndex(instructions: instructions)
+            if let instructionIndex = getOrcaSwapInstructionIndex(instructions: instructions)
             {
                 let checkingInnerInstructions = innerInstructions?.first?.instructions
                 // Provide liquidity to pool (unsupported yet)
@@ -69,6 +69,17 @@ public extension SolanaSDK {
                     )
                         .map {$0 as AnyHashable}
                 }
+            }
+            
+            // serum swap
+            else if isSerumSwapTransaction(instructions: instructions)
+            {
+                single = parseSerumSwapTransaction(
+                    preTokenBalances: transactionInfo.meta?.preTokenBalances,
+                    innerInstructions: transactionInfo.meta?.innerInstructions,
+                    myAccountSymbol: myAccountSymbol
+                )
+                    .map {$0 as AnyHashable}
             }
             
             // create account
@@ -352,7 +363,7 @@ public extension SolanaSDK {
         }
         
         // MARK: - Swap
-        private func getSwapInstructionIndex(
+        private func getOrcaSwapInstructionIndex(
             instructions: [ParsedInstruction]
         ) -> Int? {
             // ignore liqu
@@ -500,6 +511,67 @@ public extension SolanaSDK {
                     )
                 }
                 .catchAndReturn(nil)
+        }
+        
+        // MARK: - Serum swap
+        private func isSerumSwapTransaction(
+            instructions: [ParsedInstruction]
+        ) -> Bool {
+            // ignore liqu
+            instructions.contains(
+                where: {
+                    $0.programId == PublicKey.serumSwapPID.base58EncodedString
+                })
+        }
+        
+        private func parseSerumSwapTransaction(
+            preTokenBalances: [TokenBalance]?,
+            innerInstructions: [InnerInstruction]?,
+            myAccountSymbol: String?
+        ) -> Single<SwapTransaction?> {
+            // get mints
+            guard let mints = preTokenBalances?.map({$0.mint}),
+                  let fromMint = mints.first,
+                  let toMint = mints.last,
+                  let instructions = innerInstructions?
+                    .first(where: {$0.instructions.contains(where: {$0.programId == PublicKey.dexPID.base58EncodedString})})?
+                    .instructions
+                    .filter({$0.parsed?.type == "transfer"}),
+                  let transferFromInstruction = instructions.first,
+                  let transferToInstruction = instructions.last
+            else {
+                return .just(nil)
+            }
+            
+            return Single.zip(
+                getTokenWithMint(fromMint),
+                getTokenWithMint(toMint)
+            )
+                .map {fromToken, toToken in
+                    let sourceWallet = Wallet(
+                        pubkey: fromToken.address == PublicKey.wrappedSOLMint.base58EncodedString ? transferFromInstruction.parsed?.info.authority: transferFromInstruction.parsed?.info.source,
+                        lamports: 0, // post token balance?
+                        token: fromToken
+                    )
+                    
+                    let sourceAmount = Lamports(transferFromInstruction.parsed?.info.amount ?? "0")
+                    
+                    let destinationWallet = Wallet(
+                        pubkey: toToken.address == PublicKey.wrappedSOLMint.base58EncodedString ? transferToInstruction.parsed?.info.authority: transferToInstruction.parsed?.info.destination,
+                        lamports: 0, // post token balances
+                        token: toToken
+                    )
+                    
+                    let destinationAmount = Lamports(transferToInstruction.parsed?.info.amount ?? "0")
+                    
+                    return .init(
+                        source: sourceWallet,
+                        sourceAmount: sourceAmount?.convertToBalance(decimals: fromToken.decimals),
+                        destination: destinationWallet,
+                        destinationAmount: destinationAmount?.convertToBalance(decimals: toToken.decimals),
+                        myAccountSymbol: myAccountSymbol
+                    )
+                }
         }
         
         // MARK: - Helpers

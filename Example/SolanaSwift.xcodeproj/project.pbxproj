@@ -14,6 +14,8 @@
 		BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC1254928870029FF0B /* RestAPITests.swift */; };
 		BC2EC2DF25552EC1006EEDA5 /* AccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */; };
 		BC3174342670B48200B60E3F /* RestAPIGetAccountInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3174332670B48200B60E3F /* RestAPIGetAccountInfoTests.swift */; };
+		BC36EDC626E77309006C1D21 /* SerumSwapTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC36EDC526E77309006C1D21 /* SerumSwapTransaction.json */; };
+		BC36EDD726E7C0FE006C1D21 /* SerumSwapTransaction2.json in Resources */ = {isa = PBXBuildFile; fileRef = BC36EDD626E7C0FE006C1D21 /* SerumSwapTransaction2.json */; };
 		BC3ADEBB2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3ADEBA2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift */; };
 		BC3F719A261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3F7199261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift */; };
 		BC3F71D0261AF25600DFDFD0 /* SwapTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC3F71CF261AF25600DFDFD0 /* SwapTransaction.json */; };
@@ -176,6 +178,8 @@
 		BC23AEC1254928870029FF0B /* RestAPITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RestAPITests.swift; path = Tests/RestAPITests.swift; sourceTree = SOURCE_ROOT; };
 		BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTests.swift; sourceTree = "<group>"; };
 		BC3174332670B48200B60E3F /* RestAPIGetAccountInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPIGetAccountInfoTests.swift; sourceTree = "<group>"; };
+		BC36EDC526E77309006C1D21 /* SerumSwapTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SerumSwapTransaction.json; sourceTree = "<group>"; };
+		BC36EDD626E7C0FE006C1D21 /* SerumSwapTransaction2.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SerumSwapTransaction2.json; sourceTree = "<group>"; };
 		BC3ADEBA2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITransactionHistoryTests.swift; sourceTree = "<group>"; };
 		BC3F7199261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingConfirmedTransactionTests.swift; sourceTree = "<group>"; };
 		BC3F71CF261AF25600DFDFD0 /* SwapTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SwapTransaction.json; sourceTree = "<group>"; };
@@ -289,6 +293,8 @@
 				BC6D01FD265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json */,
 				BC6D020E265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json */,
 				BCFCB4D7268B01C400EF02DF /* SwapErrorTransaction.json */,
+				BC36EDC526E77309006C1D21 /* SerumSwapTransaction.json */,
+				BC36EDD626E7C0FE006C1D21 /* SerumSwapTransaction2.json */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -598,10 +604,12 @@
 				BC53E22B26565CD0005624CC /* SendTokenToNewAssociatedTokenAddress.json in Resources */,
 				BC44FC5B265B9866008BEE84 /* SendTokenToNewAssociatedTokenAddressTransferChecked.json in Resources */,
 				BC54A974261C1E430083A127 /* SendSOLTransaction.json in Resources */,
+				BC36EDD726E7C0FE006C1D21 /* SerumSwapTransaction2.json in Resources */,
 				BCFCB4D8268B01C400EF02DF /* SwapErrorTransaction.json in Resources */,
 				BC65DFAE261D5D4300E436C7 /* SendSPLToSPLTransaction.json in Resources */,
 				BC3F71D0261AF25600DFDFD0 /* SwapTransaction.json in Resources */,
 				BC54A96F261C1B560083A127 /* CloseAccountTransaction.json in Resources */,
+				BC36EDC626E77309006C1D21 /* SerumSwapTransaction.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
