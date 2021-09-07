@@ -169,8 +169,25 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingSerumSwapTransaction() throws {
-        let myAccount = "375DTPnEBUjCnvQpGQtg5nRQudwa6oXWEYB15X6MmJs6"
-        let parsedTransaction = try parse(fileName: "SerumSwapTransaction", myAccount: myAccount, myAccountSymbol: "SOL")
+        let parsedTransaction = try parse(
+            fileName: "SerumSwapTransaction",
+            myWallets: [
+                .init(
+                    pubkey: "375DTPnEBUjCnvQpGQtg5nRQudwa6oXWEYB15X6MmJs6",
+                    lamports: 0,
+                    token: .init(
+                        _tags: nil,
+                        chainId: 101,
+                        address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        symbol: "USDC",
+                        name: "USDC",
+                        decimals: 6,
+                        logoURI: nil,
+                        extensions: nil
+                    )
+                )
+            ]
+        )
         let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SOL")

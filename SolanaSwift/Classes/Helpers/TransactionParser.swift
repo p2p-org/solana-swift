@@ -541,7 +541,7 @@ public extension SolanaSDK {
                     .instructions
                     .filter({$0.parsed?.type == "transfer"}),
                   let transferFromInstruction = instructions.first,
-                  let transferToInstruction = instructions.first(where: {$0.parsed?.info.destination == myWallets.first(where: {$0.token.address == toMint})?.pubkey}) ?? instructions.last
+                  let transferToInstruction = instructions.first(where: {$0.parsed?.info.destination == myWallets.first(where: {$0.token.address == toMint})?.pubkey}) // TODO: - Unsafe, depends on myWallets, but quick, fix later on
             else {
                 return .just(nil)
             }
