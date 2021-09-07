@@ -9,7 +9,7 @@
 import XCTest
 @testable import SolanaSwift
 
-class SerumSwapTransitiveSwapTests: SerumSwapTests {
+class SerumSwapTransitiveSwapTests: SrumSwapSwapTests {
     /// Create from and to open orders and wait for comfirmation before transitive swaping
     func testCreateFromAndToOpenOrders() throws {
         let toMarket = try serumSwap.loadMarket(fromMint: OXY, toMint: USDC).toBlocking().first()!.first!

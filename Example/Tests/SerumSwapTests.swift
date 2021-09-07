@@ -32,16 +32,6 @@ class SerumSwapTests: RestAPITests {
         solBalance = try solanaSDK.getBalance().toBlocking().first()
     }
     
-    let defaultSlippage = 0.005
-    
-    var srmWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == SRM.base58EncodedString})!}
-    var usdcWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == USDC.base58EncodedString})!}
-    var usdtWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == USDT.base58EncodedString})!}
-    var btcWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == BTC.base58EncodedString})!}
-    var ethWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == ETH.base58EncodedString})!}
-    var solNativeWallet: SolanaSDK.Wallet {.nativeSolana(pubkey: solanaSDK.accountStorage.account!.publicKey.base58EncodedString, lamport: solBalance)}
-    var oxyWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == OXY.base58EncodedString})!}
-    
     var SRM: SolanaSDK.PublicKey { "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt" }
     var SOL: SolanaSDK.PublicKey { "So11111111111111111111111111111111111111112" }
     var BTC: SolanaSDK.PublicKey { "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E" }
@@ -49,6 +39,8 @@ class SerumSwapTests: RestAPITests {
     var USDC: SolanaSDK.PublicKey { "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"}
     var USDT: SolanaSDK.PublicKey { "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"}
     var OXY: SolanaSDK.PublicKey { "z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M" }
+    
+    var solNativeWallet: SolanaSDK.Wallet {.nativeSolana(pubkey: solanaSDK.accountStorage.account!.publicKey.base58EncodedString, lamport: solBalance)}
 
     var SRMUSDCMarket: SerumSwap.Market {
         SerumSwap.Market(

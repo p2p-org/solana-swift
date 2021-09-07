@@ -791,13 +791,14 @@ public struct SerumSwap {
         fromWallet: Wallet,
         toWallet: Wallet,
         lamportsPerSignature: SolanaSDK.Lamports,
-        minRentExemption: SolanaSDK.Lamports,
-        isPayingWithSOL: Bool
+        minRentExemption: SolanaSDK.Lamports
     ) -> Single<Lamports> {
         
         guard let owner = accountProvider.getAccount() else {
             return .error(SerumSwapError.unauthorized)
         }
+        // default fee for creating serum dex account
+        let creatingSerumDexFee: Lamports = 23357760
         
         // get fee for opening orders
         return loadMarket(
@@ -824,15 +825,24 @@ public struct SerumSwap {
                     count += 1
                 }
                 
-                return (2 - count) * (minRentExemption + lamportsPerSignature)
+                var lamports = (UInt64(markets.count) - count) * (creatingSerumDexFee + lamportsPerSignature)
+                
+                if markets.count == 2 && count > 0 {
+                    // for transitive swap: there is an lps needed for creating open orders transaction
+                    lamports += lamportsPerSignature
+                }
+                
+                return lamports
             }
         }
         .map {feeForOpeningOrders in
-            // TODO: fix default fee (unknown where)
-            var fee: UInt64 = 17234920 + minRentExemption
+            var fee: Lamports = 0
             
-            // plust fee for opening
+            // fee for opening
             fee += feeForOpeningOrders
+            
+            // fee for owner's signature
+            fee += lamportsPerSignature
             
             // if source token is native, a fee for creating wrapped SOL is needed, thus a fee for new account's signature (not associated token address) is also needed
             if fromWallet.token.isNative {
@@ -844,11 +854,6 @@ public struct SerumSwap {
                 toWallet.pubkey == nil
             {
                 fee += minRentExemption
-            }
-            
-            // fee for signature (if fee relayer is not enabled)
-            if isPayingWithSOL {
-                fee += lamportsPerSignature
             }
             
             return fee

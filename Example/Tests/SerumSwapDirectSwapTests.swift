@@ -10,7 +10,18 @@ import XCTest
 import RxBlocking
 import SolanaSwift
 
-class SerumSwapDirectSwapTests: SerumSwapTests {
+class SrumSwapSwapTests: SerumSwapTests {
+    let defaultSlippage = 0.005
+    
+    var srmWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == SRM.base58EncodedString})!}
+    var usdcWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == USDC.base58EncodedString})!}
+    var usdtWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == USDT.base58EncodedString})!}
+    var btcWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == BTC.base58EncodedString})!}
+    var ethWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == ETH.base58EncodedString})!}
+    var oxyWallet: SolanaSDK.Wallet {wallets.first(where: {$0.token.address == OXY.base58EncodedString})!}
+}
+
+class SerumSwapDirectSwapTests: SrumSwapSwapTests {
     /// Swaps SRM -> USDC on the Serum orderbook.
     func testSwapSRMUSDC() throws {
         let tx = try serumSwap.swap(
