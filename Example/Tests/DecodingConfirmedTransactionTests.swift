@@ -182,7 +182,25 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingSerumSwapTransaction2() throws {
-        let parsedTransaction = try parse(fileName: "SerumSwapTransaction2")
+        let parsedTransaction = try parse(
+            fileName: "SerumSwapTransaction2",
+            myWallets: [
+                .init(
+                    pubkey: "FT3A24vCezU25TzvDfPmDdHwpHDQdYZU4Z6Lt3Kf8WsT",
+                    lamports: 0,
+                    token: .init(
+                        _tags: nil,
+                        chainId: 101,
+                        address: "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk",
+                        symbol: "ETH",
+                        name: "Etherum",
+                        decimals: 6,
+                        logoURI: nil,
+                        extensions: nil
+                    )
+                )
+            ]
+        )
         let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "BTC")
@@ -196,10 +214,11 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     private func parse(
         fileName: String,
         myAccount: String? = nil,
-        myAccountSymbol: String? = nil
+        myAccountSymbol: String? = nil,
+        myWallets: [SolanaSDK.Wallet] = []
     ) throws -> SolanaSDK.ParsedTransaction {
         let transactionInfo = try transactionInfoFromJSONFileName(fileName)
-        return try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: myAccountSymbol, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
+        return try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: myAccountSymbol, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"], myWallets: myWallets)
             .toBlocking().first()!
     }
     

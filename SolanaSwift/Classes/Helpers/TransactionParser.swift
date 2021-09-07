@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 public protocol SolanaSDKTransactionParserType {
-    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?, p2pFeePayerPubkeys: [String]) -> Single<SolanaSDK.ParsedTransaction>
+    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?, p2pFeePayerPubkeys: [String], myWallets: [SolanaSDK.Wallet]) -> Single<SolanaSDK.ParsedTransaction>
 }
 
 public extension SolanaSDK {
@@ -27,7 +27,8 @@ public extension SolanaSDK {
             transactionInfo: TransactionInfo,
             myAccount: String?,
             myAccountSymbol: String?,
-            p2pFeePayerPubkeys: [String]
+            p2pFeePayerPubkeys: [String],
+            myWallets: [Wallet]
         ) -> Single<ParsedTransaction> {
             // get data
             let innerInstructions = transactionInfo.meta?.innerInstructions
@@ -77,7 +78,8 @@ public extension SolanaSDK {
                 single = parseSerumSwapTransaction(
                     preTokenBalances: transactionInfo.meta?.preTokenBalances,
                     innerInstructions: transactionInfo.meta?.innerInstructions,
-                    myAccountSymbol: myAccountSymbol
+                    myAccountSymbol: myAccountSymbol,
+                    myWallets: myWallets
                 )
                     .map {$0 as AnyHashable}
             }
@@ -527,7 +529,8 @@ public extension SolanaSDK {
         private func parseSerumSwapTransaction(
             preTokenBalances: [TokenBalance]?,
             innerInstructions: [InnerInstruction]?,
-            myAccountSymbol: String?
+            myAccountSymbol: String?,
+            myWallets: [Wallet]
         ) -> Single<SwapTransaction?> {
             // get mints
             guard let mints = preTokenBalances?.map({$0.mint}),
@@ -538,7 +541,7 @@ public extension SolanaSDK {
                     .instructions
                     .filter({$0.parsed?.type == "transfer"}),
                   let transferFromInstruction = instructions.first,
-                  let transferToInstruction = instructions.last
+                  let transferToInstruction = instructions.first(where: {$0.parsed?.info.destination == myWallets.first(where: {$0.token.address == toMint})?.pubkey}) ?? instructions.last
             else {
                 return .just(nil)
             }
