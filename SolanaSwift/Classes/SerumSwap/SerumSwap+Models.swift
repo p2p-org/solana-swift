@@ -173,6 +173,7 @@ private protocol BlobType: Codable, BufferLayoutProperty {
 
 extension BlobType {
     public init(buffer: Data, pointer: inout Int) throws {
+        guard buffer.bytes.count > pointer else {throw BufferLayoutSwift.Error.bytesLengthIsNotValid}
         self.init(bytes: [UInt8](buffer[pointer..<pointer+Self.length]))
         pointer += Self.length
     }

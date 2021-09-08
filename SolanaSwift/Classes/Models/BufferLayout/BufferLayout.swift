@@ -10,6 +10,7 @@ import BufferLayoutSwift
 
 extension SolanaSDK.PublicKey: BufferLayoutProperty {
     public init(buffer: Data, pointer: inout Int) throws {
+        guard buffer.bytes.count > pointer else {throw BufferLayoutSwift.Error.bytesLengthIsNotValid}
         try self.init(data: buffer[pointer..<pointer+Self.numberOfBytes])
         pointer += Self.numberOfBytes
     }
