@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC1668C526E8A46600C0D583 /* SerumSwapTransaction3.json in Resources */ = {isa = PBXBuildFile; fileRef = BC1668C426E8A46600C0D583 /* SerumSwapTransaction3.json */; };
 		BC18C9E62631132E0054E624 /* TokensListParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC18C9E52631132E0054E624 /* TokensListParserTests.swift */; };
 		BC1ABC4E255CC075002FCE65 /* DecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC1ABC4D255CC075002FCE65 /* DecodingTests.swift */; };
 		BC23AEC2254928870029FF0B /* TransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBE254928870029FF0B /* TransactionTests.swift */; };
@@ -170,6 +171,7 @@
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		656EB490BFE125DA165A4E9A /* Pods-SolanaSwift_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SolanaSwift_Tests.release.xcconfig"; path = "Target Support Files/Pods-SolanaSwift_Tests/Pods-SolanaSwift_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		88E637D24AF2B058D65016C3 /* SolanaSwift.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = SolanaSwift.podspec; path = ../SolanaSwift.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		BC1668C426E8A46600C0D583 /* SerumSwapTransaction3.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SerumSwapTransaction3.json; sourceTree = "<group>"; };
 		BC18C9E52631132E0054E624 /* TokensListParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensListParserTests.swift; sourceTree = "<group>"; };
 		BC1ABC4D255CC075002FCE65 /* DecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingTests.swift; sourceTree = "<group>"; };
 		BC23AE51254925F00029FF0B /* _Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = _Pods.xcodeproj; path = ../_Pods.xcodeproj; sourceTree = "<group>"; };
@@ -295,6 +297,7 @@
 				BCFCB4D7268B01C400EF02DF /* SwapErrorTransaction.json */,
 				BC36EDC526E77309006C1D21 /* SerumSwapTransaction.json */,
 				BC36EDD626E7C0FE006C1D21 /* SerumSwapTransaction2.json */,
+				BC1668C426E8A46600C0D583 /* SerumSwapTransaction3.json */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -597,6 +600,7 @@
 			files = (
 				BC65DF9F261D5B3300E436C7 /* SendSPLToSOLTransaction.json in Resources */,
 				BC54A944261C09B90083A127 /* CreateAccountTransaction.json in Resources */,
+				BC1668C526E8A46600C0D583 /* SerumSwapTransaction3.json in Resources */,
 				BC51E54B26847D6900C9B05D /* SendSPLTokenParsedInNativeSOLWallet.json in Resources */,
 				BC6D01FE265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json in Resources */,
 				BC6D0212265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json in Resources */,

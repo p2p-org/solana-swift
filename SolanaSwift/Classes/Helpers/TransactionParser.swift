@@ -556,7 +556,7 @@ public extension SolanaSDK {
             guard let accounts = swapInstruction.accounts
             else {return .just(nil)}
             
-            if isTransitiveSwap && accounts.count == 26 {
+            if isTransitiveSwap && accounts.count != 27 {
                 return .just(nil)
             }
             
@@ -574,6 +574,10 @@ public extension SolanaSDK {
             } else { // direct
                 fromAddress = accounts[10]
                 toAddress = accounts[12]
+                
+                if mints.first?.isUSDxMint == true {
+                    Swift.swap(&fromAddress, &toAddress)
+                }
             }
             
             // amounts

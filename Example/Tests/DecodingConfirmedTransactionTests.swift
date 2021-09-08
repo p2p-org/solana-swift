@@ -173,10 +173,11 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SOL")
-//        XCTAssertEqual(transaction.source?.pubkey, "D7XYERWodEGaoN2X855T2qLvse28BSjfkvfCyW2EDBWy")
+        XCTAssertEqual(transaction.source?.pubkey, "D7XYERWodEGaoN2X855T2qLvse28BSjfkvfCyW2EDBWy")
         XCTAssertEqual(transaction.sourceAmount, 0.1)
         
         XCTAssertEqual(transaction.destination?.token.symbol, "USDC")
+        XCTAssertEqual(transaction.destination?.pubkey, "375DTPnEBUjCnvQpGQtg5nRQudwa6oXWEYB15X6MmJs6")
         XCTAssertEqual(transaction.destinationAmount?.toLamport(decimals: 6), 14198095)
     }
     
@@ -185,11 +186,25 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "BTC")
-//        XCTAssertEqual(transaction.source?.pubkey, "D7XYERWodEGaoN2X855T2qLvse28BSjfkvfCyW2EDBWy")
+        XCTAssertEqual(transaction.source?.pubkey, "FfH77kuL45qgqALsxtz6ktfSgbLSPfrB23AsoDnBxqUj")
         XCTAssertEqual(transaction.sourceAmount, 0.001)
         
         XCTAssertEqual(transaction.destination?.token.symbol, "ETH")
+        XCTAssertEqual(transaction.destination?.pubkey, "FT3A24vCezU25TzvDfPmDdHwpHDQdYZU4Z6Lt3Kf8WsT")
         XCTAssertEqual(transaction.destinationAmount?.toLamport(decimals: transaction.destination?.token.decimals ?? 0), 13000)
+    }
+    
+    func testDecodingSerumSwapTransaction3() throws {
+        let parsedTransaction = try parse(fileName: "SerumSwapTransaction3")
+        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        
+        XCTAssertEqual(transaction.source?.token.symbol, "USDC")
+        XCTAssertEqual(transaction.source?.pubkey, "375DTPnEBUjCnvQpGQtg5nRQudwa6oXWEYB15X6MmJs6")
+        XCTAssertEqual(transaction.sourceAmount, 5)
+        
+        XCTAssertEqual(transaction.destination?.token.symbol, "SRM")
+        XCTAssertEqual(transaction.destination?.pubkey, "6Q49AE4NGeTXYDyyXx8gEVxJV28Vsn6bVJp4w3UqTByg")
+        XCTAssertEqual(transaction.destinationAmount?.toLamport(decimals: transaction.destination?.token.decimals ?? 0), 500000)
     }
     
     private func parse(
