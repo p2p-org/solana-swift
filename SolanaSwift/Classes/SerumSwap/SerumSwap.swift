@@ -812,27 +812,33 @@ public struct SerumSwap {
                 programId: .dexPID
             )
             .map { openOrders in
-                var count: UInt64 = 0
+                // calculate number of created orders
+                var numberOfCreatedOrders = 0
                 if let fromMarket = markets[safe: 0],
                    openOrders.contains(where: {$0.address == fromMarket.address})
                 {
-                    count += 1
+                    numberOfCreatedOrders += 1
                 }
                 
                 if let toMarket = markets[safe: 1],
                    openOrders.contains(where: {$0.address == toMarket.address})
                 {
-                    count += 1
+                    numberOfCreatedOrders += 1
                 }
                 
-                var lamports = (UInt64(markets.count) - count) * (creatingSerumDexFee + lamportsPerSignature)
+                // calculate number of orders that have to be created
+                let numberOfOrdersToCreate = markets.count - numberOfCreatedOrders
                 
-                if markets.count == 2 && count > 0 {
-                    // for transitive swap: there is an lps needed for creating open orders transaction
-                    lamports += lamportsPerSignature
+                // fee for creating orders
+                var feeForCreatingNewOrders = Lamports(numberOfOrdersToCreate) * (creatingSerumDexFee + lamportsPerSignature)
+                
+                // for transitive swap: there is an lps needed for creating a separated open orders transaction
+                // for direct swap: the creating orders transaction is embeded to swap instruction, so this lps is NOT needed
+                if markets.count == 2 && numberOfOrdersToCreate > 0 {
+                    feeForCreatingNewOrders += lamportsPerSignature
                 }
                 
-                return lamports
+                return feeForCreatingNewOrders
             }
         }
         .map {feeForOpeningOrders in
