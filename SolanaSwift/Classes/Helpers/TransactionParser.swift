@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 public protocol SolanaSDKTransactionParserType {
-    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?, p2pFeePayerPubkeys: [String], myWallets: [SolanaSDK.Wallet]) -> Single<SolanaSDK.ParsedTransaction>
+    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccount: String?, myAccountSymbol: String?, p2pFeePayerPubkeys: [String]) -> Single<SolanaSDK.ParsedTransaction>
 }
 
 public extension SolanaSDK {
@@ -27,8 +27,7 @@ public extension SolanaSDK {
             transactionInfo: TransactionInfo,
             myAccount: String?,
             myAccountSymbol: String?,
-            p2pFeePayerPubkeys: [String],
-            myWallets: [Wallet]
+            p2pFeePayerPubkeys: [String]
         ) -> Single<ParsedTransaction> {
             // get data
             let innerInstructions = transactionInfo.meta?.innerInstructions
@@ -73,13 +72,15 @@ public extension SolanaSDK {
             }
             
             // serum swap
-            else if isSerumSwapTransaction(instructions: instructions)
+            else if let index = getSerumSwapInstructionIndex(instructions: instructions)
             {
                 single = parseSerumSwapTransaction(
+                    swapInstructionIndex: index,
+                    instructions: instructions,
                     preTokenBalances: transactionInfo.meta?.preTokenBalances,
-                    innerInstructions: transactionInfo.meta?.innerInstructions,
-                    myAccountSymbol: myAccountSymbol,
-                    myWallets: myWallets
+                    innerInstruction: transactionInfo.meta?.innerInstructions?
+                        .first(where: {$0.instructions.contains(where: {$0.programId == PublicKey.dexPID.base58EncodedString})}),
+                    myAccountSymbol: myAccountSymbol
                 )
                     .map {$0 as AnyHashable}
             }
@@ -516,22 +517,28 @@ public extension SolanaSDK {
         }
         
         // MARK: - Serum swap
-        private func isSerumSwapTransaction(
+        private func getSerumSwapInstructionIndex(
             instructions: [ParsedInstruction]
-        ) -> Bool {
+        ) -> Int? {
             // ignore liqu
-            instructions.contains(
+            instructions.lastIndex(
                 where: {
                     $0.programId == PublicKey.serumSwapPID.base58EncodedString
-                })
+                }
+            )
         }
         
         private func parseSerumSwapTransaction(
+            swapInstructionIndex: Int,
+            instructions: [ParsedInstruction],
             preTokenBalances: [TokenBalance]?,
-            innerInstructions: [InnerInstruction]?,
-            myAccountSymbol: String?,
-            myWallets: [Wallet]
+            innerInstruction: InnerInstruction?,
+            myAccountSymbol: String?
         ) -> Single<SwapTransaction?> {
+            // get swapInstruction
+            guard let swapInstruction = instructions[safe: swapInstructionIndex]
+            else {return .just(nil)}
+            
             // get all mints
             guard var mints = preTokenBalances?.map({$0.mint}).unique,
                   mints.count >= 2 // max: 3
@@ -539,53 +546,93 @@ public extension SolanaSDK {
             
             // transitive swap: remove usdc or usdt if exists
             if mints.count == 3 {
-                mints.removeAll(
-                    where: {
-                        $0 == PublicKey.usdcMint.base58EncodedString ||
-                            $0 == PublicKey.usdtMint.base58EncodedString
-                    }
-                )
+                mints.removeAll(where: {$0.isUSDxMint})
             }
             
-            // get fromMint, toMint
-            guard let fromMint = mints.first,
-                  let toMint = mints.last(where: {$0 != fromMint}),
-                  let instructions = innerInstructions?
-                    .first(where: {$0.instructions.contains(where: {$0.programId == PublicKey.dexPID.base58EncodedString})})?
-                    .instructions
-                    .filter({$0.parsed?.type == "transfer"}),
-                  let transferFromInstruction = instructions.first,
-                  let transferToInstruction = instructions.first(where: {$0.parsed?.info.destination == myWallets.first(where: {$0.token.address == toMint})?.pubkey}) // TODO: - Unsafe, depends on myWallets, but quick, fix later on
-            else {
+            // define swap type
+            let isTransitiveSwap = !mints.contains(where: {$0.isUSDxMint})
+            
+            // assert
+            guard let accounts = swapInstruction.accounts
+            else {return .just(nil)}
+            
+            if isTransitiveSwap && accounts.count == 26 {
                 return .just(nil)
             }
             
+            if !isTransitiveSwap && accounts.count != 16 {
+                return .just(nil)
+            }
+            
+            // get from and to address
+            var fromAddress: String
+            var toAddress: String
+            
+            if isTransitiveSwap { // transitive
+                fromAddress = accounts[6]
+                toAddress = accounts[21]
+            } else { // direct
+                fromAddress = accounts[10]
+                toAddress = accounts[12]
+            }
+            
+            // amounts
+            var fromAmount: Lamports?
+            var toAmount: Lamports?
+            
+            // from amount
+            if let instruction = innerInstruction?.instructions
+                    .first(where: {$0.parsed?.type == "transfer" && $0.parsed?.info.source == fromAddress}),
+               let amountString = instruction.parsed?.info.amount,
+               let amount = Lamports(amountString)
+            {
+                fromAmount = amount
+            }
+            
+            // to amount
+            if let instruction = innerInstruction?.instructions
+                    .first(where: {$0.parsed?.type == "transfer" && $0.parsed?.info.destination == toAddress}),
+               let amountString = instruction.parsed?.info.amount,
+               let amount = Lamports(amountString)
+            {
+                toAmount = amount
+            }
+            
+            // if swap from native sol, detect if from or to address is a new account
+            if let createAccountInstruction = instructions
+                .first(where: {
+                        $0.parsed?.type == "createAccount" &&
+                            $0.parsed?.info.newAccount == fromAddress
+                }
+            ),
+               let realSource = createAccountInstruction.parsed?.info.source
+            {
+                fromAddress = realSource
+            }
+            
+            // get token from mint address and finish request
             return Single.zip(
-                getTokenWithMint(fromMint),
-                getTokenWithMint(toMint)
+                getTokenWithMint(mints[0]),
+                getTokenWithMint(mints[1])
             )
                 .map {fromToken, toToken in
                     let sourceWallet = Wallet(
-                        pubkey: fromToken.address == PublicKey.wrappedSOLMint.base58EncodedString ? transferFromInstruction.parsed?.info.authority: transferFromInstruction.parsed?.info.source,
+                        pubkey: fromAddress,
                         lamports: 0, // post token balance?
                         token: fromToken
                     )
                     
-                    let sourceAmount = Lamports(transferFromInstruction.parsed?.info.amount ?? "0")
-                    
                     let destinationWallet = Wallet(
-                        pubkey: toToken.address == PublicKey.wrappedSOLMint.base58EncodedString ? transferToInstruction.parsed?.info.authority: transferToInstruction.parsed?.info.destination,
+                        pubkey: toAddress,
                         lamports: 0, // post token balances
                         token: toToken
                     )
                     
-                    let destinationAmount = Lamports(transferToInstruction.parsed?.info.amount ?? "0")
-                    
                     return .init(
                         source: sourceWallet,
-                        sourceAmount: sourceAmount?.convertToBalance(decimals: fromToken.decimals),
+                        sourceAmount: fromAmount?.convertToBalance(decimals: fromToken.decimals),
                         destination: destinationWallet,
-                        destinationAmount: destinationAmount?.convertToBalance(decimals: toToken.decimals),
+                        destinationAmount: toAmount?.convertToBalance(decimals: toToken.decimals),
                         myAccountSymbol: myAccountSymbol
                     )
                 }
@@ -626,5 +673,12 @@ private extension Array where Element: Equatable {
             uniqueValues.append(item)
         }
         return uniqueValues
+    }
+}
+
+private extension String {
+    var isUSDxMint: Bool {
+        self == SolanaSDK.PublicKey.usdtMint.base58EncodedString ||
+            self == SolanaSDK.PublicKey.usdcMint.base58EncodedString
     }
 }
