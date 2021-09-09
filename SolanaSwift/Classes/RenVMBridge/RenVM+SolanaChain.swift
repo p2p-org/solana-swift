@@ -43,5 +43,17 @@ extension RenVM.SolanaChain {
             }
             self.gateways = gateways
         }
+        
+        public func serialize() throws -> Data {
+            var data = Data()
+            data += try isInitialized.serialize()
+            data += try owner.serialize()
+            data += try count.serialize()
+            data += try (UInt32(selectors.count)).serialize()
+            data += try selectors.reduce(Data(), {$0 + (try $1.serialize())})
+            data += try (UInt32(gateways.count)).serialize()
+            data += try gateways.reduce(Data(), {$0 + (try $1.serialize())})
+            return data
+        }
     }
 }
