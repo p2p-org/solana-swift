@@ -10,6 +10,16 @@ import XCTest
 @testable import SolanaSwift
 
 class RenVMSolanaChainTests: XCTestCase {
+    func testGatewayRegistryStateKey() throws {
+        let network = RenVM.Network.testnet
+        
+        let pubkey = try SolanaSDK.PublicKey(string: network.gatewayRegistry)
+        XCTAssertEqual(pubkey, "REGrPFKQhRneFFdUV3e9UDdzqUJyS6SKj88GdXFCRd2")
+        
+        let stateKey = try SolanaSDK.PublicKey.findProgramAddress(seeds: [RenVM.SolanaChain.gatewayRegistryStateKey.data(using: .utf8)!], programId: pubkey)
+        XCTAssertEqual(stateKey.0, "4aMET2gUF29qk8G4Zbg2bWxLkFaTWuTYqnvQqFY16J6c")
+    }
+    
     func decodeGatewayRegistryData() throws {
         let data = Data(base64Encoded: mockGatewayRegistryData)!
         var pointer = 0

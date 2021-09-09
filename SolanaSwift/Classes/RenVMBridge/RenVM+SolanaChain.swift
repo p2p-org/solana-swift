@@ -6,16 +6,48 @@
 //
 
 import Foundation
-import BufferLayoutSwift
+import RxSwift
 
 extension RenVM {
     public struct SolanaChain {
+        // MARK: - Constants
+        static let gatewayRegistryStateKey  = "GatewayRegistryState"
+        static let gatewayStateKey          = "GatewayStateV0.1.4"
         
+        // MARK: - Properties
+        let gatewayRegistryData: GatewayRegistryData
+        let client: RenVMRpcClientType
+        
+        // MARK: - Methods
+        public static func load(
+            client: RenVMRpcClientType,
+            network: Network
+        ) -> Single<Self> {
+            do {
+                let pubkey = try SolanaSDK.PublicKey(string: network.gatewayRegistry)
+                let stateKey = try SolanaSDK.PublicKey.findProgramAddress(
+                    seeds: [Self.gatewayRegistryStateKey.data(using: .utf8)!],
+                    programId: pubkey
+                )
+                return client.getAccountInfo(
+                    account: stateKey.0.base58EncodedString,
+                    decodedTo: GatewayRegistryData.self
+                )
+                .map {$0.data}
+                .map {.init(gatewayRegistryData: $0, client: client)}
+            } catch {
+                return .error(error)
+            }
+        }
+        
+        public func resolveTokenGatewayContract() throws {
+            let sHash = Base58.encode(Hash)
+        }
     }
 }
 
 extension RenVM.SolanaChain {
-    public struct GatewayRegistryData: BufferLayout {
+    public struct GatewayRegistryData: DecodableBufferLayout {
         let isInitialized: Bool
         let owner: SolanaSDK.PublicKey
         let count: UInt64
