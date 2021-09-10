@@ -22,3 +22,9 @@ extension SolanaSDK.PublicKey: ExpressibleByStringLiteral,
         self = .init(stringLiteral: value)
     }
 }
+
+extension String {
+    func toPublicKey() throws -> SolanaSDK.PublicKey {
+        try SolanaSDK.PublicKey(string: self)
+    }
+}

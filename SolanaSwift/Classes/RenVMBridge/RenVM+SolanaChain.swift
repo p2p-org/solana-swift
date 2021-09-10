@@ -8,8 +8,14 @@
 import Foundation
 import RxSwift
 
+public protocol RenVMChainType {
+    func getAssociatedTokenAddress(
+        address: String
+    ) throws -> String
+}
+
 extension RenVM {
-    public struct SolanaChain {
+    public struct SolanaChain: RenVMChainType {
         // MARK: - Constants
         static let gatewayRegistryStateKey  = "GatewayRegistryState"
         static let gatewayStateKey          = "GatewayStateV0.1.4"
@@ -56,11 +62,14 @@ extension RenVM {
             return try .findProgramAddress(seeds: [sHash], programId: program).0
         }
         
-        func getAssociatedTokenAddress(
-            address: SolanaSDK.PublicKey
-        ) throws -> SolanaSDK.PublicKey {
+        public func getAssociatedTokenAddress(
+            address: String
+        ) throws -> String {
             let tokenMint = try getSPLTokenPubkey()
-            return try .associatedTokenAddress(walletAddress: address, tokenMintAddress: tokenMint)
+            return try SolanaSDK.PublicKey.associatedTokenAddress(
+                walletAddress: try address.toPublicKey(),
+                tokenMintAddress: tokenMint
+            ).base58EncodedString
         }
         
 //        public String createAssociatedTokenAccount(PublicKey address, Account signer) throws Exception {

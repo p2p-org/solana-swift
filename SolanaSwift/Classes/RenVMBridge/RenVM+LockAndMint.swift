@@ -14,20 +14,44 @@ extension RenVM {
         let network: Network
         let provider: RenVMProviderType
         let session: Session
+        let chain: RenVMChainType
+        var state = State()
+        
+        init(
+            network: Network,
+            provider: RenVMProviderType,
+            chain: RenVMChainType,
+            destinationAddress: SolanaSDK.PublicKey
+        ) {
+            self.network = network
+            self.provider = provider
+            self.chain = chain
+            self.session = Session(destinationAddress: destinationAddress.base58EncodedString)
+        }
+        
+        mutating func generateGatewayAddress() throws -> SolanaSDK.PublicKey {
+            let sendTo = try chain.getAssociatedTokenAddress(address: session.destinationAddress)
+            state.sendTo = sendTo
+            let sendToHex = Data(hex: sendTo).hexString
+            let tokenGatewayContractHex = Hash.generateSHash().hexString
+            let gHash = Hash.generateGHash(to: sendToHex, tokenIdentifier: tokenGatewayContractHex, nonce: Data(hex: session.nonce).bytes)
+            state.gHash = gHash
+            let gPubkey = provider
+        }
     }
 }
 
 extension RenVM.LockAndMint {
     public struct State {
-        public let gHash: Data
-        public let gPubKey: Data
-        public let sendTo: SolanaSDK.PublicKey
-        public let txid: Data
-        public let nHash: Data
-        public let pHash: Data
-        public let txHash: String
-        public let txIndex: String
-        public let amount: String
+        public var gHash: Data?
+        public var gPubKey: Data?
+        public var sendTo: String?
+        public var txid: Data?
+        public var nHash: Data?
+        public var pHash: Data?
+        public var txHash: String?
+        public var txIndex: String?
+        public var amount: String?
     }
     
     public struct Session {

@@ -9,11 +9,12 @@ import Foundation
 import RxSwift
 
 protocol RenVMProviderType {
-    
+    init(client: RenVMRpcClientType)
+    func selectPubkey() -> Single<String>
 }
 
 extension RenVM {
-    public struct Provider {
+    public struct Provider: RenVMProviderType {
         private let client: RenVMRpcClientType
         private var emptyParams = [String: String]()
         
@@ -38,6 +39,10 @@ extension RenVM {
             input: MintTransactionInput
         ) -> Single<ResponseSubmitTxMint> {
             client.call(endpoint: "ren_submitTx", params: ParamsSubmitMint(hash: hash, input: input))
+        }
+        
+        func selectPubkey() -> Single<String> {
+            queryBlockState().map {}
         }
 
     //    public byte[] selectPublicKey() throws RpcException {
@@ -121,9 +126,60 @@ extension RenVM {
     }
 
     public struct ResponseQueryBlockState: Decodable {
+        public let state: State
+        public var shards: [Shard] {
+            state.v.btc.shards
+        }
+        public var publicKey: String? {
+            shards.first?.pubKey
+        }
         
+        public struct State: Decodable {
+            public let v: Values
+        }
+        
+        public struct Values: Decodable {
+            public let btc: Btc
+        }
+        
+        public struct Btc: Decodable {
+            public let fees: Fees
+            public let gasCap: String
+            public let gasLimit: String
+            public let gasPrice: String
+            public let latestHeight: String
+            public let minimumAmount: String
+            public let shards: [Shard]
+        }
+        
+        public struct Fees: Decodable {
+            public let chains: [Chain]
+        }
+        
+        public struct Chain: Decodable {
+            public let burnFee: String
+            public let chain: String
+            public let mintFee: String
+        }
+        
+        public struct Shard: Decodable {
+            public let pubKey: String
+            public let shard: String
+            public let state: ShardState
+        }
+        
+        public struct ShardState: Decodable {
+            public let outpoint: Outpoint
+            public let pubKeyScript: String
+            public let value: String
+        }
+        
+        public struct Outpoint: Decodable {
+            public let hash: String
+            public let index: String
+        }
     }
-
+    
     public struct ResponseQueryConfig: Decodable {
         
     }
