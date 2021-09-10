@@ -46,6 +46,7 @@ class RenVMSolanaChainTests: XCTestCase {
     func testResolveTokenGatewayContract() throws {
         let solanaChain = try RenVM.SolanaChain.load(
             client: MockRenVMRpcClient(.testnet),
+            solanaClient: MockSolanaClient(),
             network: .testnet
         ).toBlocking().first()
         XCTAssertEqual(try solanaChain?.resolveTokenGatewayContract(), "FsEACSS3nKamRKdJBaBDpZtDXWrHR2nByahr4ReoYMBH")
@@ -54,6 +55,7 @@ class RenVMSolanaChainTests: XCTestCase {
     func testGetSPLTokenPubkey() throws {
         let solanaChain = try RenVM.SolanaChain.load(
             client: MockRenVMRpcClient(.testnet),
+            solanaClient: MockSolanaClient(),
             network: .testnet
         ).toBlocking().first()
         XCTAssertEqual(try solanaChain?.getSPLTokenPubkey(), "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD")
@@ -62,6 +64,7 @@ class RenVMSolanaChainTests: XCTestCase {
     func testGetAssociatedTokenAccount() throws {
         let solanaChain = try RenVM.SolanaChain.load(
             client: MockRenVMRpcClient(.testnet),
+            solanaClient: MockSolanaClient(),
             network: .testnet
         ).toBlocking().first()
         XCTAssertEqual(try solanaChain?.getAssociatedTokenAddress(address: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"), "4Z9Dv58aSkG9bC8stA3aqsMNXnSbJHDQTDSeddxAD1tb")
@@ -95,14 +98,6 @@ class RenVMSolanaChainTests: XCTestCase {
 }
 
 private struct MockRenVMRpcClient: RenVMRpcClientType {
-    func getMintData(mintAddress: String, programId: String) -> Single<SolanaSDK.Mint> {
-        fatalError()
-    }
-    
-    func getConfirmedSignaturesForAddress2(account: String, configs: SolanaSDK.RequestConfiguration?) -> Single<[SolanaSDK.SignatureInfo]> {
-        fatalError()
-    }
-    
     init(_ network: RenVM.Network) {
         
     }
@@ -110,7 +105,9 @@ private struct MockRenVMRpcClient: RenVMRpcClientType {
     func call<T>(endpoint: String, params: Encodable) -> Single<T> where T : Decodable {
         fatalError()
     }
-    
+}
+
+private struct MockSolanaClient: RenVMSolanaAPIClientType {
     func getAccountInfo<T>(account: String, decodedTo: T.Type) -> Single<SolanaSDK.BufferInfo<T>> where T : DecodableBufferLayout {
         if decodedTo == RenVM.SolanaChain.GatewayRegistryData.self {
             let data = Data(base64Encoded: mockGatewayRegistryData)!
@@ -118,6 +115,14 @@ private struct MockRenVMRpcClient: RenVMRpcClientType {
             let gatewayRegistryData = try! RenVM.SolanaChain.GatewayRegistryData(buffer: data, pointer: &pointer)
             return .just(.init(lamports: 0, owner: "", data: gatewayRegistryData as! T, executable: true, rentEpoch: 0))
         }
+        fatalError()
+    }
+    
+    func getMintData(mintAddress: String, programId: String) -> Single<SolanaSDK.Mint> {
+        fatalError()
+    }
+    
+    func getConfirmedSignaturesForAddress2(account: String, configs: SolanaSDK.RequestConfiguration?) -> Single<[SolanaSDK.SignatureInfo]> {
         fatalError()
     }
 }

@@ -17,10 +17,12 @@ extension RenVM {
         // MARK: - Properties
         let gatewayRegistryData: GatewayRegistryData
         let client: RenVMRpcClientType
+        let solanaClient: RenVMSolanaAPIClientType
         
         // MARK: - Methods
         public static func load(
             client: RenVMRpcClientType,
+            solanaClient: RenVMSolanaAPIClientType,
             network: Network
         ) -> Single<Self> {
             do {
@@ -29,12 +31,12 @@ extension RenVM {
                     seeds: [Self.gatewayRegistryStateKey.data(using: .utf8)!],
                     programId: pubkey
                 )
-                return client.getAccountInfo(
+                return solanaClient.getAccountInfo(
                     account: stateKey.0.base58EncodedString,
                     decodedTo: GatewayRegistryData.self
                 )
                 .map {$0.data}
-                .map {.init(gatewayRegistryData: $0, client: client)}
+                .map {.init(gatewayRegistryData: $0, client: client, solanaClient: solanaClient)}
             } catch {
                 return .error(error)
             }
@@ -147,10 +149,10 @@ extension RenVM {
             let renVMMessage = try Self.buildRenVMMessage(pHash: pHash, amount: amount, token: sHash, to: to, nHash: nHash)
             
             let mintLogAccount = try SolanaSDK.PublicKey.findProgramAddress(seeds: [renVMMessage.keccak256], programId: program).0
-            return client.getMintData(mintAddress: mintLogAccount.base58EncodedString, programId: program.base58EncodedString)
+            return solanaClient.getMintData(mintAddress: mintLogAccount.base58EncodedString, programId: program.base58EncodedString)
                 .flatMap {mint -> Single<String> in
                     if !mint.isInitialized {return .just("")}
-                    return client.getConfirmedSignaturesForAddress2(
+                    return solanaClient.getConfirmedSignaturesForAddress2(
                         account: mintLogAccount.base58EncodedString,
                         configs: nil
                     )
