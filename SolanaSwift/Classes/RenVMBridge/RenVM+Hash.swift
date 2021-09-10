@@ -45,23 +45,6 @@ extension RenVM {
             data += nonce + txId + txIndex.bytes
             return data.keccak256
         }
-        
-        //    public static func byte[] generateGHash(String to, String tokenIdentifier, byte[] nonce) {
-        //        byte[] pHash = generatePHash();
-        //        byte[] sHash = HEX.decode(tokenIdentifier);
-        //        byte[] toBytes = HEX.decode(to);
-        //
-        //        ByteBuffer buffer = ByteBuffer.allocate(pHash.length + sHash.length + toBytes.length + nonce.length);
-        //        buffer.put(pHash).put(sHash).put(toBytes).put(nonce);
-        //
-        //        return keccak256(buffer.array());
-        //    }
-        //
-        //    public static func byte[] generateNHash(byte[] nonce, byte[] txId, String txIndex) {
-        //        ByteBuffer buffer = ByteBuffer.allocate(nonce.length + txId.length + ByteUtils.UINT_32_LENGTH);
-        //        buffer.put(nonce).put(txId).put(ByteUtils.uint32ToByteArrayBE(Long.valueOf(txIndex)));
-        //        return keccak256(buffer.array());
-        //    }
     }
 }
 
