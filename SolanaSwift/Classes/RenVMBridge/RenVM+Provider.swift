@@ -10,7 +10,7 @@ import RxSwift
 
 protocol RenVMProviderType {
     init(client: RenVMRpcClientType)
-    func selectPubkey() -> Single<String>
+    func selectPublicKey() -> Single<String?>
 }
 
 extension RenVM {
@@ -41,15 +41,11 @@ extension RenVM {
             client.call(endpoint: "ren_submitTx", params: ParamsSubmitMint(hash: hash, input: input))
         }
         
-        func selectPubkey() -> Single<String> {
-            fatalError()
-//            queryBlockState().map {}
+        func selectPublicKey() -> Single<String?> {
+            queryBlockState()
+                .map {$0.publicKey}
+                .map {Data(base64Encoded: $0 ?? "")?.base64EncodedString()}
         }
-
-    //    public byte[] selectPublicKey() throws RpcException {
-    //        String pubKey = queryBlockState().getPubKey()
-    //        return Base64.getDecoder().decode(pubKey)
-    //    }
 
     //    public String submitMInt(byte[] gHash, byte[] gPubKey, byte[] nHash, byte[] nonce, String amount, byte[] pHash,
     //            String to, String txIndex, byte[] txid) throws RpcException {
