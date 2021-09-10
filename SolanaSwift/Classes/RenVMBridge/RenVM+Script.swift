@@ -8,66 +8,59 @@
 import Foundation
 
 extension RenVM {
-    class Script {
+    struct Script {
         private static let CHECKSUM_LENGTH = 4
-        private var bos = Data() //    private ByteArrayOutputStream bos;
+        private var bos = Data()
         
         // get current bytes
         var bytes: [UInt8] {
             bos.bytes
         }
         
-        func op(_ opcode: Int) -> Self {
-            bos += Data.encodeLength(opcode)
-            return self
+        mutating func op(_ opcode: OpCode) {
+            bos += opcode.rawValue.bytes
         }
         
-        func data(_ data: Data) -> Self {
-            bos += Data.encodeLength(data.count)
-            return self
+        mutating func data(_ data: Data) {
+            bos += [UInt8(data.count)]
+            bos += data
         }
         
         func toAddress(prefix: Data) -> Data {
             let hash = Data(bytes).hash160
             let hashWithPrefix = prefix + hash
+            let hashWithChecksum = hashWithPrefix + Self.checksum(hash: hashWithPrefix)
+            return hashWithChecksum
         }
-    //
-    //    public byte[] toAddress(byte[] prefix) {
-    //        byte[] hash = Hash.hash160(this.toByteArray());
-    //        byte[] hashWithPrefix = ByteBuffer.allocate(prefix.length + hash.length).put(prefix).put(hash).array();
-    //        byte[] hashWithChecksum = ByteBuffer.allocate(hashWithPrefix.length + CHECKSUM_LENGTH).put(hashWithPrefix)
-    //                .put(checksum(hashWithPrefix)).array();
-    //        return hashWithChecksum;
-    //    }
-    //
-    //    public static Script gatewayScript(byte[] gGubKeyHash, byte[] gHash) {
-    //        Script script = new Script();
-    //        script.data(gHash);
-    //        script.op(ScriptOpCodes.OP_DROP);
-    //        script.op(ScriptOpCodes.OP_DUP);
-    //        script.op(ScriptOpCodes.OP_HASH160);
-    //        script.data(gGubKeyHash);
-    //        script.op(ScriptOpCodes.OP_EQUALVERIFY);
-    //        script.op(ScriptOpCodes.OP_CHECKSIG);
-    //        return script;
-    //    }
-    //
-    //    public static byte[] createAddressByteArray(byte[] gGubKeyHash, byte[] gHash, byte[] prefix) {
-    //        return gatewayScript(gGubKeyHash, gHash).toAddress(prefix);
-    //    }
-    //
-    //    public static byte[] checksum(byte[] hash) {
-    //        byte[] sha256sha256Hash = Hash.sha256(Hash.sha256(hash));
-    //        return Arrays.copyOf(sha256sha256Hash, CHECKSUM_LENGTH);
-    //    }
-    //
-    //    public static class ScriptOpCodes {
-    //        public static final int OP_DROP = 0x75;
-    //        public static final int OP_DUP = 0x76;
-    //        public static final int OP_HASH160 = 0xa9;
-    //        public static final int OP_EQUALVERIFY = 0x88;
-    //        public static final int OP_CHECKSIG = 0xac;
-    //    }
+        
+        static func gatewayScript(gGubKeyHash: Data, gHash: Data) -> Self {
+            var script = Script()
+            script.data(gHash)
+            script.op(.OP_DROP)
+            script.op(.OP_DUP)
+            script.op(.OP_HASH160)
+            script.data(gGubKeyHash)
+            script.op(.OP_EQUALVERIFY)
+            script.op(.OP_CHECKSIG)
+            return script
+            
+        }
+        
+        static func createAddressByteArray(gGubKeyHash: Data, gHash: Data, prefix: Data) -> Data {
+            gatewayScript(gGubKeyHash: gGubKeyHash, gHash: gHash).toAddress(prefix: prefix)
+        }
+        
+        static func checksum(hash: Data) -> Data {
+            let sha256sha256Hash = hash.sha256().sha256()
+            return sha256sha256Hash[0..<Self.CHECKSUM_LENGTH]
+        }
+        
+        enum OpCode: UInt8 {
+            case OP_DROP = 0x75
+            case OP_DUP = 0x76
+            case OP_HASH160 = 0xa9
+            case OP_EQUALVERIFY = 0x88
+            case OP_CHECKSIG = 0xac
+        }
     }
 }
-

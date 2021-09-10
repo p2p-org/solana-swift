@@ -42,7 +42,8 @@ extension RenVM {
         }
         
         func selectPubkey() -> Single<String> {
-            queryBlockState().map {}
+            fatalError()
+//            queryBlockState().map {}
         }
 
     //    public byte[] selectPublicKey() throws RpcException {
