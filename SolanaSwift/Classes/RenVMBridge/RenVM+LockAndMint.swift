@@ -6,11 +6,12 @@
 //
 
 import Foundation
+import RxSwift
 
 public typealias Long = Int64
 
 extension RenVM {
-    public struct LockAndMint {
+    public class LockAndMint {
         let network: Network
         let provider: RenVMProviderType
         let session: Session
@@ -29,14 +30,21 @@ extension RenVM {
             self.session = Session(destinationAddress: destinationAddress.base58EncodedString)
         }
         
-        mutating func generateGatewayAddress() throws -> SolanaSDK.PublicKey {
+        func generateGatewayAddress() throws -> Single<String> {
             let sendTo = try chain.getAssociatedTokenAddress(address: session.destinationAddress)
             state.sendTo = sendTo
             let sendToHex = Data(hex: sendTo).hexString
             let tokenGatewayContractHex = Hash.generateSHash().hexString
             let gHash = Hash.generateGHash(to: sendToHex, tokenIdentifier: tokenGatewayContractHex, nonce: Data(hex: session.nonce).bytes)
             state.gHash = gHash
-            let gPubkey = provider
+            
+            return provider.selectPubkey()
+                .map {[weak self] gPubkey in
+                    guard let self = self else {throw Error.unknown}
+                    self.state.gPubKey = gPubkey
+                    
+                    return gPubkey
+                }
         }
     }
 }
@@ -44,7 +52,7 @@ extension RenVM {
 extension RenVM.LockAndMint {
     public struct State {
         public var gHash: Data?
-        public var gPubKey: Data?
+        public var gPubKey: String?
         public var sendTo: String?
         public var txid: Data?
         public var nHash: Data?

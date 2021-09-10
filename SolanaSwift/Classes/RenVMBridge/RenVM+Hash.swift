@@ -66,6 +66,10 @@ extension RenVM {
 }
 
 extension Data {
+    var hash160: Data {
+        ask_BTCHash160()
+    }
+    
     var keccak256: Data {
         sha3(.keccak256)
     }
