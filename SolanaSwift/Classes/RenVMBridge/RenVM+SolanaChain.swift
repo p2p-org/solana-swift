@@ -41,7 +41,7 @@ extension RenVM {
         }
         
         public func resolveTokenGatewayContract() throws {
-            let sHash = Base58.encode(Hash)
+            fatalError()
         }
     }
 }
