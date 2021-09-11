@@ -43,13 +43,13 @@ extension RenVM {
                 .observe(on: CurrentThreadScheduler.instance)
                 .map {[weak self] gPubkey in
                     guard let self = self else {throw Error.unknown}
-                    guard let gPubkey = gPubkey, let data = Data(base64Encoded: gPubkey)
+                    guard let gPubkey = gPubkey
                     else {throw Error("Provider's public key not found")}
                     
                     self.state.gPubKey = gPubkey
                     
                     let gatewayAddress = Script.createAddressByteArray(
-                        gGubKeyHash: data.hash160,
+                        gGubKeyHash: gPubkey.hash160,
                         gHash: gHash,
                         prefix: Data([self.network.p2shPrefix])
                     )
@@ -63,7 +63,7 @@ extension RenVM {
 extension RenVM.LockAndMint {
     public struct State {
         public var gHash: Data?
-        public var gPubKey: String?
+        public var gPubKey: Data?
         public var sendTo: Data? // PublicKey
         public var txid: Data?
         public var nHash: Data?

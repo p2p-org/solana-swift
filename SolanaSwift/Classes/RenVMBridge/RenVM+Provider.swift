@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 protocol RenVMProviderType {
-    func selectPublicKey() -> Single<String?>
+    func selectPublicKey() -> Single<Data?>
 }
 
 extension RenVM {
@@ -40,9 +40,9 @@ extension RenVM {
             client.call(endpoint: "ren_submitTx", params: ParamsSubmitMint(hash: hash, input: input))
         }
         
-        func selectPublicKey() -> Single<String?> {
+        func selectPublicKey() -> Single<Data?> {
             queryBlockState()
-                .map {$0.publicKey}
+                .map {Data(base64Encoded: $0.publicKey ?? "")}
         }
 
     //    public String submitMInt(byte[] gHash, byte[] gPubKey, byte[] nHash, byte[] nonce, String amount, byte[] pHash,

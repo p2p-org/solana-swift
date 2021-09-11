@@ -30,8 +30,8 @@ extension RenVM {
 }
 
 private struct MockRenVMProvider: RenVMProviderType {
-    func selectPublicKey() -> Single<String?> {
-        .just("Aw3WX32ykguyKZEuP0IT3RUOX5csm3PpvnFNhEVhrDVc")
+    func selectPublicKey() -> Single<Data?> {
+        .just(Data(base64Encoded: "Aw3WX32ykguyKZEuP0IT3RUOX5csm3PpvnFNhEVhrDVc"))
     }
 }
 
