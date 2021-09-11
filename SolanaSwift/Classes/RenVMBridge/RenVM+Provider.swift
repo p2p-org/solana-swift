@@ -43,7 +43,6 @@ extension RenVM {
         func selectPublicKey() -> Single<String?> {
             queryBlockState()
                 .map {$0.publicKey}
-                .map {Data(base64Encoded: $0 ?? "")?.base64EncodedString()}
         }
 
     //    public String submitMInt(byte[] gHash, byte[] gPubKey, byte[] nHash, byte[] nonce, String amount, byte[] pHash,

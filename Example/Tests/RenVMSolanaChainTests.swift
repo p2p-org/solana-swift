@@ -44,16 +44,16 @@ class RenVMSolanaChainTests: XCTestCase {
     }
     
     func testResolveTokenGatewayContract() throws {
-        XCTAssertEqual(try RenVM.Mock.solanaChain.resolveTokenGatewayContract(), "FsEACSS3nKamRKdJBaBDpZtDXWrHR2nByahr4ReoYMBH")
+        XCTAssertEqual(try RenVM.Mock.solanaChain().resolveTokenGatewayContract(), "FsEACSS3nKamRKdJBaBDpZtDXWrHR2nByahr4ReoYMBH")
     }
     
     func testGetSPLTokenPubkey() throws {
-        XCTAssertEqual(try RenVM.Mock.solanaChain.getSPLTokenPubkey(), "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD")
+        XCTAssertEqual(try RenVM.Mock.solanaChain().getSPLTokenPubkey(), "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD")
     }
     
     func testGetAssociatedTokenAccount() throws {
         let pubkey: SolanaSDK.PublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-        XCTAssertEqual(Base58.encode(try RenVM.Mock.solanaChain.getAssociatedTokenAddress(address: pubkey.data).bytes), "4Z9Dv58aSkG9bC8stA3aqsMNXnSbJHDQTDSeddxAD1tb")
+        XCTAssertEqual(Base58.encode(try RenVM.Mock.solanaChain().getAssociatedTokenAddress(address: pubkey.data).bytes), "4Z9Dv58aSkG9bC8stA3aqsMNXnSbJHDQTDSeddxAD1tb")
     }
     
     func testBuildRenVMMessage() throws {

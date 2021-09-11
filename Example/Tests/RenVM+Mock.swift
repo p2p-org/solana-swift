@@ -12,11 +12,11 @@ import RxSwift
 
 extension RenVM {
     struct Mock {
-        static var solanaChain: SolanaChain {
+        static func solanaChain(network: RenVM.Network = .testnet) -> SolanaChain {
             try! RenVM.SolanaChain.load(
-                client: MockRenVMRpcClient(.testnet),
+                client: MockRenVMRpcClient(network),
                 solanaClient: MockSolanaClient(),
-                network: .testnet
+                network: network
             ).toBlocking().first()!
         }
         

@@ -22,12 +22,13 @@ extension RenVM {
             network: Network,
             provider: RenVMProviderType,
             chain: RenVMChainType,
-            destinationAddress: Data
+            destinationAddress: Data,
+            sessionDay: Long
         ) {
             self.network = network
             self.provider = provider
             self.chain = chain
-            self.session = Session(destinationAddress: destinationAddress)
+            self.session = Session(destinationAddress: destinationAddress, sessionDay: sessionDay)
         }
         
         func generateGatewayAddress() throws -> Single<Data> {
@@ -42,7 +43,7 @@ extension RenVM {
                 .observe(on: CurrentThreadScheduler.instance)
                 .map {[weak self] gPubkey in
                     guard let self = self else {throw Error.unknown}
-                    guard let gPubkey = gPubkey, let data = Data(base64Encoded: gPubkey)
+                    guard let gPubkey = gPubkey, let data = try? self.chain.convertStringAddressToData(address: gPubkey)
                     else {throw Error("Provider's public key not found")}
                     
                     self.state.gPubKey = gPubkey
@@ -50,7 +51,7 @@ extension RenVM {
                     let gatewayAddress = Script.createAddressByteArray(
                         gGubKeyHash: data.hash160,
                         gHash: gHash,
-                        prefix: Data([UInt8(self.network.p2shPrefix)])
+                        prefix: Data([self.network.p2shPrefix])
                     )
                     self.session.gatewayAddress = gatewayAddress
                     return self.session.gatewayAddress

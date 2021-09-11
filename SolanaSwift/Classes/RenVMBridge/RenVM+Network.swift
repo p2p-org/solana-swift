@@ -15,7 +15,7 @@ extension RenVM {
         public private(set) var lightNode: String
         public private(set) var gatewayRegistry: String
         public private(set) var genesisHash: String
-        public private(set) var p2shPrefix: Int
+        public private(set) var p2shPrefix: UInt8
         
         public static var mainnet: Self {
             .init(
