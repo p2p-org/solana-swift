@@ -23,7 +23,13 @@ class RenVMLockAndMintTests: XCTestCase {
     }
     
     func testGenerateGatewayAddress() throws {
-        let lockAndMint = RenVM.LockAndMint(network: .testnet, provider: RenVM.Mock.provider, chain: RenVM.Mock.solanaChain(), destinationAddress: destinationAddress.data, sessionDay: 18870)
+        let lockAndMint = RenVM.LockAndMint(
+            network: .testnet,
+            provider: RenVM.Mock.provider,
+            chain: RenVM.Mock.solanaChain(),
+            destinationAddress: destinationAddress.data,
+            sessionDay: 18870
+        )
         
         let address = try lockAndMint.generateGatewayAddress().toBlocking().first()
         XCTAssertEqual(Base58.encode(address!.bytes), "2NC451uvR7AD5hvWNLQiYoqwQQfvQy2XB6U")

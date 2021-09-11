@@ -12,10 +12,6 @@ public protocol RenVMChainType {
     func getAssociatedTokenAddress(
         address: Data
     ) throws -> Data // represent as data, because there might be different encoding methods for various of chains
-    
-    func convertStringAddressToData(
-        address: String
-    ) throws -> Data
 }
 
 extension RenVM {
@@ -74,10 +70,6 @@ extension RenVM {
                 walletAddress: try SolanaSDK.PublicKey(data: address),
                 tokenMintAddress: tokenMint
             ).data
-        }
-        
-        public func convertStringAddressToData(address: String) throws -> Data {
-            Data(Base58.decode(address))
         }
         
 //        public String createAssociatedTokenAccount(PublicKey address, Account signer) throws Exception {

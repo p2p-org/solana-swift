@@ -43,7 +43,7 @@ extension RenVM {
                 .observe(on: CurrentThreadScheduler.instance)
                 .map {[weak self] gPubkey in
                     guard let self = self else {throw Error.unknown}
-                    guard let gPubkey = gPubkey, let data = try? self.chain.convertStringAddressToData(address: gPubkey)
+                    guard let gPubkey = gPubkey, let data = Data(base64Encoded: gPubkey)
                     else {throw Error("Provider's public key not found")}
                     
                     self.state.gPubKey = gPubkey
