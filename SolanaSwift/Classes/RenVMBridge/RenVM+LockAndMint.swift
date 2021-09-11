@@ -22,18 +22,18 @@ extension RenVM {
             network: Network,
             provider: RenVMProviderType,
             chain: RenVMChainType,
-            destinationAddress: SolanaSDK.PublicKey
+            destinationAddress: Data
         ) {
             self.network = network
             self.provider = provider
             self.chain = chain
-            self.session = Session(destinationAddress: destinationAddress.base58EncodedString)
+            self.session = Session(destinationAddress: destinationAddress)
         }
         
-        func generateGatewayAddress() throws -> Single<String> {
+        func generateGatewayAddress() throws -> Single<Data> {
             let sendTo = try chain.getAssociatedTokenAddress(address: session.destinationAddress)
             state.sendTo = sendTo
-            let sendToHex = Data(hex: sendTo).hexString
+            let sendToHex = sendTo.hexString
             let tokenGatewayContractHex = Hash.generateSHash().hexString
             let gHash = Hash.generateGHash(to: sendToHex, tokenIdentifier: tokenGatewayContractHex, nonce: Data(hex: session.nonce).bytes)
             state.gHash = gHash
@@ -52,7 +52,7 @@ extension RenVM {
                         gHash: gHash,
                         prefix: Data([UInt8(self.network.p2shPrefix)])
                     )
-                    self.session.gatewayAddress = Base58.encode(gatewayAddress.bytes)
+                    self.session.gatewayAddress = gatewayAddress
                     return self.session.gatewayAddress
                 }
         }
@@ -63,7 +63,7 @@ extension RenVM.LockAndMint {
     public struct State {
         public var gHash: Data?
         public var gPubKey: String?
-        public var sendTo: String?
+        public var sendTo: Data? // PublicKey
         public var txid: Data?
         public var nHash: Data?
         public var pHash: Data?
@@ -74,11 +74,11 @@ extension RenVM.LockAndMint {
     
     public struct Session {
         init(
-            destinationAddress: String,
+            destinationAddress: Data,
             nonce: String? = nil,
             sessionDay: Long = Long(Date().timeIntervalSince1970 / 1000 / 60 / 60 / 24),
             expiryTimeInDays: Long = 3,
-            gatewayAddress: String = ""
+            gatewayAddress: Data = Data()
         ) {
             self.destinationAddress = destinationAddress
             self.nonce = nonce ?? generateNonce(sessionDay: sessionDay)
@@ -87,11 +87,11 @@ extension RenVM.LockAndMint {
             self.gatewayAddress = gatewayAddress
         }
         
-        public private(set) var destinationAddress: String
+        public private(set) var destinationAddress: Data
         public private(set) var nonce: String
         public private(set) var createdAt: Long
         public private(set) var expiryTime: Long
-        public internal(set) var gatewayAddress: String
+        public internal(set) var gatewayAddress: Data
         
     }
 }

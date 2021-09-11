@@ -10,8 +10,8 @@ import RxSwift
 
 public protocol RenVMChainType {
     func getAssociatedTokenAddress(
-        address: String
-    ) throws -> String
+        address: Data
+    ) throws -> Data // represent as data, because there might be different encoding methods for various of chains
 }
 
 extension RenVM {
@@ -63,13 +63,13 @@ extension RenVM {
         }
         
         public func getAssociatedTokenAddress(
-            address: String
-        ) throws -> String {
+            address: Data
+        ) throws -> Data {
             let tokenMint = try getSPLTokenPubkey()
             return try SolanaSDK.PublicKey.associatedTokenAddress(
-                walletAddress: try address.toPublicKey(),
+                walletAddress: try SolanaSDK.PublicKey(data: address),
                 tokenMintAddress: tokenMint
-            ).base58EncodedString
+            ).data
         }
         
 //        public String createAssociatedTokenAccount(PublicKey address, Account signer) throws Exception {

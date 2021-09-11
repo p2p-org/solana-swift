@@ -52,7 +52,8 @@ class RenVMSolanaChainTests: XCTestCase {
     }
     
     func testGetAssociatedTokenAccount() throws {
-        XCTAssertEqual(try RenVM.Mock.solanaChain.getAssociatedTokenAddress(address: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"), "4Z9Dv58aSkG9bC8stA3aqsMNXnSbJHDQTDSeddxAD1tb")
+        let pubkey: SolanaSDK.PublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+        XCTAssertEqual(Base58.encode(try RenVM.Mock.solanaChain.getAssociatedTokenAddress(address: pubkey.data).bytes), "4Z9Dv58aSkG9bC8stA3aqsMNXnSbJHDQTDSeddxAD1tb")
     }
     
     func testBuildRenVMMessage() throws {

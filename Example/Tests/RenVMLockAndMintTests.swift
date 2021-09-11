@@ -15,7 +15,7 @@ class RenVMLockAndMintTests: XCTestCase {
     func testSession() throws {
         let sessionDay: Long = 18870
         let session = RenVM.LockAndMint.Session(
-            destinationAddress: destinationAddress.base58EncodedString,
+            destinationAddress: destinationAddress.data,
             sessionDay: sessionDay
         )
         XCTAssertEqual(session.expiryTime, 1630627200000)
@@ -23,10 +23,10 @@ class RenVMLockAndMintTests: XCTestCase {
     }
     
     func testGenerateGatewayAddress() throws {
-        let lockAndMint = RenVM.LockAndMint(network: .testnet, provider: RenVM.Mock.provider, chain: RenVM.Mock.solanaChain, destinationAddress: destinationAddress)
+        let lockAndMint = RenVM.LockAndMint(network: .testnet, provider: RenVM.Mock.provider, chain: RenVM.Mock.solanaChain, destinationAddress: destinationAddress.data)
         
         let address = try lockAndMint.generateGatewayAddress().toBlocking().first()
-        XCTAssertEqual(address, "2NC451uvR7AD5hvWNLQiYoqwQQfvQy2XB6U")
+        XCTAssertEqual(Base58.encode(address!.bytes), "2NC451uvR7AD5hvWNLQiYoqwQQfvQy2XB6U")
     }
     
 //    @Test
