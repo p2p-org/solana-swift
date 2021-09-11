@@ -9,7 +9,6 @@ import Foundation
 import RxSwift
 
 protocol RenVMProviderType {
-    init(client: RenVMRpcClientType)
     func selectPublicKey() -> Single<String?>
 }
 

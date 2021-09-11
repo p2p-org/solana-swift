@@ -14,7 +14,7 @@ extension RenVM {
     public class LockAndMint {
         let network: Network
         let provider: RenVMProviderType
-        let session: Session
+        var session: Session
         let chain: RenVMChainType
         var state = State()
         
@@ -38,12 +38,22 @@ extension RenVM {
             let gHash = Hash.generateGHash(to: sendToHex, tokenIdentifier: tokenGatewayContractHex, nonce: Data(hex: session.nonce).bytes)
             state.gHash = gHash
             
-            return provider.selectPubkey()
+            return provider.selectPublicKey()
+                .observe(on: CurrentThreadScheduler.instance)
                 .map {[weak self] gPubkey in
                     guard let self = self else {throw Error.unknown}
+                    guard let gPubkey = gPubkey, let data = Data(base64Encoded: gPubkey)
+                    else {throw Error("Provider's public key not found")}
+                    
                     self.state.gPubKey = gPubkey
                     
-                    return gPubkey
+                    let gatewayAddress = Script.createAddressByteArray(
+                        gGubKeyHash: data.hash160,
+                        gHash: gHash,
+                        prefix: Data([UInt8(self.network.p2shPrefix)])
+                    )
+                    self.session.gatewayAddress = Base58.encode(gatewayAddress.bytes)
+                    return self.session.gatewayAddress
                 }
         }
     }
