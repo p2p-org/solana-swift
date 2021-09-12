@@ -13,7 +13,7 @@ protocol RenVMProviderType {
 }
 
 extension RenVM {
-    public struct Provider: RenVMProviderType {
+    public class Provider: RenVMProviderType {
         private let client: RenVMRpcClientType
         private var emptyParams = [String: String]()
         
@@ -54,6 +54,22 @@ extension RenVM {
     //
     //        return hash
     //    }
+        
+        func mintTxHash(
+            gHash: Data,
+            gPubkey: Data,
+            nHash: Data,
+            nonce: Data,
+            amount: String,
+            pHash: Data,
+            to: String,
+            txIndex: String,
+            txid: Data
+        ) throws -> String {
+            let input = MintTransactionInput(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: to, txIndex: txIndex, txid: txid)
+            let hash = try hashTransactionMint(input)
+            return hash.base64urlEncodedString()
+        }
 
     //    public String mIntTxHash(byte[] gHash, byte[] gPubKey, byte[] nHash, byte[] nonce, String amount, byte[] pHash,
     //            String to, String txIndex, byte[] txid) {
@@ -61,22 +77,19 @@ extension RenVM {
     //        return Utils.toURLBase64(hashTransactionMInt(mIntTx))
     //    }
 
-    //    public static MIntTransactionInput buildTransaction(byte[] gHash, byte[] gPubKey, byte[] nHash, byte[] nonce,
-    //            String amount, byte[] pHash, String to, String txIndex, byte[] txid) {
-    //        MIntTransactionInput mIntTx = MIntTransactionInput()
-    //        mIntTx.txid = Utils.toURLBase64(txid)
-    //        mIntTx.txindex = txIndex
-    //        mIntTx.ghash = Utils.toURLBase64(gHash)
-    //        mIntTx.gpubkey = Utils.toURLBase64(gPubKey)
-    //        mIntTx.nhash = Utils.toURLBase64(nHash)
-    //        mIntTx.nonce = Utils.toURLBase64(nonce)
-    //        mIntTx.phash = Utils.toURLBase64(pHash)
-    //        mIntTx.to = to
-    //        mIntTx.amount = amount
-    //        return mIntTx
-    //    }
-
         // txHash
+        public func hashTransactionMint(_ mintTx: RenVM.MintTransactionInput) throws -> Data {
+            var data = Data()
+            let version = "1"
+            let selector = "BTC/toSolana"
+            data += marshal(src: version)
+            data += marshal(src: selector)
+            // marshalledType MintTransactionInput
+            data += Base58
+                .decode("aHQBEVgedhqiYDUtzYKdu1Qg1fc781PEV4D1gLsuzfpHNwH8yK2A2BuZK4uZoMC6pp8o7GWQxmsp52gsDrfbipkyeQZnXigCmscJY4aJDxF9tT8DQP3XRa1cBzQL8S8PTzi9nPnBkAxBhtNv6q1")
+            data += marshal(src: Data(base64Encoded: mintTx.txid) ?? Data())
+            
+        }
     //    public static byte[] hashTransactionMInt(MIntTransactionInput mIntTx) {
     //        ByteArrayOutputStream out = ByteArrayOutputStream()
     //
@@ -115,80 +128,12 @@ extension RenVM {
     //    }
 
     }
-
-    public struct ResponseQueryTxMint: Decodable {
-        
-    }
-
-    public struct ResponseQueryBlockState: Decodable {
-        public let state: State
-        public var shards: [Shard] {
-            state.v.btc.shards
-        }
-        public var publicKey: String? {
-            shards.first?.pubKey
-        }
-        
-        public struct State: Decodable {
-            public let v: Values
-        }
-        
-        public struct Values: Decodable {
-            public let btc: Btc
-        }
-        
-        public struct Btc: Decodable {
-            public let fees: Fees
-            public let gasCap: String
-            public let gasLimit: String
-            public let gasPrice: String
-            public let latestHeight: String
-            public let minimumAmount: String
-            public let shards: [Shard]
-        }
-        
-        public struct Fees: Decodable {
-            public let chains: [Chain]
-        }
-        
-        public struct Chain: Decodable {
-            public let burnFee: String
-            public let chain: String
-            public let mintFee: String
-        }
-        
-        public struct Shard: Decodable {
-            public let pubKey: String
-            public let shard: String
-            public let state: ShardState
-        }
-        
-        public struct ShardState: Decodable {
-            public let outpoint: Outpoint
-            public let pubKeyScript: String
-            public let value: String
-        }
-        
-        public struct Outpoint: Decodable {
-            public let hash: String
-            public let index: String
-        }
-    }
-    
-    public struct ResponseQueryConfig: Decodable {
-        
-    }
-
-    public struct ResponseSubmitTxMint: Decodable {
-        
-    }
-
-    public struct ParamsSubmitMint: Encodable {
-        let hash: String
-        let input: MintTransactionInput
-    }
-    public struct MintTransactionInput: Encodable {
-        
-    }
 }
 
+private func marshal(src: String) -> Data {
+    marshal(src: Data(src.bytes))
+}
+
+private func marshal(src: Data) -> Data {
+    
+}

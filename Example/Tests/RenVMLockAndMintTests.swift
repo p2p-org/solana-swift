@@ -36,14 +36,6 @@ class RenVMLockAndMintTests: XCTestCase {
     }
     
 //    @Test
-//    public void generateGatewayAddressTest() throws Exception {
-//        LockAndMint lockAndMint = new LockAndMint(NetworkConfig.TESTNET(), Mock.buildRenVMProvider(),
-//                new SolanaChain(Mock.buildSolanaRpcClient(), NetworkConfig.TESTNET()), session);
-//
-//        assertEquals("2NC451uvR7AD5hvWNLQiYoqwQQfvQy2XB6U", lockAndMint.generateGatewayAddress());
-//    }
-//
-//    @Test
 //    public void getDepositStateTest() throws Exception {
 //        LockAndMint lockAndMint = new LockAndMint(NetworkConfig.TESTNET(), Mock.buildRenVMProvider(),
 //                new SolanaChain(Mock.buildSolanaRpcClient(), NetworkConfig.TESTNET()),

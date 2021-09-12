@@ -31,8 +31,13 @@ extension RenVM {
             self.session = Session(destinationAddress: destinationAddress, sessionDay: sessionDay)
         }
         
-        func generateGatewayAddress() throws -> Single<Data> {
-            let sendTo = try chain.getAssociatedTokenAddress(address: session.destinationAddress)
+        func generateGatewayAddress() -> Single<Data> {
+            let sendTo: Data
+            do {
+                sendTo = try chain.getAssociatedTokenAddress(address: session.destinationAddress)
+            } catch {
+                return .error(error)
+            }
             state.sendTo = sendTo
             let sendToHex = sendTo.hexString
             let tokenGatewayContractHex = Hash.generateSHash().hexString
@@ -56,6 +61,19 @@ extension RenVM {
                     self.session.gatewayAddress = gatewayAddress
                     return self.session.gatewayAddress
                 }
+        }
+        
+        func getDepositState(
+            transactionHash: String,
+            txIndex: String,
+            amount: String
+        ) -> Single<State> {
+            let nonce = Data(hex: session.nonce)
+            let txid = Data(hex: reverseHex(src: transactionHash))
+            let nHash = Hash.generateNHash(nonce: nonce.bytes, txId: txid.bytes, txIndex: UInt32(txIndex) ?? 0)
+            let pHash = Hash.generatePHash()
+            
+            
         }
     }
 }
@@ -101,6 +119,15 @@ private func generateNonce(sessionDay: Long) -> String {
     let string = String(repeating: " ", count: 28) + sessionDay.hexString
     let data = string.getBytes() ?? Data()
     return data.hexString
+}
+
+private func reverseHex(src: String) -> String {
+    var newStr = Array(src)
+    for i in stride(from: 0, to: src.count / 2, by: 2) {
+        newStr.swapAt(i, newStr.count - i - 2)
+        newStr.swapAt(i + 1, newStr.count - i - 1)
+    }
+    return String(newStr)
 }
 
 private extension Long {
