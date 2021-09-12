@@ -851,7 +851,7 @@ public struct SerumSwap {
             fee += lamportsPerSignature
             
             // if source token is native, a fee for creating wrapped SOL is needed, thus a fee for new account's signature (not associated token address) is also needed
-            if fromWallet.token.isNative {
+            if fromWallet.isNativeSOL {
                 fee += minRentExemption + lamportsPerSignature
             }
             
