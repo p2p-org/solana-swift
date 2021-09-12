@@ -15,6 +15,10 @@ extension SolanaSDK {
         public var token: Token
         public var userInfo: AnyHashable?
         
+        public var isNativeSOL: Bool {
+            token.isNativeSOL
+        }
+        
         // MARK: - Initializer
         public init(pubkey: String? = nil, lamports: UInt64? = nil, token: SolanaSDK.Token) {
             self.pubkey = pubkey

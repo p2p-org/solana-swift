@@ -109,6 +109,10 @@ extension SolanaSDK {
         public var isUndefined: Bool {
             symbol.isEmpty
         }
+        
+        public var isNativeSOL: Bool {
+            symbol == "SOL" && isNative
+        }
     }
     
     public struct TokenExtensions: Hashable, Decodable {
