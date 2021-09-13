@@ -8,6 +8,21 @@
 import Foundation
 import RxSwift
 
+public protocol RenVMSolanaAPIClientType {
+    func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) -> Single<SolanaSDK.BufferInfo<T>>
+    func getMintData(
+        mintAddress: String,
+        programId: String
+    ) -> Single<SolanaSDK.Mint>
+    func getConfirmedSignaturesForAddress2(account: String, configs: SolanaSDK.RequestConfiguration?) -> Single<[SolanaSDK.SignatureInfo]>
+    func serializeAndSend(
+        instructions: [SolanaSDK.TransactionInstruction],
+        recentBlockhash: String?,
+        signers: [SolanaSDK.Account],
+        isSimulation: Bool
+    ) -> Single<String>
+}
+
 extension RenVM {
     public struct SolanaChain: RenVMChainType {
         // MARK: - Constants
@@ -70,23 +85,33 @@ extension RenVM {
             Base58.encode(data.bytes)
         }
         
-//        public String createAssociatedTokenAccount(PublicKey address, Account signer) throws Exception {
-//            PublicKey tokenMint = getSPLTokenPubkey();
-//            PublicKey associatedTokenAddress = getAssociatedTokenAddress(address);
-//
-//            TransactionInstruction createAccountInstruction = TokenProgram.createAssociatedTokenAccountInstruction(
-//                    TokenProgram.ASSOCIATED_TOKEN_PROGRAM_ID, TokenProgram.PROGRAM_ID, tokenMint, associatedTokenAddress,
-//                    address, signer.getPublicKey());
-//
-//            Transaction transaction = new Transaction();
-//            transaction.addInstruction(createAccountInstruction);
-//
-//            return client.getApi().sendTransaction(transaction, signer);
-//        }
-//
+        public func createAssociatedTokenAccount(
+            address: SolanaSDK.PublicKey,
+            signer: SolanaSDK.Account
+        ) -> Single<String> {
+            do {
+                let tokenMint = try getSPLTokenPubkey()
+                let associatedTokenAddress = try getAssociatedTokenAddress(address: address.data)
+                let createAccountInstruction = SolanaSDK.AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+                    mint: tokenMint,
+                    associatedAccount: try SolanaSDK.PublicKey(data: associatedTokenAddress),
+                    owner: address,
+                    payer: signer.publicKey
+                )
+                return solanaClient.serializeAndSend(
+                    instructions: [createAccountInstruction],
+                    recentBlockhash: nil,
+                    signers: [signer],
+                    isSimulation: false
+                )
+            } catch {
+                return .error(error)
+            }
+        }
+        
         public func submitMint(
             address: Data,
-            signer: Data,
+            signer secretKey: Data,
             responceQueryMint: RenVM.ResponseQueryTxMint
         ) -> Single<String> {
             fatalError()
@@ -104,9 +129,10 @@ extension RenVM {
             let gatewayAccountId: SolanaSDK.PublicKey
             let tokenMint: SolanaSDK.PublicKey
             let mintAuthority: SolanaSDK.PublicKey
-            let recipientTokenAccount: Data
+            let recipientTokenAccount: SolanaSDK.PublicKey
             let renVMMessage: Data
             let mintLogAccount: SolanaSDK.PublicKey
+            let signer: SolanaSDK.Account
             
             do {
                 guard let sig = try responceQueryMint.valueOut.sig.decodeBase64URL()?.fixSignatureSimple()
@@ -121,22 +147,31 @@ extension RenVM {
                     seeds: [tokenMint.data],
                     programId: program
                 ).0
-                recipientTokenAccount = try getAssociatedTokenAddress(address: address)
+                recipientTokenAccount = try SolanaSDK.PublicKey(data: try getAssociatedTokenAddress(address: address))
                 renVMMessage = try Self.buildRenVMMessage(
                     pHash: pHash,
                     amount: amount,
                     token: sHash,
-                    to: try SolanaSDK.PublicKey(data: recipientTokenAccount),
+                    to: recipientTokenAccount,
                     nHash: nHash
                 )
                 mintLogAccount = try .findProgramAddress(seeds: [renVMMessage.keccak256], programId: program).0
-                
+                signer = try SolanaSDK.Account(secretKey: secretKey)
             } catch {
                 return .error(error)
             }
             
+            let mintInstruction = RenProgram.mintInstruction(
+                account: signer.publicKey,
+                gatewayAccount: gatewayAccountId,
+                tokenMint: tokenMint,
+                recipientTokenAccount: recipientTokenAccount,
+                mintLogAccount: mintLogAccount,
+                mintAuthority: mintAuthority,
+                programId: program
+            )
             
-        
+            
             
         }
 //        public String submitMint(PublicKey address, Account signer, ResponseQueryTxMint responceQueryMint)

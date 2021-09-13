@@ -72,12 +72,3 @@ public extension RenVMRpcClientType {
             .map {Data(base64Encoded: $0.publicKey ?? "")}
     }
 }
-
-public protocol RenVMSolanaAPIClientType {
-    func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) -> Single<SolanaSDK.BufferInfo<T>>
-    func getMintData(
-        mintAddress: String,
-        programId: String
-    ) -> Single<SolanaSDK.Mint>
-    func getConfirmedSignaturesForAddress2(account: String, configs: SolanaSDK.RequestConfiguration?) -> Single<[SolanaSDK.SignatureInfo]>
-}

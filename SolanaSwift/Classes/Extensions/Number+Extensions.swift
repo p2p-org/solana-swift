@@ -7,6 +7,13 @@
 
 import Foundation
 
+extension UInt16 {
+    var bytesLE: [UInt8] {
+        var littleEndian = self.littleEndian
+        return withUnsafeBytes(of: &littleEndian) { Array($0) }
+    }
+}
+
 extension UInt32 {
     var bytes: [UInt8] {
         var littleEndian = self.littleEndian
