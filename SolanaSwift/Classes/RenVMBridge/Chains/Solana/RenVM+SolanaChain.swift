@@ -115,7 +115,6 @@ extension RenVM {
             signer secretKey: Data,
             responceQueryMint: RenVM.ResponseQueryTxMint
         ) -> Single<String> {
-            fatalError()
             guard let pHash = responceQueryMint.valueIn.phash.decodeBase64URL(),
                   let nHash = responceQueryMint.valueIn.nhash.decodeBase64URL()
             else {
@@ -136,8 +135,9 @@ extension RenVM {
             let signer: SolanaSDK.Account
             
             do {
-                guard let sig = try responceQueryMint.valueOut.sig.decodeBase64URL()?.fixSignatureSimple()
+                guard let fixedSig = try responceQueryMint.valueOut.sig.decodeBase64URL()?.fixSignatureSimple()
                 else {return .error(Error.paramsMissing)}
+                sig = fixedSig
                 program = try resolveTokenGatewayContract()
                 gatewayAccountId = try .findProgramAddress(
                     seeds: [Data(gatewayStateKey.bytes)],
@@ -177,8 +177,24 @@ extension RenVM {
                 decodedTo: GatewayStateData.self
             ).map {$0.data}
             
-            
-            
+            return requestGatewayInfo
+                .flatMap {gatewayState in
+                    let secpInstruction = RenProgram.createInstructionWithEthAddress2(
+                        ethAddress: gatewayState.renVMAuthority.data,
+                        message: renVMMessage,
+                        signature: sig[0..<64],
+                        recoveryId: sig[64] - 27
+                    )
+                    return self.solanaClient.serializeAndSend(
+                        instructions: [
+                            mintInstruction,
+                            secpInstruction
+                        ],
+                        recentBlockhash: nil,
+                        signers: [signer],
+                        isSimulation: false
+                    )
+                }
         }
 //        public String submitMint(PublicKey address, Account signer, ResponseQueryTxMint responceQueryMint)
 //                throws Exception {

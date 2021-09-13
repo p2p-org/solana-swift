@@ -49,7 +49,7 @@ extension RenVM.SolanaChain {
             ethAddress: Data,
             message: Data,
             signature: Data,
-            recoveryId: Int
+            recoveryId: UInt8
         ) -> SolanaSDK.TransactionInstruction {
             let dataStart = 1 + SIGNATURE_OFFSETS_SERIALIZED_SIZE
             let ethAddressOffset = dataStart + 1
@@ -69,7 +69,7 @@ extension RenVM.SolanaChain {
             data += [UInt8(0)]
             data += ethAddress
             data += signature
-            data += [UInt8(recoveryId)]
+            data += [recoveryId]
             data += message
             
             return .init(keys: [], programId: .secp256k1ProgramId, data: data.bytes)
