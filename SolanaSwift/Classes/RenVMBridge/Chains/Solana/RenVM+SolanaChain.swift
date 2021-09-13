@@ -12,7 +12,7 @@ extension RenVM {
     public struct SolanaChain: RenVMChainType {
         // MARK: - Constants
         static let gatewayRegistryStateKey  = "GatewayRegistryState"
-        static let gatewayStateKey          = "GatewayStateV0.1.4"
+        let gatewayStateKey                 = "GatewayStateV0.1.4"
         
         // MARK: - Properties
         let gatewayRegistryData: GatewayRegistryData
@@ -90,14 +90,54 @@ extension RenVM {
             responceQueryMint: RenVM.ResponseQueryTxMint
         ) -> Single<String> {
             fatalError()
-//            guard let pHash = responceQueryMint.valueIn.phash.decodeBase64URL(),
-//                  let nHash = responceQueryMint.valueIn.nhash.decodeBase64URL(),
-//                  let sig =
-//            else {
-//                return .error(Error.paramsMissing)
-//            }
-//            let amount = responceQueryMint.valueOut.amount
-//            let nHash =
+            guard let pHash = responceQueryMint.valueIn.phash.decodeBase64URL(),
+                  let nHash = responceQueryMint.valueIn.nhash.decodeBase64URL()
+            else {
+                return .error(Error.paramsMissing)
+            }
+            
+            let amount = responceQueryMint.valueOut.amount
+            let sHash = Hash.generateSHash()
+            
+            let sig: Data
+            let program: SolanaSDK.PublicKey
+            let gatewayAccountId: SolanaSDK.PublicKey
+            let tokenMint: SolanaSDK.PublicKey
+            let mintAuthority: SolanaSDK.PublicKey
+            let recipientTokenAccount: Data
+            let renVMMessage: Data
+            let mintLogAccount: SolanaSDK.PublicKey
+            
+            do {
+                guard let sig = try responceQueryMint.valueOut.sig.decodeBase64URL()?.fixSignatureSimple()
+                else {return .error(Error.paramsMissing)}
+                program = try resolveTokenGatewayContract()
+                gatewayAccountId = try .findProgramAddress(
+                    seeds: [Data(gatewayStateKey.bytes)],
+                    programId: program
+                ).0
+                tokenMint = try getSPLTokenPubkey()
+                mintAuthority = try .findProgramAddress(
+                    seeds: [tokenMint.data],
+                    programId: program
+                ).0
+                recipientTokenAccount = try getAssociatedTokenAddress(address: address)
+                renVMMessage = try Self.buildRenVMMessage(
+                    pHash: pHash,
+                    amount: amount,
+                    token: sHash,
+                    to: try SolanaSDK.PublicKey(data: recipientTokenAccount),
+                    nHash: nHash
+                )
+                mintLogAccount = try .findProgramAddress(seeds: [renVMMessage.keccak256], programId: program).0
+                
+            } catch {
+                return .error(error)
+            }
+            
+            
+        
+            
         }
 //        public String submitMint(PublicKey address, Account signer, ResponseQueryTxMint responceQueryMint)
 //                throws Exception {
@@ -137,29 +177,7 @@ extension RenVM {
 //
 //            return confirmedSignature;
 //        }
-//
-//        public String findMintByDepositDetails(byte[] nHash, byte[] pHash, byte[] to, String amount) throws Exception {
-//            PublicKey program = resolveTokenGatewayContract();
-//            byte[] sHash = Hash.generateSHash();
-//            byte[] renVMMessage = buildRenVMMessage(pHash, amount, sHash, new PublicKey(to).toByteArray(), nHash);
-//            PublicKey mintLogAccount = PublicKey.findProgramAddress(Arrays.asList(Hash.keccak256(renVMMessage)), program)
-//                    .getAddress();
-//
-//            String signature = "";
-//            try {
-//                MintData mintData = Token.getMintData(client, mintLogAccount, program);
-//                if (!mintData.isInitialized()) {
-//                    return signature;
-//                }
-//
-//                List<SignatureInformation> signatures = client.getApi().getConfirmedSignaturesForAddress2(mintLogAccount,
-//                        1);
-//                signature = signatures.get(0).getSignature();
-//            } catch (Exception e) {
-//            }
-//
-//            return signature;
-//        }
+        
         public func findMintByDepositDetail(
             nHash: Data,
             pHash: Data,
