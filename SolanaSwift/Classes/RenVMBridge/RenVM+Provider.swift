@@ -71,12 +71,6 @@ extension RenVM {
             return hash.base64urlEncodedString()
         }
 
-    //    public String mIntTxHash(byte[] gHash, byte[] gPubKey, byte[] nHash, byte[] nonce, String amount, byte[] pHash,
-    //            String to, String txIndex, byte[] txid) {
-    //        MIntTransactionInput mIntTx = buildTransaction(gHash, gPubKey, nHash, nonce, amount, pHash, to, txIndex, txid)
-    //        return Utils.toURLBase64(hashTransactionMInt(mIntTx))
-    //    }
-
         // txHash
         static func hashTransactionMint(_ mintTx: RenVM.MintTransactionInput) throws -> Data {
             var data = Data()
@@ -139,43 +133,6 @@ extension RenVM {
             
             return data.sha256()
         }
-    //    public static byte[] hashTransactionMInt(MIntTransactionInput mIntTx) {
-    //        ByteArrayOutputStream out = ByteArrayOutputStream()
-    //
-    //        String version = "1"
-    //        String selector = "BTC/toSolana"
-    //        out.writeBytes(marshalString(version))
-    //        out.writeBytes(marshalString(selector))
-    //
-    //        // marshalledType MIntTransactionInput
-    //        out.writeBytes(Base58.decode(
-    //                "aHQBEVgedhqiYDUtzYKdu1Qg1fc781PEV4D1gLsuzfpHNwH8yK2A2BuZK4uZoMC6pp8o7GWQxmsp52gsDrfbipkyeQZnXigCmscJY4aJDxF9tT8DQP3XRa1cBzQL8S8PTzi9nPnBkAxBhtNv6q1"))
-    //
-    //        out.writeBytes(marshalBytes(Utils.fromURLBase64(mIntTx.txid)))
-    //        out.writeBytes(ByteUtils.uInt32ToByteArrayBE(Long.valueOf(mIntTx.txindex)))
-    //        out.writeBytes(Utils.amountToUInt256ByteArrayBE(mIntTx.amount))
-    //        out.writeBytes(byte[] { 0, 0, 0, 0 })
-    //        out.writeBytes(Utils.fromURLBase64(mIntTx.phash))
-    //        out.writeBytes(marshalString(mIntTx.to))
-    //        out.writeBytes(Utils.fromURLBase64(mIntTx.nonce))
-    //        out.writeBytes(Utils.fromURLBase64(mIntTx.nhash))
-    //        out.writeBytes(marshalBytes(Utils.fromURLBase64(mIntTx.gpubkey)))
-    //        out.writeBytes(Utils.fromURLBase64(mIntTx.ghash))
-    //
-    //        return Hash.sha256(out.toByteArray())
-    //    }
-
-    //    static byte[] marshalString(String src) {
-    //        return marshalBytes(src.getBytes())
-    //    }
-
-    //    static byte[] marshalBytes(byte[] in) {
-    //        byte[] out = byte[ByteUtils.UInt_32_LENGTH + in.length]
-    //        System.arraycopy(ByteUtils.uInt32ToByteArrayBE(in.length), 0, out, 0, ByteUtils.UInt_32_LENGTH)
-    //        System.arraycopy(in, 0, out, ByteUtils.UInt_32_LENGTH, in.length)
-    //        return out
-    //    }
-
     }
 }
 
