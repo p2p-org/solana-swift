@@ -8,21 +8,6 @@
 import Foundation
 import RxSwift
 
-public protocol RenVMChainType {
-    func getAssociatedTokenAddress(
-        address: Data
-    ) throws -> Data // represent as data, because there might be different encoding methods for various of chains
-    func dataToAddress(
-        data: Data
-    ) throws -> String
-    
-    func submitMint(
-        address: Data,
-        signer: Data,
-        responceQueryMint: RenVM.ResponseQueryTxMint
-    ) -> Single<String>
-}
-
 extension RenVM {
     public struct SolanaChain: RenVMChainType {
         // MARK: - Constants
