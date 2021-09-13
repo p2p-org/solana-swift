@@ -33,7 +33,7 @@ extension RenVM {
             client.call(endpoint: "ren_queryConfig", params: emptyParams)
         }
 
-        public func submitTxMint(
+        func submitTxMint(
             hash: String,
             input: MintTransactionInput
         ) -> Single<ResponseSubmitTxMint> {
@@ -67,7 +67,7 @@ extension RenVM {
             txid: Data
         ) throws -> String {
             let input = MintTransactionInput(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: to, txIndex: txIndex, txid: txid)
-            let hash = try hashTransactionMint(input)
+            let hash = try Self.hashTransactionMint(input)
             return hash.base64urlEncodedString()
         }
 
@@ -78,7 +78,7 @@ extension RenVM {
     //    }
 
         // txHash
-        public func hashTransactionMint(_ mintTx: RenVM.MintTransactionInput) throws -> Data {
+        static func hashTransactionMint(_ mintTx: RenVM.MintTransactionInput) throws -> Data {
             var data = Data()
             let version = "1"
             let selector = "BTC/toSolana"
@@ -87,8 +87,57 @@ extension RenVM {
             // marshalledType MintTransactionInput
             data += Base58
                 .decode("aHQBEVgedhqiYDUtzYKdu1Qg1fc781PEV4D1gLsuzfpHNwH8yK2A2BuZK4uZoMC6pp8o7GWQxmsp52gsDrfbipkyeQZnXigCmscJY4aJDxF9tT8DQP3XRa1cBzQL8S8PTzi9nPnBkAxBhtNv6q1")
-            data += marshal(src: Data(base64Encoded: mintTx.txid) ?? Data())
             
+            guard let txidData = Data(base64urlEncoded: mintTx.txid)
+            else {
+                throw Error("Transaction id is not valid")
+            }
+            data += marshal(src: txidData)
+            
+            guard let txindex = UInt32(mintTx.txindex)?.bytes
+            else {
+                throw Error("txindex is not valid")
+            }
+            data += txindex
+            
+            let amount = try UInt256(mintTx.amount).serialize()
+            data += amount
+            
+            data += Array(repeating: 0, count: 4)
+            
+            guard let phash = Data(base64urlEncoded: mintTx.phash)
+            else {
+                throw Error("phash is not valid")
+            }
+            data += phash
+            
+            data += marshal(src: mintTx.to)
+            
+            guard let nonce = Data(base64urlEncoded: mintTx.nonce)
+            else {
+                throw Error("nonce is not valid")
+            }
+            data += nonce
+            
+            guard let nhash = Data(base64urlEncoded: mintTx.nhash)
+            else {
+                throw Error("nhash is not valid")
+            }
+            data += nhash
+            
+            guard let gpubkey = Data(base64urlEncoded: mintTx.gpubkey)
+            else {
+                throw Error("gpubkey is not valid")
+            }
+            data += marshal(src: gpubkey)
+            
+            guard let ghash = Data(base64urlEncoded: mintTx.ghash)
+            else {
+                throw Error("ghash is not valid")
+            }
+            data += marshal(src: ghash)
+            
+            return data.sha256()
         }
     //    public static byte[] hashTransactionMInt(MIntTransactionInput mIntTx) {
     //        ByteArrayOutputStream out = ByteArrayOutputStream()
@@ -135,5 +184,8 @@ private func marshal(src: String) -> Data {
 }
 
 private func marshal(src: Data) -> Data {
-    
+    var data = Data()
+    data += UInt32(src.count).bytes
+    data += src
+    return data
 }

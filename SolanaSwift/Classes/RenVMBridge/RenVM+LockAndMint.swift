@@ -63,18 +63,18 @@ extension RenVM {
                 }
         }
         
-        func getDepositState(
-            transactionHash: String,
-            txIndex: String,
-            amount: String
-        ) -> Single<State> {
-            let nonce = Data(hex: session.nonce)
-            let txid = Data(hex: reverseHex(src: transactionHash))
-            let nHash = Hash.generateNHash(nonce: nonce.bytes, txId: txid.bytes, txIndex: UInt32(txIndex) ?? 0)
-            let pHash = Hash.generatePHash()
-            
-            
-        }
+//        func getDepositState(
+//            transactionHash: String,
+//            txIndex: String,
+//            amount: String
+//        ) -> Single<State> {
+//            let nonce = Data(hex: session.nonce)
+//            let txid = Data(hex: reverseHex(src: transactionHash))
+//            let nHash = Hash.generateNHash(nonce: nonce.bytes, txId: txid.bytes, txIndex: UInt32(txIndex) ?? 0)
+//            let pHash = Hash.generatePHash()
+//            
+//            
+//        }
     }
 }
 

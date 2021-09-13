@@ -79,7 +79,20 @@ extension RenVM {
         let hash: String
         let input: MintTransactionInput
     }
-    public struct MintTransactionInput: Encodable {
+    struct MintTransactionInput: Encodable {
+        init(txid: String, txindex: String, ghash: String, gpubkey: String, nhash: String, nonce: String, payload: String, phash: String, to: String, amount: String) {
+            self.txid = txid
+            self.txindex = txindex
+            self.ghash = ghash
+            self.gpubkey = gpubkey
+            self.nhash = nhash
+            self.nonce = nonce
+            self.payload = payload
+            self.phash = phash
+            self.to = to
+            self.amount = amount
+        }
+        
         init(
             gHash: Data,
             gPubkey: Data,
