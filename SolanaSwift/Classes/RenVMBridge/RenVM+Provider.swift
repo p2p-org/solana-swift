@@ -82,57 +82,36 @@ extension RenVM {
             data += Base58
                 .decode("aHQBEVgedhqiYDUtzYKdu1Qg1fc781PEV4D1gLsuzfpHNwH8yK2A2BuZK4uZoMC6pp8o7GWQxmsp52gsDrfbipkyeQZnXigCmscJY4aJDxF9tT8DQP3XRa1cBzQL8S8PTzi9nPnBkAxBhtNv6q1")
             
-            guard let txidData = Data(base64urlEncoded: mintTx.txid)
-            else {
-                throw Error("Transaction id is not valid")
-            }
-            data += marshal(src: txidData)
-            
-            guard let txindex = UInt32(mintTx.txindex)?.bytes
-            else {
-                throw Error("txindex is not valid")
-            }
-            data += txindex
-            
-            let amount = try UInt256(mintTx.amount).serialize()
-            data += amount
-            
-            data += Array(repeating: 0, count: 4)
-            
-            guard let phash = Data(base64urlEncoded: mintTx.phash)
-            else {
-                throw Error("phash is not valid")
-            }
-            data += phash
-            
+            data += marshal(src: try mintTx.txid.base64UrlEncoded())
+            data += try mintTx.txindex.uint32Data()
+            data += try UInt256(mintTx.amount).serialize()
+            data += [UInt8](repeating: 0, count: 4)
+            data += try mintTx.phash.base64UrlEncoded()
             data += marshal(src: mintTx.to)
-            
-            guard let nonce = Data(base64urlEncoded: mintTx.nonce)
-            else {
-                throw Error("nonce is not valid")
-            }
-            data += nonce
-            
-            guard let nhash = Data(base64urlEncoded: mintTx.nhash)
-            else {
-                throw Error("nhash is not valid")
-            }
-            data += nhash
-            
-            guard let gpubkey = Data(base64urlEncoded: mintTx.gpubkey)
-            else {
-                throw Error("gpubkey is not valid")
-            }
-            data += marshal(src: gpubkey)
-            
-            guard let ghash = Data(base64urlEncoded: mintTx.ghash)
-            else {
-                throw Error("ghash is not valid")
-            }
-            data += marshal(src: ghash)
-            
+            data += try mintTx.nonce.base64UrlEncoded()
+            data += try mintTx.nhash.base64UrlEncoded()
+            data += marshal(src: try mintTx.gpubkey.base64UrlEncoded())
+            data += try mintTx.ghash.base64UrlEncoded()
             return data.sha256()
         }
+    }
+}
+
+private extension String {
+    func base64UrlEncoded() throws -> Data {
+        guard let data = Data(base64urlEncoded: self)
+        else {
+            throw RenVM.Error("Base64 encoded string is not valid")
+        }
+        return data
+    }
+    
+    func uint32Data() throws -> Data {
+        guard let num = UInt32(self)?.bytes
+        else {
+            throw RenVM.Error("Not an UInt32")
+        }
+        return Data(num)
     }
 }
 
