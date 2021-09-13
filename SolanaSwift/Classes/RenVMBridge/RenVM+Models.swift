@@ -139,7 +139,7 @@ extension RenVM {
             
             data += marshal(src: try txid.base64UrlEncoded())
             data += try txindex.uint32Data()
-            data += try UInt256(amount).serialize()
+            data += try serializeAmount(amount)
             data += [UInt8](repeating: 0, count: 4)
             data += try phash.base64UrlEncoded()
             data += marshal(src: to)
@@ -162,7 +162,7 @@ private extension String {
     }
     
     func uint32Data() throws -> Data {
-        guard let num = UInt32(self)?.bytes
+        guard let num = UInt32(self)?.bytesWithBigEndian
         else {
             throw RenVM.Error("Not an UInt32")
         }
@@ -176,7 +176,15 @@ private func marshal(src: String) -> Data {
 
 private func marshal(src: Data) -> Data {
     var data = Data()
-    data += UInt32(src.count).bytes
+    data += UInt32(src.count).bytesWithBigEndian
     data += src
     return data
+}
+
+private func serializeAmount(_ amount: String) throws -> [UInt8] {
+    guard let amount = UInt256(amount) else {
+        throw RenVM.Error("Amount is not valid")
+    }
+    var bigEndian = amount.bigEndian
+    return withUnsafeBytes(of: &bigEndian, {Array($0)})
 }
