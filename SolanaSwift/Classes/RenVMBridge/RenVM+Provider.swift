@@ -10,18 +10,11 @@ import RxSwift
 
 protocol RenVMProviderType {
     func selectPublicKey() -> Single<Data?>
-    func submitMint(
-        gHash: Data,
-        gPubkey: Data,
-        nHash: Data,
-        nonce: Data,
-        amount: String,
-        pHash: Data,
-        to: String,
-        txIndex: String,
-        txid: Data
-    ) -> Single<String>
     func queryMint(txHash: String) -> Single<RenVM.ResponseQueryTxMint>
+    func submitTxMint(
+        hash: String,
+        input: RenVM.MintTransactionInput
+    ) -> Single<RenVM.ResponseSubmitTxMint>
 }
 
 extension RenVM {
@@ -55,45 +48,6 @@ extension RenVM {
         func selectPublicKey() -> Single<Data?> {
             queryBlockState()
                 .map {Data(base64Encoded: $0.publicKey ?? "")}
-        }
-        
-        func submitMint(
-            gHash: Data,
-            gPubkey: Data,
-            nHash: Data,
-            nonce: Data,
-            amount: String,
-            pHash: Data,
-            to: String,
-            txIndex: String,
-            txid: Data
-        ) -> Single<String> {
-            let mintTx = MintTransactionInput(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: to, txIndex: txIndex, txid: txid)
-            let hash: String
-            do {
-                hash = try mintTx.hash().base64urlEncodedString()
-            } catch {
-                return .error(error)
-            }
-            
-            return submitTxMint(hash: hash, input: mintTx)
-                .map {_ in hash}
-        }
-        
-        func mintTxHash(
-            gHash: Data,
-            gPubkey: Data,
-            nHash: Data,
-            nonce: Data,
-            amount: String,
-            pHash: Data,
-            to: String,
-            txIndex: String,
-            txid: Data
-        ) throws -> String {
-            let mintTx = MintTransactionInput(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: to, txIndex: txIndex, txid: txid)
-            let hash = try mintTx.hash().base64urlEncodedString()
-            return hash
         }
     }
 }

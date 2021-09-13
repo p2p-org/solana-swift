@@ -105,7 +105,27 @@ extension RenVM {
             else {return .error(Error("Some parameters are missing"))}
             let nonce = Data(hex: session.nonce)
             
-            return provider.submitMint(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: to, txIndex: txIndex, txid: txid)
+            let mintTx = MintTransactionInput(
+                gHash: gHash,
+                gPubkey: gPubkey,
+                nHash: nHash,
+                nonce: nonce,
+                amount: amount,
+                pHash: pHash,
+                to: to,
+                txIndex: txIndex,
+                txid: txid
+            )
+            
+            let hash: String
+            do {
+                hash = try mintTx.hash().base64urlEncodedString()
+            } catch {
+                return .error(error)
+            }
+            
+            return provider.submitTxMint(hash: hash, input: mintTx)
+                .map {_ in hash}
         }
         
         func mint(signer: Data) -> Single<String> {
