@@ -63,18 +63,34 @@ extension RenVM {
                 }
         }
         
-//        func getDepositState(
-//            transactionHash: String,
-//            txIndex: String,
-//            amount: String
-//        ) -> Single<State> {
-//            let nonce = Data(hex: session.nonce)
-//            let txid = Data(hex: reverseHex(src: transactionHash))
-//            let nHash = Hash.generateNHash(nonce: nonce.bytes, txId: txid.bytes, txIndex: UInt32(txIndex) ?? 0)
-//            let pHash = Hash.generatePHash()
-//            
-//            
-//        }
+        func getDepositState(
+            transactionHash: String,
+            txIndex: String,
+            amount: String
+        ) throws -> State {
+            let nonce = Data(hex: session.nonce)
+            let txid = Data(hex: reverseHex(src: transactionHash))
+            let nHash = Hash.generateNHash(nonce: nonce.bytes, txId: txid.bytes, txIndex: UInt32(txIndex) ?? 0)
+            let pHash = Hash.generatePHash()
+            
+            guard let gHash = state.gHash,
+                  let gPubkey = state.gPubKey,
+                  let to = state.sendTo
+            else {throw Error("Some parameters are missing")}
+            
+            let mintTx = MintTransactionInput(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: try chain.dataToAddress(data: to), txIndex: txIndex, txid: txid)
+            
+            let txHash = try mintTx.hash().base64urlEncodedString()
+            
+            state.txIndex = txIndex
+            state.amount = amount
+            state.nHash = nHash
+            state.txid = txid
+            state.pHash = pHash
+            state.txHash = txHash
+            
+            return state
+        }
     }
 }
 

@@ -35,16 +35,23 @@ class RenVMLockAndMintTests: XCTestCase {
         XCTAssertEqual(Base58.encode(address!.bytes), "2NC451uvR7AD5hvWNLQiYoqwQQfvQy2XB6U")
     }
     
-//    @Test
-//    public void getDepositStateTest() throws Exception {
-//        LockAndMint lockAndMint = new LockAndMint(NetworkConfig.TESTNET(), Mock.buildRenVMProvider(),
-//                new SolanaChain(Mock.buildSolanaRpcClient(), NetworkConfig.TESTNET()),
-//                new Session(destinationAddress, Utils.generateNonce(18874), 18874, Utils.getSessionExpiry(18874)));
-//        String gatewayAddress = lockAndMint.generateGatewayAddress();
-//
-//        assertEquals("2MyJ7zQxBCnwKuRNoE3UYD2cb9MDjdkacaF", gatewayAddress);
-//        assertEquals("LLg3jxVXS4NEixjaBOUXocRqaK_Y0wk5HPshI1H3e6c",
-//                lockAndMint.getDepositState("01d32c22d721d7bf0cd944fc6e089b01f998e1e77db817373f2ee65e40e9462a", "0",
-//                        "10000").txHash);
-//    }
+    func testGetDepositState() throws {
+        let lockAndMint = RenVM.LockAndMint(
+            network: .testnet,
+            provider: RenVM.Mock.provider,
+            chain: RenVM.Mock.solanaChain(),
+            destinationAddress: destinationAddress.data,
+            sessionDay: 18874
+        )
+        
+        let gatewayAddress = try lockAndMint.generateGatewayAddress().toBlocking().first()
+        XCTAssertEqual(Base58.encode(gatewayAddress!.bytes), "2MyJ7zQxBCnwKuRNoE3UYD2cb9MDjdkacaF")
+        let txHash = try lockAndMint.getDepositState(
+            transactionHash: "01d32c22d721d7bf0cd944fc6e089b01f998e1e77db817373f2ee65e40e9462a",
+            txIndex: "0",
+            amount: "10000"
+        )
+            .txHash
+        XCTAssertEqual(txHash, "LLg3jxVXS4NEixjaBOUXocRqaK_Y0wk5HPshI1H3e6c")
+    }
 }
