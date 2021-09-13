@@ -65,6 +65,9 @@ class RenVMHashTests: XCTestCase {
             amount: "10000"
         )
         
-        XCTAssertEqual(try mintTx.hash().base64urlEncodedString(), "3eT3xmt8h9wW9OZVvfV-BQo5nm70c_ClEqe4zryBq54")
+        let data = try mintTx
+            .hash(selector: RenVM.Mock.selector, version: RenVM.Mock.version)
+        
+        XCTAssertEqual(data.base64urlEncodedString(), "3eT3xmt8h9wW9OZVvfV-BQo5nm70c_ClEqe4zryBq54")
     }
 }

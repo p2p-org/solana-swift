@@ -15,6 +15,8 @@ extension RenVM {
         // MARK: - Dependencies
         let rpcClient: RenVMRpcClientType
         let chain: RenVMChainType
+        let selector: String
+        let version: String
         
         // MARK: - State
         var session: Session
@@ -23,11 +25,15 @@ extension RenVM {
         init(
             rpcClient: RenVMRpcClientType,
             chain: RenVMChainType,
+            selector: String,
+            version: String,
             destinationAddress: Data,
             sessionDay: Long
         ) {
             self.rpcClient = rpcClient
             self.chain = chain
+            self.selector = selector
+            self.version = version
             self.session = Session(destinationAddress: destinationAddress, sessionDay: sessionDay)
         }
         
@@ -80,7 +86,9 @@ extension RenVM {
             
             let mintTx = MintTransactionInput(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: try chain.dataToAddress(data: to), txIndex: txIndex, txid: txid)
             
-            let txHash = try mintTx.hash().base64urlEncodedString()
+            let txHash = try mintTx
+                .hash(selector: selector, version: version)
+                .base64urlEncodedString()
             
             state.txIndex = txIndex
             state.amount = amount
@@ -119,12 +127,14 @@ extension RenVM {
             
             let hash: String
             do {
-                hash = try mintTx.hash().base64urlEncodedString()
+                hash = try mintTx
+                    .hash(selector: selector, version: version)
+                    .base64urlEncodedString()
             } catch {
                 return .error(error)
             }
             
-            return rpcClient.submitTxMint(hash: hash, input: mintTx)
+            return rpcClient.submitTxMint(hash: hash, selector: selector, version: version, input: mintTx)
                 .map {_ in hash}
         }
         

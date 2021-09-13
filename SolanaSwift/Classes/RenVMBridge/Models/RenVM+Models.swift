@@ -15,10 +15,4 @@ extension RenVM {
     public struct ResponseSubmitTxMint: Decodable {
         
     }
-
-    public struct ParamsSubmitMint: Encodable {
-        let hash: String
-        let input: MintTransactionInput
-    }
-    
 }

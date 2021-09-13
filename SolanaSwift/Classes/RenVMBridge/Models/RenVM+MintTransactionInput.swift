@@ -56,7 +56,7 @@ extension RenVM {
         let to: String
         let amount: String
         
-        func hash() throws -> Data {
+        func hash(selector: String, version: String) throws -> Data {
             var data = Data()
             let version = "1"
             let selector = "BTC/toSolana"

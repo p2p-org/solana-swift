@@ -49,9 +49,22 @@ public extension RenVMRpcClientType {
 
     internal func submitTxMint(
         hash: String,
+        selector: String,
+        version: String,
         input: RenVM.MintTransactionInput
     ) -> Single<RenVM.ResponseSubmitTxMint> {
-        call(endpoint: "ren_submitTx", params: RenVM.ParamsSubmitMint(hash: hash, input: input))
+        call(
+            endpoint: "ren_submitTx",
+            params: RenVM.ParamsSubmitMint(
+                hash: hash,
+                selector: selector,
+                version: version,
+                in: .init(
+                    t: .init(),
+                    v: input
+                )
+            )
+        )
     }
     
     func selectPublicKey() -> Single<Data?> {

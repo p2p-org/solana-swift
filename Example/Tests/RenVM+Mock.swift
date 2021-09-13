@@ -12,6 +12,9 @@ import RxSwift
 
 extension RenVM {
     struct Mock {
+        static var selector: String {"BTC/toSolana"}
+        static var version: String {"1"}
+        
         static func solanaChain(network: RenVM.Network = .testnet) -> SolanaChain {
             try! RenVM.SolanaChain.load(
                 client: RpcClient(network: network),

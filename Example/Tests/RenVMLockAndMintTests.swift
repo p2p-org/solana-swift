@@ -26,6 +26,8 @@ class RenVMLockAndMintTests: XCTestCase {
         let lockAndMint = RenVM.LockAndMint(
             rpcClient: RenVM.Mock.rpcClient,
             chain: RenVM.Mock.solanaChain(),
+            selector: RenVM.Mock.selector,
+            version: RenVM.Mock.version,
             destinationAddress: destinationAddress.data,
             sessionDay: 18870
         )
@@ -38,6 +40,8 @@ class RenVMLockAndMintTests: XCTestCase {
         let lockAndMint = RenVM.LockAndMint(
             rpcClient: RenVM.Mock.rpcClient,
             chain: RenVM.Mock.solanaChain(),
+            selector: RenVM.Mock.selector,
+            version: RenVM.Mock.version,
             destinationAddress: destinationAddress.data,
             sessionDay: 18874
         )
