@@ -126,5 +126,57 @@ extension RenVM {
         let phash: String
         let to: String
         let amount: String
+        
+        func hash() throws -> Data {
+            var data = Data()
+            let version = "1"
+            let selector = "BTC/toSolana"
+            data += marshal(src: version)
+            data += marshal(src: selector)
+            // marshalledType MintTransactionInput
+            data += Base58
+                .decode("aHQBEVgedhqiYDUtzYKdu1Qg1fc781PEV4D1gLsuzfpHNwH8yK2A2BuZK4uZoMC6pp8o7GWQxmsp52gsDrfbipkyeQZnXigCmscJY4aJDxF9tT8DQP3XRa1cBzQL8S8PTzi9nPnBkAxBhtNv6q1")
+            
+            data += marshal(src: try txid.base64UrlEncoded())
+            data += try txindex.uint32Data()
+            data += try UInt256(amount).serialize()
+            data += [UInt8](repeating: 0, count: 4)
+            data += try phash.base64UrlEncoded()
+            data += marshal(src: to)
+            data += try nonce.base64UrlEncoded()
+            data += try nhash.base64UrlEncoded()
+            data += marshal(src: try gpubkey.base64UrlEncoded())
+            data += try ghash.base64UrlEncoded()
+            return data.sha256()
+        }
     }
+}
+
+private extension String {
+    func base64UrlEncoded() throws -> Data {
+        guard let data = Data(base64urlEncoded: self)
+        else {
+            throw RenVM.Error("Base64 encoded string is not valid")
+        }
+        return data
+    }
+    
+    func uint32Data() throws -> Data {
+        guard let num = UInt32(self)?.bytes
+        else {
+            throw RenVM.Error("Not an UInt32")
+        }
+        return Data(num)
+    }
+}
+
+private func marshal(src: String) -> Data {
+    marshal(src: Data(src.bytes))
+}
+
+private func marshal(src: Data) -> Data {
+    var data = Data()
+    data += UInt32(src.count).bytes
+    data += src
+    return data
 }

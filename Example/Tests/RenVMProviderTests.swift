@@ -24,6 +24,6 @@ class RenVMProviderTests: XCTestCase {
             amount: "10000"
         )
         
-        XCTAssertEqual(try RenVM.Provider.hashTransactionMint(mintTx).base64urlEncodedString(), "3eT3xmt8h9wW9OZVvfV-BQo5nm70c_ClEqe4zryBq54")
+        XCTAssertEqual(try mintTx.hash().base64urlEncodedString(), "3eT3xmt8h9wW9OZVvfV-BQo5nm70c_ClEqe4zryBq54")
     }
 }
