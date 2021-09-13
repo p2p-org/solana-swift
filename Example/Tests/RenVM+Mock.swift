@@ -14,59 +14,47 @@ extension RenVM {
     struct Mock {
         static func solanaChain(network: RenVM.Network = .testnet) -> SolanaChain {
             try! RenVM.SolanaChain.load(
-                client: MockRenVMRpcClient(network),
-                solanaClient: MockSolanaClient(),
+                client: RpcClient(network: network),
+                solanaClient: SolanaClient(),
                 network: network
             ).toBlocking().first()!
         }
         
-        static var provider: RenVMProviderType {
-            MockRenVMProvider()
+        static var rpcClient: RpcClient {
+            .init(network: .testnet)
+        }
+        
+        struct RpcClient: RenVMRpcClientType {
+            var network: RenVM.Network
+            func call<T>(endpoint: String, params: Encodable) -> Single<T> where T : Decodable {
+                fatalError()
+            }
+            func selectPublicKey() -> Single<Data?> {
+                .just(Data(base64Encoded: "Aw3WX32ykguyKZEuP0IT3RUOX5csm3PpvnFNhEVhrDVc"))
+            }
+        }
+        
+        struct SolanaClient: RenVMSolanaAPIClientType {
+            func getAccountInfo<T>(account: String, decodedTo: T.Type) -> Single<SolanaSDK.BufferInfo<T>> where T : DecodableBufferLayout {
+                if decodedTo == RenVM.SolanaChain.GatewayRegistryData.self {
+                    let data = Data(base64Encoded: RenVM.Mock.mockGatewayRegistryData)!
+                    var pointer = 0
+                    let gatewayRegistryData = try! RenVM.SolanaChain.GatewayRegistryData(buffer: data, pointer: &pointer)
+                    return .just(.init(lamports: 0, owner: "", data: gatewayRegistryData as! T, executable: true, rentEpoch: 0))
+                }
+                fatalError()
+            }
+            
+            func getMintData(mintAddress: String, programId: String) -> Single<SolanaSDK.Mint> {
+                fatalError()
+            }
+            
+            func getConfirmedSignaturesForAddress2(account: String, configs: SolanaSDK.RequestConfiguration?) -> Single<[SolanaSDK.SignatureInfo]> {
+                fatalError()
+            }
         }
         
         static var mockGatewayRegistryData: String { "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"
         }
-    }
-}
-
-private struct MockRenVMProvider: RenVMProviderType {
-    func selectPublicKey() -> Single<Data?> {
-        .just(Data(base64Encoded: "Aw3WX32ykguyKZEuP0IT3RUOX5csm3PpvnFNhEVhrDVc"))
-    }
-    func submitTxMint(hash: String, input: RenVM.MintTransactionInput) -> Single<RenVM.ResponseSubmitTxMint> {
-        fatalError()
-    }
-    func queryMint(txHash: String) -> Single<RenVM.ResponseQueryTxMint> {
-        fatalError()
-    }
-}
-
-private struct MockRenVMRpcClient: RenVMRpcClientType {
-    init(_ network: RenVM.Network) {
-        
-    }
-    
-    func call<T>(endpoint: String, params: Encodable) -> Single<T> where T : Decodable {
-        fatalError()
-    }
-}
-
-private struct MockSolanaClient: RenVMSolanaAPIClientType {
-    func getAccountInfo<T>(account: String, decodedTo: T.Type) -> Single<SolanaSDK.BufferInfo<T>> where T : DecodableBufferLayout {
-        if decodedTo == RenVM.SolanaChain.GatewayRegistryData.self {
-            let data = Data(base64Encoded: RenVM.Mock.mockGatewayRegistryData)!
-            var pointer = 0
-            let gatewayRegistryData = try! RenVM.SolanaChain.GatewayRegistryData(buffer: data, pointer: &pointer)
-            return .just(.init(lamports: 0, owner: "", data: gatewayRegistryData as! T, executable: true, rentEpoch: 0))
-        }
-        fatalError()
-    }
-    
-    func getMintData(mintAddress: String, programId: String) -> Single<SolanaSDK.Mint> {
-        fatalError()
-    }
-    
-    func getConfirmedSignaturesForAddress2(account: String, configs: SolanaSDK.RequestConfiguration?) -> Single<[SolanaSDK.SignatureInfo]> {
-        fatalError()
     }
 }

@@ -24,8 +24,7 @@ class RenVMLockAndMintTests: XCTestCase {
     
     func testGenerateGatewayAddress() throws {
         let lockAndMint = RenVM.LockAndMint(
-            network: .testnet,
-            provider: RenVM.Mock.provider,
+            rpcClient: RenVM.Mock.rpcClient,
             chain: RenVM.Mock.solanaChain(),
             destinationAddress: destinationAddress.data,
             sessionDay: 18870
@@ -37,13 +36,11 @@ class RenVMLockAndMintTests: XCTestCase {
     
     func testGetDepositState() throws {
         let lockAndMint = RenVM.LockAndMint(
-            network: .testnet,
-            provider: RenVM.Mock.provider,
+            rpcClient: RenVM.Mock.rpcClient,
             chain: RenVM.Mock.solanaChain(),
             destinationAddress: destinationAddress.data,
             sessionDay: 18874
         )
-        
         let gatewayAddress = try lockAndMint.generateGatewayAddress().toBlocking().first()
         XCTAssertEqual(Base58.encode(gatewayAddress!.bytes), "2MyJ7zQxBCnwKuRNoE3UYD2cb9MDjdkacaF")
         let txHash = try lockAndMint.getDepositState(

@@ -12,21 +12,21 @@ public typealias Long = Int64
 
 extension RenVM {
     public class LockAndMint {
-        let network: Network
-        let provider: RenVMProviderType
-        var session: Session
+        // MARK: - Dependencies
+        let rpcClient: RenVMRpcClientType
         let chain: RenVMChainType
+        
+        // MARK: - State
+        var session: Session
         var state = State()
         
         init(
-            network: Network,
-            provider: RenVMProviderType,
+            rpcClient: RenVMRpcClientType,
             chain: RenVMChainType,
             destinationAddress: Data,
             sessionDay: Long
         ) {
-            self.network = network
-            self.provider = provider
+            self.rpcClient = rpcClient
             self.chain = chain
             self.session = Session(destinationAddress: destinationAddress, sessionDay: sessionDay)
         }
@@ -44,7 +44,7 @@ extension RenVM {
             let gHash = Hash.generateGHash(to: sendToHex, tokenIdentifier: tokenGatewayContractHex, nonce: Data(hex: session.nonce).bytes)
             state.gHash = gHash
             
-            return provider.selectPublicKey()
+            return rpcClient.selectPublicKey()
                 .observe(on: CurrentThreadScheduler.instance)
                 .map {[weak self] gPubkey in
                     guard let self = self else {throw Error.unknown}
@@ -56,7 +56,7 @@ extension RenVM {
                     let gatewayAddress = Script.createAddressByteArray(
                         gGubKeyHash: gPubkey.hash160,
                         gHash: gHash,
-                        prefix: Data([self.network.p2shPrefix])
+                        prefix: Data([self.rpcClient.network.p2shPrefix])
                     )
                     self.session.gatewayAddress = gatewayAddress
                     return self.session.gatewayAddress
@@ -124,7 +124,7 @@ extension RenVM {
                 return .error(error)
             }
             
-            return provider.submitTxMint(hash: hash, input: mintTx)
+            return rpcClient.submitTxMint(hash: hash, input: mintTx)
                 .map {_ in hash}
         }
         
@@ -132,7 +132,7 @@ extension RenVM {
             guard let txHash = state.txHash else {
                 return .error(Error("txHash not found"))
             }
-            return provider.queryMint(txHash: txHash)
+            return rpcClient.queryMint(txHash: txHash)
                 .flatMap { [weak self] res in
                     guard let self = self else {throw Error.unknown}
                     return self.chain.submitMint(
