@@ -82,7 +82,7 @@ extension RenVM {
             guard let gHash = state.gHash,
                   let gPubkey = state.gPubKey,
                   let to = state.sendTo
-            else {throw Error("Some parameters are missing")}
+            else {throw Error.paramsMissing}
             
             let mintTx = MintTransactionInput(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: try chain.dataToAddress(data: to), txIndex: txIndex, txid: txid)
             
@@ -110,7 +110,7 @@ extension RenVM {
                   let to = try? chain.dataToAddress(data: sendTo),
                   let txIndex = state.txIndex,
                   let txid = state.txid
-            else {return .error(Error("Some parameters are missing"))}
+            else {return .error(Error.paramsMissing)}
             let nonce = Data(hex: session.nonce)
             
             let mintTx = MintTransactionInput(

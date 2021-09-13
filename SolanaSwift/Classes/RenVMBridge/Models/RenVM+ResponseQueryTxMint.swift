@@ -12,6 +12,14 @@ extension RenVM {
         let tx: Tx
         let txStatus: String
         
+        var valueOut: Tx.Out.ValueOut {
+            tx.out.v
+        }
+        
+        var valueIn: Tx.In.ValueIn {
+            tx.in.v
+        }
+        
         struct Tx: Decodable {
             let hash: String
             let version: String

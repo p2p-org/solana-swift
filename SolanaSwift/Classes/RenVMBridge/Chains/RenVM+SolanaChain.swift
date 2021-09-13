@@ -90,6 +90,14 @@ extension RenVM {
             responceQueryMint: RenVM.ResponseQueryTxMint
         ) -> Single<String> {
             fatalError()
+//            guard let pHash = responceQueryMint.valueIn.phash.decodeBase64URL(),
+//                  let nHash = responceQueryMint.valueIn.nhash.decodeBase64URL(),
+//                  let sig =
+//            else {
+//                return .error(Error.paramsMissing)
+//            }
+//            let amount = responceQueryMint.valueOut.amount
+//            let nHash =
         }
 //        public String submitMint(PublicKey address, Account signer, ResponseQueryTxMint responceQueryMint)
 //                throws Exception {

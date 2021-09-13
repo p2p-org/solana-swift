@@ -18,5 +18,9 @@ extension RenVM {
         static var unknown: Self {
             .init("Unknown")
         }
+        
+        static var paramsMissing: Self {
+            .init("One or some parameters are missing")
+        }
     }
 }

@@ -74,6 +74,34 @@ extension Data {
         result = result.replacingOccurrences(of: "=", with: "")
         return result
     }
+    
+    private var secp256k1nHEX: String {
+        "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141".lowercased();
+    }
+    
+    private var secp256k1n: BInt {
+        BInt(hex: secp256k1nHEX)
+    }
+    
+    func fixSignatureSimple() throws -> Data {
+        guard self.count > 64
+        else {throw RenVM.Error("Signature is not valid")}
+        
+        let r = Data(self[0..<32])
+        let s = Data(self[32..<64])
+        let v = self[64] % 27
+        
+        var sBN = BInt(data: s)
+        var vFixed: UInt8 = (v % 27) + 27
+        
+        // FIXME
+        if sBN > (secp256k1n / 2) {
+            sBN = secp256k1n - sBN
+            vFixed = v == 27 ? 28: 27
+        }
+        
+        return r + sBN.data + [vFixed]
+    }
 }
 
 extension Array where Element == UInt8 {
@@ -85,5 +113,9 @@ extension Array where Element == UInt8 {
 extension String {
     var keccak256: [UInt8] {
         bytes.keccak256
+    }
+    
+    func decodeBase64URL() -> Data? {
+        Data(base64urlEncoded: self)
     }
 }
