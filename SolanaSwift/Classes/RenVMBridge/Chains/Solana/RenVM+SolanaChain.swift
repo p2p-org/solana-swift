@@ -7,6 +7,7 @@
 
 import Foundation
 import RxSwift
+import BufferLayoutSwift
 
 public protocol RenVMSolanaAPIClientType {
     func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) -> Single<SolanaSDK.BufferInfo<T>>
@@ -171,6 +172,11 @@ extension RenVM {
                 programId: program
             )
             
+            let requestGatewayInfo = solanaClient.getAccountInfo(
+                account: gatewayAccountId.base58EncodedString,
+                decodedTo: GatewayStateData.self
+            ).map {$0.data}
+            
             
             
         }
@@ -265,7 +271,44 @@ extension RenVM {
 }
 
 extension RenVM.SolanaChain {
-    public struct GatewayRegistryData: DecodableBufferLayout {
+    struct GatewayStateData: DecodableBufferLayout {
+        let isInitialized: Bool
+        let renVMAuthority: RenVMAuthority
+        let selectors: Selectors
+        let burnCount: UInt64
+        let underlyingDecimals: UInt8
+        
+        
+        struct RenVMAuthority: BufferLayoutProperty {
+            let data: Data
+            
+            init(buffer: Data, pointer: inout Int) throws {
+                guard buffer.bytes.count > pointer else {throw BufferLayoutSwift.Error.bytesLengthIsNotValid}
+                data = buffer[pointer..<pointer+20]
+                pointer += 20
+            }
+            
+            func serialize() throws -> Data {
+                data
+            }
+        }
+        
+        struct Selectors: BufferLayoutProperty {
+            let data: Data
+            
+            init(buffer: Data, pointer: inout Int) throws {
+                guard buffer.bytes.count > pointer else {throw BufferLayoutSwift.Error.bytesLengthIsNotValid}
+                data = buffer[pointer..<pointer+32]
+                pointer += 32
+            }
+            
+            func serialize() throws -> Data {
+                data
+            }
+        }
+    }
+    
+    struct GatewayRegistryData: DecodableBufferLayout {
         let isInitialized: Bool
         let owner: SolanaSDK.PublicKey
         let count: UInt64
