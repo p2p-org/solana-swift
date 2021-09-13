@@ -8,8 +8,8 @@
 import Foundation
 
 extension RenVM {
-    struct Error: Swift.Error {
-        let message: String
+    public struct Error: Swift.Error {
+        public let message: String
         
         init(_ message: String) {
             self.message = message

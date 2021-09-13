@@ -196,44 +196,6 @@ extension RenVM {
                     )
                 }
         }
-//        public String submitMint(PublicKey address, Account signer, ResponseQueryTxMint responceQueryMint)
-//                throws Exception {
-//            byte[] pHash = Utils.fromURLBase64(responceQueryMint.getValueIn().phash);
-//            String amount = responceQueryMint.getValueOut().amount;
-//            byte[] nHash = Utils.fromURLBase64(responceQueryMint.getValueIn().nhash);
-//            byte[] sig = Utils.fixSignatureSimple(responceQueryMint.getValueOut().sig);
-//
-//            PublicKey program = resolveTokenGatewayContract();
-//            PublicKey gatewayAccountId = PublicKey.findProgramAddress(Arrays.asList(GatewayStateKey.getBytes()), program)
-//                    .getAddress();
-//            byte[] sHash = Hash.generateSHash();
-//            PublicKey tokenMint = getSPLTokenPubkey();
-//            PublicKey mintAuthority = PublicKey.findProgramAddress(Arrays.asList(tokenMint.toByteArray()), program)
-//                    .getAddress();
-//            PublicKey recipientTokenAccount = getAssociatedTokenAddress(address);
-//
-//            byte[] renVMMessage = buildRenVMMessage(pHash, amount, sHash, recipientTokenAccount.toByteArray(), nHash);
-//            PublicKey mintLogAccount = PublicKey.findProgramAddress(Arrays.asList(Hash.keccak256(renVMMessage)), program)
-//                    .getAddress();
-//
-//            TransactionInstruction mintInstruction = RenProgram.mintInstruction(signer.getPublicKey(), gatewayAccountId,
-//                    tokenMint, recipientTokenAccount, mintLogAccount, mintAuthority, program);
-//
-//            AccountInfo gatewayInfo = client.getApi().getAccountInfo(gatewayAccountId);
-//            String base64Data = gatewayInfo.getValue().getData().get(0);
-//            GatewayStateData gatewayState = GatewayStateData.decode(Base64.getDecoder().decode(base64Data));
-//
-//            TransactionInstruction secpInstruction = RenProgram.createInstructionWithEthAddress2(
-//                    gatewayState.renVMAuthority, renVMMessage, Arrays.copyOfRange(sig, 0, 64), sig[64] - 27);
-//
-//            Transaction transaction = new Transaction();
-//            transaction.addInstruction(mintInstruction);
-//            transaction.addInstruction(secpInstruction);
-//
-//            String confirmedSignature = client.getApi().sendTransaction(transaction, signer);
-//
-//            return confirmedSignature;
-//        }
         
         public func findMintByDepositDetail(
             nHash: Data,

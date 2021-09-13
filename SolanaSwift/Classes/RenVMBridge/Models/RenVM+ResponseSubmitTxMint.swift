@@ -8,11 +8,7 @@
 import Foundation
 
 extension RenVM {
-    public struct ResponseQueryConfig: Decodable {
-        
-    }
-
-    public struct ResponseSubmitTxMint: Decodable {
+    struct ResponseSubmitTxMint: Decodable {
         
     }
 }
