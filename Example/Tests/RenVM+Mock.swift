@@ -33,6 +33,12 @@ private struct MockRenVMProvider: RenVMProviderType {
     func selectPublicKey() -> Single<Data?> {
         .just(Data(base64Encoded: "Aw3WX32ykguyKZEuP0IT3RUOX5csm3PpvnFNhEVhrDVc"))
     }
+    func submitMint(gHash: Data, gPubkey: Data, nHash: Data, nonce: Data, amount: String, pHash: Data, to: String, txIndex: String, txid: Data) -> Single<String> {
+        fatalError()
+    }
+    func queryMint(txHash: String) -> Single<RenVM.ResponseQueryTxMint> {
+        fatalError()
+    }
 }
 
 private struct MockRenVMRpcClient: RenVMRpcClientType {

@@ -15,6 +15,12 @@ public protocol RenVMChainType {
     func dataToAddress(
         data: Data
     ) throws -> String
+    
+    func submitMint(
+        address: Data,
+        signer: Data,
+        responceQueryMint: RenVM.ResponseQueryTxMint
+    ) -> Single<String>
 }
 
 extension RenVM {
@@ -93,6 +99,13 @@ extension RenVM {
 //            return client.getApi().sendTransaction(transaction, signer);
 //        }
 //
+        public func submitMint(
+            address: Data,
+            signer: Data,
+            responceQueryMint: RenVM.ResponseQueryTxMint
+        ) -> Single<String> {
+            fatalError()
+        }
 //        public String submitMint(PublicKey address, Account signer, ResponseQueryTxMint responceQueryMint)
 //                throws Exception {
 //            byte[] pHash = Utils.fromURLBase64(responceQueryMint.getValueIn().phash);

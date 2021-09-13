@@ -91,6 +91,37 @@ extension RenVM {
             
             return state
         }
+        
+        func submitMintTransaction() -> Single<String> {
+            guard let gHash = state.gHash,
+                  let gPubkey = state.gPubKey,
+                  let nHash = state.nHash,
+                  let amount = state.amount,
+                  let pHash = state.pHash,
+                  let sendTo = state.sendTo,
+                  let to = try? chain.dataToAddress(data: sendTo),
+                  let txIndex = state.txIndex,
+                  let txid = state.txid
+            else {return .error(Error("Some parameters are missing"))}
+            let nonce = Data(hex: session.nonce)
+            
+            return provider.submitMint(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: to, txIndex: txIndex, txid: txid)
+        }
+        
+        func mint(signer: Data) -> Single<String> {
+            guard let txHash = state.txHash else {
+                return .error(Error("txHash not found"))
+            }
+            return provider.queryMint(txHash: txHash)
+                .flatMap { [weak self] res in
+                    guard let self = self else {throw Error.unknown}
+                    return self.chain.submitMint(
+                        address: self.session.destinationAddress,
+                        signer: signer,
+                        responceQueryMint: res
+                    )
+                }
+        }
     }
 }
 

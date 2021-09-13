@@ -10,6 +10,18 @@ import RxSwift
 
 protocol RenVMProviderType {
     func selectPublicKey() -> Single<Data?>
+    func submitMint(
+        gHash: Data,
+        gPubkey: Data,
+        nHash: Data,
+        nonce: Data,
+        amount: String,
+        pHash: Data,
+        to: String,
+        txIndex: String,
+        txid: Data
+    ) -> Single<String>
+    func queryMint(txHash: String) -> Single<RenVM.ResponseQueryTxMint>
 }
 
 extension RenVM {
