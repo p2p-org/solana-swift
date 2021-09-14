@@ -119,20 +119,43 @@ extension RenVM {
             let bech32 = try Bech32().decode(address).checksum
             let type = bech32[0]
             let words = Data(bech32[1...])
-            let fromWords = convert(data: words, inBits: 5, outBits: 8, pad: false)
+            let fromWords = try convert(data: words, inBits: 5, outBits: 8, pad: false)
             var data = Data()
             data += [type]
             data += fromWords
             return data
         }
         
-        static func convert(
-            data: Data,
-            inBits: UInt8,
-            outBits: UInt8,
-            pad: Bool
-        ) -> Data {
-            fatalError()
+    }
+}
+
+private func convert(
+    data: Data,
+    inBits: UInt8,
+    outBits: UInt8,
+    pad: Bool
+) throws -> Data {
+    var value: UInt8 = 0
+    var bits: UInt8 = 0
+    let maxV: UInt8 = (1 << outBits) - 1
+    
+    var data = Data()
+    
+    for i in 0..<data.count {
+        value = (value << inBits) | data[i]
+        bits += inBits
+        
+        while bits >= outBits {
+            bits -= outBits
+            data.append(UInt8(value >> bits & maxV))
         }
     }
+    if pad {
+        if bits > 0 {
+            data.append(UInt8((value << (outBits - bits)) & maxV))
+        }
+    } else {
+        if bits >= inBits {throw RenVM.Error("Excess padding")}
+    }
+    return data
 }
