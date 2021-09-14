@@ -61,12 +61,27 @@ extension RenVM {
             nonceBuffer = getNonceBuffer(nonce: burnDetails.nonce)
             let nHash = Hash.generateNHash(nonce: nonceBuffer.bytes, txId: txid.bytes, txIndex: 0)
             let pHash = Hash.generatePHash()
-            let sHash = Hash.generateSHash(selector: .init(mintTokenSymbol: mintTokenSymbol, chainName: burnToChainName, direction: .to)) // "BTC/toBitcoin"
-            let gHash = Hash.generateGHash(to: try Self.addressToBytes(address: burnDetails.recipient).hexString, tokenIdentifier: sHash.toHexString(), nonce: nonceBuffer.bytes)
+            let sHash = Hash.generateSHash(
+                selector: .init(
+                    mintTokenSymbol: mintTokenSymbol,
+                    chainName: burnToChainName,
+                    direction: .to
+                )
+            )
+            let gHash = Hash.generateGHash(
+                to: try Self.addressToBytes(
+                    address: burnDetails.recipient
+                ).hexString,
+                tokenIdentifier: sHash.toHexString(),
+                nonce: nonceBuffer.bytes
+            )
             
             let mintTx = MintTransactionInput(gHash: gHash, gPubkey: Data(), nHash: nHash, nonce: nonceBuffer, amount: amount, pHash: pHash, to: burnDetails.recipient, txIndex: "0", txid: txid)
             
-            let txHash = try mintTx.hash(selector: chain.selector(mintTokenSymbol: mintTokenSymbol, direction: .from), version: version)
+            let txHash = try mintTx.hash(
+                selector: chain.selector(mintTokenSymbol: mintTokenSymbol, direction: .from),
+                version: version
+            )
                 .base64urlEncodedString()
             
             state.txIndex = "0"
