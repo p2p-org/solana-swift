@@ -19,11 +19,18 @@ extension RenVM {
             let v: MintTransactionInput
             
             struct TypeIn: Encodable {
-//                @Json(name = "struct")
-//                public List<Object> struct = Arrays.asList(Map.of("txid", "bytes"), Map.of("txindex", "u32"),
-//                        Map.of("amount", "u256"), Map.of("payload", "bytes"), Map.of("phash", "bytes32"),
-//                        Map.of("to", "string"), Map.of("nonce", "bytes32"), Map.of("nhash", "bytes32"),
-//                        Map.of("gpubkey", "bytes"), Map.of("ghash", "bytes32"));
+                let `struct`: [[String: String]] = [
+                    ["txid": "bytes"],
+                    ["txindex": "u32"],
+                    ["amount": "u256"],
+                    ["payload": "bytes"],
+                    ["phash": "bytes32"],
+                    ["to": "string"],
+                    ["nonce": "bytes32"],
+                    ["nhash": "bytes32"],
+                    ["gpubkey": "bytes"],
+                    ["ghash": "bytes32"]
+                ]
             }
         }
     }
