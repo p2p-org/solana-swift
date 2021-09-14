@@ -28,6 +28,14 @@ public protocol RenVMChainType {
         signer: Data,
         responceQueryMint: RenVM.ResponseQueryTxMint
     ) -> Single<String>
+    
+    func submitBurn(
+        mintTokenSymbol: String,
+        account: Data,
+        amount: String,
+        recipient: String,
+        signer: Data
+    ) -> Single<RenVM.BurnDetails>
 }
 
 extension RenVMChainType {

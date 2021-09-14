@@ -213,15 +213,17 @@ extension RenVM {
         
         public func submitBurn(
             mintTokenSymbol: String,
-            account: SolanaSDK.PublicKey,
+            account: Data,
             amount: String,
             recipient: String,
-            signer: SolanaSDK.Account
+            signer: Data
         ) -> Single<BurnDetails> {
             guard let amount = UInt64(amount) else {
                 return .error(Error("Amount is not valid"))
             }
             do {
+                let signer = try SolanaSDK.Account(secretKey: signer)
+                let account = try SolanaSDK.PublicKey(data: account)
                 let program = try resolveTokenGatewayContract(mintTokenSymbol: mintTokenSymbol)
                 let tokenMint = try getSPLTokenPubkey(mintTokenSymbol: mintTokenSymbol)
                 let source = try SolanaSDK.PublicKey(data: try getAssociatedTokenAddress(address: account.data, mintTokenSymbol: mintTokenSymbol))
@@ -409,11 +411,5 @@ extension RenVM.SolanaChain {
             data += try gateways.reduce(Data(), {$0 + (try $1.serialize())})
             return data
         }
-    }
-    
-    public struct BurnDetails {
-        let confirmedSignature: String
-        let nonce: UInt64
-        let recipient: String
     }
 }

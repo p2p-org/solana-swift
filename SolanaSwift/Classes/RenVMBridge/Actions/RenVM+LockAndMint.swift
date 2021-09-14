@@ -170,18 +170,6 @@ extension RenVM {
 }
 
 extension RenVM.LockAndMint {
-    public struct State {
-        public var gHash: Data?
-        public var gPubKey: Data?
-        public var sendTo: Data? // PublicKey
-        public var txid: Data?
-        public var nHash: Data?
-        public var pHash: Data?
-        public var txHash: String?
-        public var txIndex: String?
-        public var amount: String?
-    }
-    
     public struct Session {
         init(
             destinationAddress: Data,
@@ -234,7 +222,7 @@ private extension String {
 }
 
 private extension RenVM.MintTransactionInput {
-    init(state: RenVM.LockAndMint.State, chain: RenVMChainType, nonce: Data) throws {
+    init(state: RenVM.State, chain: RenVMChainType, nonce: Data) throws {
         guard let gHash = state.gHash,
               let nHash = state.nHash,
               let amount = state.amount,
