@@ -137,9 +137,9 @@ private func convert(
 ) throws -> Data {
     var value: UInt8 = 0
     var bits: UInt8 = 0
-    let maxV: UInt8 = (1 << outBits) - 1
+    let maxV = UInt8(Int(1 << outBits) - 1)
     
-    var data = Data()
+    var result = Data()
     
     for i in 0..<data.count {
         value = (value << inBits) | data[i]
@@ -147,15 +147,15 @@ private func convert(
         
         while bits >= outBits {
             bits -= outBits
-            data.append(UInt8(value >> bits & maxV))
+            result.append(UInt8(value >> bits & maxV))
         }
     }
     if pad {
         if bits > 0 {
-            data.append(UInt8((value << (outBits - bits)) & maxV))
+            result.append(UInt8((value << (outBits - bits)) & maxV))
         }
     } else {
         if bits >= inBits {throw RenVM.Error("Excess padding")}
     }
-    return data
+    return result
 }
