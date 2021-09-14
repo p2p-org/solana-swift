@@ -146,24 +146,27 @@ extension RenVM {
 
 private func convert(
     data: Data,
-    inBits: UInt8,
-    outBits: UInt8,
+    inBits: Int32,
+    outBits: Int32,
     pad: Bool
 ) throws -> Data {
-    var value: UInt8 = 0
-    var bits: UInt8 = 0
-    let maxV = UInt8(Int(1 << outBits) - 1)
+    var value: Int32 = 0
+    var bits: Int32 = 0
+    let maxV: Int32 = (1 << outBits) - 1
     
     var result = Data()
     
     for i in 0..<data.count {
-        value = (value << inBits) | data[i]
+        value = (value << inBits) | Int32(data[i])
         bits += inBits
         
         while bits >= outBits {
             bits -= outBits
-            result.append(UInt8(value >> bits & maxV))
+
+            let byte = UInt8(value >> bits & maxV)
+            result.append(byte)
         }
+        
     }
     if pad {
         if bits > 0 {
