@@ -115,35 +115,7 @@ extension RenVM {
         }
         
         func submitMintTransaction() -> Single<String> {
-            submitTx(direction: .to)
-        }
-        
-        func submitBurnTransaction() -> Single<String> {
-            submitTx(direction: .from)
-        }
-        
-        func mint(signer: Data) -> Single<String> {
-            guard let txHash = state.txHash else {
-                return .error(Error("txHash not found"))
-            }
-            return rpcClient.queryMint(txHash: txHash)
-                .flatMap { [weak self] res in
-                    guard let self = self else {throw Error.unknown}
-                    return self.chain.submitMint(
-                        address: self.session.destinationAddress,
-                        mintTokenSymbol: self.mintTokenSymbol,
-                        signer: signer,
-                        responceQueryMint: res
-                    )
-                }
-        }
-        
-        private func selector(direction: Selector.Direction) -> Selector {
-            chain.selector(mintTokenSymbol: mintTokenSymbol, direction: direction)
-        }
-        
-        private func submitTx(direction: Selector.Direction) -> Single<String> {
-            let selector = selector(direction: direction)
+            let selector = selector(direction: .to)
             
             // get input
             let mintTx: MintTransactionInput
@@ -165,6 +137,26 @@ extension RenVM {
                 input: mintTx
             )
                 .map {_ in hash}
+        }
+        
+        func mint(signer: Data) -> Single<String> {
+            guard let txHash = state.txHash else {
+                return .error(Error("txHash not found"))
+            }
+            return rpcClient.queryMint(txHash: txHash)
+                .flatMap { [weak self] res in
+                    guard let self = self else {throw Error.unknown}
+                    return self.chain.submitMint(
+                        address: self.session.destinationAddress,
+                        mintTokenSymbol: self.mintTokenSymbol,
+                        signer: signer,
+                        responceQueryMint: res
+                    )
+                }
+        }
+        
+        private func selector(direction: Selector.Direction) -> Selector {
+            chain.selector(mintTokenSymbol: mintTokenSymbol, direction: direction)
         }
     }
 }
@@ -218,30 +210,5 @@ private extension Long {
 private extension String {
     func getBytes() -> Data? {
         data(using: .utf8)
-    }
-}
-
-private extension RenVM.MintTransactionInput {
-    init(state: RenVM.State, chain: RenVMChainType, nonce: Data) throws {
-        guard let gHash = state.gHash,
-              let nHash = state.nHash,
-              let amount = state.amount,
-              let pHash = state.pHash,
-              let sendTo = state.sendTo,
-              let to = try? chain.dataToAddress(data: sendTo),
-              let txIndex = state.txIndex,
-              let txid = state.txid
-        else {throw RenVM.Error.paramsMissing}
-        
-        self.txid       = txid.base64urlEncodedString()
-        self.txindex    = txIndex
-        self.ghash      = gHash.base64urlEncodedString()
-        self.gpubkey    = state.gPubKey?.base64urlEncodedString() ?? ""
-        self.nhash      = nHash.base64urlEncodedString()
-        self.nonce      = nonce.base64urlEncodedString()
-        self.payload    = ""
-        self.phash      = pHash.base64urlEncodedString()
-        self.to         = to
-        self.amount     = amount
     }
 }

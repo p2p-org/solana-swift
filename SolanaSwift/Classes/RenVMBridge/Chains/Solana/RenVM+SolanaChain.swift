@@ -96,6 +96,10 @@ extension RenVM {
             Base58.encode(data.bytes)
         }
         
+        public func signatureToData(signature: String) throws -> Data {
+            Data(Base58.decode(signature))
+        }
+        
         public func createAssociatedTokenAccount(
             address: SolanaSDK.PublicKey,
             mintTokenSymbol: String,
@@ -235,9 +239,9 @@ extension RenVM {
                 )
                     .map {$0.data}
                     .flatMap {gatewayState -> Single<BurnDetails> in
-                        let nonceBN = gatewayState.burnCount + 1
+                        let nonceBN = BInt(gatewayState.burnCount + 1)
                         let burnLogAccountId = try SolanaSDK.PublicKey.findProgramAddress(
-                            seeds: [Data(nonceBN.bytes)],
+                            seeds: [nonceBN.data],
                             programId: program
                         ).0
                         

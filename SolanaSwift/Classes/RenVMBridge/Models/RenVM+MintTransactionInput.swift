@@ -45,6 +45,29 @@ extension RenVM {
             self.amount     = amount
         }
         
+        init(state: RenVM.State, chain: RenVMChainType, nonce: Data) throws {
+            guard let gHash = state.gHash,
+                  let nHash = state.nHash,
+                  let amount = state.amount,
+                  let pHash = state.pHash,
+                  let sendTo = state.sendTo,
+                  let to = try? chain.dataToAddress(data: sendTo),
+                  let txIndex = state.txIndex,
+                  let txid = state.txid
+            else {throw RenVM.Error.paramsMissing}
+            
+            self.txid       = txid.base64urlEncodedString()
+            self.txindex    = txIndex
+            self.ghash      = gHash.base64urlEncodedString()
+            self.gpubkey    = state.gPubKey?.base64urlEncodedString() ?? ""
+            self.nhash      = nHash.base64urlEncodedString()
+            self.nonce      = nonce.base64urlEncodedString()
+            self.payload    = ""
+            self.phash      = pHash.base64urlEncodedString()
+            self.to         = to
+            self.amount     = amount
+        }
+        
         let txid: String
         let txindex: String
         let ghash: String

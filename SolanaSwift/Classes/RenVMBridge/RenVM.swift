@@ -22,6 +22,10 @@ public protocol RenVMChainType {
         data: Data
     ) throws -> String
     
+    func signatureToData(
+        signature: String
+    ) throws -> Data
+    
     func submitMint(
         address: Data,
         mintTokenSymbol: String,
