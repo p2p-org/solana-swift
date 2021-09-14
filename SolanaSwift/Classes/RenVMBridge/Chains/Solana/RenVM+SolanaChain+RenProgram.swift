@@ -74,5 +74,30 @@ extension RenVM.SolanaChain {
             
             return .init(keys: [], programId: .secp256k1ProgramId, data: data.bytes)
         }
+        
+        public static func burnInstruction(
+            account: SolanaSDK.PublicKey,
+            source: SolanaSDK.PublicKey,
+            gatewayAccount: SolanaSDK.PublicKey,
+            tokenMint: SolanaSDK.PublicKey,
+            burnLogAccountId: SolanaSDK.PublicKey,
+            recipient: Data,
+            programId: SolanaSDK.PublicKey
+        ) -> SolanaSDK.TransactionInstruction {
+            .init(
+                keys: [
+                    .init(publicKey: account, isSigner: true, isWritable: false),
+                    .init(publicKey: source, isSigner: false, isWritable: true),
+                    .init(publicKey: gatewayAccount, isSigner: false, isWritable: true),
+                    .init(publicKey: tokenMint, isSigner: false, isWritable: true),
+                    .init(publicKey: burnLogAccountId, isSigner: false, isWritable: true),
+                    .init(publicKey: .programId, isSigner: false, isWritable: false),
+                    .init(publicKey: .sysvarInstruction, isSigner: false, isWritable: false),
+                    .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
+                ],
+                programId: programId,
+                data: [UInt8(2), UInt8(recipient.count), recipient]
+            )
+        }
     }
 }
