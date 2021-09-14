@@ -88,7 +88,17 @@ extension RenVM {
                   let to = state.sendTo
             else {throw Error.paramsMissing}
             
-            let mintTx = MintTransactionInput(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: try chain.dataToAddress(data: to), txIndex: txIndex, txid: txid)
+            let mintTx = MintTransactionInput(
+                gHash: gHash,
+                gPubkey: gPubkey,
+                nHash: nHash,
+                nonce: nonce,
+                amount: amount,
+                pHash: pHash,
+                to: try chain.dataToAddress(data: to),
+                txIndex: txIndex,
+                txid: txid
+            )
             
             let txHash = try mintTx
                 .hash(selector: selector(direction: .to), version: version)
@@ -105,46 +115,11 @@ extension RenVM {
         }
         
         func submitMintTransaction() -> Single<String> {
-            guard let gHash = state.gHash,
-                  let gPubkey = state.gPubKey,
-                  let nHash = state.nHash,
-                  let amount = state.amount,
-                  let pHash = state.pHash,
-                  let sendTo = state.sendTo,
-                  let to = try? chain.dataToAddress(data: sendTo),
-                  let txIndex = state.txIndex,
-                  let txid = state.txid
-            else {return .error(Error.paramsMissing)}
-            let nonce = Data(hex: session.nonce)
-            
-            let mintTx = MintTransactionInput(
-                gHash: gHash,
-                gPubkey: gPubkey,
-                nHash: nHash,
-                nonce: nonce,
-                amount: amount,
-                pHash: pHash,
-                to: to,
-                txIndex: txIndex,
-                txid: txid
-            )
-            
-            let hash: String
-            do {
-                hash = try mintTx
-                    .hash(selector: selector(direction: .to), version: version)
-                    .base64urlEncodedString()
-            } catch {
-                return .error(error)
-            }
-            
-            return rpcClient.submitTx(
-                hash: hash,
-                selector: selector(direction: .to),
-                version: version,
-                input: mintTx
-            )
-                .map {_ in hash}
+            submitTx(direction: .to)
+        }
+        
+        func submitBurnTransaction() -> Single<String> {
+            submitTx(direction: .from)
         }
         
         func mint(signer: Data) -> Single<String> {
@@ -165,6 +140,31 @@ extension RenVM {
         
         private func selector(direction: Selector.Direction) -> Selector {
             chain.selector(mintTokenSymbol: mintTokenSymbol, direction: direction)
+        }
+        
+        private func submitTx(direction: Selector.Direction) -> Single<String> {
+            let selector = selector(direction: direction)
+            
+            // get input
+            let mintTx: MintTransactionInput
+            let hash: String
+            do {
+                mintTx = try MintTransactionInput(state: state, chain: chain, nonce: Data(hex: session.nonce))
+                hash = try mintTx
+                    .hash(selector: selector, version: version)
+                    .base64urlEncodedString()
+            } catch {
+                return .error(error)
+            }
+            
+            // send transaction
+            return rpcClient.submitTx(
+                hash: hash,
+                selector: selector,
+                version: version,
+                input: mintTx
+            )
+                .map {_ in hash}
         }
     }
 }
@@ -230,5 +230,30 @@ private extension Long {
 private extension String {
     func getBytes() -> Data? {
         data(using: .utf8)
+    }
+}
+
+private extension RenVM.MintTransactionInput {
+    init(state: RenVM.LockAndMint.State, chain: RenVMChainType, nonce: Data) throws {
+        guard let gHash = state.gHash,
+              let nHash = state.nHash,
+              let amount = state.amount,
+              let pHash = state.pHash,
+              let sendTo = state.sendTo,
+              let to = try? chain.dataToAddress(data: sendTo),
+              let txIndex = state.txIndex,
+              let txid = state.txid
+        else {throw RenVM.Error.paramsMissing}
+        
+        self.txid       = txid.base64urlEncodedString()
+        self.txindex    = txIndex
+        self.ghash      = gHash.base64urlEncodedString()
+        self.gpubkey    = state.gPubKey?.base64urlEncodedString() ?? ""
+        self.nhash      = nHash.base64urlEncodedString()
+        self.nonce      = nonce.base64urlEncodedString()
+        self.payload    = ""
+        self.phash      = pHash.base64urlEncodedString()
+        self.to         = to
+        self.amount     = amount
     }
 }
