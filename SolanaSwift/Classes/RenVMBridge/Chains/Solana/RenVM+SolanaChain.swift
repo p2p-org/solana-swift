@@ -211,6 +211,72 @@ extension RenVM {
                 }
         }
         
+        public func submitBurn(
+            mintTokenSymbol: String,
+            account: SolanaSDK.PublicKey,
+            amount: String,
+            recipient: String,
+            signer: SolanaSDK.Account
+        ) -> Single<BurnDetails> {
+            guard let amount = UInt64(amount) else {
+                return .error(Error("Amount is not valid"))
+            }
+            do {
+                let program = try resolveTokenGatewayContract(mintTokenSymbol: mintTokenSymbol)
+                let tokenMint = try getSPLTokenPubkey(mintTokenSymbol: mintTokenSymbol)
+                let source = try SolanaSDK.PublicKey(data: try getAssociatedTokenAddress(address: account.data, mintTokenSymbol: mintTokenSymbol))
+                let gatewayAccountId = try SolanaSDK.PublicKey.findProgramAddress(seeds: [Data(gatewayStateKey.bytes)], programId: program).0
+                
+                return solanaClient.getAccountInfo(
+                    account: gatewayAccountId.base58EncodedString,
+                    decodedTo: GatewayStateData.self
+                )
+                    .map {$0.data}
+                    .flatMap {gatewayState -> Single<BurnDetails> in
+                        let nonceBN = gatewayState.burnCount + 1
+                        let burnLogAccountId = try SolanaSDK.PublicKey.findProgramAddress(
+                            seeds: [Data(nonceBN.bytes)],
+                            programId: program
+                        ).0
+                        
+                        let burnCheckedInstruction = SolanaSDK.TokenProgram.burnCheckedInstruction(
+                            tokenProgramId: .tokenProgramId,
+                            mint: tokenMint,
+                            account: source,
+                            owner: account,
+                            amount: amount,
+                            decimals: 8
+                        )
+                        
+                        let burnInstruction = RenProgram.burnInstruction(
+                            account: account,
+                            source: source,
+                            gatewayAccount: gatewayAccountId,
+                            tokenMint: tokenMint,
+                            burnLogAccountId: burnLogAccountId,
+                            recipient: Data(recipient.bytes),
+                            programId: program
+                        )
+                        
+                        return self.solanaClient.serializeAndSend(
+                            instructions: [
+                                burnCheckedInstruction,
+                                burnInstruction
+                            ],
+                            recentBlockhash: nil,
+                            signers: [signer],
+                            isSimulation: false
+                        )
+                        .map {signature in
+                            .init(confirmedSignature: signature, nonce: nonceBN, recipient: recipient)
+                        }
+                    }
+                
+            } catch {
+                return .error(error)
+            }
+        }
+        
         public func findMintByDepositDetail(
             nHash: Data,
             pHash: Data,
@@ -343,5 +409,11 @@ extension RenVM.SolanaChain {
             data += try gateways.reduce(Data(), {$0 + (try $1.serialize())})
             return data
         }
+    }
+    
+    public struct BurnDetails {
+        let confirmedSignature: String
+        let nonce: UInt64
+        let recipient: String
     }
 }

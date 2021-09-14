@@ -190,8 +190,8 @@ public extension SolanaSDK {
         
         public static func burnCheckedInstruction(
             tokenProgramId: PublicKey,
-            account: PublicKey,
             mint: PublicKey,
+            account: PublicKey,
             owner: PublicKey,
             amount: UInt64,
             decimals: UInt8
