@@ -62,7 +62,7 @@ extension RenVM {
             let nHash = Hash.generateNHash(nonce: nonceBuffer.bytes, txId: txid.bytes, txIndex: 0)
             let pHash = Hash.generatePHash()
             let sHash = Hash.generateSHash(selector: .init(mintTokenSymbol: mintTokenSymbol, chainName: burnToChainName, direction: .to)) // "BTC/toBitcoin"
-            let gHash = Hash.generateGHash(to: Self.addressToBytes(address: burnDetails.recipient).hexString, tokenIdentifier: sHash.toHexString(), nonce: nonceBuffer.bytes)
+            let gHash = Hash.generateGHash(to: try Self.addressToBytes(address: burnDetails.recipient).hexString, tokenIdentifier: sHash.toHexString(), nonce: nonceBuffer.bytes)
             
             let mintTx = MintTransactionInput(gHash: gHash, gPubkey: Data(), nHash: nHash, nonce: nonceBuffer, amount: amount, pHash: pHash, to: burnDetails.recipient, txIndex: "0", txid: txid)
             
@@ -115,7 +115,23 @@ extension RenVM {
             chain.selector(mintTokenSymbol: mintTokenSymbol, direction: direction)
         }
         
-        static func addressToBytes(address: String) -> Data {
+        static func addressToBytes(address: String) throws -> Data {
+            let bech32 = try Bech32().decode(address).checksum
+            let type = bech32[0]
+            let words = Data(bech32[1...])
+            let fromWords = convert(data: words, inBits: 5, outBits: 8, pad: false)
+            var data = Data()
+            data += [type]
+            data += fromWords
+            return data
+        }
+        
+        static func convert(
+            data: Data,
+            inBits: UInt8,
+            outBits: UInt8,
+            pad: Bool
+        ) -> Data {
             fatalError()
         }
     }
