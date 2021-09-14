@@ -18,6 +18,7 @@ public extension SolanaSDK {
             static let mintTo: UInt8 = 7
             static let closeAccount: UInt8 = 9
             static let transferChecked: UInt8 = 12
+            static let burnChecked: UInt8 = 15
         }
         
         // MARK: - Instructions
@@ -184,6 +185,29 @@ public extension SolanaSDK {
                 keys: keys,
                 programId: programId,
                 data: [Index.transferChecked, amount, decimals]
+            )
+        }
+        
+        public static func burnCheckedInstruction(
+            tokenProgramId: PublicKey,
+            account: PublicKey,
+            mint: PublicKey,
+            owner: PublicKey,
+            amount: UInt64,
+            decimals: UInt8
+        ) -> TransactionInstruction {
+            .init(
+                keys: [
+                    .init(publicKey: account, isSigner: false, isWritable: true),
+                    .init(publicKey: mint, isSigner: false, isWritable: true),
+                    .init(publicKey: owner, isSigner: true, isWritable: false),
+                ],
+                programId: .tokenProgramId,
+                data: [
+                    Index.burnChecked,
+                    amount,
+                    decimals
+                ]
             )
         }
     }
