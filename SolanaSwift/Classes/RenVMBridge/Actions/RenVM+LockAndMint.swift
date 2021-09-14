@@ -15,38 +15,42 @@ extension RenVM {
         // MARK: - Dependencies
         let rpcClient: RenVMRpcClientType
         let chain: RenVMChainType
-        let selector: String
+        let mintTokenSymbol: String
         let version: String
         
         // MARK: - State
         var session: Session
         var state = State()
         
+        // MARK: - Initializer
         init(
             rpcClient: RenVMRpcClientType,
             chain: RenVMChainType,
-            selector: String,
+            mintTokenSymbol: String,
             version: String,
             destinationAddress: Data,
             sessionDay: Long
         ) {
             self.rpcClient = rpcClient
             self.chain = chain
-            self.selector = selector
+            self.mintTokenSymbol = mintTokenSymbol
             self.version = version
             self.session = Session(destinationAddress: destinationAddress, sessionDay: sessionDay)
         }
         
+        // MARK: - Methods
         func generateGatewayAddress() -> Single<Data> {
             let sendTo: Data
             do {
-                sendTo = try chain.getAssociatedTokenAddress(address: session.destinationAddress)
+                sendTo = try chain.getAssociatedTokenAddress(address: session.destinationAddress, mintTokenSymbol: mintTokenSymbol)
             } catch {
                 return .error(error)
             }
             state.sendTo = sendTo
             let sendToHex = sendTo.hexString
-            let tokenGatewayContractHex = Hash.generateSHash().hexString
+            let tokenGatewayContractHex = Hash.generateSHash(
+                selector: selector(direction: .to)
+            ).hexString
             let gHash = Hash.generateGHash(to: sendToHex, tokenIdentifier: tokenGatewayContractHex, nonce: Data(hex: session.nonce).bytes)
             state.gHash = gHash
             
@@ -87,7 +91,7 @@ extension RenVM {
             let mintTx = MintTransactionInput(gHash: gHash, gPubkey: gPubkey, nHash: nHash, nonce: nonce, amount: amount, pHash: pHash, to: try chain.dataToAddress(data: to), txIndex: txIndex, txid: txid)
             
             let txHash = try mintTx
-                .hash(selector: selector, version: version)
+                .hash(selector: selector(direction: .to), version: version)
                 .base64urlEncodedString()
             
             state.txIndex = txIndex
@@ -128,13 +132,18 @@ extension RenVM {
             let hash: String
             do {
                 hash = try mintTx
-                    .hash(selector: selector, version: version)
+                    .hash(selector: selector(direction: .to), version: version)
                     .base64urlEncodedString()
             } catch {
                 return .error(error)
             }
             
-            return rpcClient.submitTxMint(hash: hash, selector: selector, version: version, input: mintTx)
+            return rpcClient.submitTx(
+                hash: hash,
+                selector: selector(direction: .to),
+                version: version,
+                input: mintTx
+            )
                 .map {_ in hash}
         }
         
@@ -147,10 +156,15 @@ extension RenVM {
                     guard let self = self else {throw Error.unknown}
                     return self.chain.submitMint(
                         address: self.session.destinationAddress,
+                        mintTokenSymbol: self.mintTokenSymbol,
                         signer: signer,
                         responceQueryMint: res
                     )
                 }
+        }
+        
+        private func selector(direction: Selector.Direction) -> Selector {
+            chain.selector(mintTokenSymbol: mintTokenSymbol, direction: direction)
         }
     }
 }

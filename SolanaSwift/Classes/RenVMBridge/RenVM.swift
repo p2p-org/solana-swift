@@ -13,8 +13,10 @@ public struct RenVM {
 }
 
 public protocol RenVMChainType {
+    var chainName: String {get}
     func getAssociatedTokenAddress(
-        address: Data
+        address: Data,
+        mintTokenSymbol: String
     ) throws -> Data // represent as data, because there might be different encoding methods for various of chains
     func dataToAddress(
         data: Data
@@ -22,9 +24,16 @@ public protocol RenVMChainType {
     
     func submitMint(
         address: Data,
+        mintTokenSymbol: String,
         signer: Data,
         responceQueryMint: RenVM.ResponseQueryTxMint
     ) -> Single<String>
+}
+
+extension RenVMChainType {
+    func selector(mintTokenSymbol: String, direction: RenVM.Selector.Direction) -> RenVM.Selector {
+        .init(mintTokenSymbol: mintTokenSymbol, chainName: chainName, direction: direction)
+    }
 }
 
 public protocol RenVMRpcClientType {
@@ -47,23 +56,23 @@ public extension RenVMRpcClientType {
         call(endpoint: "ren_queryConfig", params: emptyParams)
     }
 
-    internal func submitTxMint(
+    internal func submitTx(
         hash: String,
-        selector: String,
+        selector: RenVM.Selector,
         version: String,
         input: RenVM.MintTransactionInput
     ) -> Single<RenVM.ResponseSubmitTxMint> {
         call(
             endpoint: "ren_submitTx",
-            params: RenVM.ParamsSubmitMint(
+            params: ["tx": RenVM.ParamsSubmitMint(
                 hash: hash,
-                selector: selector,
+                selector: selector.toString(),
                 version: version,
                 in: .init(
                     t: .init(),
                     v: input
                 )
-            )
+            )]
         )
     }
     

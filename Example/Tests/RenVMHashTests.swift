@@ -22,7 +22,7 @@ class RenVMHashTests: XCTestCase {
     }
     
     func testGenerateSHash() throws {
-        let bytes = RenVM.Hash.generateSHash().bytes
+        let bytes = RenVM.Hash.generateSHash(selector: .init(mintTokenSymbol: "BTC", chainName: "Solana", direction: .to)).bytes
         XCTAssertEqual(Base58.encode(bytes), "2XWUS8dNzaAFeDk6e6Q4dsojE3n9jncAZ9nNBpCJWEgZ")
     }
     
@@ -66,14 +66,13 @@ class RenVMHashTests: XCTestCase {
         )
         
         let data = try mintTx
-            .hash(selector: RenVM.Mock.selector, version: RenVM.Mock.version)
+            .hash(selector: .init(
+                    mintTokenSymbol: RenVM.Mock.mintToken,
+                    chainName: "Solana",
+                    direction: .to
+            ), version: RenVM.Mock.version
+        )
         
         XCTAssertEqual(data.base64urlEncodedString(), "3eT3xmt8h9wW9OZVvfV-BQo5nm70c_ClEqe4zryBq54")
-    }
-    
-    func testFixSignatureSimple() throws {
-        let string = "fypvW39VUS6tB8basjmi3YsSn_GR7uLTw_lGcJhQYFcRVemsA1LkF8FQKH_1XJR-bQGP6AXsPbnmB1H8AvKBWgA"
-        let data = try Data(base64urlEncoded: string)?.fixSignatureSimple()
-        XCTAssertEqual("CDsK2CsmBnLqupzsv9EeDHwc5ZYQxXt9LKzpkmusasc5z2LdDiKHqnCXpiCZTEXDYZtP7JgY4Ur9fkAU5RWSwxrnn", Base58.encode(data!.bytes))
     }
 }

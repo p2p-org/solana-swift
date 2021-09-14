@@ -44,16 +44,16 @@ class RenVMSolanaChainTests: XCTestCase {
     }
     
     func testResolveTokenGatewayContract() throws {
-        XCTAssertEqual(try RenVM.Mock.solanaChain().resolveTokenGatewayContract(), "FsEACSS3nKamRKdJBaBDpZtDXWrHR2nByahr4ReoYMBH")
+        XCTAssertEqual(try RenVM.Mock.solanaChain().resolveTokenGatewayContract(mintTokenSymbol: RenVM.Mock.mintToken), "FsEACSS3nKamRKdJBaBDpZtDXWrHR2nByahr4ReoYMBH")
     }
     
     func testGetSPLTokenPubkey() throws {
-        XCTAssertEqual(try RenVM.Mock.solanaChain().getSPLTokenPubkey(), "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD")
+        XCTAssertEqual(try RenVM.Mock.solanaChain().getSPLTokenPubkey(mintTokenSymbol: RenVM.Mock.mintToken), "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD")
     }
     
     func testGetAssociatedTokenAccount() throws {
         let pubkey: SolanaSDK.PublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-        XCTAssertEqual(Base58.encode(try RenVM.Mock.solanaChain().getAssociatedTokenAddress(address: pubkey.data).bytes), "4Z9Dv58aSkG9bC8stA3aqsMNXnSbJHDQTDSeddxAD1tb")
+        XCTAssertEqual(Base58.encode(try RenVM.Mock.solanaChain().getAssociatedTokenAddress(address: pubkey.data, mintTokenSymbol: RenVM.Mock.mintToken).bytes), "4Z9Dv58aSkG9bC8stA3aqsMNXnSbJHDQTDSeddxAD1tb")
     }
     
     func testBuildRenVMMessage() throws {
@@ -67,14 +67,14 @@ class RenVMSolanaChainTests: XCTestCase {
         XCTAssertEqual(Base58.encode(bytes), "71nK5AmnXQVYxHsA1JCF96MUuTxkgUKfXRPX97EZ5D41c8VFDyDeMunKmVp5tFbVfWNLg9S9W3Z5wKy2ZhYeMW4HJQV1tvnbizp5jM3E1wNVrvDJAcBS6xoMEMoVasZDJgvtmHtcSKNMRTJTzCf5ZBimkvdBKX9V9w81Bn8TX8apojeJQGKK3XMtAeoJWTwKqorTdewKQYwVg7iqn5xE5B1zgMy")
     }
     
-    func testFindMintByDepositDetails() throws {
-        let pHash = Data(base64urlEncoded: "xdJGAYb3IzySfn2y3McDwOUAtlPKgic7e_rYBF2FpHA")!
-        let amount = "9186"
-        let to: SolanaSDK.PublicKey = "4Z9Dv58aSkG9bC8stA3aqsMNXnSbJHDQTDSeddxAD1tb"
-        let nHash = Data(base64urlEncoded: "L1kPFl6zMw_k_6Vc6GZksrLeT25wROFmwbREyzlv9OQ")!
-
-        let solanaChain = RenVM.Mock.solanaChain()
-
-        try solanaChain.findMintByDepositDetail(nHash: nHash, pHash: pHash, to: to, amount: amount).toBlocking().first()
-    }
+//    func testFindMintByDepositDetails() throws {
+//        let pHash = Data(base64urlEncoded: "xdJGAYb3IzySfn2y3McDwOUAtlPKgic7e_rYBF2FpHA")!
+//        let amount = "9186"
+//        let to: SolanaSDK.PublicKey = "4Z9Dv58aSkG9bC8stA3aqsMNXnSbJHDQTDSeddxAD1tb"
+//        let nHash = Data(base64urlEncoded: "L1kPFl6zMw_k_6Vc6GZksrLeT25wROFmwbREyzlv9OQ")!
+//
+//        let solanaChain = RenVM.Mock.solanaChain()
+//
+//        try solanaChain.findMintByDepositDetail(nHash: nHash, pHash: pHash, to: to, mintTokenSymbol: RenVM.Mock.mintToken, amount: amount).toBlocking().first()
+//    }
 }

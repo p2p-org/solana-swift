@@ -56,12 +56,10 @@ extension RenVM {
         let to: String
         let amount: String
         
-        func hash(selector: String, version: String) throws -> Data {
+        func hash(selector: Selector, version: String) throws -> Data {
             var data = Data()
-            let version = "1"
-            let selector = "BTC/toSolana"
             data += marshal(src: version)
-            data += marshal(src: selector)
+            data += marshal(src: selector.toString())
             // marshalledType MintTransactionInput
             data += Base58
                 .decode("aHQBEVgedhqiYDUtzYKdu1Qg1fc781PEV4D1gLsuzfpHNwH8yK2A2BuZK4uZoMC6pp8o7GWQxmsp52gsDrfbipkyeQZnXigCmscJY4aJDxF9tT8DQP3XRa1cBzQL8S8PTzi9nPnBkAxBhtNv6q1")

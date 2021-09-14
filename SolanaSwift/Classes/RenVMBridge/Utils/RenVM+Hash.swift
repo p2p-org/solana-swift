@@ -14,8 +14,8 @@ extension RenVM {
             Data([UInt8]().keccak256)
         }
         
-        static func generateSHash() -> Data {
-            Data("BTC/toSolana".keccak256)
+        static func generateSHash(selector: Selector) -> Data {
+            Data(selector.toString().keccak256)
         }
         
         static func generateGHash(
@@ -118,4 +118,8 @@ extension String {
     func decodeBase64URL() -> Data? {
         Data(base64urlEncoded: self)
     }
+}
+
+extension UInt64 {
+    
 }

@@ -26,12 +26,11 @@ class RenVMLockAndMintTests: XCTestCase {
         let lockAndMint = RenVM.LockAndMint(
             rpcClient: RenVM.Mock.rpcClient,
             chain: RenVM.Mock.solanaChain(),
-            selector: RenVM.Mock.selector,
-            version: RenVM.Mock.version,
+            mintTokenSymbol: RenVM.Mock.mintToken,
+            version: "1",
             destinationAddress: destinationAddress.data,
             sessionDay: 18870
         )
-        
         let address = try lockAndMint.generateGatewayAddress().toBlocking().first()
         XCTAssertEqual(Base58.encode(address!.bytes), "2NC451uvR7AD5hvWNLQiYoqwQQfvQy2XB6U")
     }
@@ -40,8 +39,8 @@ class RenVMLockAndMintTests: XCTestCase {
         let lockAndMint = RenVM.LockAndMint(
             rpcClient: RenVM.Mock.rpcClient,
             chain: RenVM.Mock.solanaChain(),
-            selector: RenVM.Mock.selector,
-            version: RenVM.Mock.version,
+            mintTokenSymbol: RenVM.Mock.mintToken,
+            version: "1",
             destinationAddress: destinationAddress.data,
             sessionDay: 18874
         )

@@ -12,7 +12,7 @@ import RxSwift
 
 extension RenVM {
     struct Mock {
-        static var selector: String {"BTC/toSolana"}
+        static var mintToken: String {"BTC"}
         static var version: String {"1"}
         
         static func solanaChain(network: RenVM.Network = .testnet) -> SolanaChain {

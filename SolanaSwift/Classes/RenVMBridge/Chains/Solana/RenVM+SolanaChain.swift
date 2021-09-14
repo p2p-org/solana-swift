@@ -29,6 +29,7 @@ extension RenVM {
         // MARK: - Constants
         static let gatewayRegistryStateKey  = "GatewayRegistryState"
         let gatewayStateKey                 = "GatewayStateV0.1.4"
+        public let chainName: String        = "Solana"
         
         // MARK: - Properties
         let gatewayRegistryData: GatewayRegistryData
@@ -58,24 +59,33 @@ extension RenVM {
             }
         }
         
-        func resolveTokenGatewayContract() throws -> SolanaSDK.PublicKey {
-            guard let sHash = try? SolanaSDK.PublicKey(string: Base58.encode(Hash.generateSHash().bytes)),
+        func resolveTokenGatewayContract(mintTokenSymbol: String) throws -> SolanaSDK.PublicKey {
+            guard let sHash = try? SolanaSDK.PublicKey(
+                    string: Base58.encode(
+                        Hash.generateSHash(
+                            selector: selector(mintTokenSymbol: mintTokenSymbol, direction: .to)
+                        ).bytes
+                    )
+                ),
                 let index = gatewayRegistryData.selectors.firstIndex(of: sHash),
                 gatewayRegistryData.gateways.count > index
             else {throw Error("Could not resolve token gateway contract")}
             return gatewayRegistryData.gateways[index]
         }
         
-        func getSPLTokenPubkey() throws -> SolanaSDK.PublicKey {
-            let program = try resolveTokenGatewayContract()
-            let sHash = Hash.generateSHash()
+        func getSPLTokenPubkey(mintTokenSymbol: String) throws -> SolanaSDK.PublicKey {
+            let program = try resolveTokenGatewayContract(mintTokenSymbol: mintTokenSymbol)
+            let sHash = Hash.generateSHash(
+                selector: selector(mintTokenSymbol: mintTokenSymbol, direction: .to)
+            )
             return try .findProgramAddress(seeds: [sHash], programId: program).0
         }
         
         public func getAssociatedTokenAddress(
-            address: Data
+            address: Data,
+            mintTokenSymbol: String
         ) throws -> Data {
-            let tokenMint = try getSPLTokenPubkey()
+            let tokenMint = try getSPLTokenPubkey(mintTokenSymbol: mintTokenSymbol)
             return try SolanaSDK.PublicKey.associatedTokenAddress(
                 walletAddress: try SolanaSDK.PublicKey(data: address),
                 tokenMintAddress: tokenMint
@@ -88,11 +98,12 @@ extension RenVM {
         
         public func createAssociatedTokenAccount(
             address: SolanaSDK.PublicKey,
+            mintTokenSymbol: String,
             signer: SolanaSDK.Account
         ) -> Single<String> {
             do {
-                let tokenMint = try getSPLTokenPubkey()
-                let associatedTokenAddress = try getAssociatedTokenAddress(address: address.data)
+                let tokenMint = try getSPLTokenPubkey(mintTokenSymbol: mintTokenSymbol)
+                let associatedTokenAddress = try getAssociatedTokenAddress(address: address.data, mintTokenSymbol: mintTokenSymbol)
                 let createAccountInstruction = SolanaSDK.AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
                     mint: tokenMint,
                     associatedAccount: try SolanaSDK.PublicKey(data: associatedTokenAddress),
@@ -112,6 +123,7 @@ extension RenVM {
         
         public func submitMint(
             address: Data,
+            mintTokenSymbol: String,
             signer secretKey: Data,
             responceQueryMint: RenVM.ResponseQueryTxMint
         ) -> Single<String> {
@@ -122,7 +134,9 @@ extension RenVM {
             }
             
             let amount = responceQueryMint.valueOut.amount
-            let sHash = Hash.generateSHash()
+            let sHash = Hash.generateSHash(
+                selector: selector(mintTokenSymbol: mintTokenSymbol, direction: .to)
+            )
             
             let sig: Data
             let program: SolanaSDK.PublicKey
@@ -138,17 +152,17 @@ extension RenVM {
                 guard let fixedSig = try responceQueryMint.valueOut.sig.decodeBase64URL()?.fixSignatureSimple()
                 else {return .error(Error.paramsMissing)}
                 sig = fixedSig
-                program = try resolveTokenGatewayContract()
+                program = try resolveTokenGatewayContract(mintTokenSymbol: mintTokenSymbol)
                 gatewayAccountId = try .findProgramAddress(
                     seeds: [Data(gatewayStateKey.bytes)],
                     programId: program
                 ).0
-                tokenMint = try getSPLTokenPubkey()
+                tokenMint = try getSPLTokenPubkey(mintTokenSymbol: mintTokenSymbol)
                 mintAuthority = try .findProgramAddress(
                     seeds: [tokenMint.data],
                     programId: program
                 ).0
-                recipientTokenAccount = try SolanaSDK.PublicKey(data: try getAssociatedTokenAddress(address: address))
+                recipientTokenAccount = try SolanaSDK.PublicKey(data: try getAssociatedTokenAddress(address: address, mintTokenSymbol: mintTokenSymbol))
                 renVMMessage = try Self.buildRenVMMessage(
                     pHash: pHash,
                     amount: amount,
@@ -201,10 +215,13 @@ extension RenVM {
             nHash: Data,
             pHash: Data,
             to: SolanaSDK.PublicKey,
+            mintTokenSymbol: String,
             amount: String
         ) throws -> Single<String> {
-            let program = try resolveTokenGatewayContract()
-            let sHash = Hash.generateSHash()
+            let program = try resolveTokenGatewayContract(mintTokenSymbol: mintTokenSymbol)
+            let sHash = Hash.generateSHash(
+                selector: selector(mintTokenSymbol: mintTokenSymbol, direction: .to)
+            )
             let renVMMessage = try Self.buildRenVMMessage(pHash: pHash, amount: amount, token: sHash, to: to, nHash: nHash)
             
             let mintLogAccount = try SolanaSDK.PublicKey.findProgramAddress(seeds: [renVMMessage.keccak256], programId: program).0
