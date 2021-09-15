@@ -10,29 +10,42 @@ import Foundation
 extension RenVM {
     public struct ResponseQueryBlockState: Decodable {
         let state: State
-        var shards: [Shard] {
-            state.v.btc.shards
-        }
-        var publicKey: String? {
-            shards.first?.pubKey
+        
+        func publicKey(mintTokenSymbol: String) -> String? {
+            if mintTokenSymbol == State.V.CodingKeys.btc.rawValue {
+                return state.v.btc.shards.first?.pubKey
+            }
+            return nil
         }
         
         struct State: Decodable {
-            let v: Values
-        }
-        
-        struct Values: Decodable {
-            let btc: Btc
-        }
-        
-        struct Btc: Decodable {
-            let fees: Fees
-            let gasCap: String
-            let gasLimit: String
-            let gasPrice: String
-            let latestHeight: String
-            let minimumAmount: String
-            let shards: [Shard]
+            let t: T
+            let v: V
+            struct T: Decodable {
+                
+            }
+            
+            struct V: Decodable {
+                let btc: BTCValue
+    //            let bch, btc, dgb, doge: StructBCH?
+    //            let fil, luna: StructFIL?
+    //            let system: StructSystem?
+    //            let zec: StructBCH?
+
+                enum CodingKeys: String, CodingKey {
+                    case btc = "BTC"
+                }
+                
+                struct BTCValue: Decodable {
+                    let fees: Fees
+                    let gasCap: String
+                    let gasLimit: String
+                    let gasPrice: String
+                    let latestHeight: String
+                    let minimumAmount: String
+                    let shards: [Shard]
+                }
+            }
         }
         
         struct Fees: Decodable {

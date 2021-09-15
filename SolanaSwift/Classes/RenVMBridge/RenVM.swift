@@ -51,7 +51,7 @@ extension RenVMChainType {
 public protocol RenVMRpcClientType {
     var network: RenVM.Network {get}
     func call<T: Decodable>(endpoint: String, method: String, params: Encodable) -> Single<T>
-    func selectPublicKey() -> Single<Data?>
+    func selectPublicKey(mintTokenSymbol: String) -> Single<Data?>
 }
 
 public extension RenVMRpcClientType {
@@ -89,8 +89,8 @@ public extension RenVMRpcClientType {
         )
     }
     
-    func selectPublicKey() -> Single<Data?> {
+    func selectPublicKey(mintTokenSymbol: String) -> Single<Data?> {
         queryBlockState()
-            .map {Data(base64Encoded: $0.publicKey ?? "")}
+            .map {Data(base64Encoded: $0.publicKey(mintTokenSymbol: mintTokenSymbol) ?? "")}
     }
 }

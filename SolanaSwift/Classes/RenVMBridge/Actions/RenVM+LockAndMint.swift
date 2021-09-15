@@ -54,7 +54,7 @@ extension RenVM {
             let gHash = Hash.generateGHash(to: sendToHex, tokenIdentifier: tokenGatewayContractHex, nonce: Data(hex: session.nonce).bytes)
             state.gHash = gHash
             
-            return rpcClient.selectPublicKey()
+            return rpcClient.selectPublicKey(mintTokenSymbol: mintTokenSymbol)
                 .observe(on: CurrentThreadScheduler.instance)
                 .map {[weak self] gPubkey in
                     guard let self = self else {throw Error.unknown}
