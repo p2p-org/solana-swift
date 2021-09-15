@@ -52,4 +52,10 @@ class RenVMRPCClientTests: XCTestCase {
         let blockState = try rpcClient.queryBlockState().toBlocking().first()
         XCTAssertNotNil(blockState)
     }
+    
+    func testQueryConfig() throws {
+        let rpcClient = RenVM.RpcClient(network: .testnet)
+        let queryConfig = try rpcClient.queryConfig().toBlocking().first()
+        XCTAssertNotNil(queryConfig)
+    }
 }
