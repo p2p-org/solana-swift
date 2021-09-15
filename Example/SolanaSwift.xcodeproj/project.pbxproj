@@ -39,6 +39,7 @@
 		BC6D020F265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC6D020E265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json */; };
 		BC6D0212265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json in Resources */ = {isa = PBXBuildFile; fileRef = BC6D0211265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json */; };
 		BC76B552263806100018A0FF /* AssociatedTokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */; };
+		BC80202626F1A5B300C109C2 /* RenVMRPCClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC80202526F1A5B300C109C2 /* RenVMRPCClientTests.swift */; };
 		BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */; };
 		BC81A2A425BE624300664A2C /* SystemProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2A325BE624300664A2C /* SystemProgramTests.swift */; };
 		BC81A2AB25BE628700664A2C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2AA25BE628700664A2C /* Constants.swift */; };
@@ -212,6 +213,7 @@
 		BC6D020E265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = BurnLiquidityInPoolTransaction.json; sourceTree = "<group>"; };
 		BC6D0211265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSOLTransactionPaidByP2PORG.json; sourceTree = "<group>"; };
 		BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssociatedTokenProgramTests.swift; sourceTree = "<group>"; };
+		BC80202526F1A5B300C109C2 /* RenVMRPCClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenVMRPCClientTests.swift; sourceTree = "<group>"; };
 		BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2A325BE624300664A2C /* SystemProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2AA25BE628700664A2C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -385,6 +387,7 @@
 			isa = PBXGroup;
 			children = (
 				BC57451926ECE6AF00275DE2 /* RenVM+Mock.swift */,
+				BC80202526F1A5B300C109C2 /* RenVMRPCClientTests.swift */,
 				BC5744D926EA202300275DE2 /* RenVMLockAndMintTests.swift */,
 				BC932A0126F0A94500CC74B6 /* RenVMBurnAndReleaseTests.swift */,
 				BC5744DB26EA3BCC00275DE2 /* RenVMSolanaChainTests.swift */,
@@ -733,6 +736,7 @@
 				BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */,
 				BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */,
 				BC5744DC26EA3BCC00275DE2 /* RenVMSolanaChainTests.swift in Sources */,
+				BC80202626F1A5B300C109C2 /* RenVMRPCClientTests.swift in Sources */,
 				BC966DB425BFDCA100F2AB36 /* RestAPIPoolTests.swift in Sources */,
 				BCFCA1EF26D741B700E84D82 /* SerumSwapOtherTests.swift in Sources */,
 				BC76B552263806100018A0FF /* AssociatedTokenProgramTests.swift in Sources */,
