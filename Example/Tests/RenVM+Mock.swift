@@ -29,7 +29,7 @@ extension RenVM {
         
         struct RpcClient: RenVMRpcClientType {
             var network: RenVM.Network
-            func call<T>(endpoint: String, params: Encodable) -> Single<T> where T : Decodable {
+            func call<T>(endpoint: String, method: String, params: Encodable) -> Single<T> where T : Decodable {
                 fatalError()
             }
             func selectPublicKey() -> Single<Data?> {

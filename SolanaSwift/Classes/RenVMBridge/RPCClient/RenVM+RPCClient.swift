@@ -13,9 +13,20 @@ extension RenVM {
     struct RpcClient: RenVMRpcClientType {
         let network: RenVM.Network
         
-        func call<T>(endpoint: String, params: Encodable) -> Single<T> where T : Decodable {
-            let body = Body(method: endpoint, params: EncodableWrapper(wrapped: params))
+        func call<T>(endpoint: String, method: String, params: Encodable) -> Single<T> where T : Decodable {
             fatalError()
+            let body = Body(method: method, params: EncodableWrapper(wrapped: params))
+            do {
+                var urlRequest = try URLRequest(url: endpoint, method: .post, headers: [.contentType("application/json")])
+                urlRequest.httpBody = try JSONEncoder().encode(body)
+                request(urlRequest)
+                    .responseData()
+//                    .map {(response, data) -> T in
+//
+//                    }
+            } catch {
+                return .error(error)
+            }
         }
         
         struct Body: Encodable {

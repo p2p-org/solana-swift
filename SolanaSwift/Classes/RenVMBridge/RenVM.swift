@@ -50,22 +50,22 @@ extension RenVMChainType {
 
 public protocol RenVMRpcClientType {
     var network: RenVM.Network {get}
-    func call<T: Decodable>(endpoint: String, params: Encodable) -> Single<T>
+    func call<T: Decodable>(endpoint: String, method: String, params: Encodable) -> Single<T>
     func selectPublicKey() -> Single<Data?>
 }
 
 public extension RenVMRpcClientType {
     private var emptyParams: [String: String] {[:]}
     func queryMint(txHash: String) -> Single<RenVM.ResponseQueryTxMint> {
-        call(endpoint: "ren_queryTx", params: ["txHash": txHash])
+        call(endpoint: network.lightNode, method: "ren_queryTx", params: ["txHash": txHash])
     }
     
     func queryBlockState() -> Single<RenVM.ResponseQueryBlockState> {
-        call(endpoint: "ren_queryBlockState", params: emptyParams)
+        call(endpoint: network.lightNode, method: "ren_queryBlockState", params: emptyParams)
     }
 
     func queryConfig() -> Single<RenVM.ResponseQueryConfig> {
-        call(endpoint: "ren_queryConfig", params: emptyParams)
+        call(endpoint: network.lightNode, method: "ren_queryConfig", params: emptyParams)
     }
 
     internal func submitTx(
@@ -75,7 +75,8 @@ public extension RenVMRpcClientType {
         input: RenVM.MintTransactionInput
     ) -> Single<RenVM.ResponseSubmitTxMint> {
         call(
-            endpoint: "ren_submitTx",
+            endpoint: network.lightNode,
+            method: "ren_submitTx",
             params: ["tx": RenVM.ParamsSubmitMint(
                 hash: hash,
                 selector: selector.toString(),
