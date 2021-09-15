@@ -13,23 +13,23 @@ public typealias Long = Int64
 extension RenVM {
     public class LockAndMint {
         // MARK: - Dependencies
-        let rpcClient: RenVMRpcClientType
-        let chain: RenVMChainType
-        let mintTokenSymbol: String
-        let version: String
+        private let rpcClient: RenVMRpcClientType
+        private let chain: RenVMChainType
+        private let mintTokenSymbol: String
+        private let version: String
         
         // MARK: - State
-        var session: Session
-        var state = State()
+        private var session: Session
+        private var state = State()
         
         // MARK: - Initializer
-        init(
+        public init(
             rpcClient: RenVMRpcClientType,
             chain: RenVMChainType,
             mintTokenSymbol: String,
             version: String,
             destinationAddress: Data,
-            sessionDay: Long
+            sessionDay: Long = 3
         ) {
             self.rpcClient = rpcClient
             self.chain = chain
@@ -39,7 +39,7 @@ extension RenVM {
         }
         
         // MARK: - Methods
-        func generateGatewayAddress() -> Single<Data> {
+        public func generateGatewayAddress() -> Single<Data> {
             let sendTo: Data
             do {
                 sendTo = try chain.getAssociatedTokenAddress(address: session.destinationAddress, mintTokenSymbol: mintTokenSymbol)
@@ -73,7 +73,7 @@ extension RenVM {
                 }
         }
         
-        func getDepositState(
+        public func getDepositState(
             transactionHash: String,
             txIndex: String,
             amount: String
@@ -114,7 +114,7 @@ extension RenVM {
             return state
         }
         
-        func submitMintTransaction() -> Single<String> {
+        public func submitMintTransaction() -> Single<String> {
             let selector = selector(direction: .to)
             
             // get input
@@ -139,7 +139,7 @@ extension RenVM {
                 .map {_ in hash}
         }
         
-        func mint(signer: Data) -> Single<String> {
+        public func mint(signer: Data) -> Single<String> {
             guard let txHash = state.txHash else {
                 return .error(Error("txHash not found"))
             }

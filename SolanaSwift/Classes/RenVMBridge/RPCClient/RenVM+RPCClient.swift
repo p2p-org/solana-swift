@@ -10,10 +10,14 @@ import RxAlamofire
 import RxSwift
 
 extension RenVM {
-    struct RpcClient: RenVMRpcClientType {
-        let network: RenVM.Network
+    public struct RpcClient: RenVMRpcClientType {
+        public init(network: RenVM.Network) {
+            self.network = network
+        }
         
-        func call<T>(endpoint: String, method: String, params: Encodable) -> Single<T> where T : Decodable {
+        public let network: RenVM.Network
+        
+        public func call<T>(endpoint: String, method: String, params: Encodable) -> Single<T> where T : Decodable {
             do {
                 // prepare params
                 let params = EncodableWrapper.init(wrapped:params)
