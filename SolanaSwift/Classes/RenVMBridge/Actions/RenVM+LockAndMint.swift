@@ -163,7 +163,7 @@ extension RenVM {
 
 extension RenVM.LockAndMint {
     public struct Session {
-        init(
+        public init(
             destinationAddress: Data,
             nonce: String? = nil,
             sessionDay: Long = Long(Date().timeIntervalSince1970 / 1000 / 60 / 60 / 24),
