@@ -17,32 +17,41 @@ extension RenVM {
         private let chain: RenVMChainType
         private let mintTokenSymbol: String
         private let version: String
+        private let destinationAddress: Data
+        public private(set) var gatewayAddress: Data?
         
         // MARK: - State
         private var session: Session
         private var state = State()
         
         // MARK: - Initializer
+        /// Create LockAndMint by creating new session or restoring existing session
         public init(
             rpcClient: RenVMRpcClientType,
             chain: RenVMChainType,
             mintTokenSymbol: String,
             version: String,
             destinationAddress: Data,
-            sessionDay: Long = 3
-        ) {
+            session: Session? = nil
+        ) throws {
             self.rpcClient = rpcClient
             self.chain = chain
             self.mintTokenSymbol = mintTokenSymbol
             self.version = version
-            self.session = Session(destinationAddress: destinationAddress, sessionDay: sessionDay)
+            self.destinationAddress = destinationAddress
+            
+            if let session = session {
+                self.session = session
+            } else {
+                self.session = try Session()
+            }
         }
         
         // MARK: - Methods
         public func generateGatewayAddress() -> Single<Data> {
             let sendTo: Data
             do {
-                sendTo = try chain.getAssociatedTokenAddress(address: session.destinationAddress, mintTokenSymbol: mintTokenSymbol)
+                sendTo = try chain.getAssociatedTokenAddress(address: destinationAddress, mintTokenSymbol: mintTokenSymbol)
             } catch {
                 return .error(error)
             }
@@ -68,8 +77,8 @@ extension RenVM {
                         gHash: gHash,
                         prefix: Data([self.rpcClient.network.p2shPrefix])
                     )
-                    self.session.gatewayAddress = gatewayAddress
-                    return self.session.gatewayAddress
+                    self.gatewayAddress = gatewayAddress
+                    return gatewayAddress
                 }
         }
         
@@ -147,7 +156,7 @@ extension RenVM {
                 .flatMap { [weak self] res in
                     guard let self = self else {throw Error.unknown}
                     return self.chain.submitMint(
-                        address: self.session.destinationAddress,
+                        address: self.destinationAddress,
                         mintTokenSymbol: self.mintTokenSymbol,
                         signer: signer,
                         responceQueryMint: res
@@ -161,37 +170,6 @@ extension RenVM {
     }
 }
 
-extension RenVM.LockAndMint {
-    public struct Session {
-        public init(
-            destinationAddress: Data,
-            nonce: String? = nil,
-            sessionDay: Long = Long(Date().timeIntervalSince1970 / 1000 / 60 / 60 / 24),
-            expiryTimeInDays: Long = 3,
-            gatewayAddress: Data = Data()
-        ) {
-            self.destinationAddress = destinationAddress
-            self.nonce = nonce ?? generateNonce(sessionDay: sessionDay)
-            self.createdAt = sessionDay
-            self.expiryTime = (sessionDay + 3) * 60 * 60 * 24 * 1000
-            self.gatewayAddress = gatewayAddress
-        }
-        
-        public private(set) var destinationAddress: Data
-        public private(set) var nonce: String
-        public private(set) var createdAt: Long
-        public private(set) var expiryTime: Long
-        public internal(set) var gatewayAddress: Data
-        
-    }
-}
-
-private func generateNonce(sessionDay: Long) -> String {
-    let string = String(repeating: " ", count: 28) + sessionDay.hexString
-    let data = string.getBytes() ?? Data()
-    return data.hexString
-}
-
 private func reverseHex(src: String) -> String {
     var newStr = Array(src)
     for i in stride(from: 0, to: src.count / 2, by: 2) {
@@ -199,16 +177,4 @@ private func reverseHex(src: String) -> String {
         newStr.swapAt(i + 1, newStr.count - i - 1)
     }
     return String(newStr)
-}
-
-private extension Long {
-    var hexString: String {
-        String(self, radix: 16, uppercase: false)
-    }
-}
-
-private extension String {
-    func getBytes() -> Data? {
-        data(using: .utf8)
-    }
 }

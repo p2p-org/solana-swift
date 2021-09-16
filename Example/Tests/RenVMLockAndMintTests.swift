@@ -13,36 +13,36 @@ class RenVMLockAndMintTests: XCTestCase {
     let destinationAddress: SolanaSDK.PublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
     
     func testSession() throws {
-        let sessionDay: Long = 18870
-        let session = RenVM.LockAndMint.Session(
-            destinationAddress: destinationAddress.data,
-            sessionDay: sessionDay
-        )
-        XCTAssertEqual(session.expiryTime, 1630627200000)
+        let session = try createSession(sessionDays: 18870)
+        XCTAssertEqual(Calendar.current.date(byAdding: .day, value: 3, to: session.createdAt), session.endAt)
         XCTAssertEqual(session.nonce, "2020202020202020202020202020202020202020202020202020202034396236")
     }
     
     func testGenerateGatewayAddress() throws {
-        let lockAndMint = RenVM.LockAndMint(
+        let session = try createSession(sessionDays: 18870)
+        
+        let lockAndMint = try RenVM.LockAndMint(
             rpcClient: RenVM.Mock.rpcClient,
             chain: RenVM.Mock.solanaChain(),
-            mintTokenSymbol: RenVM.Mock.mintToken,
+            mintTokenSymbol: "BTC",
             version: "1",
             destinationAddress: destinationAddress.data,
-            sessionDay: 18870
+            session: session
         )
         let address = try lockAndMint.generateGatewayAddress().toBlocking().first()
         XCTAssertEqual(Base58.encode(address!.bytes), "2NC451uvR7AD5hvWNLQiYoqwQQfvQy2XB6U")
     }
     
     func testGetDepositState() throws {
-        let lockAndMint = RenVM.LockAndMint(
+        let session = try createSession(sessionDays: 18874)
+        
+        let lockAndMint = try RenVM.LockAndMint(
             rpcClient: RenVM.Mock.rpcClient,
             chain: RenVM.Mock.solanaChain(),
-            mintTokenSymbol: RenVM.Mock.mintToken,
+            mintTokenSymbol: "BTC",
             version: "1",
             destinationAddress: destinationAddress.data,
-            sessionDay: 18874
+            session: session
         )
         let gatewayAddress = try lockAndMint.generateGatewayAddress().toBlocking().first()
         XCTAssertEqual(Base58.encode(gatewayAddress!.bytes), "2MyJ7zQxBCnwKuRNoE3UYD2cb9MDjdkacaF")
@@ -53,5 +53,11 @@ class RenVMLockAndMintTests: XCTestCase {
         )
             .txHash
         XCTAssertEqual(txHash, "LLg3jxVXS4NEixjaBOUXocRqaK_Y0wk5HPshI1H3e6c")
+    }
+    
+    private func createSession(sessionDays: Long) throws -> RenVM.Session {
+        let interval = TimeInterval(sessionDays * 24 * 60 * 60 * 1000)
+        let createdAt = Date(timeIntervalSince1970: interval)
+        return try RenVM.Session(createdAt: createdAt)
     }
 }

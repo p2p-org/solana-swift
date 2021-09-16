@@ -32,7 +32,7 @@ extension RenVM {
             func call<T>(endpoint: String, method: String, params: Encodable) -> Single<T> where T : Decodable {
                 fatalError()
             }
-            func selectPublicKey() -> Single<Data?> {
+            func selectPublicKey(mintTokenSymbol: String) -> Single<Data?> {
                 .just(Data(base64Encoded: "Aw3WX32ykguyKZEuP0IT3RUOX5csm3PpvnFNhEVhrDVc"))
             }
         }

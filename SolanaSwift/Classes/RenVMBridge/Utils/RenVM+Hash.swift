@@ -120,6 +120,8 @@ extension String {
     }
 }
 
-extension UInt64 {
-    
+extension Long {
+    var hexString: String {
+        String(self, radix: 16, uppercase: false)
+    }
 }
