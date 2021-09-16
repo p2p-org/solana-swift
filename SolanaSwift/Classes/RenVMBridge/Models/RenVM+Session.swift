@@ -8,7 +8,7 @@
 import Foundation
 
 extension RenVM {
-    public struct Session {
+    public struct Session: Codable {
         /// New session, default expiring time is 3 days
         public init(
             nonce: String? = nil,
