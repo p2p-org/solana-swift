@@ -21,7 +21,7 @@ extension RenVM {
         public private(set) var gatewayAddress: Data?
         
         // MARK: - State
-        private var session: Session
+        public private(set) var session: Session
         private var state = State()
         
         // MARK: - Initializer

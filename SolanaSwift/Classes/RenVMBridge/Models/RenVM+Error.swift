@@ -11,15 +11,15 @@ extension RenVM {
     public struct Error: Swift.Error {
         public let message: String
         
-        init(_ message: String) {
+        public init(_ message: String) {
             self.message = message
         }
         
-        static var unknown: Self {
+        public static var unknown: Self {
             .init("Unknown")
         }
         
-        static var paramsMissing: Self {
+        public static var paramsMissing: Self {
             .init("One or some parameters are missing")
         }
     }

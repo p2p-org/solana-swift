@@ -18,8 +18,7 @@ extension RenVM {
         static func solanaChain(network: RenVM.Network = .testnet) -> SolanaChain {
             try! RenVM.SolanaChain.load(
                 client: RpcClient(network: network),
-                solanaClient: SolanaClient(),
-                network: network
+                solanaClient: SolanaClient()
             ).toBlocking().first()!
         }
         

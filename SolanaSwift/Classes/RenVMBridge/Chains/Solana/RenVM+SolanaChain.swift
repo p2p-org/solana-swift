@@ -39,11 +39,10 @@ extension RenVM {
         // MARK: - Methods
         public static func load(
             client: RenVMRpcClientType,
-            solanaClient: RenVMSolanaAPIClientType,
-            network: Network
+            solanaClient: RenVMSolanaAPIClientType
         ) -> Single<Self> {
             do {
-                let pubkey = try SolanaSDK.PublicKey(string: network.gatewayRegistry)
+                let pubkey = try SolanaSDK.PublicKey(string: client.network.gatewayRegistry)
                 let stateKey = try SolanaSDK.PublicKey.findProgramAddress(
                     seeds: [Self.gatewayRegistryStateKey.data(using: .utf8)!],
                     programId: pubkey
