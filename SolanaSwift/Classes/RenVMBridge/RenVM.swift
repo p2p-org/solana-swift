@@ -91,6 +91,8 @@ public extension RenVMRpcClientType {
     
     func selectPublicKey(mintTokenSymbol: String) -> Single<Data?> {
         queryBlockState()
-            .map {Data(base64Encoded: $0.publicKey(mintTokenSymbol: mintTokenSymbol) ?? "")}
+            .map {
+                Data(base64urlEncoded: $0.publicKey(mintTokenSymbol: mintTokenSymbol) ?? "")
+            }
     }
 }
