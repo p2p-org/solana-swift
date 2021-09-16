@@ -22,7 +22,7 @@ extension RenVM {
             self.nonce = nonce ?? generateNonce(sessionDay: Long(createdAt.timeIntervalSince1970 / 1000 / 60 / 60 / 24) )
             self.createdAt = createdAt
             
-            guard let endAt = endAt ?? Calendar.current.date(byAdding: .day, value: 3, to: createdAt)
+            guard let endAt = endAt ?? Calendar.current.date(byAdding: .hour, value: 36, to: createdAt)
             else {
                 throw Error("Invalid session")
             }
