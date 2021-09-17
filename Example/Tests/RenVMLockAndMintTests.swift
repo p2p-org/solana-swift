@@ -29,8 +29,8 @@ class RenVMLockAndMintTests: XCTestCase {
             destinationAddress: destinationAddress.data,
             session: session
         )
-        let address = try lockAndMint.generateGatewayAddress().toBlocking().first()
-        XCTAssertEqual(Base58.encode(address!.bytes), "2NC451uvR7AD5hvWNLQiYoqwQQfvQy2XB6U")
+        let response = try lockAndMint.generateGatewayAddress().toBlocking().first()
+        XCTAssertEqual(Base58.encode(response!.gatewayAddress.bytes), "2NC451uvR7AD5hvWNLQiYoqwQQfvQy2XB6U")
     }
     
     func testGetDepositState() throws {
@@ -44,12 +44,15 @@ class RenVMLockAndMintTests: XCTestCase {
             destinationAddress: destinationAddress.data,
             session: session
         )
-        let gatewayAddress = try lockAndMint.generateGatewayAddress().toBlocking().first()
-        XCTAssertEqual(Base58.encode(gatewayAddress!.bytes), "2MyJ7zQxBCnwKuRNoE3UYD2cb9MDjdkacaF")
+        let response = try lockAndMint.generateGatewayAddress().toBlocking().first()!
+        XCTAssertEqual(Base58.encode(response.gatewayAddress.bytes), "2MyJ7zQxBCnwKuRNoE3UYD2cb9MDjdkacaF")
         let txHash = try lockAndMint.getDepositState(
             transactionHash: "01d32c22d721d7bf0cd944fc6e089b01f998e1e77db817373f2ee65e40e9462a",
             txIndex: "0",
-            amount: "10000"
+            amount: "10000",
+            sendTo: response.sendTo,
+            gHash: response.gHash,
+            gPubkey: response.gPubkey
         )
             .txHash
         XCTAssertEqual(txHash, "LLg3jxVXS4NEixjaBOUXocRqaK_Y0wk5HPshI1H3e6c")
