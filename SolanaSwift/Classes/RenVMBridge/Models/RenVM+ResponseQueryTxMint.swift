@@ -40,7 +40,7 @@ extension RenVM {
                     let phash: String
                     let to: String
                     let txid: String
-                    let xindex: Long
+                    let txindex: String
                 }
             }
             

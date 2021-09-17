@@ -40,7 +40,7 @@ extension RenVM {
                     .responseData()
                     .map {(response, data) -> T in
                         // Print
-//                        Logger.log(message: String(data: data, encoding: .utf8) ?? "", event: .response, apiMethod: method)
+                        Logger.log(message: method + " " + (String(data: data, encoding: .utf8) ?? ""), event: .response, apiMethod: method)
                         
                         let statusCode = response.statusCode
                         let isValidStatusCode = (200..<300).contains(statusCode)
