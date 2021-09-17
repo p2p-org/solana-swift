@@ -58,4 +58,11 @@ class RenVMRPCClientTests: XCTestCase {
         let queryConfig = try rpcClient.queryConfig().toBlocking().first()
         XCTAssertNotNil(queryConfig)
     }
+    
+    func testRenQueryTx() throws {
+        let responseString = #"{"tx":{"hash":"JYdgD8f3kqMhX2akoAaZxp-mdYpRCGAh1xe5jxsKqFg","version":"1","selector":"BTC/toSolana","in":{"t":{"struct":[{"txid":"bytes"},{"txindex":"u32"},{"amount":"u256"},{"payload":"bytes"},{"phash":"bytes32"},{"to":"string"},{"nonce":"bytes32"},{"nhash":"bytes32"},{"gpubkey":"bytes"},{"ghash":"bytes32"}]},"v":{"amount":"20000","ghash":"N4cfn-dfnf_VV154XSTG7UYZK13lgQsCSqQ00LUx24A","gpubkey":"Aw3WX32ykguyKZEuP0IT3RUOX5csm3PpvnFNhEVhrDVc","nhash":"LrJ-fivBAZJ9gt5XA4N0sxS_bnCPxxHg9VrdYk8lEmE","nonce":"ICAgICAgICAgICAgICAgICAgICAgICAgICAgIDQ5Yzc","payload":"","phash":"xdJGAYb3IzySfn2y3McDwOUAtlPKgic7e_rYBF2FpHA","to":"61WYW2uZezPuxJAFgw7vvhXUEMNq8SZJEjYWJpTc37bP","txid":"wyxScxVDO1L4mlVZbEhwqS-nILTI0qOT_pjOEmjr0OY","txindex":"0"}},"out":{"t":{"struct":[]},"v":{}}},"txStatus":"confirming"}"#
+        
+        XCTAssertNoThrow(try JSONDecoder().decode(RenVM.ResponseQueryTxMint.self, from: responseString.data(using: .utf8)!))
+        
+    }
 }

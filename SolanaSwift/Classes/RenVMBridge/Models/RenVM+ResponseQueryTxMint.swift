@@ -61,12 +61,12 @@ extension RenVM {
                 }
                 
                 struct ValueOut: Decodable {
-                    let amount: String
-                    let hash: String
-                    let sig: String
-                    let sighash: String
-                    let txid: String
-                    let txindex: String
+                    let amount: String?
+                    let hash: String?
+                    let sig: String?
+                    let sighash: String?
+                    let txid: String?
+                    let txindex: String?
                 }
             }
         }

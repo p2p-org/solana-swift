@@ -131,12 +131,12 @@ extension RenVM {
             responceQueryMint: RenVM.ResponseQueryTxMint
         ) -> Single<String> {
             guard let pHash = responceQueryMint.valueIn.phash.decodeBase64URL(),
-                  let nHash = responceQueryMint.valueIn.nhash.decodeBase64URL()
+                  let nHash = responceQueryMint.valueIn.nhash.decodeBase64URL(),
+                  let amount = responceQueryMint.valueOut.amount
             else {
                 return .error(Error.paramsMissing)
             }
             
-            let amount = responceQueryMint.valueOut.amount
             let sHash = Hash.generateSHash(
                 selector: selector(mintTokenSymbol: mintTokenSymbol, direction: .to)
             )
@@ -152,7 +152,7 @@ extension RenVM {
             let signer: SolanaSDK.Account
             
             do {
-                guard let fixedSig = try responceQueryMint.valueOut.sig.decodeBase64URL()?.fixSignatureSimple()
+                guard let fixedSig = try responceQueryMint.valueOut.sig?.decodeBase64URL()?.fixSignatureSimple()
                 else {return .error(Error.paramsMissing)}
                 sig = fixedSig
                 program = try resolveTokenGatewayContract(mintTokenSymbol: mintTokenSymbol)
