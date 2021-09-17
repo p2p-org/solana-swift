@@ -14,7 +14,7 @@ class RenVMLockAndMintTests: XCTestCase {
     
     func testSession() throws {
         let session = try createSession(sessionDays: 18870)
-        XCTAssertEqual(Calendar.current.date(byAdding: .day, value: 3, to: session.createdAt), session.endAt)
+        XCTAssertEqual(Calendar.current.date(byAdding: .hour, value: 36, to: session.createdAt), session.endAt)
         XCTAssertEqual(session.nonce, "2020202020202020202020202020202020202020202020202020202034396236")
     }
     
