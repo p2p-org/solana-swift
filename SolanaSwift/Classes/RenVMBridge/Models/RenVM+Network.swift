@@ -10,7 +10,6 @@ import Foundation
 extension RenVM {
     public struct Network {
         public private(set) var chain: String
-        public private(set) var isTestnet: Bool
         public private(set) var endpoint: String
         public private(set) var lightNode: String
         public private(set) var gatewayRegistry: String
@@ -20,7 +19,6 @@ extension RenVM {
         public static var mainnet: Self {
             .init(
                 chain: "mainnet",
-                isTestnet: false,
                 endpoint: "https://ren.rpcpool.com/",
                 lightNode: "https://lightnode-mainnet.herokuapp.com",
                 gatewayRegistry: "REGrPFKQhRneFFdUV3e9UDdzqUJyS6SKj88GdXFCRd2",
@@ -32,7 +30,6 @@ extension RenVM {
         public static var testnet: Self {
             .init(
                 chain: "testnet",
-                isTestnet: true,
                 endpoint: "https://api.devnet.solana.com",
                 lightNode: "https://lightnode-testnet.herokuapp.com/",
                 gatewayRegistry: "REGrPFKQhRneFFdUV3e9UDdzqUJyS6SKj88GdXFCRd2",
@@ -44,13 +41,16 @@ extension RenVM {
         public static var devnet: Self {
             .init(
                 chain: "devnet",
-                isTestnet: true,
                 endpoint: "https://api.testnet.solana.com",
                 lightNode: "https://lightnode-devnet.herokuapp.com",
                 gatewayRegistry: "REGrPFKQhRneFFdUV3e9UDdzqUJyS6SKj88GdXFCRd2",
                 genesisHash: "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
                 p2shPrefix: 0xc4
             )
+        }
+        
+        public var isTestnet: Bool {
+            chain != "mainnet"
         }
     }
 }

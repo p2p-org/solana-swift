@@ -82,6 +82,7 @@ extension RenVM {
                 }
         }
         
+        @discardableResult
         public func getDepositState(
             transactionHash: String,
             txIndex: String,
