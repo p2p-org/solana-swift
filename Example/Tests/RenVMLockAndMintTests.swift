@@ -56,7 +56,7 @@ class RenVMLockAndMintTests: XCTestCase {
     }
     
     private func createSession(sessionDays: Long) throws -> RenVM.Session {
-        let interval = TimeInterval(sessionDays * 24 * 60 * 60 * 1000)
+        let interval = TimeInterval(sessionDays * 24 * 60 * 60)
         let createdAt = Date(timeIntervalSince1970: interval)
         return try RenVM.Session(createdAt: createdAt)
     }
