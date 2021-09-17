@@ -9,6 +9,55 @@ import Foundation
 import RxAlamofire
 import RxSwift
 
+public protocol RenVMRpcClientType {
+    var network: RenVM.Network {get}
+    func call<T: Decodable>(endpoint: String, method: String, params: Encodable) -> Single<T>
+    func selectPublicKey(mintTokenSymbol: String) -> Single<Data?>
+}
+
+public extension RenVMRpcClientType {
+    private var emptyParams: [String: String] {[:]}
+    func queryMint(txHash: String) -> Single<RenVM.ResponseQueryTxMint> {
+        call(endpoint: network.lightNode, method: "ren_queryTx", params: ["txHash": txHash])
+    }
+    
+    func queryBlockState() -> Single<RenVM.ResponseQueryBlockState> {
+        call(endpoint: network.lightNode, method: "ren_queryBlockState", params: emptyParams)
+    }
+
+    func queryConfig() -> Single<RenVM.ResponseQueryConfig> {
+        call(endpoint: network.lightNode, method: "ren_queryConfig", params: emptyParams)
+    }
+
+    internal func submitTx(
+        hash: String,
+        selector: RenVM.Selector,
+        version: String,
+        input: RenVM.MintTransactionInput
+    ) -> Single<RenVM.ResponseSubmitTxMint> {
+        call(
+            endpoint: network.lightNode,
+            method: "ren_submitTx",
+            params: ["tx": RenVM.ParamsSubmitMint(
+                hash: hash,
+                selector: selector.toString(),
+                version: version,
+                in: .init(
+                    t: .init(),
+                    v: input
+                )
+            )]
+        )
+    }
+    
+    func selectPublicKey(mintTokenSymbol: String) -> Single<Data?> {
+        queryBlockState()
+            .map {
+                Data(base64urlEncoded: $0.publicKey(mintTokenSymbol: mintTokenSymbol) ?? "")
+            }
+    }
+}
+
 extension RenVM {
     public struct RpcClient: RenVMRpcClientType {
         public init(network: RenVM.Network) {
