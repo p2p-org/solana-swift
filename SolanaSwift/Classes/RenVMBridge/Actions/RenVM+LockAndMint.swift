@@ -11,18 +11,18 @@ import RxSwift
 public typealias Long = Int64
 
 extension RenVM {
-    public class LockAndMint {
+    public struct LockAndMint {
+        public typealias GatewayAddressResponse = (gatewayAddress: Data, sendTo: Data, gHash: Data, gPubkey: Data)
+        
         // MARK: - Dependencies
         private let rpcClient: RenVMRpcClientType
         private let chain: RenVMChainType
         private let mintTokenSymbol: String
         private let version: String
         private let destinationAddress: Data
-        public private(set) var gatewayAddress: Data?
         
         // MARK: - State
         public private(set) var session: Session
-        private var state = State()
         
         // MARK: - Initializer
         /// Create LockAndMint by creating new session or restoring existing session
@@ -48,37 +48,31 @@ extension RenVM {
         }
         
         // MARK: - Methods
-        public func generateGatewayAddress() -> Single<Data> {
+        public func generateGatewayAddress() -> Single<GatewayAddressResponse> {
             let sendTo: Data
             do {
                 sendTo = try chain.getAssociatedTokenAddress(address: destinationAddress, mintTokenSymbol: mintTokenSymbol)
             } catch {
                 return .error(error)
             }
-            state.sendTo = sendTo
             let sendToHex = sendTo.hexString
             let tokenGatewayContractHex = Hash.generateSHash(
                 selector: selector(direction: .to)
             ).hexString
             let gHash = Hash.generateGHash(to: sendToHex, tokenIdentifier: tokenGatewayContractHex, nonce: Data(hex: session.nonce).bytes)
-            state.gHash = gHash
             
             return rpcClient.selectPublicKey(mintTokenSymbol: mintTokenSymbol)
                 .observe(on: CurrentThreadScheduler.instance)
-                .map {[weak self] gPubkey in
-                    guard let self = self else {throw Error.unknown}
+                .map { gPubkey in
                     guard let gPubkey = gPubkey
                     else {throw Error("Provider's public key not found")}
-                    
-                    self.state.gPubKey = gPubkey
                     
                     let gatewayAddress = Script.createAddressByteArray(
                         gGubKeyHash: gPubkey.hash160,
                         gHash: gHash,
                         prefix: Data([self.rpcClient.network.p2shPrefix])
                     )
-                    self.gatewayAddress = gatewayAddress
-                    return gatewayAddress
+                    return (gatewayAddress: gatewayAddress, sendTo: sendTo, gHash: gHash, gPubkey: gPubkey)
                 }
         }
         
@@ -86,17 +80,15 @@ extension RenVM {
         public func getDepositState(
             transactionHash: String,
             txIndex: String,
-            amount: String
+            amount: String,
+            sendTo to: Data,
+            gHash: Data,
+            gPubkey: Data
         ) throws -> State {
             let nonce = Data(hex: session.nonce)
             let txid = Data(hex: reverseHex(src: transactionHash))
             let nHash = Hash.generateNHash(nonce: nonce.bytes, txId: txid.bytes, txIndex: UInt32(txIndex) ?? 0)
             let pHash = Hash.generatePHash()
-            
-            guard let gHash = state.gHash,
-                  let gPubkey = state.gPubKey,
-                  let to = state.sendTo
-            else {throw Error.paramsMissing}
             
             let mintTx = MintTransactionInput(
                 gHash: gHash,
@@ -114,17 +106,22 @@ extension RenVM {
                 .hash(selector: selector(direction: .to), version: version)
                 .base64urlEncodedString()
             
-            state.txIndex = txIndex
-            state.amount = amount
-            state.nHash = nHash
-            state.txid = txid
-            state.pHash = pHash
-            state.txHash = txHash
+            let state = State(
+                gHash: gHash,
+                gPubKey: gPubkey,
+                sendTo: to,
+                txid: txid,
+                nHash: nHash,
+                pHash: pHash,
+                txHash: txHash,
+                txIndex: txIndex,
+                amount: amount
+            )
             
             return state
         }
         
-        public func submitMintTransaction() -> Single<String> {
+        public func submitMintTransaction(state: State) -> Single<String> {
             let selector = selector(direction: .to)
             
             // get input
@@ -149,14 +146,13 @@ extension RenVM {
                 .map {_ in hash}
         }
         
-        public func mint(signer: Data) -> Single<String> {
+        public func mint(state: State, signer: Data) -> Single<String> {
             guard let txHash = state.txHash else {
                 return .error(Error("txHash not found"))
             }
             return rpcClient.queryMint(txHash: txHash)
-                .flatMap { [weak self] res in
-                    guard let self = self else {throw Error.unknown}
-                    return self.chain.submitMint(
+                .flatMap {res in
+                    chain.submitMint(
                         address: self.destinationAddress,
                         mintTokenSymbol: self.mintTokenSymbol,
                         signer: signer,
