@@ -42,7 +42,7 @@ extension RenVM {
             txIndex: UInt32
         ) -> Data {
             var data = Data()
-            data += nonce + txId + txIndex.bytes
+            data += nonce + txId + txIndex.bytesWithBigEndian
             return data.keccak256
         }
     }
