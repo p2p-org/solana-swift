@@ -51,12 +51,12 @@ extension RenVM {
                 struct TypeOut: Decodable {
                     let `struct`: [OutStructType]?
                     struct OutStructType: Decodable {
-                        let hash: String
-                        let amount: String
-                        let sighash: String
-                        let sig: String
-                        let txid: String
-                        let txindex: String
+                        let hash: String?
+                        let amount: String?
+                        let sighash: String?
+                        let sig: String?
+                        let txid: String?
+                        let txindex: String?
                     }
                 }
                 
