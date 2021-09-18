@@ -11,22 +11,22 @@ import RxSwift
 
 public protocol RenVMRpcClientType {
     var network: RenVM.Network {get}
-    func call<T: Decodable>(endpoint: String, method: String, params: Encodable) -> Single<T>
+    func call<T: Decodable>(endpoint: String, method: String, params: Encodable, log: Bool) -> Single<T>
     func selectPublicKey(mintTokenSymbol: String) -> Single<Data?>
 }
 
 public extension RenVMRpcClientType {
     private var emptyParams: [String: String] {[:]}
     func queryMint(txHash: String) -> Single<RenVM.ResponseQueryTxMint> {
-        call(endpoint: network.lightNode, method: "ren_queryTx", params: ["txHash": txHash])
+        call(endpoint: network.lightNode, method: "ren_queryTx", params: ["txHash": txHash], log: true)
     }
     
     func queryBlockState() -> Single<RenVM.ResponseQueryBlockState> {
-        call(endpoint: network.lightNode, method: "ren_queryBlockState", params: emptyParams)
+        call(endpoint: network.lightNode, method: "ren_queryBlockState", params: emptyParams, log: false)
     }
 
     func queryConfig() -> Single<RenVM.ResponseQueryConfig> {
-        call(endpoint: network.lightNode, method: "ren_queryConfig", params: emptyParams)
+        call(endpoint: network.lightNode, method: "ren_queryConfig", params: emptyParams, log: true)
     }
 
     internal func submitTx(
@@ -46,7 +46,8 @@ public extension RenVMRpcClientType {
                     t: .init(),
                     v: input
                 )
-            )]
+            )],
+            log: true
         )
     }
     
@@ -66,13 +67,15 @@ extension RenVM {
         
         public let network: RenVM.Network
         
-        public func call<T>(endpoint: String, method: String, params: Encodable) -> Single<T> where T : Decodable {
+        public func call<T>(endpoint: String, method: String, params: Encodable, log: Bool) -> Single<T> where T : Decodable {
             do {
                 // prepare params
                 let params = EncodableWrapper.init(wrapped:params)
                 
                 // Log
-                Logger.log(message: "\(method) \(params.jsonString ?? "")", event: .request, apiMethod: method)
+                if log {
+                    Logger.log(message: "renBTC event \(method) \(params.jsonString ?? "")", event: .request, apiMethod: method)
+                }
                 
                 // prepare urlRequest
                 let body = Body(method: method, params: params)
@@ -89,7 +92,9 @@ extension RenVM {
                     .responseData()
                     .map {(response, data) -> T in
                         // Print
-                        Logger.log(message: method + " " + (String(data: data, encoding: .utf8) ?? ""), event: .response, apiMethod: method)
+                        if log {
+                            Logger.log(message: "renBTC event  " + method + " " + (String(data: data, encoding: .utf8) ?? ""), event: .response, apiMethod: method)
+                        }
                         
                         let statusCode = response.statusCode
                         let isValidStatusCode = (200..<300).contains(statusCode)
