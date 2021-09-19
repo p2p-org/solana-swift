@@ -197,7 +197,7 @@ extension RenVM {
             return requestGatewayInfo
                 .flatMap {gatewayState in
                     let secpInstruction = RenProgram.createInstructionWithEthAddress2(
-                        ethAddress: gatewayState.renVMAuthority.data,
+                        ethAddress: Data(gatewayState.renVMAuthority.bytes),
                         message: renVMMessage,
                         signature: sig[0..<64],
                         recoveryId: sig[64] - 27
@@ -339,37 +339,37 @@ extension RenVM {
 extension RenVM.SolanaChain {
     struct GatewayStateData: DecodableBufferLayout {
         let isInitialized: Bool
-        let renVMAuthority: RenVMAuthority
-        let selectors: Selectors
+        let renVMAuthority: RenVM.SolanaChain.GatewayStateData.RenVMAuthority
+        let selectors: RenVM.SolanaChain.GatewayStateData.Selectors
         let burnCount: UInt64
         let underlyingDecimals: UInt8
         
         
         struct RenVMAuthority: BufferLayoutProperty {
-            let data: Data
+            let bytes: [UInt8]
             
             init(buffer: Data, pointer: inout Int) throws {
                 guard buffer.bytes.count > pointer else {throw BufferLayoutSwift.Error.bytesLengthIsNotValid}
-                data = buffer[pointer..<pointer+20]
+                bytes = Array(buffer[pointer..<pointer+20])
                 pointer += 20
             }
             
             func serialize() throws -> Data {
-                data
+                Data(bytes)
             }
         }
         
         struct Selectors: BufferLayoutProperty {
-            let data: Data
+            let bytes: [UInt8]
             
             init(buffer: Data, pointer: inout Int) throws {
                 guard buffer.bytes.count > pointer else {throw BufferLayoutSwift.Error.bytesLengthIsNotValid}
-                data = buffer[pointer..<pointer+32]
+                bytes = Array(buffer[pointer..<pointer+32])
                 pointer += 32
             }
             
             func serialize() throws -> Data {
-                data
+                Data(bytes)
             }
         }
     }

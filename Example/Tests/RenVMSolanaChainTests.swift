@@ -43,6 +43,17 @@ class RenVMSolanaChainTests: XCTestCase {
         XCTAssertEqual(gatewayRegistryData.gateways[31], "11111111111111111111111111111111")
     }
     
+    func testDecodeGatewayStateData() throws {
+        let data = Data(base64Encoded: RenVM.Mock.mockGatewayStateData)!
+        var pointer = 0
+        let gatewayRegistryData = try RenVM.SolanaChain.GatewayStateData(buffer: data, pointer: &pointer)
+        
+        XCTAssertEqual(gatewayRegistryData.isInitialized, true)
+        XCTAssertEqual(gatewayRegistryData.renVMAuthority.bytes.toHexString(), "44bb4ef43408072bc888afd1a5986ba0ce35cb54")
+        XCTAssertEqual(gatewayRegistryData.selectors.bytes, [22, 172, 111, 184, 184, 0, 255, 158, 36, 34, 4, 121, 214, 157, 56, 181, 154, 7, 121, 102, 245, 0, 199, 187, 211, 67, 93, 173, 120, 216, 252, 2])
+        XCTAssertEqual(gatewayRegistryData.burnCount, 8)
+    }
+    
     func testResolveTokenGatewayContract() throws {
         XCTAssertEqual(try RenVM.Mock.solanaChain().resolveTokenGatewayContract(mintTokenSymbol: RenVM.Mock.mintToken), "FsEACSS3nKamRKdJBaBDpZtDXWrHR2nByahr4ReoYMBH")
     }
