@@ -46,7 +46,7 @@ extension SolanaSDK {
             }
     }
     
-    func createAssociatedTokenAccount(
+    public func createAssociatedTokenAccount(
         for owner: PublicKey,
         tokenMint: PublicKey,
         payer: Account? = nil,
