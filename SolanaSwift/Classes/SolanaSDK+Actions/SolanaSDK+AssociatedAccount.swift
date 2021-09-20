@@ -46,6 +46,29 @@ extension SolanaSDK {
             }
     }
     
+    public func hasAssociatedTokenAccountBeenCreated(
+        owner: PublicKey? = nil,
+        tokenMint: PublicKey
+    ) -> Single<Bool> {
+        guard let owner = owner ?? accountStorage.account?.publicKey
+        else {return .error(Error.unauthorized)}
+        
+        guard let associatedAddress = try? PublicKey.associatedTokenAddress(
+            walletAddress: owner,
+            tokenMintAddress: tokenMint
+        ) else {
+            return .error(Error.other("Could not create associated token account"))
+        }
+        
+        return getAccountInfo(
+            account: associatedAddress.base58EncodedString,
+            decodedTo: AccountInfo.self
+        )
+            .map {info in
+                (info.owner == PublicKey.tokenProgramId.base58EncodedString && info.data.owner == owner)
+            }
+    }
+    
     public func createAssociatedTokenAccount(
         for owner: PublicKey,
         tokenMint: PublicKey,
