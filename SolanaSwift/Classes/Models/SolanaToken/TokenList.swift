@@ -81,7 +81,7 @@ extension SolanaSDK {
                 symbol: "SOL",
                 name: "Solana",
                 decimals: 9,
-                logoURI: nil,
+                logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
                 tags: [],
                 extensions: nil,
                 isNative: true
