@@ -12,7 +12,7 @@ import XCTest
 
 class RenVMBurnAndReleaseTests: RestAPITests {
     override var endpoint: SolanaSDK.APIEndPoint {
-        .init(url: "https://api.testnet.solana.com", network: .testnet)
+        .init(url: "https://api.devnet.solana.com", network: .devnet)
     }
     
     override var overridingAccount: String? {
@@ -40,15 +40,15 @@ class RenVMBurnAndReleaseTests: RestAPITests {
     }
     
     func testBurnAndRelease() throws {
-        let rpcClient = RenVM.RpcClient(network: .testnet)
+        let rpcClient = RenVM.RpcClient(network: .devnet)
         
-        let solanaChain = try RenVM.SolanaChain.load(client: rpcClient, solanaClient: solanaSDK).toBlocking().first()
+        let solanaChain = try RenVM.SolanaChain.load(client: rpcClient, solanaClient: solanaSDK).toBlocking().first()!
         
         let recipient = "tb1ql7w62elx9ucw4pj5lgw4l028hmuw80sndtntxt"
         
         let burnAndRelease = RenVM.BurnAndRelease(
-            rpcClient: RenVM.RpcClient(network: .testnet),
-            chain: solanaChain!,
+            rpcClient: rpcClient,
+            chain: solanaChain,
             mintTokenSymbol: "BTC",
             version: "1",
             burnTo: "Bitcoin"
