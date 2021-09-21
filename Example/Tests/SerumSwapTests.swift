@@ -17,6 +17,10 @@ struct FakeSocket: SerumSwapSignatureNotificationHandler {
 }
 
 class SerumSwapTests: RestAPITests {
+    override var endpoint: SolanaSDK.APIEndPoint {
+        .init(url: "https://solana-api.projectserum.com", network: .mainnetBeta)
+    }
+    
     override var overridingAccount: String? {
         "oval you token plug copper visa employ link sell asset kick sausage"
     }

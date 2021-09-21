@@ -17,7 +17,7 @@ public protocol SolanaSDKAccountStorage {
 public class SolanaSDK {
     // MARK: - Properties
     public let accountStorage: SolanaSDKAccountStorage
-    var endpoint: APIEndPoint
+    public private(set) var endpoint: APIEndPoint
     var supportedTokensCache: [Token]?
     
     // MARK: - Initializer

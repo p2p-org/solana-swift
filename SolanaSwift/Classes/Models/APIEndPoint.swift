@@ -20,13 +20,18 @@ extension SolanaSDK {
         public var socketUrl: String
         
         public static var definedEndpoints: [Self] {
-            [
+            var endpoints: [Self] = [
                 .init(url: "https://solana-api.projectserum.com", network: .mainnetBeta),
-                .init(url: "https://api.mainnet-beta.solana.com", network: .mainnetBeta),
+                .init(url: "https://api.mainnet-beta.solana.com", network: .mainnetBeta)
 //                .init(url: "https://datahub-proxy.p2p.org", network: .mainnetBeta),
-//                .init(url: "https://devnet.solana.com", network: .devnet),
-//                .init(url: "https://testnet.solana.com", network: .testnet)
+//                .init(url: "https://api.devnet.solana.com", network: .devnet),
+//                .init(url: "https://api.testnet.solana.com", network: .testnet)
             ]
+//            #if DEBUG
+            endpoints.append(.init(url: "https://api.testnet.solana.com", network: .testnet))
+//            #endif
+            
+            return endpoints
         }
     }
 }

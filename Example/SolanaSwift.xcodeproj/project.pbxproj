@@ -28,17 +28,26 @@
 		BC54A944261C09B90083A127 /* CreateAccountTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC54A943261C09B90083A127 /* CreateAccountTransaction.json */; };
 		BC54A96F261C1B560083A127 /* CloseAccountTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC54A96E261C1B560083A127 /* CloseAccountTransaction.json */; };
 		BC54A974261C1E430083A127 /* SendSOLTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC54A973261C1E430083A127 /* SendSOLTransaction.json */; };
+		BC5744DA26EA202300275DE2 /* RenVMLockAndMintTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5744D926EA202300275DE2 /* RenVMLockAndMintTests.swift */; };
+		BC5744DC26EA3BCC00275DE2 /* RenVMSolanaChainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5744DB26EA3BCC00275DE2 /* RenVMSolanaChainTests.swift */; };
+		BC57451426EB1C0B00275DE2 /* RenVMHashTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC57451326EB1C0B00275DE2 /* RenVMHashTests.swift */; };
+		BC57451826EB97EB00275DE2 /* RenVMScriptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC57451726EB97EB00275DE2 /* RenVMScriptTests.swift */; };
+		BC57451A26ECE6AF00275DE2 /* RenVM+Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC57451926ECE6AF00275DE2 /* RenVM+Mock.swift */; };
 		BC65DF9F261D5B3300E436C7 /* SendSPLToSOLTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC65DF9E261D5B3300E436C7 /* SendSPLToSOLTransaction.json */; };
 		BC65DFAE261D5D4300E436C7 /* SendSPLToSPLTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */; };
 		BC6D01FE265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC6D01FD265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json */; };
 		BC6D020F265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json in Resources */ = {isa = PBXBuildFile; fileRef = BC6D020E265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json */; };
 		BC6D0212265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json in Resources */ = {isa = PBXBuildFile; fileRef = BC6D0211265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json */; };
 		BC76B552263806100018A0FF /* AssociatedTokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */; };
+		BC80202626F1A5B300C109C2 /* RenVMRPCClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC80202526F1A5B300C109C2 /* RenVMRPCClientTests.swift */; };
 		BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */; };
 		BC81A2A425BE624300664A2C /* SystemProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2A325BE624300664A2C /* SystemProgramTests.swift */; };
 		BC81A2AB25BE628700664A2C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC81A2AA25BE628700664A2C /* Constants.swift */; };
 		BC87FCA426CA3D830097A32B /* SerumSwapDirectSwapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC87FCA326CA3D830097A32B /* SerumSwapDirectSwapTests.swift */; };
 		BC8B53042664D25B00CA93DE /* DecodingSocketResponsesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8B53032664D25B00CA93DE /* DecodingSocketResponsesTests.swift */; };
+		BC928AD726EFA1CC00BDA4E5 /* RenVMRenProgramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC928AD626EFA1CC00BDA4E5 /* RenVMRenProgramTests.swift */; };
+		BC9329E426F0469200CC74B6 /* RenVMUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9329E326F0469200CC74B6 /* RenVMUtilsTests.swift */; };
+		BC932A0226F0A94500CC74B6 /* RenVMBurnAndReleaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC932A0126F0A94500CC74B6 /* RenVMBurnAndReleaseTests.swift */; };
 		BC966DB425BFDCA100F2AB36 /* RestAPIPoolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC966DB325BFDCA100F2AB36 /* RestAPIPoolTests.swift */; };
 		BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */; };
 		BCB3AF8626D5F4FE00DAD0DC /* SerumSwapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB3AF8526D5F4FE00DAD0DC /* SerumSwapTests.swift */; };
@@ -193,17 +202,26 @@
 		BC54A943261C09B90083A127 /* CreateAccountTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CreateAccountTransaction.json; sourceTree = "<group>"; };
 		BC54A96E261C1B560083A127 /* CloseAccountTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CloseAccountTransaction.json; sourceTree = "<group>"; };
 		BC54A973261C1E430083A127 /* SendSOLTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSOLTransaction.json; sourceTree = "<group>"; };
+		BC5744D926EA202300275DE2 /* RenVMLockAndMintTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenVMLockAndMintTests.swift; sourceTree = "<group>"; };
+		BC5744DB26EA3BCC00275DE2 /* RenVMSolanaChainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenVMSolanaChainTests.swift; sourceTree = "<group>"; };
+		BC57451326EB1C0B00275DE2 /* RenVMHashTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenVMHashTests.swift; sourceTree = "<group>"; };
+		BC57451726EB97EB00275DE2 /* RenVMScriptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenVMScriptTests.swift; sourceTree = "<group>"; };
+		BC57451926ECE6AF00275DE2 /* RenVM+Mock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RenVM+Mock.swift"; sourceTree = "<group>"; };
 		BC65DF9E261D5B3300E436C7 /* SendSPLToSOLTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSPLToSOLTransaction.json; sourceTree = "<group>"; };
 		BC65DFAD261D5D4300E436C7 /* SendSPLToSPLTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSPLToSPLTransaction.json; sourceTree = "<group>"; };
 		BC6D01FD265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ProvideLiquidityToPoolTransaction.json; sourceTree = "<group>"; };
 		BC6D020E265E0CC80001B841 /* BurnLiquidityInPoolTransaction.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = BurnLiquidityInPoolTransaction.json; sourceTree = "<group>"; };
 		BC6D0211265E3E2B0001B841 /* SendSOLTransactionPaidByP2PORG.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SendSOLTransactionPaidByP2PORG.json; sourceTree = "<group>"; };
 		BC76B551263806100018A0FF /* AssociatedTokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssociatedTokenProgramTests.swift; sourceTree = "<group>"; };
+		BC80202526F1A5B300C109C2 /* RenVMRPCClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenVMRPCClientTests.swift; sourceTree = "<group>"; };
 		BC81A23725BAB00D00664A2C /* TokenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2A325BE624300664A2C /* SystemProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemProgramTests.swift; sourceTree = "<group>"; };
 		BC81A2AA25BE628700664A2C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		BC87FCA326CA3D830097A32B /* SerumSwapDirectSwapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerumSwapDirectSwapTests.swift; sourceTree = "<group>"; };
 		BC8B53032664D25B00CA93DE /* DecodingSocketResponsesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingSocketResponsesTests.swift; sourceTree = "<group>"; };
+		BC928AD626EFA1CC00BDA4E5 /* RenVMRenProgramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenVMRenProgramTests.swift; sourceTree = "<group>"; };
+		BC9329E326F0469200CC74B6 /* RenVMUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenVMUtilsTests.swift; sourceTree = "<group>"; };
+		BC932A0126F0A94500CC74B6 /* RenVMBurnAndReleaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenVMBurnAndReleaseTests.swift; sourceTree = "<group>"; };
 		BC966DB325BFDCA100F2AB36 /* RestAPIPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPIPoolTests.swift; sourceTree = "<group>"; };
 		BCA25BB725591E8C00850F3C /* RestAPITransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPITransactionTests.swift; sourceTree = "<group>"; };
 		BCB3AF8526D5F4FE00DAD0DC /* SerumSwapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerumSwapTests.swift; sourceTree = "<group>"; };
@@ -265,6 +283,7 @@
 				BC2EC2DE25552EC1006EEDA5 /* AccountTests.swift */,
 				BC23AEBE254928870029FF0B /* TransactionTests.swift */,
 				BCF3246B26DF83EF0095A55E /* PublicKeyTests.swift */,
+				BC5744C926EA200D00275DE2 /* RenVM */,
 				BCF1E7F526BCCC8500589134 /* BufferLayout */,
 				BC18C9D82631130B0054E624 /* TokensListParserTests */,
 				BCC49C2325BE86F600D4D336 /* CodableTests */,
@@ -362,6 +381,22 @@
 				BC966DB325BFDCA100F2AB36 /* RestAPIPoolTests.swift */,
 			);
 			name = RestAPITests;
+			sourceTree = "<group>";
+		};
+		BC5744C926EA200D00275DE2 /* RenVM */ = {
+			isa = PBXGroup;
+			children = (
+				BC57451926ECE6AF00275DE2 /* RenVM+Mock.swift */,
+				BC80202526F1A5B300C109C2 /* RenVMRPCClientTests.swift */,
+				BC5744D926EA202300275DE2 /* RenVMLockAndMintTests.swift */,
+				BC932A0126F0A94500CC74B6 /* RenVMBurnAndReleaseTests.swift */,
+				BC5744DB26EA3BCC00275DE2 /* RenVMSolanaChainTests.swift */,
+				BC57451326EB1C0B00275DE2 /* RenVMHashTests.swift */,
+				BC57451726EB97EB00275DE2 /* RenVMScriptTests.swift */,
+				BC928AD626EFA1CC00BDA4E5 /* RenVMRenProgramTests.swift */,
+				BC9329E326F0469200CC74B6 /* RenVMUtilsTests.swift */,
+			);
+			name = RenVM;
 			sourceTree = "<group>";
 		};
 		BC631EC325B96D6700138948 /* ProgramsTests */ = {
@@ -696,9 +731,12 @@
 				BC3174342670B48200B60E3F /* RestAPIGetAccountInfoTests.swift in Sources */,
 				BC81A2AB25BE628700664A2C /* Constants.swift in Sources */,
 				BCF3246726DDEB450095A55E /* SerumSwapTransitiveSwapTests.swift in Sources */,
+				BC932A0226F0A94500CC74B6 /* RenVMBurnAndReleaseTests.swift in Sources */,
 				BCB3AF8626D5F4FE00DAD0DC /* SerumSwapTests.swift in Sources */,
 				BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */,
 				BCA25BB825591E8C00850F3C /* RestAPITransactionTests.swift in Sources */,
+				BC5744DC26EA3BCC00275DE2 /* RenVMSolanaChainTests.swift in Sources */,
+				BC80202626F1A5B300C109C2 /* RenVMRPCClientTests.swift in Sources */,
 				BC966DB425BFDCA100F2AB36 /* RestAPIPoolTests.swift in Sources */,
 				BCFCA1EF26D741B700E84D82 /* SerumSwapOtherTests.swift in Sources */,
 				BC76B552263806100018A0FF /* AssociatedTokenProgramTests.swift in Sources */,
@@ -707,15 +745,21 @@
 				BC87FCA426CA3D830097A32B /* SerumSwapDirectSwapTests.swift in Sources */,
 				BCBBE23E25650A1700533F6B /* RegexTests.swift in Sources */,
 				BC3ADEBB2574A1DA002B3B16 /* RestAPITransactionHistoryTests.swift in Sources */,
+				BC928AD726EFA1CC00BDA4E5 /* RenVMRenProgramTests.swift in Sources */,
 				BCB3AF8826D5F56B00DAD0DC /* SerumSwapDecodingTests.swift in Sources */,
 				BC23AEC2254928870029FF0B /* TransactionTests.swift in Sources */,
+				BC5744DA26EA202300275DE2 /* RenVMLockAndMintTests.swift in Sources */,
 				BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */,
 				BC81A2A425BE624300664A2C /* SystemProgramTests.swift in Sources */,
 				BCF5795A262ECD6C00E73226 /* PoolsAmountCalculationTests.swift in Sources */,
+				BC9329E426F0469200CC74B6 /* RenVMUtilsTests.swift in Sources */,
+				BC57451826EB97EB00275DE2 /* RenVMScriptTests.swift in Sources */,
 				BC3F719A261AEF9100DFDFD0 /* DecodingConfirmedTransactionTests.swift in Sources */,
 				BC4F6F1A25B80FD2002BA313 /* TokenSwapProgramTests.swift in Sources */,
+				BC57451426EB1C0B00275DE2 /* RenVMHashTests.swift in Sources */,
 				BCF1E80426BCCCB300589134 /* BufferLayoutTests.swift in Sources */,
 				BC46DF4726CD1F17002F59B9 /* SerumSwapMarketTests.swift in Sources */,
+				BC57451A26ECE6AF00275DE2 /* RenVM+Mock.swift in Sources */,
 				BC1ABC4E255CC075002FCE65 /* DecodingTests.swift in Sources */,
 				BC8B53042664D25B00CA93DE /* DecodingSocketResponsesTests.swift in Sources */,
 				BC81A23825BAB00D00664A2C /* TokenProgramTests.swift in Sources */,
