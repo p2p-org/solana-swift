@@ -575,7 +575,7 @@ public extension SolanaSDK {
                 fromAddress = accounts[10]
                 toAddress = accounts[12]
                 
-                if mints.first?.isUSDxMint == true {
+                if mints.first?.isUSDxMint == true && mints.last?.isUSDxMint == false {
                     Swift.swap(&fromAddress, &toAddress)
                 }
             }

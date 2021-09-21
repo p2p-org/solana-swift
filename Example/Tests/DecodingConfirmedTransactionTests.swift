@@ -123,7 +123,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.source?.pubkey, "5ADqZHdZzL3xd2NiP8MrM4pCFj5ijC4oQWSBzvXx4fbY")
         XCTAssertEqual(transaction.destination?.pubkey, "4ijqHixcbzhxQbfJWAoPkvBhokBDRGtXyqVcMN8ywj8W")
         XCTAssertEqual(transaction.authority, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
-        XCTAssertEqual(transaction.destinationAuthority, "B4PdyoVU39hoCaiTLPtN9nJxy6rEpbciE3BNPvHkCeE2")
+//        XCTAssertEqual(transaction.destinationAuthority, "B4PdyoVU39hoCaiTLPtN9nJxy6rEpbciE3BNPvHkCeE2")
         XCTAssertEqual(transaction.transferType, .send)
         XCTAssertEqual(transaction.wasPaidByP2POrg, true)
     }
@@ -205,6 +205,20 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.destination?.token.symbol, "SRM")
         XCTAssertEqual(transaction.destination?.pubkey, "6Q49AE4NGeTXYDyyXx8gEVxJV28Vsn6bVJp4w3UqTByg")
         XCTAssertEqual(transaction.destinationAmount?.toLamport(decimals: transaction.destination?.token.decimals ?? 0), 500000)
+    }
+    
+    func testDecodingSerumSwapTransaction4() throws {
+        // USDT -> USDC
+        let parsedTransaction = try parse(fileName: "SerumSwapTransaction4")
+        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        
+        XCTAssertEqual(transaction.source?.token.symbol, "USDT")
+        XCTAssertEqual(transaction.source?.pubkey, "GYYHwdXW7v8RaXv7zXvhQSJYKU9b9RMtRB2dufu9fnpR")
+        XCTAssertEqual(transaction.sourceAmount, 2)
+        
+        XCTAssertEqual(transaction.destination?.token.symbol, "USDC")
+        XCTAssertEqual(transaction.destination?.pubkey, "8TnZDzWSzkSrRVxwGY6uPTaPSt2NDBvKD6uA5SZD3P87")
+        XCTAssertEqual(transaction.destinationAmount?.toLamport(decimals: transaction.destination?.token.decimals ?? 0), 1993604)
     }
     
     private func parse(

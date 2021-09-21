@@ -10,6 +10,7 @@
 		BC1668C526E8A46600C0D583 /* SerumSwapTransaction3.json in Resources */ = {isa = PBXBuildFile; fileRef = BC1668C426E8A46600C0D583 /* SerumSwapTransaction3.json */; };
 		BC18C9E62631132E0054E624 /* TokensListParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC18C9E52631132E0054E624 /* TokensListParserTests.swift */; };
 		BC1ABC4E255CC075002FCE65 /* DecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC1ABC4D255CC075002FCE65 /* DecodingTests.swift */; };
+		BC222ADC26F9C64800A2A760 /* SerumSwapTransaction4.json in Resources */ = {isa = PBXBuildFile; fileRef = BC222ADB26F9C64800A2A760 /* SerumSwapTransaction4.json */; };
 		BC23AEC2254928870029FF0B /* TransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEBE254928870029FF0B /* TransactionTests.swift */; };
 		BC23AEC4254928870029FF0B /* InMemoryAccountStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */; };
 		BC23AEC5254928870029FF0B /* RestAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC23AEC1254928870029FF0B /* RestAPITests.swift */; };
@@ -183,6 +184,7 @@
 		BC1668C426E8A46600C0D583 /* SerumSwapTransaction3.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SerumSwapTransaction3.json; sourceTree = "<group>"; };
 		BC18C9E52631132E0054E624 /* TokensListParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensListParserTests.swift; sourceTree = "<group>"; };
 		BC1ABC4D255CC075002FCE65 /* DecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingTests.swift; sourceTree = "<group>"; };
+		BC222ADB26F9C64800A2A760 /* SerumSwapTransaction4.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SerumSwapTransaction4.json; sourceTree = "<group>"; };
 		BC23AE51254925F00029FF0B /* _Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = _Pods.xcodeproj; path = ../_Pods.xcodeproj; sourceTree = "<group>"; };
 		BC23AEBE254928870029FF0B /* TransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TransactionTests.swift; path = Tests/TransactionTests.swift; sourceTree = SOURCE_ROOT; };
 		BC23AEC0254928870029FF0B /* InMemoryAccountStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InMemoryAccountStorage.swift; path = Tests/InMemoryAccountStorage.swift; sourceTree = SOURCE_ROOT; };
@@ -317,6 +319,7 @@
 				BC36EDC526E77309006C1D21 /* SerumSwapTransaction.json */,
 				BC36EDD626E7C0FE006C1D21 /* SerumSwapTransaction2.json */,
 				BC1668C426E8A46600C0D583 /* SerumSwapTransaction3.json */,
+				BC222ADB26F9C64800A2A760 /* SerumSwapTransaction4.json */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -635,6 +638,7 @@
 			files = (
 				BC65DF9F261D5B3300E436C7 /* SendSPLToSOLTransaction.json in Resources */,
 				BC54A944261C09B90083A127 /* CreateAccountTransaction.json in Resources */,
+				BC222ADC26F9C64800A2A760 /* SerumSwapTransaction4.json in Resources */,
 				BC1668C526E8A46600C0D583 /* SerumSwapTransaction3.json in Resources */,
 				BC51E54B26847D6900C9B05D /* SendSPLTokenParsedInNativeSOLWallet.json in Resources */,
 				BC6D01FE265E04B00001B841 /* ProvideLiquidityToPoolTransaction.json in Resources */,
