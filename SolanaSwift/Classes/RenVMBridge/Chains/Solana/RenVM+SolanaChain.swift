@@ -238,9 +238,9 @@ extension RenVM {
                 )
                     .map {$0.data}
                     .flatMap {gatewayState -> Single<BurnDetails> in
-                        let nonceBN = BInt(gatewayState.burnCount + 1)
+                        let nonce = gatewayState.burnCount + 1
                         let burnLogAccountId = try SolanaSDK.PublicKey.findProgramAddress(
-                            seeds: [nonceBN.data],
+                            seeds: [Data(nonce.bytes)],
                             programId: program
                         ).0
                         
@@ -273,7 +273,7 @@ extension RenVM {
                             isSimulation: false
                         )
                         .map {signature in
-                            .init(confirmedSignature: signature, nonce: nonceBN, recipient: recipient)
+                            .init(confirmedSignature: signature, nonce: nonce, recipient: recipient)
                         }
                     }
                 

@@ -9,18 +9,13 @@ import Foundation
 import RxSwift
 
 extension RenVM {
-    public class BurnAndRelease {
+    public struct BurnAndRelease {
         // MARK: - Dependencies
         let rpcClient: RenVMRpcClientType
         let chain: RenVMChainType
         let mintTokenSymbol: String
         let version: String
         let burnToChainName: String // Ex.: Bitcoin
-        
-        // MARK: - State
-        var state = State()
-        var nonceBuffer = Data()
-        var recipient: String?
         
         // MARK: - Initializer
         init(
@@ -43,7 +38,6 @@ extension RenVM {
             recipient: String,
             signer: Data
         ) -> Single<BurnDetails> {
-            self.recipient = recipient
             return chain.submitBurn(
                 mintTokenSymbol: mintTokenSymbol,
                 account: account,
@@ -58,7 +52,7 @@ extension RenVM {
             amount: String
         ) throws -> State {
             let txid = try chain.signatureToData(signature: burnDetails.confirmedSignature)
-            nonceBuffer = getNonceBuffer(nonce: burnDetails.nonce)
+            let nonceBuffer = getNonceBuffer(nonce: burnDetails.nonce)
             let nHash = Hash.generateNHash(nonce: nonceBuffer.bytes, txId: txid.bytes, txIndex: 0)
             let pHash = Hash.generatePHash()
             let sHash = Hash.generateSHash(
@@ -84,6 +78,7 @@ extension RenVM {
             )
                 .base64urlEncodedString()
             
+            var state = State()
             state.txIndex = "0"
             state.amount = amount
             state.nHash = nHash
@@ -95,8 +90,9 @@ extension RenVM {
             return state
         }
         
-        func release() -> Single<String> {
+        func release(state: State, details: BurnDetails) -> Single<String> {
             let selector = selector(direction: .from)
+            let nonceBuffer = getNonceBuffer(nonce: details.nonce)
             
             // get input
             let mintTx: MintTransactionInput
@@ -120,9 +116,9 @@ extension RenVM {
                 .map {_ in hash}
         }
         
-        private func getNonceBuffer(nonce: BInt) -> Data {
-            var data = Data(repeating: 0, count: 32-nonce.data.count)
-            data += nonce.data
+        private func getNonceBuffer(nonce: UInt64) -> Data {
+            var data = Data(repeating: 0, count: 32-nonce.bytes.count)
+            data += nonce.bytes
             return data
         }
         
