@@ -109,7 +109,7 @@ extension RenVM {
             let state = State(
                 gHash: gHash,
                 gPubKey: gPubkey,
-                sendTo: to,
+                sendTo: try chain.dataToAddress(data: to),
                 txid: txid,
                 nHash: nHash,
                 pHash: pHash,
@@ -128,7 +128,7 @@ extension RenVM {
             let mintTx: MintTransactionInput
             let hash: String
             do {
-                mintTx = try MintTransactionInput(state: state, chain: chain, nonce: Data(hex: session.nonce))
+                mintTx = try MintTransactionInput(state: state, nonce: Data(hex: session.nonce))
                 hash = try mintTx
                     .hash(selector: selector, version: version)
                     .base64urlEncodedString()

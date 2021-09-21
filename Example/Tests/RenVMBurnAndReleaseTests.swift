@@ -46,6 +46,8 @@ class RenVMBurnAndReleaseTests: RestAPITests {
         
         let recipient = "tb1ql7w62elx9ucw4pj5lgw4l028hmuw80sndtntxt"
         
+        let amount = "9000"
+        
         let burnAndRelease = RenVM.BurnAndRelease(
             rpcClient: rpcClient,
             chain: solanaChain,
@@ -54,13 +56,22 @@ class RenVMBurnAndReleaseTests: RestAPITests {
             burnTo: "Bitcoin"
         )
         
-        let details = try burnAndRelease.submitBurnTransaction(
-            account: account.publicKey.data,
-            amount: "9000",
-            recipient: recipient,
-            signer: account.secretKey
-        ).toBlocking().first()
+//        let detail = try burnAndRelease.submitBurnTransaction(
+//            account: account.publicKey.data,
+//            amount: amount,
+//            recipient: recipient,
+//            signer: account.secretKey
+//        ).toBlocking().first()!
         
+        let detail: RenVM.BurnDetails = .init(
+            confirmedSignature: "5wmVrztPMAtvm8bpkKVECMDU1rLu38VVjKDj1dPWeTfbmCxi8pRr5MYco469RHrcmfC82p4CCQwvtio5U3itBeLj",
+            nonce: 54,
+            recipient: recipient
+        )
+        
+        let burnState = try burnAndRelease.getBurnState(burnDetails: detail, amount: amount)
+        
+        let tx = try burnAndRelease.release(state: burnState, details: detail).toBlocking().first()
         
     }
 }

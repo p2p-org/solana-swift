@@ -52,7 +52,7 @@ extension RenVM {
             amount: String
         ) throws -> State {
             let txid = try chain.signatureToData(signature: burnDetails.confirmedSignature)
-            let nonceBuffer = getNonceBuffer(nonce: burnDetails.nonce)
+            let nonceBuffer = getNonceBuffer(nonce: BInt(burnDetails.nonce))
             let nHash = Hash.generateNHash(nonce: nonceBuffer.bytes, txId: txid.bytes, txIndex: 0)
             let pHash = Hash.generatePHash()
             let sHash = Hash.generateSHash(
@@ -79,6 +79,7 @@ extension RenVM {
                 .base64urlEncodedString()
             
             var state = State()
+            state.sendTo = burnDetails.recipient
             state.txIndex = "0"
             state.amount = amount
             state.nHash = nHash
@@ -92,13 +93,13 @@ extension RenVM {
         
         func release(state: State, details: BurnDetails) -> Single<String> {
             let selector = selector(direction: .from)
-            let nonceBuffer = getNonceBuffer(nonce: details.nonce)
+            let nonceBuffer = getNonceBuffer(nonce: BInt(details.nonce))
             
             // get input
             let mintTx: MintTransactionInput
             let hash: String
             do {
-                mintTx = try MintTransactionInput(state: state, chain: chain, nonce: nonceBuffer)
+                mintTx = try MintTransactionInput(state: state, nonce: nonceBuffer)
                 hash = try mintTx
                     .hash(selector: selector, version: version)
                     .base64urlEncodedString()
@@ -116,9 +117,9 @@ extension RenVM {
                 .map {_ in hash}
         }
         
-        private func getNonceBuffer(nonce: UInt64) -> Data {
-            var data = Data(repeating: 0, count: 32-nonce.bytes.count)
-            data += nonce.bytes
+        private func getNonceBuffer(nonce: BInt) -> Data {
+            var data = Data(repeating: 0, count: 32-nonce.data.count)
+            data += nonce.data
             return data
         }
         

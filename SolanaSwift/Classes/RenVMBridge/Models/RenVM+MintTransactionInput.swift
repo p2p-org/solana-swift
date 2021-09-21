@@ -45,15 +45,14 @@ extension RenVM {
             self.amount     = amount
         }
         
-        init(state: RenVM.State, chain: RenVMChainType, nonce: Data) throws {
+        init(state: RenVM.State, nonce: Data) throws {
             guard let gHash = state.gHash,
                   let nHash = state.nHash,
                   let amount = state.amount,
                   let pHash = state.pHash,
-                  let sendTo = state.sendTo,
-                  let to = try? chain.dataToAddress(data: sendTo),
                   let txIndex = state.txIndex,
-                  let txid = state.txid
+                  let txid = state.txid,
+                  let recipient = state.sendTo
             else {throw RenVM.Error.paramsMissing}
             
             self.txid       = txid.base64urlEncodedString()
@@ -64,7 +63,7 @@ extension RenVM {
             self.nonce      = nonce.base64urlEncodedString()
             self.payload    = ""
             self.phash      = pHash.base64urlEncodedString()
-            self.to         = to
+            self.to         = recipient
             self.amount     = amount
         }
         
