@@ -51,7 +51,7 @@ class SerumSwapDirectSwapTests: SrumSwapSwapTests {
         let tx = try serumSwap.swap(
             fromWallet: usdcWallet,
             toWallet: srmWallet,
-            amount: 2,
+            amount: 5,
             slippage: defaultSlippage,
             isSimulation: true
         ).toBlocking().first()
@@ -61,7 +61,7 @@ class SerumSwapDirectSwapTests: SrumSwapSwapTests {
     /// Swaps USDT -> SRM on the Serum orderbook.
     func testSwapUSDTSRM() throws {
         let tx = try serumSwap.swap(
-            fromWallet: usdcWallet,
+            fromWallet: usdtWallet,
             toWallet: srmWallet,
             amount: 2,
             slippage: defaultSlippage,
