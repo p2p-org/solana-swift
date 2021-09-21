@@ -116,9 +116,9 @@ extension RenVM {
                 .map {_ in hash}
         }
         
-        private func getNonceBuffer(nonce: BInt) -> Data {
-            var data = Data(repeating: 0, count: 32-nonce.data.count)
-            data += nonce.data
+        private func getNonceBuffer(nonce: UInt64) -> Data {
+            var data = Data(repeating: 0, count: 32-nonce.bytes.count)
+            data += nonce.bytes
             return data
         }
         

@@ -10,7 +10,7 @@ import Foundation
 extension RenVM {
     public struct BurnDetails {
         let confirmedSignature: String
-        let nonce: BInt
+        let nonce: UInt64
         let recipient: String
     }
 }

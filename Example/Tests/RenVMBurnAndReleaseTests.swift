@@ -10,7 +10,15 @@ import Foundation
 import XCTest
 @testable import SolanaSwift
 
-class RenVMBurnAndReleaseTests: XCTestCase {
+class RenVMBurnAndReleaseTests: RestAPITests {
+    override var endpoint: SolanaSDK.APIEndPoint {
+        .init(url: "https://api.testnet.solana.com", network: .testnet)
+    }
+    
+    override var overridingAccount: String? {
+        "matter outer client aspect pear cigar caution robust easily merge dwarf wide short sail unusual indicate roast giraffe clay meat crowd exile curious vibrant"
+    }
+    
     func testBurnState() throws {
         let burnAndRelease = RenVM.BurnAndRelease(
             rpcClient: RenVM.Mock.rpcClient,
@@ -29,5 +37,30 @@ class RenVMBurnAndReleaseTests: XCTestCase {
         let burnState = try burnAndRelease.getBurnState(burnDetails: burnDetails, amount: "1000")
         
         XCTAssertEqual(burnState.txHash, "I_HJMksqVC5_-0G9FE_z8AORRDMoxl1vZbSGEc2VfJ4")
+    }
+    
+    func testBurnAndRelease() throws {
+        let rpcClient = RenVM.RpcClient(network: .testnet)
+        
+        let solanaChain = try RenVM.SolanaChain.load(client: rpcClient, solanaClient: solanaSDK).toBlocking().first()
+        
+        let recipient = "tb1ql7w62elx9ucw4pj5lgw4l028hmuw80sndtntxt"
+        
+        let burnAndRelease = RenVM.BurnAndRelease(
+            rpcClient: RenVM.RpcClient(network: .testnet),
+            chain: solanaChain!,
+            mintTokenSymbol: "BTC",
+            version: "1",
+            burnTo: "Bitcoin"
+        )
+        
+        let details = try burnAndRelease.submitBurnTransaction(
+            account: account.publicKey.data,
+            amount: "9000",
+            recipient: recipient,
+            signer: account.secretKey
+        ).toBlocking().first()
+        
+        
     }
 }
