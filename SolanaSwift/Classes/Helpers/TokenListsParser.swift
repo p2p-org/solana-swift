@@ -33,7 +33,7 @@ public extension SolanaSDK {
                 .map {list -> TokensList in
                     var list = list
                     // map tags
-                    list.tokens = list.tokens.map {
+                    var tokens: [Token] = list.tokens.map {
                         var item = $0
                         item.tags = (item._tags ?? []).map {
                             list.tags[$0] ?? TokenTag(name: $0, description: $0)
@@ -41,6 +41,23 @@ public extension SolanaSDK {
                         return item
                     }
                     
+                    // renBTC for devnet
+                    if network == "devnet" {
+                        tokens.append(
+                            .init(
+                                _tags: nil,
+                                chainId: 101,
+                                address: "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD",
+                                symbol: "renBTC",
+                                name: "renBTC",
+                                decimals: 8,
+                                logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
+                                extensions: .init(website: "https://renproject.io/", bridgeContract: nil, assetContract: nil, address: nil, explorer: nil, twitter: nil, github: nil, medium: nil, tgann: nil, tggroup: nil, discord: nil, serumV3Usdt: nil, serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv", coingeckoId: "renbtc", imageUrl: nil, description: nil)
+                            )
+                        )
+                    }
+                    
+                    list.tokens = tokens
                     return list
                 }
                 .map {$0.tokens}

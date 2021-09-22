@@ -17,4 +17,5 @@ public extension SolanaSDK.PublicKey {
     static let swapHostFeeAddress: SolanaSDK.PublicKey = "AHLwq66Cg3CuDJTFtwjPfwjJhifiv6rFwApQNKgX57Yg"
     static let splAssociatedTokenAccountProgramId: SolanaSDK.PublicKey = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
     static let renBTCMint: SolanaSDK.PublicKey = "CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5"
+    static let renBTCMintDevnet: SolanaSDK.PublicKey = "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD"
 }

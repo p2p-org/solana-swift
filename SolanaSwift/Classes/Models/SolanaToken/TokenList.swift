@@ -113,6 +113,11 @@ extension SolanaSDK {
         public var isNativeSOL: Bool {
             symbol == "SOL" && isNative
         }
+        
+        public var isRenBTC: Bool {
+            address == PublicKey.renBTCMint.base58EncodedString ||
+                address == PublicKey.renBTCMintDevnet.base58EncodedString
+        }
     }
     
     public struct TokenExtensions: Hashable, Decodable {
