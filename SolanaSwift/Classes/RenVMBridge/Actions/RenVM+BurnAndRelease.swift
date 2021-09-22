@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 extension RenVM.BurnAndRelease {
-    public struct BurnDetails: Codable {
+    public struct BurnDetails: Codable, Equatable {
         public let confirmedSignature: String
         public let nonce: UInt64
         public let recipient: String
@@ -20,14 +20,14 @@ extension RenVM.BurnAndRelease {
 extension RenVM {
     public struct BurnAndRelease {
         // MARK: - Dependencies
-        let rpcClient: RenVMRpcClientType
-        let chain: RenVMChainType
-        let mintTokenSymbol: String
-        let version: String
-        let burnToChainName: String // Ex.: Bitcoin
+        private let rpcClient: RenVMRpcClientType
+        private let chain: RenVMChainType
+        private let mintTokenSymbol: String
+        private let version: String
+        private let burnToChainName: String // Ex.: Bitcoin
         
         // MARK: - Initializer
-        init(
+        public init(
             rpcClient: RenVMRpcClientType,
             chain: RenVMChainType,
             mintTokenSymbol: String,
@@ -41,7 +41,7 @@ extension RenVM {
             self.burnToChainName = burnTo
         }
         
-        func submitBurnTransaction(
+        public func submitBurnTransaction(
             account: Data,
             amount: String,
             recipient: String,
@@ -56,7 +56,7 @@ extension RenVM {
             )
         }
         
-        func getBurnState(burnDetails: BurnDetails) throws -> State {
+        public func getBurnState(burnDetails: BurnDetails) throws -> State {
             let txid = try chain.signatureToData(signature: burnDetails.confirmedSignature)
             let nonceBuffer = getNonceBuffer(nonce: BInt(burnDetails.nonce))
             let nHash = Hash.generateNHash(nonce: nonceBuffer.bytes, txId: txid.bytes, txIndex: 0)
@@ -97,7 +97,7 @@ extension RenVM {
             return state
         }
         
-        func release(state: State, details: BurnDetails) -> Single<String> {
+        public func release(state: State, details: BurnDetails) -> Single<String> {
             let selector = selector(direction: .from)
             let nonceBuffer = getNonceBuffer(nonce: BInt(details.nonce))
             
