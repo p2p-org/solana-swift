@@ -31,10 +31,11 @@ class RenVMBurnAndReleaseTests: RestAPITests {
         let burnDetails = RenVM.BurnDetails(
             confirmedSignature: "2kNe8duPRcE9xxKLLVP92e9TBH5WvmVVWQJ18gEjqhgxsrKtBEBVfeXNFz5Un3yEEQJZkxY2ysQR4dGQaytnDM1i",
             nonce: 35,
-            recipient: "tb1ql7w62elx9ucw4pj5lgw4l028hmuw80sndtntxt"
+            recipient: "tb1ql7w62elx9ucw4pj5lgw4l028hmuw80sndtntxt",
+            amount: "1000"
         )
         
-        let burnState = try burnAndRelease.getBurnState(burnDetails: burnDetails, amount: "1000")
+        let burnState = try burnAndRelease.getBurnState(burnDetails: burnDetails)
         
         XCTAssertEqual(burnState.txHash, "I_HJMksqVC5_-0G9FE_z8AORRDMoxl1vZbSGEc2VfJ4")
     }
@@ -64,12 +65,13 @@ class RenVMBurnAndReleaseTests: RestAPITests {
 //        ).toBlocking().first()!
         
         let detail: RenVM.BurnDetails = .init(
-            confirmedSignature: "5s8ExYPKf45bPbM4Xhd4ychaHaQFcDJaBLmjiZsmtjRcdyUTsJDmKE13M4gKxwjeL6wzuEqGfG6UjCVgSLrVMJbj",
+            confirmedSignature: "5Dmpba9yiJSyGUejRveSz1aS463Qj1s3oeV1JT4VKmrPgQsKFyikArLuFSihBGsG9yYybEKkawFFAnx7pajLtE1K",
             nonce: 56,
-            recipient: recipient
+            recipient: recipient,
+            amount: amount
         )
-        
-        let burnState = try burnAndRelease.getBurnState(burnDetails: detail, amount: amount)
+//
+        let burnState = try burnAndRelease.getBurnState(burnDetails: detail)
 
         let tx = try burnAndRelease.release(state: burnState, details: detail).toBlocking().first()
         

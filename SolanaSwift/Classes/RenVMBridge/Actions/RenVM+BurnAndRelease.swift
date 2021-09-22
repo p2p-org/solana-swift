@@ -47,10 +47,7 @@ extension RenVM {
             )
         }
         
-        func getBurnState(
-            burnDetails: BurnDetails,
-            amount: String
-        ) throws -> State {
+        func getBurnState(burnDetails: BurnDetails) throws -> State {
             let txid = try chain.signatureToData(signature: burnDetails.confirmedSignature)
             let nonceBuffer = getNonceBuffer(nonce: BInt(burnDetails.nonce))
             let nHash = Hash.generateNHash(nonce: nonceBuffer.bytes, txId: txid.bytes, txIndex: 0)
@@ -70,7 +67,7 @@ extension RenVM {
                 nonce: nonceBuffer.bytes
             )
             
-            let mintTx = MintTransactionInput(gHash: gHash, gPubkey: Data(), nHash: nHash, nonce: nonceBuffer, amount: amount, pHash: pHash, to: burnDetails.recipient, txIndex: "0", txid: txid)
+            let mintTx = MintTransactionInput(gHash: gHash, gPubkey: Data(), nHash: nHash, nonce: nonceBuffer, amount: burnDetails.amount, pHash: pHash, to: burnDetails.recipient, txIndex: "0", txid: txid)
             
             let txHash = try mintTx.hash(
                 selector: chain.selector(mintTokenSymbol: mintTokenSymbol, direction: .from),
@@ -81,7 +78,7 @@ extension RenVM {
             var state = State()
             state.sendTo = burnDetails.recipient
             state.txIndex = "0"
-            state.amount = amount
+            state.amount = burnDetails.amount
             state.nHash = nHash
             state.txid = txid
             state.pHash = pHash

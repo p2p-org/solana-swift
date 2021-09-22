@@ -217,11 +217,11 @@ extension RenVM {
         public func submitBurn(
             mintTokenSymbol: String,
             account: Data,
-            amount: String,
+            amount amountString: String,
             recipient: String,
             signer: Data
         ) -> Single<BurnDetails> {
-            guard let amount = UInt64(amount) else {
+            guard let amount = UInt64(amountString) else {
                 return .error(Error("Amount is not valid"))
             }
             do {
@@ -273,7 +273,7 @@ extension RenVM {
                             isSimulation: false
                         )
                         .map {signature in
-                            .init(confirmedSignature: signature, nonce: nonce, recipient: recipient)
+                            .init(confirmedSignature: signature, nonce: nonce, recipient: recipient, amount: amountString)
                         }
                     }
                 
