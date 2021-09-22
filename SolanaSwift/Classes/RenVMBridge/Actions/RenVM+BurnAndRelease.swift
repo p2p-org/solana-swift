@@ -8,6 +8,15 @@
 import Foundation
 import RxSwift
 
+extension RenVM.BurnAndRelease {
+    public struct BurnDetails: Codable {
+        let confirmedSignature: String
+        let nonce: UInt64
+        let recipient: String
+        let amount: String
+    }
+}
+
 extension RenVM {
     public struct BurnAndRelease {
         // MARK: - Dependencies

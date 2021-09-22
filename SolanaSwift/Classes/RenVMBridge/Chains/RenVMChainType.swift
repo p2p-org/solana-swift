@@ -35,7 +35,7 @@ public protocol RenVMChainType {
         amount: String,
         recipient: String,
         signer: Data
-    ) -> Single<RenVM.BurnDetails>
+    ) -> Single<RenVM.BurnAndRelease.BurnDetails>
 }
 
 extension RenVMChainType {

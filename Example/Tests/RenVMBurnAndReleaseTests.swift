@@ -28,7 +28,7 @@ class RenVMBurnAndReleaseTests: RestAPITests {
             burnTo: "Bitcoin"
         )
         
-        let burnDetails = RenVM.BurnDetails(
+        let burnDetails = RenVM.BurnAndRelease.BurnDetails(
             confirmedSignature: "2kNe8duPRcE9xxKLLVP92e9TBH5WvmVVWQJ18gEjqhgxsrKtBEBVfeXNFz5Un3yEEQJZkxY2ysQR4dGQaytnDM1i",
             nonce: 35,
             recipient: "tb1ql7w62elx9ucw4pj5lgw4l028hmuw80sndtntxt",
@@ -64,7 +64,7 @@ class RenVMBurnAndReleaseTests: RestAPITests {
 //            signer: account.secretKey
 //        ).toBlocking().first()!
         
-        let detail: RenVM.BurnDetails = .init(
+        let detail: RenVM.BurnAndRelease.BurnDetails = .init(
             confirmedSignature: "5Dmpba9yiJSyGUejRveSz1aS463Qj1s3oeV1JT4VKmrPgQsKFyikArLuFSihBGsG9yYybEKkawFFAnx7pajLtE1K",
             nonce: 56,
             recipient: recipient,

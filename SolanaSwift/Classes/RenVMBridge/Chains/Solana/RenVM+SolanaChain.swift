@@ -220,7 +220,7 @@ extension RenVM {
             amount amountString: String,
             recipient: String,
             signer: Data
-        ) -> Single<BurnDetails> {
+        ) -> Single<BurnAndRelease.BurnDetails> {
             guard let amount = UInt64(amountString) else {
                 return .error(Error("Amount is not valid"))
             }
@@ -237,7 +237,7 @@ extension RenVM {
                     decodedTo: GatewayStateData.self
                 )
                     .map {$0.data}
-                    .flatMap {gatewayState -> Single<BurnDetails> in
+                    .flatMap {gatewayState -> Single<BurnAndRelease.BurnDetails> in
                         let nonce = gatewayState.burnCount + 1
                         let burnLogAccountId = try SolanaSDK.PublicKey.findProgramAddress(
                             seeds: [Data(nonce.bytes)],
