@@ -10,10 +10,10 @@ import RxSwift
 
 extension RenVM.BurnAndRelease {
     public struct BurnDetails: Codable {
-        let confirmedSignature: String
-        let nonce: UInt64
-        let recipient: String
-        let amount: String
+        public let confirmedSignature: String
+        public let nonce: UInt64
+        public let recipient: String
+        public let amount: String
     }
 }
 
