@@ -40,13 +40,13 @@ class RenVMBurnAndReleaseTests: RestAPITests {
     }
     
     func testBurnAndRelease() throws {
-        let rpcClient = RenVM.RpcClient(network: .devnet)
+        let rpcClient = RenVM.RpcClient(network: .testnet)
         
         let solanaChain = try RenVM.SolanaChain.load(client: rpcClient, solanaClient: solanaSDK).toBlocking().first()!
         
         let recipient = "tb1ql7w62elx9ucw4pj5lgw4l028hmuw80sndtntxt"
         
-        let amount = "9000"
+        let amount = "1000"
         
         let burnAndRelease = RenVM.BurnAndRelease(
             rpcClient: rpcClient,
@@ -64,13 +64,13 @@ class RenVMBurnAndReleaseTests: RestAPITests {
 //        ).toBlocking().first()!
         
         let detail: RenVM.BurnDetails = .init(
-            confirmedSignature: "5wmVrztPMAtvm8bpkKVECMDU1rLu38VVjKDj1dPWeTfbmCxi8pRr5MYco469RHrcmfC82p4CCQwvtio5U3itBeLj",
-            nonce: 54,
+            confirmedSignature: "5s8ExYPKf45bPbM4Xhd4ychaHaQFcDJaBLmjiZsmtjRcdyUTsJDmKE13M4gKxwjeL6wzuEqGfG6UjCVgSLrVMJbj",
+            nonce: 56,
             recipient: recipient
         )
         
         let burnState = try burnAndRelease.getBurnState(burnDetails: detail, amount: amount)
-        
+
         let tx = try burnAndRelease.release(state: burnState, details: detail).toBlocking().first()
         
     }
