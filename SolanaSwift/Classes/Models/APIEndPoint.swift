@@ -29,6 +29,7 @@ extension SolanaSDK {
             ]
 //            #if DEBUG
             endpoints.append(.init(url: "https://api.testnet.solana.com", network: .testnet))
+            endpoints.append(.init(url: "https://api.devnet.solana.com", network: .devnet))
 //            #endif
             
             return endpoints
