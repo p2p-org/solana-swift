@@ -88,6 +88,19 @@ extension SolanaSDK {
             )
         }
         
+        public static var renBTC: Self {
+            .init(
+                _tags: nil,
+                chainId: 101,
+                address: PublicKey.renBTCMint.base58EncodedString,
+                symbol: "renBTC",
+                name: "renBTC",
+                decimals: 8,
+                logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
+                extensions: .init(website: "https://renproject.io/", bridgeContract: nil, assetContract: nil, address: nil, explorer: nil, twitter: nil, github: nil, medium: nil, tgann: nil, tggroup: nil, discord: nil, serumV3Usdt: nil, serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv", coingeckoId: "renbtc", imageUrl: nil, description: nil)
+            )
+        }
+        
         public var wrappedBy: WrappingToken? {
             if tags.contains(where: {$0.name == "wrapped-sollet"}) {
                 return .sollet
