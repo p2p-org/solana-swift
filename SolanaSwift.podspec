@@ -32,6 +32,10 @@ Solana-blockchain client, written in pure swift, which supports keypair generati
 
   s.source_files = 'SolanaSwift/Classes/**/*'
   s.swift_version = '5.0'
+
+  s.xcconfig = {
+    'SWIFT_OPTIMIZATION_LEVEL' => '-O'
+  }
   
   # s.resource_bundles = {
   #   'SolanaSwift' => ['SolanaSwift/Assets/*.png']
