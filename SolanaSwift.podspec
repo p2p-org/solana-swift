@@ -30,25 +30,24 @@ Solana-blockchain client, written in pure swift, which supports keypair generati
 
   s.ios.deployment_target = '12.0'
 
-  s.source_files = 'SolanaSwift/Classes/**/*'
+  s.source_files = 'Sources/SolanaSwift/**/*'
   s.swift_version = '5.0'
 
-  s.xcconfig = {
+  s.pod_target_xcconfig = {
     'SWIFT_OPTIMIZATION_LEVEL' => '-O'
   }
   
-  # s.resource_bundles = {
-  #   'SolanaSwift' => ['SolanaSwift/Assets/*.png']
-  # }
-  s.resource = 'SolanaSwift/Classes/Resources/**/*'
+  s.resource_bundles = {
+    'SolanaSwift' => ['Sources/SolanaSwift/Resources/*.json']
+  }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
-  s.dependency 'RxAlamofire', '~> 6.1.1'
-  s.dependency 'TweetNacl', '~> 1.0.2'
-  s.dependency 'Ed25519HDKeySwift', '~> 1.2.0'
-  s.dependency "ASKSecp256k1", '~> 0.0.6'
-  s.dependency 'Starscream', '~> 4.0.4'
-  s.dependency 'RxCocoa', '~> 6.2.0'
+  s.dependency 'CryptoSwift', '~> 1.4.1'
   s.dependency 'BufferLayoutSwift', '~> 0.9.0'
+  s.dependency 'secp256k1.swift', '~> 0.1.0'
+  s.dependency 'TweetNacl', '~> 1.0.2'
+  s.dependency 'RxCocoa', '~> 6.2.0'
+  s.dependency 'RxAlamofire', '~> 6.1.1'
+  s.dependency 'Starscream', '~> 4.0.0'
 end

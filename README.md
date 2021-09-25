@@ -13,7 +13,7 @@ Solana-blockchain client, written in pure swift.
 - [x] Socket communication
 - [x] Orca swap
 - [x] Serum DEX Swap
-- [x] RenVM
+- [x] RenVM (Support: Bitcoin)
 
 ## Example
 
