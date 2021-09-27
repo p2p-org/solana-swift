@@ -57,6 +57,21 @@ public extension RenVMRpcClientType {
                 Data(base64urlEncoded: $0.publicKey(mintTokenSymbol: mintTokenSymbol) ?? "")
             }
     }
+    
+    func getTransactionFee(mintTokenSymbol: String) -> Single<UInt64> {
+        // TODO: - Remove later: Support other tokens
+        if mintTokenSymbol != "BTC" {
+            return .error(RenVM.Error("Unsupported token"))
+        }
+        
+        return queryBlockState()
+            .map {blockState in
+                guard let gasLimit = UInt64(blockState.state.v.btc.gasLimit),
+                      let gasCap = UInt64(blockState.state.v.btc.gasCap)
+                else {throw RenVM.Error("Could not calculate transaction fee")}
+                return gasLimit * gasCap
+            }
+    }
 }
 
 extension RenVM {
