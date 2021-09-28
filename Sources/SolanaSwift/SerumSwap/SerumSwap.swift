@@ -44,6 +44,16 @@ public struct SerumSwap {
     }
     
     // MARK: - Methods
+    /// Load minimum amount for trading
+    public func loadMinOrderSize(
+        fromMint: PublicKey,
+        toMint: PublicKey
+    ) -> Single<Double> {
+        loadMarket(fromMint: fromMint, toMint: toMint)
+            .map {$0.first?.minOrderSize()}
+            .map {$0?.doubleValue ?? 0}
+    }
+    
     /// Load price of current markets
     public func loadFair(
         fromMint: PublicKey,
@@ -148,6 +158,15 @@ public struct SerumSwap {
             fromMint: fromWallet.token.address,
             toMint: toWallet.token.address
         )
+            .map {markets -> [Market] in
+                guard let minOrderSize = markets.first?.minOrderSize() else {
+                    throw SerumSwapError("Could not calculate minOrderSize")
+                }
+                if amount < minOrderSize.doubleValue {
+                    throw SerumSwapError.amountIsTooSmall(minOrderSize: minOrderSize.doubleValue)
+                }
+                return markets
+            }
             .flatMap {markets -> Single<([Market], Double, [OpenOrders])> in
                 let requestFair = loadFair(
                     fromMint: fromWallet.token.address,

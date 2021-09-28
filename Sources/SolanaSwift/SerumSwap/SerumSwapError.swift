@@ -9,6 +9,8 @@ import Foundation
 
 struct SerumSwapError: Error, Equatable, ExpressibleByStringLiteral {
     let description: String
+    var minOrderSize: Double? // Amount is too small
+    
     init(stringLiteral value: String) {
         self.description = value
     }
@@ -39,6 +41,12 @@ struct SerumSwapError: Error, Equatable, ExpressibleByStringLiteral {
     
     static var marketIsNotAvailable: Self {
         .init(stringLiteral: "Market is not available")
+    }
+    
+    static func amountIsTooSmall(minOrderSize: Double?) -> SerumSwapError {
+        var err = SerumSwapError("Amount is too small")
+        err.minOrderSize = minOrderSize
+        return err
     }
     
     init(_ string: String) {
