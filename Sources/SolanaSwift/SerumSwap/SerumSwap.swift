@@ -46,8 +46,8 @@ public struct SerumSwap {
     // MARK: - Methods
     /// Load minimum amount for trading
     public func loadMinOrderSize(
-        fromMint: PublicKey,
-        toMint: PublicKey
+        fromMint: String,
+        toMint: String
     ) -> Single<Double> {
         loadMarket(fromMint: fromMint, toMint: toMint)
             .map {$0.first?.minOrderSize()}
