@@ -146,11 +146,19 @@ extension RenVM {
                 .map {_ in hash}
         }
         
-        public func mint(state: State, signer: Data) -> Single<String> {
+        public func mint(state: State, signer: Data) -> Single<(amountOut: String?, signature: String)> {
             guard let txHash = state.txHash else {
                 return .error(Error("txHash not found"))
             }
+            var amountOut: String?
             return rpcClient.queryMint(txHash: txHash)
+                .map {response in
+                    guard response.txStatus == "done" else {
+                        throw Error.paramsMissing
+                    }
+                    amountOut = response.tx.out.v.amount
+                    return response
+                }
                 .flatMap {res in
                     chain.submitMint(
                         address: self.destinationAddress,
@@ -159,6 +167,7 @@ extension RenVM {
                         responceQueryMint: res
                     )
                 }
+                .map {(amountOut: amountOut, signature: $0)}
         }
         
         private func selector(direction: Selector.Direction) -> Selector {
