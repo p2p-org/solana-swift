@@ -36,6 +36,11 @@ class SerumSwapMarketTests: SerumSwapTests {
         print(btcBbo!)
     }
     
+    func testGetMinOrderSizeFromCachedMarket() throws {
+        let minOrderSize = try serumSwap.loadMinOrderSize(fromMint: SOL.base58EncodedString, toMint: USDC.base58EncodedString).toBlocking().first()
+        XCTAssertEqual(minOrderSize, 0.1)
+    }
+    
     func testCalculateExchangeRate() throws {
         let fair: Double = 0.11853959222380275
         let expectedRate: UInt64 = 8375352

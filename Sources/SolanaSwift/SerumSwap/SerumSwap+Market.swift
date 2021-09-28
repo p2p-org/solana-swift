@@ -127,7 +127,7 @@ extension SerumSwap {
         }
         
         func minOrderSize() -> Decimal {
-            priceLotsToNumber(price: 1)
+            baseSizeLotsToNumber(quantity: 1)
         }
         
         func priceLotsToNumber(price: UInt64) -> Decimal {
