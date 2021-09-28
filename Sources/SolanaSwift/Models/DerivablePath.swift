@@ -8,9 +8,9 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct DerivablePath: Hashable {
+    public struct DerivablePath: Hashable, Codable {
         // MARK: - Nested type
-        public enum DerivableType: String, CaseIterable {
+        public enum DerivableType: String, CaseIterable, Codable {
             case bip44Change
             case bip44
             case deprecated
