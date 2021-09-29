@@ -22,7 +22,7 @@ class SerumSwapTests: RestAPITests {
     }
     
     override var overridingAccount: String? {
-        "oval you token plug copper visa employ link sell asset kick sausage"
+        "miracle pizza supply useful steak border same again youth silver access hundred"
     }
     
     var serumSwap: SerumSwap!
@@ -31,7 +31,7 @@ class SerumSwapTests: RestAPITests {
     
     override func setUpWithError() throws {
         try super.setUpWithError()
-        serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK, signatureNotificationHandler: FakeSocket())
+        serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK, signatureNotificationHandler: FakeSocket(), processingOrdersStorage: SerumSwapProcessingOrderStorageUserDefault())
         wallets = try solanaSDK.getTokenWallets().toBlocking().first()
         solBalance = try solanaSDK.getBalance().toBlocking().first()
     }

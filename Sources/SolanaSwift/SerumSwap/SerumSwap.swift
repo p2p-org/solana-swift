@@ -26,6 +26,7 @@ public struct SerumSwap {
     let client: SerumSwapAPIClient
     let accountProvider: SerumSwapAccountProvider
     let signatureNotificationHandler: SerumSwapSignatureNotificationHandler
+    let processingOrdersStorage: SerumSwapProcessingOrderStorage
     let swapMarkets: SwapMarkets
     public let BASE_TAKER_FEE_BPS = 0.0022
     public var FEE_MULTIPLIER: Double {1 - BASE_TAKER_FEE_BPS}
@@ -35,12 +36,14 @@ public struct SerumSwap {
         client: SerumSwapAPIClient,
         accountProvider: SerumSwapAccountProvider,
         tokenListContainer: SerumSwapTokenListContainer,
-        signatureNotificationHandler: SerumSwapSignatureNotificationHandler
+        signatureNotificationHandler: SerumSwapSignatureNotificationHandler,
+        processingOrdersStorage: SerumSwapProcessingOrderStorage
     ) {
         self.client = client
         self.accountProvider = accountProvider
         self.signatureNotificationHandler = signatureNotificationHandler
         self.swapMarkets = SwapMarkets(tokenListContainer: tokenListContainer)
+        self.processingOrdersStorage = processingOrdersStorage
     }
     
     // MARK: - Methods
@@ -767,7 +770,14 @@ public struct SerumSwap {
                             .timeout(.seconds(30), scheduler: MainScheduler.instance)
                     }
                     .andThen(
-                        Single<(from: PublicKey, to: PublicKey, cleanupInstructions: [TransactionInstruction])>.just((from: from.account, to: to.account, cleanupInstructions: from.cleanupInstructions + to.cleanupInstructions))
+                        Single<(from: PublicKey, to: PublicKey, cleanupInstructions: [TransactionInstruction])>
+                            .just((from: from.account, to: to.account, cleanupInstructions: from.cleanupInstructions + to.cleanupInstructions))
+                            .do(onSuccess: { param in
+                                if !isSimulation {
+                                    self.processingOrdersStorage.saveProcessingOrder(param.from, forMarket: fromMarket.address)
+                                    self.processingOrdersStorage.saveProcessingOrder(param.to, forMarket: toMarket.address)
+                                }
+                            })
                     )
             }
     }

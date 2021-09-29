@@ -162,6 +162,11 @@ extension SerumSwap {
             return ((bestBids ?? 0) + (bestOffer ?? 0)) / d
         }
     }
+    
+    public struct ProcessingOpenOrder: Codable {
+        let market: PublicKey
+        let openOrder: PublicKey
+    }
 }
 
 // MARK: - BufferLayout properties

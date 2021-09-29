@@ -87,3 +87,36 @@ public protocol SerumSwapTokenListContainer {
 public protocol SerumSwapSignatureNotificationHandler {
     func observeSignatureNotification(signature: String) -> Completable
 }
+
+public protocol SerumSwapProcessingOrderStorage {
+    func getProcessingOrdersForMarket(_ market: SerumSwap.PublicKey) -> [SerumSwap.PublicKey]
+    func saveProcessingOrder(_ order: SerumSwap.PublicKey, forMarket market: SerumSwap.PublicKey)
+}
+
+public struct SerumSwapProcessingOrderStorageUserDefault: SerumSwapProcessingOrderStorage {
+    private let key = "SerumSwapProcessingOrder"
+    
+    public func getProcessingOrdersForMarket(_ market: SerumSwap.PublicKey) -> [SerumSwap.PublicKey] {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let orders = try? JSONDecoder().decode([SerumSwap.ProcessingOpenOrder].self, from: data)
+        else {
+            return []
+        }
+        return orders.filter {$0.market == market}.map {$0.openOrder}
+    }
+    
+    public func saveProcessingOrder(_ order: SerumSwap.PublicKey, forMarket market: SerumSwap.PublicKey) {
+        // check if order exists
+        let existedOrders = getProcessingOrdersForMarket(market)
+        if existedOrders.contains(order) {return}
+        
+        // save
+        var orders = [SerumSwap.ProcessingOpenOrder]()
+        if let data = UserDefaults.standard.data(forKey: key) {
+            order = (try? JSONDecoder().decode([SerumSwap.ProcessingOpenOrder].self, from: data)) ?? []
+        }
+        
+        orders.append(.init(market: market, openOrder: order))
+        UserDefaults.standard.set(try? JSONEncoder().encode(orders), forKey: key)
+    }
+}
