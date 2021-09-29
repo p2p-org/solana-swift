@@ -113,7 +113,7 @@ public struct SerumSwapProcessingOrderStorageUserDefault: SerumSwapProcessingOrd
         // save
         var orders = [SerumSwap.ProcessingOpenOrder]()
         if let data = UserDefaults.standard.data(forKey: key) {
-            order = (try? JSONDecoder().decode([SerumSwap.ProcessingOpenOrder].self, from: data)) ?? []
+            orders = (try? JSONDecoder().decode([SerumSwap.ProcessingOpenOrder].self, from: data)) ?? []
         }
         
         orders.append(.init(market: market, openOrder: order))
