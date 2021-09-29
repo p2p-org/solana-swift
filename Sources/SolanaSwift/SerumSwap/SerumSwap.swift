@@ -217,31 +217,29 @@ public struct SerumSwap {
                     toDecimal: toDecimal
                 )
                 
-                // create request from custom exchange rate
-                let createSwapRequest: (Lamports) -> Single<TransactionID> = {rate in
-                    swap(
-                        .init(
-                            fromMint: fromMint,
-                            toMint: toMint,
-                            amount: amount.toLamport(decimals: fromWallet.token.decimals),
-                            minExchangeRate: .init(
-                                rate: rate,
-                                fromDecimals: fromWallet.token.decimals,
-                                quoteDecimals: toDecimal,
-                                strict: false
-                            ),
-                            referral: nil,
-                            fromWallet: fromWalletPubkey,
-                            toWallet: toWalletPubkey,
-                            quoteWallet: nil,
-                            fromMarket: fromMarket,
-                            toMarket: toMarket,
-                            fromOpenOrders: fromOpenOrder?.address,
-                            toOpenOrders: toOpenOrder?.address,
-                            close: true
+                return swap(
+                    .init(
+                        fromMint: fromMint,
+                        toMint: toMint,
+                        amount: amount.toLamport(decimals: fromWallet.token.decimals),
+                        minExchangeRate: .init(
+                            rate: rate,
+                            fromDecimals: fromWallet.token.decimals,
+                            quoteDecimals: toDecimal,
+                            strict: false
                         ),
-                        isSimulation: isSimulation
-                    )
+                        referral: nil,
+                        fromWallet: fromWalletPubkey,
+                        toWallet: toWalletPubkey,
+                        quoteWallet: nil,
+                        fromMarket: fromMarket,
+                        toMarket: toMarket,
+                        fromOpenOrders: fromOpenOrder?.address,
+                        toOpenOrders: toOpenOrder?.address,
+                        close: true
+                    ),
+                    isSimulation: isSimulation
+                )
                     .flatMap {signersAndInstructions -> Single<String> in
                         let instructions = Array(signersAndInstructions.map{ $0.instructions }.joined())
                         var signers = Array(signersAndInstructions.map{ $0.signers }.joined())
@@ -257,38 +255,7 @@ public struct SerumSwap {
                             isSimulation: isSimulation
                         )
                     }
-                }
-                
-                return createSwapRequest(rate)
-                    .catch {error in
-                        if let error = error as? SolanaSDK.Error {
-                            var logs = [String]()
-                            switch error {
-                            case .invalidResponse(let error):
-                                if let iLogs = error.data?.logs {
-                                    logs = iLogs
-                                }
-                            case .transactionError(_, let iLogs):
-                                logs = iLogs
-                            default:
-                                break
-                            }
-                            if !logs.isEmpty {
-                                if let amounts = logs
-                                    .first(where: {$0.starts(with: "Program log: effective_to_amount, min_expected_amount: ")})?
-                                    .replacingOccurrences(of: "Program log: effective_to_amount, min_expected_amount: ", with: "")
-                                    .components(separatedBy: ", "),
-                                   let effectiveAmount = amounts.first?.prefix(rate.digitsSum),
-                                   let effectiveAmount = UInt64(effectiveAmount)
-                                {
-                                    return createSwapRequest(effectiveAmount)
-                                }
-                            }
-                        }
-                        throw error
-                    }
             }
-            
     }
     
     /// Executes a swap against the Serum DEX.
