@@ -31,7 +31,7 @@ class SerumSwapTests: RestAPITests {
     
     override func setUpWithError() throws {
         try super.setUpWithError()
-        serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK, signatureNotificationHandler: FakeSocket(), processingOrdersStorage: SerumSwapProcessingOrderStorageUserDefault())
+        serumSwap = .init(client: solanaSDK, accountProvider: solanaSDK, tokenListContainer: solanaSDK, signatureNotificationHandler: FakeSocket(), processingOrdersStorage: MockProcessingOrderStorage())
         wallets = try solanaSDK.getTokenWallets().toBlocking().first()
         solBalance = try solanaSDK.getBalance().toBlocking().first()
     }
@@ -124,5 +124,22 @@ class SerumSwapTests: RestAPITests {
             quoteMintDecimals: 6,
             programId: .dexPID
         )
+    }
+}
+
+private struct MockProcessingOrderStorage: SerumSwapProcessingOrderStorage {
+    func getProcessingOrdersForMarket(_ market: SerumSwap.PublicKey) -> [SerumSwap.PublicKey] {
+        switch market.base58EncodedString {
+        case "ByRys5tuUWDgL73G8JBAEfkdFf8JWBzPBDHsBVQ5vbQA":
+            return ["85ZJUWSYEvTMRUyvDZDLWzFqYNELbDFwNcRw4kU89mhk"]
+        case "GZ3WBFsqntmERPwumFEYgrX2B7J7G11MzNZAy7Hje27X":
+            return ["9aMTRjHB5R8s2Xv9Nbz1n6JE5G59j5C9zsSeZ2tniWtu"]
+        default:
+            return []
+        }
+    }
+    
+    func saveProcessingOrder(_ order: SerumSwap.PublicKey, forMarket market: SerumSwap.PublicKey) {
+        
     }
 }

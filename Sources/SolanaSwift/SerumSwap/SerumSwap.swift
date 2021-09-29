@@ -501,8 +501,8 @@ public struct SerumSwap {
         else {return .error(SerumSwapError.unauthorized)}
         // Request open orders
         let requestOpenOrders: Single<(from: PublicKey, to: PublicKey, cleanupInstructions: [TransactionInstruction])>
-        if let fromOpenOrders = fromOpenOrders,
-           let toOpenOrders = toOpenOrders
+        if let fromOpenOrders = fromOpenOrders ?? processingOrdersStorage.getProcessingOrdersForMarket(fromMarket.address).first,
+           let toOpenOrders = toOpenOrders ?? processingOrdersStorage.getProcessingOrdersForMarket(toMarket.address).first
         {
             requestOpenOrders = .just((from: fromOpenOrders, to: toOpenOrders, cleanupInstructions: []))
         } else {
