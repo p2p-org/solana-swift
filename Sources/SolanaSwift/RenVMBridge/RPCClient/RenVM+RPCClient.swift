@@ -21,8 +21,8 @@ public extension RenVMRpcClientType {
         call(endpoint: network.lightNode, method: "ren_queryTx", params: ["txHash": txHash], log: true)
     }
     
-    func queryBlockState() -> Single<RenVM.ResponseQueryBlockState> {
-        call(endpoint: network.lightNode, method: "ren_queryBlockState", params: emptyParams, log: false)
+    func queryBlockState(log: Bool = false) -> Single<RenVM.ResponseQueryBlockState> {
+        call(endpoint: network.lightNode, method: "ren_queryBlockState", params: emptyParams, log: log)
     }
 
     func queryConfig() -> Single<RenVM.ResponseQueryConfig> {
@@ -64,7 +64,7 @@ public extension RenVMRpcClientType {
             return .error(RenVM.Error("Unsupported token"))
         }
         
-        return queryBlockState()
+        return queryBlockState(log: true)
             .map {blockState in
                 guard let gasLimit = UInt64(blockState.state.v.btc.gasLimit),
                       let gasCap = UInt64(blockState.state.v.btc.gasCap)
