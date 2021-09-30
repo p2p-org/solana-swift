@@ -778,11 +778,12 @@ public struct SerumSwap {
         toWallet: Wallet,
         lamportsPerSignature: SolanaSDK.Lamports,
         minRentExemption: SolanaSDK.Lamports
-    ) -> Single<Lamports> {
+    ) -> Single<(accountCreationFee: Lamports, serumOrderCreationFee: Lamports, transactionFee: Lamports)> {
         
         guard let owner = accountProvider.getAccount() else {
             return .error(SerumSwapError.unauthorized)
         }
+        
         // default fee for creating serum dex account
         let creatingSerumDexFee: Lamports = 23357760
         
@@ -791,64 +792,63 @@ public struct SerumSwap {
             fromMint: fromWallet.token.address,
             toMint: toWallet.token.address
         )
-        .flatMap {markets -> Single<Lamports> in
-            return OpenOrders.findForOwner(
+        .flatMap {markets in
+            OpenOrders.findForOwner(
                 client: client,
                 ownerAddress: owner.publicKey,
                 programId: .dexPID
             )
-            .map { openOrders in
-                // calculate number of created orders
-                var numberOfCreatedOrders = 0
-                if let fromMarket = markets[safe: 0],
-                   openOrders.contains(where: {$0.address == fromMarket.address})
-                {
-                    numberOfCreatedOrders += 1
-                }
-                
-                if let toMarket = markets[safe: 1],
-                   openOrders.contains(where: {$0.address == toMarket.address})
-                {
-                    numberOfCreatedOrders += 1
-                }
-                
-                // calculate number of orders that have to be created
-                let numberOfOrdersToCreate = markets.count - numberOfCreatedOrders
-                
-                // fee for creating orders
-                var feeForCreatingNewOrders = Lamports(numberOfOrdersToCreate) * (creatingSerumDexFee + lamportsPerSignature)
-                
-                // for transitive swap: there is an lps needed for creating a separated open orders transaction
-                // for direct swap: the creating orders transaction is embeded to swap instruction, so this lps is NOT needed
-                if markets.count == 2 && numberOfOrdersToCreate > 0 {
-                    feeForCreatingNewOrders += lamportsPerSignature
-                }
-                
-                return feeForCreatingNewOrders
-            }
+                .map {($0, markets)}
         }
-        .map {feeForOpeningOrders in
-            var fee: Lamports = 0
+        .map {openOrders, markets in
+            var accountCreationFee: Lamports = 0
+            var serumOrderCreationFee: Lamports = 0
+            var transactionFee: Lamports = 0
             
-            // fee for opening
-            fee += feeForOpeningOrders
+            // calculate number of created orders
+            var numberOfCreatedOrders = 0
+            if let fromMarket = markets[safe: 0],
+               openOrders.contains(where: {$0.address == fromMarket.address})
+            {
+                numberOfCreatedOrders += 1
+            }
+            
+            if let toMarket = markets[safe: 1],
+               openOrders.contains(where: {$0.address == toMarket.address})
+            {
+                numberOfCreatedOrders += 1
+            }
+            
+            // calculate number of orders that have to be created
+            let numberOfOrdersToCreate = markets.count - numberOfCreatedOrders
+            
+            // fee for creating orders
+            transactionFee += Lamports(numberOfOrdersToCreate) * lamportsPerSignature
+            serumOrderCreationFee += Lamports(numberOfOrdersToCreate) * creatingSerumDexFee
+            
+            // for transitive swap: there is an lps needed for creating a separated open orders transaction
+            // for direct swap: the creating orders transaction is embeded to swap instruction, so this lps is NOT needed
+            if markets.count == 2 && numberOfOrdersToCreate > 0 {
+                transactionFee += lamportsPerSignature
+            }
             
             // fee for owner's signature
-            fee += lamportsPerSignature
+            transactionFee += lamportsPerSignature
             
             // if source token is native, a fee for creating wrapped SOL is needed, thus a fee for new account's signature (not associated token address) is also needed
             if fromWallet.isNativeSOL {
-                fee += minRentExemption + lamportsPerSignature
+                transactionFee += lamportsPerSignature
+                accountCreationFee += minRentExemption
             }
             
             // if destination wallet is a wrapped sol or not yet created, a fee for creating it is needed, as new address is an associated token address, the signature fee is NOT needed
             if toWallet.token.address == SolanaSDK.PublicKey.wrappedSOLMint.base58EncodedString ||
                 toWallet.pubkey == nil
             {
-                fee += minRentExemption
+                accountCreationFee += minRentExemption
             }
             
-            return fee
+            return (accountCreationFee: accountCreationFee, serumOrderCreationFee: serumOrderCreationFee, transactionFee: transactionFee)
         }
     }
 }
