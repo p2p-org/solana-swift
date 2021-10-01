@@ -148,17 +148,8 @@ extension RenVM {
             public let jsonrpc: String
             public let id: Int?
             public let result: T?
-            public let error: Error?
+            public let error: RenVM.Error?
             public let method: String?
-            
-            struct Error: Swift.Error, Decodable {
-                public let code: Int?
-                public let message: String?
-                
-                public static var unknown: Self {
-                    .init(code: -1, message: "Unknown error")
-                }
-            }
         }
     }
 }
