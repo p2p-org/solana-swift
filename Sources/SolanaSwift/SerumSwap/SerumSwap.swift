@@ -47,8 +47,9 @@ public struct SerumSwap {
     /// Load minimum amount for trading
     public func loadMinOrderSize(
         fromMint: String,
-        toMint: String
-    ) -> Single<Double> {
+        toMint: String,
+        fromAmount: Double?
+    ) -> Single<Double?> {
         loadMarket(fromMint: fromMint, toMint: toMint)
             .map {$0.first?.minOrderSize()}
             .map {$0?.doubleValue ?? 0}
@@ -639,7 +640,7 @@ public struct SerumSwap {
     }
     
     /// Load market with current mint pair
-    public func loadMarket(fromMint: String, toMint: String) -> Single<[Market]> {
+    func loadMarket(fromMint: String, toMint: String) -> Single<[Market]> {
         guard let fromMint = try? PublicKey(string: fromMint),
               let toMint = try? PublicKey(string: toMint)
         else {return .error(SerumSwapError.somePublicKeysArentValid)}
