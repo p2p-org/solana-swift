@@ -47,9 +47,8 @@ public struct SerumSwap {
     /// Load minimum amount for trading
     public func loadMinOrderSize(
         fromMint: String,
-        toMint: String,
-        fromAmount: Double?
-    ) -> Single<Double?> {
+        toMint: String
+    ) -> Single<Double> {
         loadMarket(fromMint: fromMint, toMint: toMint)
             .map {$0.first?.minOrderSize()}
             .map {$0?.doubleValue ?? 0}
