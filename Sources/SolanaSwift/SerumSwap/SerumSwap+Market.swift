@@ -219,7 +219,7 @@ extension SerumSwap {
         }
         
         // MARK: - Instance methods
-        func loadFair(client: SerumSwapAPIClient, fromMint: String) -> Single<Double> {
+        public func loadFair(client: SerumSwapAPIClient, fromMint: String) -> Single<Double> {
             loadOrderbook(client: client)
                 .map { pair in
                     return try pair.getFair(fromMint: fromMint).doubleValue

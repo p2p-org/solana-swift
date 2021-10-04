@@ -639,7 +639,7 @@ public struct SerumSwap {
     }
     
     /// Load market with current mint pair
-    func loadMarket(fromMint: String, toMint: String) -> Single<[Market]> {
+    public func loadMarket(fromMint: String, toMint: String) -> Single<[Market]> {
         guard let fromMint = try? PublicKey(string: fromMint),
               let toMint = try? PublicKey(string: toMint)
         else {return .error(SerumSwapError.somePublicKeysArentValid)}
