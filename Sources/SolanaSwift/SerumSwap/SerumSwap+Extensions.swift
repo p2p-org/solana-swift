@@ -28,3 +28,9 @@ extension UInt64 {
         return n
     }
 }
+
+extension Decimal {
+    var doubleValue: Double {
+        return NSDecimalNumber(decimal:self).doubleValue
+    }
+}

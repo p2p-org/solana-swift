@@ -68,7 +68,7 @@ public struct SerumSwap {
         }
         return loadMarketsRequest
             .flatMap {markets -> Single<[OrderbookPair]> in
-                let singles = markets.map {loadOrderbook(market: $0)}
+                let singles = markets.map {$0.loadOrderbook(client: self.client)}
                 return Single.zip(singles)
             }
             .map {orderbookPairs -> Decimal in
@@ -77,28 +77,11 @@ public struct SerumSwap {
                 }
                 // direct
                 if orderbookPairs.count == 1 {
-                    let pair = orderbookPairs[0]
-                    guard let bbo = loadBbo(orderbookPair: pair) else {
-                        throw SerumSwapError.couldNotRetrieveExchangeRate
-                    }
-                    let market = pair.asks.market // the same market as bids
-                    if market.baseMintAddress == fromMint ||
-                        (market.baseMintAddress == .wrappedSOLMint && fromMint == .solMint)
-                    {
-                        if let bestBids = bbo.bestBids, bestBids != 0 {
-                            return 1 / bestBids
-                        }
-                    } else {
-                        if let bestOffer = bbo.bestOffer {
-                            return bestOffer
-                        }
-                    }
-                    
-                    throw SerumSwapError.couldNotRetrieveExchangeRate
+                    return try orderbookPairs[0].getFair(fromMint: fromMint.base58EncodedString)
                 }
                 // transitive
-                guard let fromBbo = loadBbo(orderbookPair: orderbookPairs[0]),
-                      let toBbo = loadBbo(orderbookPair: orderbookPairs[1]),
+                guard let fromBbo = orderbookPairs[0].bbo,
+                      let toBbo = orderbookPairs[1].bbo,
                       let bestOffer = toBbo.bestOffer,
                       let bestBids = fromBbo.bestBids,
                       bestBids != 0
@@ -679,38 +662,6 @@ public struct SerumSwap {
             })
     }
     
-    /// Load orderbook for current market
-    /// - Parameter market: market instance
-    /// - Returns: OrderbookPair
-    func loadOrderbook(market: Market) -> Single<OrderbookPair> {
-        if let pair = _orderbooksCache[market.address] {
-            return .just(pair)
-        }
-        
-        return Single.zip(
-            market.loadBids(client: client),
-            market.loadAsks(client: client)
-        )
-            .map {OrderbookPair(bids: $0, asks: $1)}
-            .do(onSuccess: {pair in
-                _orderbooksCache[market.address] = pair
-            })
-    }
-    
-    /// Load fair price for a given market, as defined by the mid
-    /// - Parameter orderbookPair: asks and bids
-    /// - Returns: best bids price, best asks price and middle
-    func loadBbo(orderbookPair: OrderbookPair) -> Bbo? {
-        let bestBid = orderbookPair.bids.getList(descending: true).first
-        let bestOffer = orderbookPair.asks.getList().first
-        
-        if bestBid == nil && bestOffer == nil {return nil}
-        return .init(
-            bestBids: bestBid == nil ? nil: bestBid!.price,
-            bestOffer: bestOffer == nil ? nil: bestOffer!.price
-        )
-    }
-    
     /// Create from and to open orders and wait for comfirmation before transitive swaping
     func createFromAndToOpenOrdersForSwapTransitive(
         fromMarket: Market,
@@ -749,7 +700,7 @@ public struct SerumSwap {
                 // TODO: feeRelayer
                 if feePayer == nil, let owner = accountProvider.getAccount()
                 {
-                    signers.insert(owner, at: 1)
+                    signers.insert(owner, at: 0)
                 }
                 
                 // serialize transaction
@@ -851,10 +802,41 @@ public struct SerumSwap {
             return (accountCreationFee: accountCreationFee, serumOrderCreationFee: serumOrderCreationFee, transactionFee: transactionFee)
         }
     }
-}
-
-private extension Decimal {
-    var doubleValue: Double {
-        return NSDecimalNumber(decimal:self).doubleValue
-    }
+    
+//    private func calculateMinOrderSize(
+//        fromMint: String,
+//        toMint: String,
+//        markets: [Market],
+//        fair: Double
+//    ) throws -> Single<Double> {
+//        guard markets.count > 0 else {throw SerumSwapError.couldNotCalculateMinOrderSize}
+//
+//        // direct swap
+//        if markets.count == 1 {
+//            let market = markets[0]
+//            let minOrderSize = market.minOrderSize().doubleValue
+//            if market.baseMintAddress.base58EncodedString == fromMint {
+//                return .just(minOrderSize)
+//            } else {
+//                if fair < 1 {
+//                    return .just(minOrderSize)
+//                } else {
+//                    return .just(minOrderSize * fair)
+//                }
+//            }
+//        } else {
+//            let fromMarket = markets.first!
+//            let toMarket = markets.last!
+//
+//            return Single.zip(
+//                fromMarket.loadFair(client: client, fromMint: fromMint)
+//                toMarket.loadFair(client: client, fromMint: toMint)
+//            )
+//            .map { quoteExchangeRate, toExchangeRate in
+//                if quoteExchangeRate > 1 && toExchangeRate > 1 {
+//
+//                }
+//            }
+//        }
+//    }
 }

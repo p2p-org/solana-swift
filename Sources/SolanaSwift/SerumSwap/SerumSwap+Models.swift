@@ -145,6 +145,40 @@ extension SerumSwap {
     public struct OrderbookPair {
         let bids: Orderbook
         let asks: Orderbook
+        
+        /// Load fair price for a given market, as defined by the mid
+        /// - Parameter orderbookPair: asks and bids
+        /// - Returns: best bids price, best asks price and middle
+        var bbo: Bbo? {
+            let bestBid = bids.getList(descending: true).first
+            let bestOffer = asks.getList().first
+            
+            if bestBid == nil && bestOffer == nil {return nil}
+            return .init(
+                bestBids: bestBid == nil ? nil: bestBid!.price,
+                bestOffer: bestOffer == nil ? nil: bestOffer!.price
+            )
+        }
+        
+        func getFair(fromMint: String) throws -> Decimal {
+            guard let bbo = bbo else {
+                throw SerumSwapError.couldNotRetrieveExchangeRate
+            }
+            let market = asks.market // the same market as bids
+            if market.baseMintAddress.base58EncodedString == fromMint ||
+                (market.baseMintAddress == .wrappedSOLMint && fromMint == PublicKey.solMint.base58EncodedString)
+            {
+                if let bestBids = bbo.bestBids, bestBids != 0 {
+                    return 1 / bestBids
+                }
+            } else {
+                if let bestOffer = bbo.bestOffer {
+                    return bestOffer
+                }
+            }
+            
+            throw SerumSwapError.couldNotRetrieveExchangeRate
+        }
     }
     
     public struct Bbo {

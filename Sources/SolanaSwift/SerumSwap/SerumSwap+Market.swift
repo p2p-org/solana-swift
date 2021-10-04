@@ -8,6 +8,8 @@
 import Foundation
 import RxSwift
 
+private var _orderbooksCache = [SerumSwap.PublicKey: SerumSwap.OrderbookPair]()
+
 extension SerumSwap {
     public struct Market {
         // MARK: - Nested type
@@ -214,6 +216,32 @@ extension SerumSwap {
                 }
                 return info.data
             }
+        }
+        
+        // MARK: - Instance methods
+        func loadFair(client: SerumSwapAPIClient, fromMint: String) -> Single<Double> {
+            loadOrderbook(client: client)
+                .map { pair in
+                    return try pair.getFair(fromMint: fromMint).doubleValue
+                }
+        }
+        
+        /// Load orderbook for current market
+        /// - Parameter market: market instance
+        /// - Returns: OrderbookPair
+        func loadOrderbook(client: SerumSwapAPIClient) -> Single<OrderbookPair> {
+            if let pair = _orderbooksCache[address] {
+                return .just(pair)
+            }
+            
+            return Single.zip(
+                loadBids(client: client),
+                loadAsks(client: client)
+            )
+                .map {OrderbookPair(bids: $0, asks: $1)}
+                .do(onSuccess: {pair in
+                    _orderbooksCache[self.address] = pair
+                })
         }
     }
 }

@@ -49,6 +49,10 @@ struct SerumSwapError: Error, Equatable, ExpressibleByStringLiteral {
         return err
     }
     
+    static var couldNotCalculateMinOrderSize: Self {
+        .init(stringLiteral: "Could not calculate minimum order size")
+    }
+    
     init(_ string: String) {
         self.init(stringLiteral: string)
     }
