@@ -802,41 +802,4 @@ public struct SerumSwap {
             return (accountCreationFee: accountCreationFee, serumOrderCreationFee: serumOrderCreationFee, transactionFee: transactionFee)
         }
     }
-    
-//    private func calculateMinOrderSize(
-//        fromMint: String,
-//        toMint: String,
-//        markets: [Market],
-//        fair: Double
-//    ) throws -> Single<Double> {
-//        guard markets.count > 0 else {throw SerumSwapError.couldNotCalculateMinOrderSize}
-//
-//        // direct swap
-//        if markets.count == 1 {
-//            let market = markets[0]
-//            let minOrderSize = market.minOrderSize().doubleValue
-//            if market.baseMintAddress.base58EncodedString == fromMint {
-//                return .just(minOrderSize)
-//            } else {
-//                if fair < 1 {
-//                    return .just(minOrderSize)
-//                } else {
-//                    return .just(minOrderSize * fair)
-//                }
-//            }
-//        } else {
-//            let fromMarket = markets.first!
-//            let toMarket = markets.last!
-//
-//            return Single.zip(
-//                fromMarket.loadFair(client: client, fromMint: fromMint)
-//                toMarket.loadFair(client: client, fromMint: toMint)
-//            )
-//            .map { quoteExchangeRate, toExchangeRate in
-//                if quoteExchangeRate > 1 && toExchangeRate > 1 {
-//
-//                }
-//            }
-//        }
-//    }
 }
