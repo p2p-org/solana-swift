@@ -7,6 +7,8 @@
 
 import Foundation
 
+private let ORCA_VERSION = 2
+
 public extension SolanaSDK.PublicKey {
     static let tokenProgramId: SolanaSDK.PublicKey = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
     static let sysvarRent: SolanaSDK.PublicKey = "SysvarRent111111111111111111111111111111111"
@@ -18,4 +20,15 @@ public extension SolanaSDK.PublicKey {
     static let splAssociatedTokenAccountProgramId: SolanaSDK.PublicKey = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
     static let renBTCMint: SolanaSDK.PublicKey = "CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5"
     static let renBTCMintDevnet: SolanaSDK.PublicKey = "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD"
+    
+    static var orcaSwapId: SolanaSDK.PublicKey {
+        switch ORCA_VERSION {
+        case 1:
+            return "DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1"
+        case 2:
+            return "9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP"
+        default:
+            fatalError("Unsupported version")
+        }
+    }
 }

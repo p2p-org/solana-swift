@@ -372,7 +372,7 @@ public extension SolanaSDK {
             // ignore liqu
             instructions.firstIndex(
                 where: {
-                    $0.programId == solanaSDK.endpoint.network.swapProgramId.base58EncodedString /*swap ocra*/ ||
+                    $0.programId == PublicKey.orcaSwapId.base58EncodedString /*swap ocra*/ ||
                         $0.programId == "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL" /*main deprecated*/ ||
                         $0.programId == "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8" /*main deprecated*/
                 })
