@@ -54,10 +54,12 @@ extension OrcaSwap {
             
             // get
             return request(.get, url)
+                .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
                 .validate()
                 .responseData()
                 .take(1)
                 .asSingle()
+                .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
                 .map {(response, data) -> T in
                     let list = try JSONDecoder().decode(T.self, from: data)
                     return list

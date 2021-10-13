@@ -18,6 +18,7 @@ public struct OrcaSwap {
     private var cache: SwapInfo?
     
     // MARK: - Methods
+    /// Prepare all needed infos for swapping
     public func load() -> Single<SwapInfo> {
         if let cached = cache {return .just(cached)}
         return Single.zip(
@@ -25,6 +26,7 @@ public struct OrcaSwap {
             apiClient.getPools(),
             apiClient.getProgramID()
         )
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .map { tokens, pools, programId in
                 let routes = findRoutes(tokens: tokens, pools: pools)
                 let tokenNames = tokens.reduce([String: String]()) { result, token in
@@ -42,15 +44,37 @@ public struct OrcaSwap {
             }
     }
     
-    func findRoutes(tokens: Tokens, pools: Pools) -> Routes {
-        let tokens = tokens.filter {$0.value.poolToken != true}
-            .map {$0.key}
-        let pairs = getPairs(tokens: tokens)
-        return getAllRoutes(pairs: pairs, pools: pools)
+    /// Find available pools for an input tokens
+    public func findDestinationTokens(
+        inputToken: SolanaSDK.Token
+    ) -> Single<[String]> {
+        fatalError()
+        load()
+            .map {swapInfo in
+                
+            }
     }
+    
+    /// Execute swap
+//    public func swap(
+//        fromWallet: SolanaSDK.Wallet,
+//        toWallet: SolanaSDK.Wallet,
+//        amount: Double,
+//        slippage: Double,
+//        isSimulation: Bool = false
+//    ) -> Single<SolanaSDK.TransactionID> {
+//
+//    }
 }
 
 // MARK: - Helpers
+private func findRoutes(tokens: OrcaSwap.Tokens, pools: OrcaSwap.Pools) -> OrcaSwap.Routes {
+    let tokens = tokens.filter {$0.value.poolToken != true}
+        .map {$0.key}
+    let pairs = getPairs(tokens: tokens)
+    return getAllRoutes(pairs: pairs, pools: pools)
+}
+
 private func getPairs(tokens: [String]) -> [[String]] {
     var pairs = [[String]]()
     
