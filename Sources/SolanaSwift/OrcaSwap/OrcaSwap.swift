@@ -52,6 +52,9 @@ public class OrcaSwap {
             })
     }
     
+    /// Find posible destination token (symbol)
+    /// - Parameter fromTokenName: from token name (symbol)
+    /// - Returns: List of token symbols that can be swapped to
     public func findPosibleDestinations(
         fromTokenName: String
     ) throws -> [String] {
