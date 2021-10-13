@@ -14,6 +14,7 @@ protocol OrcaSwapAPIClient {
     func getTokens() -> Single<OrcaSwap.Tokens>
     func getAquafarms() -> Single<OrcaSwap.Aquafarms>
     func getPools() -> Single<OrcaSwap.Pools>
+    func getProgramID() -> Single<OrcaSwap.ProgramID>
 }
 
 extension OrcaSwap {
@@ -31,6 +32,10 @@ extension OrcaSwap {
         
         func getPools() -> Single<OrcaSwap.Pools> {
             get(type: .pools, network: network)
+        }
+        
+        func getProgramID() -> Single<OrcaSwap.ProgramID> {
+            get(type: .programIds, network: network)
         }
         
         // MARK: - Helpers

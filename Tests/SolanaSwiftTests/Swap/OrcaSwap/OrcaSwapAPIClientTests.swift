@@ -29,4 +29,9 @@ class OrcaSwapAPIClientTests: XCTestCase {
         let pools = try client.getPools().toBlocking().first()
         XCTAssertNotEqual(pools?.count, 0)
     }
+    
+    func testRetrievingProgramId() throws {
+        let programId = try client.getProgramID().toBlocking().first()
+        XCTAssertEqual("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", programId?.token)
+    }
 }
