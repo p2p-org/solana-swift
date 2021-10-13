@@ -13,6 +13,8 @@ class OrcaSwapRoutesTests: XCTestCase {
     let orcaSwap = OrcaSwap(apiClient: OrcaSwap.MockAPIClient(network: "mainnet"))
     
     func testFindRoutes() throws {
-        
+        let routes = try orcaSwap.findRoutes().toBlocking().first()
+        print(routes?.jsonString)
+        XCTAssertNotEqual(routes?.count, 0)
     }
 }

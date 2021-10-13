@@ -31,6 +31,8 @@ public struct OrcaSwap {
 private func getPairs(tokens: [String]) -> [[String]] {
     var pairs = [[String]]()
     
+    guard tokens.count > 0 else {return pairs}
+    
     for i in 0..<tokens.count-1 {
         for j in i+1..<tokens.count {
             let tokenA = tokens[i]

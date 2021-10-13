@@ -14,11 +14,15 @@ extension OrcaSwap {
         let network: String
         
         func get<T: Decodable>(type: String) -> Single<T> {
-            let url = Bundle(for: MockClass.self).url(forResource: "orca-\(type)-\(network)", withExtension: "json")!
-            let data = try! Data(contentsOf: url)
+            let data = getFileFrom(type: type, network: network)
             return .just(try! JSONDecoder().decode(T.self, from: data))
         }
     }
 }
 
-private class MockClass {}
+func getFileFrom(type: String, network: String) -> Data {
+    let thisSourceFile = URL(fileURLWithPath: #file)
+    let thisDirectory = thisSourceFile.deletingLastPathComponent()
+    let resourceURL = thisDirectory.appendingPathComponent("../../../Resources/Orca/\(type)/orca-\(type)-\(network).json")
+    return try! Data(contentsOf: resourceURL)
+}
