@@ -8,19 +8,22 @@
 import Foundation
 import RxSwift
 
-public struct OrcaSwap {
+private var cache: OrcaSwap.SwapInfo?
+
+public class OrcaSwap {
     public init(apiClient: OrcaSwapAPIClient) {
         self.apiClient = apiClient
     }
     
     // MARK: - Properties
     let apiClient: OrcaSwapAPIClient
-    private var cache: SwapInfo?
+    private var info: OrcaSwap.SwapInfo?
+    private let lock = NSLock()
     
     // MARK: - Methods
     /// Prepare all needed infos for swapping
     public func load() -> Single<SwapInfo> {
-        if let cached = cache {return .just(cached)}
+        if let cached = info {return .just(cached)}
         return Single.zip(
             apiClient.getTokens(),
             apiClient.getPools(),
@@ -28,7 +31,7 @@ public struct OrcaSwap {
         )
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
             .map { tokens, pools, programId in
-                let routes = findRoutes(tokens: tokens, pools: pools)
+                let routes = findAllAvailableRoutes(tokens: tokens, pools: pools)
                 let tokenNames = tokens.reduce([String: String]()) { result, token in
                     var result = result
                     result[token.value.mint] = token.key
@@ -42,18 +45,35 @@ public struct OrcaSwap {
                     tokenNames: tokenNames
                 )
             }
+            .do(onSuccess: {[weak self] info in
+                self?.lock.lock()
+                self?.info = info
+                self?.lock.unlock()
+            })
     }
     
-    /// Find available pools for an input tokens
-    public func findDestinationTokens(
-        inputToken: SolanaSDK.Token
-    ) -> Single<[String]> {
-        fatalError()
-        load()
-            .map {swapInfo in
-                
-            }
-    }
+    /// Find best route for an input tokens
+//    public func findRoutes(
+//        fromToken: SolanaSDK.Token?,
+//        toToken: SolanaSDK.Token?
+//    ) -> Single<[Route]> {
+//        // if fromToken isn't selected
+//        guard let fromToken = fromToken else {return []}
+//        
+//        // if toToken isn't selected
+//        guard let toToken = toToken else {
+//            // get all pools that have token A
+//            
+//        }
+//        
+//        // get pool
+//        let pools =
+//        fatalError()
+//        load()
+//            .map {swapInfo in
+//                // get all pools that match requirement
+//            }
+//    }
     
     /// Execute swap
 //    public func swap(
@@ -68,7 +88,16 @@ public struct OrcaSwap {
 }
 
 // MARK: - Helpers
-private func findRoutes(tokens: OrcaSwap.Tokens, pools: OrcaSwap.Pools) -> OrcaSwap.Routes {
+//private func orderRoutes(
+//    pools: OrcaSwap.Pools,
+//    routes: [OrcaSwap.Route],
+//    inputTokenName: String
+//) -> [OrcaSwap.Route] {
+//    // get all pools
+//
+//}
+
+private func findAllAvailableRoutes(tokens: OrcaSwap.Tokens, pools: OrcaSwap.Pools) -> OrcaSwap.Routes {
     let tokens = tokens.filter {$0.value.poolToken != true}
         .map {$0.key}
     let pairs = getPairs(tokens: tokens)
