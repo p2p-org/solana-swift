@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension OrcaSwap {
+public extension OrcaSwap {
     struct Pool: Decodable {
         let account: String
         let authority: String

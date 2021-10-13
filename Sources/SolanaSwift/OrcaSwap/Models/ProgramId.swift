@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension OrcaSwap {
+public extension OrcaSwap {
     struct ProgramID: Decodable {
         let serumTokenSwap, tokenSwapV2, tokenSwap, token: String
         let aquafarm: String

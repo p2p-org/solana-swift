@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension OrcaSwap {
+public extension OrcaSwap {
     struct Token: Decodable {
         let mint, name: String
         let decimals: Int

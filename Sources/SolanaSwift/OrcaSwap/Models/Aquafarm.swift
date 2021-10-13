@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension OrcaSwap {
+public extension OrcaSwap {
     struct Aquafarm: Codable {
         let account: String
         let nonce: Int

@@ -9,24 +9,35 @@ import Foundation
 import RxSwift
 
 public struct OrcaSwap {
+    public init(apiClient: OrcaSwapAPIClient) {
+        self.apiClient = apiClient
+    }
+    
     // MARK: - Properties
     let apiClient: OrcaSwapAPIClient
+    private var cache: SwapInfo?
     
     // MARK: - Methods
     func load() -> Single<SwapInfo> {
-        Single.zip(
+        if let cached = cache {return .just(cached)}
+        return Single.zip(
             apiClient.getTokens(),
             apiClient.getPools(),
             apiClient.getProgramID()
         )
             .map { tokens, pools, programId in
                 let routes = findRoutes(tokens: tokens, pools: pools)
+                let tokenNames = tokens.reduce([String: String]()) { result, token in
+                    var result = result
+                    result[token.value.mint] = token.key
+                    return result
+                }
                 return .init(
                     routes: routes,
                     tokens: tokens,
                     pools: pools,
                     programIds: programId,
-                    tokenNames: [:]
+                    tokenNames: tokenNames
                 )
             }
     }

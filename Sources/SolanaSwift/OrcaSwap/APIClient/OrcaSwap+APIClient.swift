@@ -9,12 +9,12 @@ import Foundation
 import RxSwift
 import RxAlamofire
 
-protocol OrcaSwapAPIClient {
+public protocol OrcaSwapAPIClient {
     var network: String {get}
     func get<T: Decodable>(type: String) -> Single<T>
 }
 
-extension OrcaSwapAPIClient {
+public extension OrcaSwapAPIClient {
     func getTokens() -> Single<OrcaSwap.Tokens> {
         get(type: "tokens")
     }
@@ -33,12 +33,12 @@ extension OrcaSwapAPIClient {
 }
 
 extension OrcaSwap {
-    struct APIClient: OrcaSwapAPIClient {
-        let network: String
+    public struct APIClient: OrcaSwapAPIClient {
+        public let network: String
         private let cache = [String: [String: Decodable]]() // Network: [DataType: Decodable]
         
         // MARK: - Helpers
-        func get<T: Decodable>(type: String) -> Single<T> {
+        public func get<T: Decodable>(type: String) -> Single<T> {
             // cache
             if let cached = cache[network]?[type] as? T{
                 return .just(cached)
