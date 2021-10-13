@@ -11,39 +11,34 @@ import RxAlamofire
 
 protocol OrcaSwapAPIClient {
     var network: String {get}
-    func getTokens() -> Single<OrcaSwap.Tokens>
-    func getAquafarms() -> Single<OrcaSwap.Aquafarms>
-    func getPools() -> Single<OrcaSwap.Pools>
-    func getProgramID() -> Single<OrcaSwap.ProgramID>
+    func get<T: Decodable>(type: String) -> Single<T>
+}
+
+extension OrcaSwapAPIClient {
+    func getTokens() -> Single<OrcaSwap.Tokens> {
+        get(type: "tokens")
+    }
+    
+    func getAquafarms() -> Single<OrcaSwap.Aquafarms> {
+        get(type: "aquafarms")
+    }
+    
+    func getPools() -> Single<OrcaSwap.Pools> {
+        get(type: "pools")
+    }
+    
+    func getProgramID() -> Single<OrcaSwap.ProgramID> {
+        get(type: "programIds")
+    }
 }
 
 extension OrcaSwap {
     struct APIClient: OrcaSwapAPIClient {
         let network: String
-        private let cache = [String: [DataType: Decodable]]() // Network: [DataType: Decodable]
-        
-        func getTokens() -> Single<OrcaSwap.Tokens> {
-            get(type: .tokens, network: network)
-        }
-        
-        func getAquafarms() -> Single<OrcaSwap.Aquafarms> {
-            get(type: .aquafarms, network: network)
-        }
-        
-        func getPools() -> Single<OrcaSwap.Pools> {
-            get(type: .pools, network: network)
-        }
-        
-        func getProgramID() -> Single<OrcaSwap.ProgramID> {
-            get(type: .programIds, network: network)
-        }
+        private let cache = [String: [String: Decodable]]() // Network: [DataType: Decodable]
         
         // MARK: - Helpers
-        private enum DataType: String {
-            case aquafarms, pools, programIds, tokens
-        }
-
-        private func get<T: Decodable>(type: DataType, network: String) -> Single<T> {
+        func get<T: Decodable>(type: String) -> Single<T> {
             // cache
             if let cached = cache[network]?[type] as? T{
                 return .just(cached)
@@ -55,7 +50,7 @@ extension OrcaSwap {
             
             // prepare url
             let endpoint = "https://raw.githubusercontent.com/p2p-org/p2p-wallet-web/develop/src/app/contexts/swap/orca-commons/data/json"
-            let url = [endpoint, type.rawValue, "\(network).json"].joined(separator: "/")
+            let url = [endpoint, type, "\(network).json"].joined(separator: "/")
             
             // get
             return request(.get, url)
