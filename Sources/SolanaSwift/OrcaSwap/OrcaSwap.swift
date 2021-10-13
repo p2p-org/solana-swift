@@ -19,7 +19,7 @@ public struct OrcaSwap {
             apiClient.getPools()
         )
         .map {tokens, pools in
-            let tokens = tokens.filter {$0.value.poolToken == false}
+            let tokens = tokens.filter {$0.value.poolToken != true}
                 .map {$0.key}
             let pairs = getPairs(tokens: tokens)
             return getAllRoutes(pairs: pairs, pools: pools)
