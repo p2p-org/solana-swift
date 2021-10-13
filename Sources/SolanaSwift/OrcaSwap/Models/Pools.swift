@@ -70,14 +70,15 @@ public extension OrcaSwap {
 }
 
 private var balancesCache = [String: SolanaSDK.TokenAccountBalance]()
+private let lock = NSLock()
 
 extension OrcaSwap.Pools {
     func fixedPool(
         forRoute route: String,
         inputTokenName: String,
         solanaClient: OrcaSwapSolanaClient
-    ) -> Single<OrcaSwap.Pool>? {
-        guard var pool = self[route] else {return nil}
+    ) -> Single<OrcaSwap.Pool?> {
+        guard var pool = self[route] else {return .just(nil)}
         
         // get balances
         let getBalancesRequest: Single<(SolanaSDK.TokenAccountBalance, SolanaSDK.TokenAccountBalance)>
@@ -93,6 +94,12 @@ extension OrcaSwap.Pools {
         }
         
         return getBalancesRequest
+            .do(onSuccess: {
+                lock.lock()
+                balancesCache[pool.tokenAccountA] = $0
+                balancesCache[pool.tokenAccountB] = $1
+                lock.unlock()
+            })
             .map {tokenABalane, tokenBBalance in
                 pool.tokenABalance = tokenABalane
                 pool.tokenBBalance = tokenBBalance

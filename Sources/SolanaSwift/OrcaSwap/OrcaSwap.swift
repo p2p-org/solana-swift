@@ -141,10 +141,19 @@ public class OrcaSwap {
         pools: Pools,
         inputAmount: UInt64,
         inputTokenName: String
-    ) -> Single<(Route, UInt64)?> {
-        guard route.count > 0 else {return nil}
-        guard let pool0 = pools.fixedPool(forRoute: route[0], inputTokenName: inputTokenName) else {return nil}
+    ) -> Single<Pool?> {
+        guard route.count > 0 else {return .just(nil)}
         
+        let getPoolsRequests = route.map { route -> Single<Pool?> in
+            pools.fixedPool(forRoute: route, inputTokenName: inputTokenName, solanaClient: solanaClient)
+        }
+        
+        return Single.zip(getPoolsRequests)
+            .map { pools -> Pool? in
+                let pools = pools.compactMap {$0}
+                guard pools.count > 0 else {return nil}
+                
+            }
     }
 }
 

@@ -8,6 +8,6 @@
 import Foundation
 import RxSwift
 
-protocol OrcaSwapSolanaClient {
+public protocol OrcaSwapSolanaClient {
     func getTokenAccountBalance(pubkey: String, commitment: SolanaSDK.Commitment?) -> Single<SolanaSDK.TokenAccountBalance>
 }
