@@ -17,10 +17,10 @@ extension OrcaSwap {
 
     typealias Tokens = [String: Token] // [poolId: string]: TokenJSON;
     
-    struct TokenConfig: Decodable {
-        let token: Token
-        let mint: SolanaSDK.PublicKey
-    }
-    
-    typealias TokenConfigs = [String: TokenConfig] // [poolId: string]: TokenConfig;
+//    struct TokenConfig: Decodable {
+//        let token: Token
+//        let mint: SolanaSDK.PublicKey
+//    }
+//    
+//    typealias TokenConfigs = [String: TokenConfig] // [poolId: string]: TokenConfig;
 }
