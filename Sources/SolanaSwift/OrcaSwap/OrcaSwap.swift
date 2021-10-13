@@ -52,27 +52,26 @@ public class OrcaSwap {
             })
     }
     
-    /// Find best route for an input tokens
-//    public func findRoutes(
-//        fromToken: SolanaSDK.Token?,
-//        toToken: SolanaSDK.Token?
-//    ) -> Single<[Route]> {
-//        // if fromToken isn't selected
-//        guard let fromToken = fromToken else {return []}
-//        
-//        // if toToken isn't selected
-//        guard let toToken = toToken else {
-//            // get all pools that have token A
-//            
-//        }
-//        
-//        // get pool
-//        let pools =
-//        fatalError()
-//        load()
-//            .map {swapInfo in
-//                // get all pools that match requirement
-//            }
+    public func findPosibleDestinations(
+        fromTokenName: String
+    ) throws -> [String] {
+        let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: nil)
+        return routes.keys.compactMap {$0.components(separatedBy: "/").first(where: {$0 != fromTokenName})}
+            .unique
+            .sorted(by: <)
+    }
+    
+//    /// Find best route to swap for from and to token name, aka symbol
+//    public func findBestRoute(
+//        fromTokenName: String?,
+//        toTokenName: String?,
+//        input: UInt64?
+//    ) throws -> Route? {
+//        // find all available routes for this pair
+//        let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: toTokenName)
+//        guard !routes.isEmpty else {return nil}
+//
+//
 //    }
     
     /// Execute swap
@@ -85,6 +84,32 @@ public class OrcaSwap {
 //    ) -> Single<SolanaSDK.TransactionID> {
 //
 //    }
+    
+    /// Find routes for from and to token name, aka symbol
+    func findRoutes(
+        fromTokenName: String?,
+        toTokenName: String?
+    ) throws -> Routes {
+        guard let info = info else { throw OrcaSwapError.swapInfoMissing }
+        
+        // if fromToken isn't selected
+        guard let fromTokenName = fromTokenName else {return [:]}
+
+        // if toToken isn't selected
+        guard let toTokenName = toTokenName else {
+            // get all routes that have token A
+            let routes = info.routes.filter {$0.key.components(separatedBy: "/").contains(fromTokenName)}
+            return routes
+        }
+
+        // get routes with fromToken and toToken
+        let pair = [fromTokenName, toTokenName]
+        let validRoutesNames = [
+            pair.joined(separator: "/"),
+            pair.reversed().joined(separator: "/")
+        ]
+        return info.routes.filter {validRoutesNames.contains($0.key)}
+    }
 }
 
 // MARK: - Helpers
