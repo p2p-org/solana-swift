@@ -33,12 +33,12 @@ let package = Package(
         .target(
             name: "SolanaSwift",
             dependencies: ["CryptoSwift", "BufferLayoutSwift", "secp256k1", "TweetNacl", "RxSwift", .product(name: "RxCocoa", package: "RxSwift"), "RxAlamofire", "Starscream"],
-            resources: [ .process("Resources"), .process("OrcaSwap/Resources") ]
+            resources: [ .process("Resources") ]
         ),
         .testTarget(
             name: "SolanaSwiftTests",
             dependencies: ["SolanaSwift", "BufferLayoutSwift", "secp256k1", "TweetNacl", "RxSwift", .product(name: "RxBlocking", package: "RxSwift")],
-            resources: [ .process("Resources"), .process("OrcaSwap/Resources") ]
+            resources: [ .process("Resources") ]
         ),
     ]
 )
