@@ -8,7 +8,7 @@
 import Foundation
 
 extension OrcaSwap {
-    struct SwapInfo {
+    public struct SwapInfo {
         let routes: Routes
         let tokens: Tokens
         let pools: Pools

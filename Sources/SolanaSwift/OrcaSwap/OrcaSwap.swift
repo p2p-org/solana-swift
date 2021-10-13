@@ -18,7 +18,7 @@ public struct OrcaSwap {
     private var cache: SwapInfo?
     
     // MARK: - Methods
-    func load() -> Single<SwapInfo> {
+    public func load() -> Single<SwapInfo> {
         if let cached = cache {return .just(cached)}
         return Single.zip(
             apiClient.getTokens(),
