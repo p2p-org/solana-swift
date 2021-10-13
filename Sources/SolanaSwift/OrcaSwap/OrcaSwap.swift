@@ -11,14 +11,18 @@ import RxSwift
 private var cache: OrcaSwap.SwapInfo?
 
 public class OrcaSwap {
-    public init(apiClient: OrcaSwapAPIClient) {
-        self.apiClient = apiClient
-    }
-    
     // MARK: - Properties
     let apiClient: OrcaSwapAPIClient
+    let solanaClient: OrcaSwapSolanaClient
+    
     private var info: OrcaSwap.SwapInfo?
     private let lock = NSLock()
+    
+    // MARK: - Initializer
+    public init(apiClient: OrcaSwapAPIClient, solanaClient: OrcaSwapSolanaClient) {
+        self.apiClient = apiClient
+        self.solanaClient = solanaClient
+    }
     
     // MARK: - Methods
     /// Prepare all needed infos for swapping
@@ -64,18 +68,36 @@ public class OrcaSwap {
             .sorted(by: <)
     }
     
-//    /// Find best route to swap for from and to token name, aka symbol
-//    public func findBestRoute(
-//        fromTokenName: String?,
-//        toTokenName: String?,
-//        input: UInt64?
-//    ) throws -> Route? {
-//        // find all available routes for this pair
-//        let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: toTokenName)
-//        guard !routes.isEmpty else {return nil}
-//
-//
-//    }
+    /// Find best pool to swap
+    public func findBestPool(
+        fromTokenName: String?,
+        toTokenName: String?,
+        inputAmount: UInt64?,
+        outputAmount: UInt64?
+    ) throws -> Pool? {
+        // Check for availability
+        guard let fromTokenName = fromTokenName,
+           let toTokenName = toTokenName,
+           inputAmount != nil || outputAmount != nil
+        else {
+            return nil
+        }
+        
+        
+        // find all available routes for this pair
+        let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: toTokenName)
+        guard !routes.isEmpty else {return nil}
+
+        // find the best route
+        for route in routes {
+            if let inputAmount = inputAmount {
+                // find the pool that returns the best price
+            } else {
+                // find the pool that required least inputAmount for receiving outputAmount
+                let outputAmount = outputAmount!
+            }
+        }
+    }
     
     /// Execute swap
 //    public func swap(
@@ -112,6 +134,17 @@ public class OrcaSwap {
             pair.reversed().joined(separator: "/")
         ]
         return info.routes.filter {validRoutesNames.contains($0.key)}
+    }
+    
+    func getRouteExecutionFromInput(
+        route: Route,
+        pools: Pools,
+        inputAmount: UInt64,
+        inputTokenName: String
+    ) -> Single<(Route, UInt64)?> {
+        guard route.count > 0 else {return nil}
+        guard let pool0 = pools.fixedPool(forRoute: route[0], inputTokenName: inputTokenName) else {return nil}
+        
     }
 }
 
