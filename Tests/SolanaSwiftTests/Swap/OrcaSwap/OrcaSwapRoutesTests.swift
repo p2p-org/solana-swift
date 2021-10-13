@@ -14,7 +14,7 @@ class OrcaSwapRoutesTests: XCTestCase {
     
     func testFindRoutes() throws {
         let routes = try orcaSwap.findRoutes().toBlocking().first()!
-        Logger.log(message: routes.jsonString!, event: .info)
+//        print(routes.jsonString!.replacingOccurrences(of: #"\/"#, with: "/"))
         XCTAssertNotEqual(routes.count, 0)
     }
 }
