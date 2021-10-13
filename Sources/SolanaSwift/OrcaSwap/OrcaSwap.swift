@@ -13,17 +13,29 @@ public struct OrcaSwap {
     let apiClient: OrcaSwapAPIClient
     
     // MARK: - Methods
-    public func findRoutes() -> Single<Routes> {
+    func load() -> Single<SwapInfo> {
         Single.zip(
             apiClient.getTokens(),
-            apiClient.getPools()
+            apiClient.getPools(),
+            apiClient.getProgramID()
         )
-        .map {tokens, pools in
-            let tokens = tokens.filter {$0.value.poolToken != true}
-                .map {$0.key}
-            let pairs = getPairs(tokens: tokens)
-            return getAllRoutes(pairs: pairs, pools: pools)
-        }
+            .map { tokens, pools, programId in
+                let routes = findRoutes(tokens: tokens, pools: pools)
+                return .init(
+                    routes: routes,
+                    tokens: tokens,
+                    pools: pools,
+                    programIds: programId,
+                    tokenNames: [:]
+                )
+            }
+    }
+    
+    func findRoutes(tokens: Tokens, pools: Pools) -> Routes {
+        let tokens = tokens.filter {$0.value.poolToken != true}
+            .map {$0.key}
+        let pairs = getPairs(tokens: tokens)
+        return getAllRoutes(pairs: pairs, pools: pools)
     }
 }
 
