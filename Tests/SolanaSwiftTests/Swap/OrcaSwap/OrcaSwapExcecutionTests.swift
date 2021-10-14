@@ -91,13 +91,13 @@ class OrcaSwapExcecutionTests: XCTestCase {
         let inputAmount: UInt64 = 100000 // 0.1 BTC
         let poolsPairs = try orcaSwap.getTradablePoolsPairs(fromTokenName: "BTC", toTokenName: "ETH").toBlocking().first()!
         let bestPoolsPair = try orcaSwap.findBestPoolsPairForInputAmount(inputAmount, from: poolsPairs)
-        let estimatedAmount = try bestPoolsPair?.getOutputAmount(fromInputAmount: inputAmount)
+        let estimatedAmount = bestPoolsPair?.getOutputAmount(fromInputAmount: inputAmount)
         XCTAssertEqual(estimatedAmount, 1588996) // 1.588996 ETH
         
         // when user enter estimated amount that he wants to receive as 1.6 ETH
         let estimatedAmount2: UInt64 = 1600000
         let bestPoolsPair2 = try orcaSwap.findBestPoolForEstimatedAmount(estimatedAmount2, from: poolsPairs)
-        let inputAmount2 = try bestPoolsPair2?.getInputAmount(fromEstimatedAmount: estimatedAmount2)
+        let inputAmount2 = bestPoolsPair2?.getInputAmount(fromEstimatedAmount: estimatedAmount2)
         XCTAssertEqual(inputAmount2, 100697) // 0.100697 BTC
     }
 }
