@@ -42,6 +42,8 @@ public extension OrcaSwap {
         var tokenABalance: SolanaSDK.TokenAccountBalance?
         var tokenBBalance: SolanaSDK.TokenAccountBalance?
         
+        var isStable: Bool? // contains [stable]
+        
         var reversed: Pool {
             var reversedPool = self
             swap(&reversedPool.tokenAccountA, &reversedPool.tokenAccountB)
@@ -183,10 +185,13 @@ extension OrcaSwap.Pools {
     }
     
     private func fixedPool(
-        forPath path: String, // Ex. BTC/SOL[aquafarm]
+        forPath path: String, // Ex. BTC/SOL[aquafarm][stable]
         solanaClient: OrcaSwapSolanaClient
     ) -> Single<OrcaSwap.Pool?> {
         guard var pool = self[path] else {return .just(nil)}
+        if path.contains("[stable]") {
+            pool.isStable = true
+        }
         
         // get balances
         let getBalancesRequest: Single<(SolanaSDK.TokenAccountBalance, SolanaSDK.TokenAccountBalance)>
