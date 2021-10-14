@@ -170,6 +170,30 @@ extension OrcaSwap.Pools {
     }
 }
 
+public extension OrcaSwap.PoolsPair {
+    func getOutputAmount(
+        fromInputAmount inputAmount: UInt64
+    ) throws -> UInt64? {
+        guard count > 0 else {return nil}
+        let pool0 = self[0]
+        guard let estimatedAmountOfPool0 = try? pool0.getOutputAmount(fromInputAmount: inputAmount)
+        else {return nil}
+        
+        // direct
+        if count == 1 {
+            return estimatedAmountOfPool0
+        }
+        // transitive
+        else {
+            let pool1 = self[1]
+            guard let estimatedAmountOfPool1 = try? pool1.getOutputAmount(fromInputAmount: estimatedAmountOfPool0)
+            else {return nil}
+            
+            return estimatedAmountOfPool1
+        }
+    }
+}
+
 private extension String {
     /// Convert  SOL[aquafarm] to SOL
     var fixedTokenName: String {

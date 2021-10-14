@@ -97,35 +97,18 @@ public class OrcaSwap {
     public func findBestPoolsPairForInputAmount(
         _ inputAmount: UInt64,
         from poolsPairs: [PoolsPair]
-    ) throws -> [Pool]? {
+    ) throws -> PoolsPair? {
         guard poolsPairs.count > 0 else {return nil}
         
         var bestPools: [Pool]?
         var bestEstimatedAmount: UInt64 = 0
         
         for pair in poolsPairs {
-            guard pair.count > 0 else {continue}
-            let pool0 = pair[0]
-            guard let estimatedAmountOfPool0 = try? pool0.getOutputAmount(fromInputAmount: inputAmount)
+            guard let estimatedAmount = try? pair.getOutputAmount(fromInputAmount: inputAmount)
             else {continue}
-            
-            // direct
-            if pair.count == 1 {
-                if estimatedAmountOfPool0 > bestEstimatedAmount {
-                    bestEstimatedAmount = estimatedAmountOfPool0
-                    bestPools = pair
-                }
-            }
-            // transitive
-            else {
-                let pool1 = pair[1]
-                guard let estimatedAmountOfPool1 = try? pool1.getOutputAmount(fromInputAmount: estimatedAmountOfPool0)
-                else {continue}
-                
-                if estimatedAmountOfPool1 > bestEstimatedAmount {
-                    bestEstimatedAmount = estimatedAmountOfPool1
-                    bestPools = pair
-                }
+            if estimatedAmount > bestEstimatedAmount {
+                bestEstimatedAmount = estimatedAmount
+                bestPools = pair
             }
         }
         

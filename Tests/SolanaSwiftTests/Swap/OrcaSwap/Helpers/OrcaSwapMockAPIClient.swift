@@ -50,7 +50,7 @@ extension OrcaSwap {
                 return .just(.init(uiAmount: 4252.752761, amount: "4252752761", decimals: 6, uiAmountString: "4252.752761"))
             }
             if pubkey == "5pUTGvN2AA2BEzBDU4CNDh3LHER15WS6J8oJf5XeZFD8" {
-                return .just(.init(uiAmount: 4252.752761, amount: "4252752761", decimals: 6, uiAmountString: "4252.752761"))
+                return .just(.init(uiAmount: 103486.885774058, amount: "103486885774058", decimals: 9, uiAmountString: "103486.885774058"))
             }
             fatalError()
         }

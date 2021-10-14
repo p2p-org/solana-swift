@@ -39,7 +39,7 @@ class OrcaSwapRoutesTests: XCTestCase {
         XCTAssertEqual(routes.count, 45)
     }
     
-    func testGetPools() throws {
+    func testGetTradablePoolsPairs() throws {
         // Order may change
 //        [
 //            [
@@ -82,5 +82,13 @@ class OrcaSwapRoutesTests: XCTestCase {
         XCTAssertEqual(ethSOLAquafarm.tokenAccountB, "7F2cLdio3i6CCJaypj9VfNDPW2DwT3vkDmZJDEfmxu6A") // originalTokenAccountA
         XCTAssertEqual(ethSOLAquafarm.tokenAName, "SOL")
         XCTAssertEqual(ethSOLAquafarm.tokenBName, "ETH")
+    }
+    
+    func testGetBestPoolsPair() throws {
+        let inputAmount: UInt64 = 100000 // 0.1 BTC
+        let pools = try orcaSwap.getTradablePoolsPairs(fromTokenName: "BTC", toTokenName: "ETH").toBlocking().first()!
+        let bestPoolsPair = try orcaSwap.findBestPoolsPairForInputAmount(inputAmount, from: pools)
+        let estimatedAmount = try bestPoolsPair?.getOutputAmount(fromInputAmount: inputAmount)
+        XCTAssertEqual(estimatedAmount, 1588996) // 1.588996 ETH
     }
 }
