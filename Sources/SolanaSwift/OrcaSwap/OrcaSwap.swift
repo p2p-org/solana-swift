@@ -68,36 +68,60 @@ public class OrcaSwap {
             .sorted(by: <)
     }
     
-    /// Find best pool to swap
-    public func findBestPool(
+    /// Get pools for current pair
+    /// - Returns: route and parsed pools
+    public func getPools(
         fromTokenName: String?,
-        toTokenName: String?,
-        inputAmount: UInt64?,
-        outputAmount: UInt64?
-    ) throws -> Pool? {
-        // Check for availability
+        toTokenName: String?
+    ) -> Single<[[Pool]]> {
         guard let fromTokenName = fromTokenName,
-           let toTokenName = toTokenName,
-           inputAmount != nil || outputAmount != nil
-        else {
-            return nil
+              let toTokenName = toTokenName,
+              let currentRoutes = try? findRoutes(fromTokenName: fromTokenName, toTokenName: toTokenName)
+                .first?.value
+        else {return .just([])}
+        
+        // retrieve all routes
+        let requests: [Single<[Pool]>] = currentRoutes.map {
+            info!.pools.getPools(
+                forRoute: $0,
+                fromTokenName: fromTokenName,
+                toTokenName: toTokenName,
+                solanaClient: solanaClient
+            )
         }
         
-        
-        // find all available routes for this pair
-        let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: toTokenName)
-        guard !routes.isEmpty else {return nil}
-
-        // find the best route
-        for route in routes {
-            if let inputAmount = inputAmount {
-                // find the pool that returns the best price
-            } else {
-                // find the pool that required least inputAmount for receiving outputAmount
-                let outputAmount = outputAmount!
-            }
-        }
+        return Single.zip(requests)
     }
+    
+    /// Find best pool to swap
+//    public func findBestPool(
+//        pools: [[Pool]],
+//        inputAmount: UInt64?,
+//        outputAmount: UInt64?
+//    ) throws -> Pool? {
+//        // Check for availability
+//        guard let fromTokenName = fromTokenName,
+//           let toTokenName = toTokenName,
+//           inputAmount != nil || outputAmount != nil
+//        else {
+//            return nil
+//        }
+//        
+//        
+//        // find all available routes for this pair
+//        let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: toTokenName)
+//        guard !routes.isEmpty else {return nil}
+//
+//        // find the best route
+//        for route in routes {
+//            if let inputAmount = inputAmount {
+//                // find the pool that returns the best price
+//            } else {
+//                // find the pool that required least inputAmount for receiving outputAmount
+//                let outputAmount = outputAmount!
+//            }
+//        }
+//    }
     
     /// Execute swap
 //    public func swap(
@@ -136,25 +160,25 @@ public class OrcaSwap {
         return info.routes.filter {validRoutesNames.contains($0.key)}
     }
     
-    func getRouteExecutionFromInput(
-        route: Route,
-        pools: Pools,
-        inputAmount: UInt64,
-        inputTokenName: String
-    ) -> Single<Pool?> {
-        guard route.count > 0 else {return .just(nil)}
-        
-        let getPoolsRequests = route.map { route -> Single<Pool?> in
-            pools.fixedPool(forRoute: route, inputTokenName: inputTokenName, solanaClient: solanaClient)
-        }
-        
-        return Single.zip(getPoolsRequests)
-            .map { pools -> Pool? in
-                let pools = pools.compactMap {$0}
-                guard pools.count > 0 else {return nil}
-                
-            }
-    }
+//    func getRouteExecutionFromInput(
+//        route: Route,
+//        pools: Pools,
+//        inputAmount: UInt64,
+//        inputTokenName: String
+//    ) -> Single<Pool?> {
+//        guard route.count > 0 else {return .just(nil)}
+//
+//        let getPoolsRequests = route.map { route -> Single<Pool?> in
+//            pools.fixedPool(forRoute: route, inputTokenName: inputTokenName, solanaClient: solanaClient)
+//        }
+//
+//        return Single.zip(getPoolsRequests)
+//            .map { pools -> Pool? in
+//                let pools = pools.compactMap {$0}
+//                guard pools.count > 0 else {return nil}
+//
+//            }
+//    }
 }
 
 // MARK: - Helpers

@@ -73,12 +73,45 @@ private var balancesCache = [String: SolanaSDK.TokenAccountBalance]()
 private let lock = NSLock()
 
 extension OrcaSwap.Pools {
-    func fixedPool(
-        forRoute route: String,
-        inputTokenName: String,
+    func getPools(
+        forRoute route: OrcaSwap.Route,
+        fromTokenName: String,
+        toTokenName: String,
+        solanaClient: OrcaSwapSolanaClient
+    ) -> Single<[OrcaSwap.Pool]> {
+        guard route.count > 0 else {return .just([])}
+        
+        let requests = route.map {fixedPool(forPath: $0, solanaClient: solanaClient)}
+        return Single.zip(requests).map {$0.compactMap {$0}}
+            .map { pools in
+                var pools = pools
+                // reverse pool if needed
+                for i in 0..<pools.count {
+                    if i == 0 {
+                        var pool = pools[0]
+                        if pool.tokenAName.fixedTokenName != fromTokenName.fixedTokenName {
+                            pool = pool.reversed
+                        }
+                        pools[0] = pool
+                    }
+                    
+                    if i == 1 {
+                        var pool = pools[1]
+                        if pool.tokenBName.fixedTokenName != toTokenName.fixedTokenName {
+                            pool = pool.reversed
+                        }
+                        pools[1] = pool
+                    }
+                }
+                return pools
+            }
+    }
+    
+    private func fixedPool(
+        forPath path: String, // Ex. BTC/SOL[aquafarm]
         solanaClient: OrcaSwapSolanaClient
     ) -> Single<OrcaSwap.Pool?> {
-        guard var pool = self[route] else {return .just(nil)}
+        guard var pool = self[path] else {return .just(nil)}
         
         // get balances
         let getBalancesRequest: Single<(SolanaSDK.TokenAccountBalance, SolanaSDK.TokenAccountBalance)>
@@ -104,12 +137,14 @@ extension OrcaSwap.Pools {
                 pool.tokenABalance = tokenABalane
                 pool.tokenBBalance = tokenBBalance
                 
-                let pair = route.components(separatedBy: "/")
-                if pair[safe: 1] == inputTokenName {
-                    pool = pool.reversed
-                }
-                
                 return pool
             }
+    }
+}
+
+private extension String {
+    /// Convert  SOL[aquafarm] to SOL
+    var fixedTokenName: String {
+        components(separatedBy: "[").first!
     }
 }
