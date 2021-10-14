@@ -273,7 +273,7 @@ private func _computeOutputAmount(leverage: UInt64, newInputAmount: UInt64, d: U
     
     for _ in 0..<32 {
         yPrevious = y
-        y = ((y ** 2) + c) / ((y * 2) + b - d)
+        y = ((y ** 2) + c) / ((y * 2) + b - BInt(d))
         if y == yPrevious {
             break
         }
