@@ -346,9 +346,9 @@ public extension OrcaSwap.PoolsPair {
     }
     
     /// baseOutputAmount is the amount the user would receive if fees are included and slippage is excluded.
-    func getBaseOutputAmount(
+    private func getBaseOutputAmount(
         inputAmount: UInt64
-    ) throws -> UInt64? {
+    ) -> UInt64? {
         guard count > 0 else {return nil}
         let pool0 = self[0]
         guard let outputAmountOfPool0 = try? pool0.getBaseOutputAmount(inputAmount: inputAmount)
@@ -366,6 +366,20 @@ public extension OrcaSwap.PoolsPair {
             
             return outputAmountOfPool1
         }
+    }
+    
+    /// price impact
+    func getPriceImpact(
+        inputAmount: UInt64,
+        outputAmount: UInt64
+    ) -> BDouble? {
+        guard let baseOutputAmount = getBaseOutputAmount(inputAmount: inputAmount)
+        else {return nil}
+        
+        let inputAmountDecimal = BDouble(inputAmount.convertToBalance(decimals: 0))
+        let baseOutputAmountDecimal = BDouble(baseOutputAmount.convertToBalance(decimals: 0))
+        
+        return (baseOutputAmountDecimal - inputAmountDecimal) / baseOutputAmountDecimal * 100
     }
 }
 
