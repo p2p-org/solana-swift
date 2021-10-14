@@ -106,7 +106,7 @@ public class OrcaSwap {
         var bestEstimatedAmount: UInt64 = 0
         
         for pair in poolsPairs {
-            guard let estimatedAmount = try? pair.getOutputAmount(fromInputAmount: inputAmount)
+            guard let estimatedAmount = pair.getOutputAmount(fromInputAmount: inputAmount)
             else {continue}
             if estimatedAmount > bestEstimatedAmount {
                 bestEstimatedAmount = estimatedAmount
@@ -128,7 +128,7 @@ public class OrcaSwap {
         var bestInputAmount: UInt64 = .max
         
         for pair in poolsPairs {
-            guard let inputAmount = try? pair.getInputAmount(fromEstimatedAmount: estimatedAmount)
+            guard let inputAmount = pair.getInputAmount(fromEstimatedAmount: estimatedAmount)
             else {continue}
             if inputAmount < bestInputAmount {
                 bestInputAmount = inputAmount
@@ -137,6 +137,15 @@ public class OrcaSwap {
         }
         
         return bestPools
+    }
+    
+    /// Get info of intermediary token
+    public func getIntermediaryToken(
+        bestPoolsPair poolsPair: PoolsPair,
+        inputAmount: UInt64,
+        slippage: Double
+    ) -> InterTokenInfo? {
+        poolsPair.getIntermediaryToken(inputAmount: inputAmount, slippage: slippage)
     }
     
     /// Execute swap

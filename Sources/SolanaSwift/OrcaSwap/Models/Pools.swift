@@ -42,6 +42,8 @@ public extension OrcaSwap {
         var tokenABalance: SolanaSDK.TokenAccountBalance?
         var tokenBBalance: SolanaSDK.TokenAccountBalance?
         
+        var isStable: Bool?
+        
         var reversed: Pool {
             var reversedPool = self
             swap(&reversedPool.tokenAccountA, &reversedPool.tokenAccountB)
@@ -192,10 +194,14 @@ extension OrcaSwap.Pools {
     }
     
     private func fixedPool(
-        forPath path: String, // Ex. BTC/SOL[aquafarm]
+        forPath path: String, // Ex. BTC/SOL[aquafarm][stable]
         solanaClient: OrcaSwapSolanaClient
     ) -> Single<OrcaSwap.Pool?> {
         guard var pool = self[path] else {return .just(nil)}
+        
+        if path.contains("[stable]") {
+            pool.isStable = true
+        }
         
         // get balances
         let getBalancesRequest: Single<(SolanaSDK.TokenAccountBalance, SolanaSDK.TokenAccountBalance)>
@@ -229,7 +235,7 @@ extension OrcaSwap.Pools {
 public extension OrcaSwap.PoolsPair {
     func getOutputAmount(
         fromInputAmount inputAmount: UInt64
-    ) throws -> UInt64? {
+    ) -> UInt64? {
         guard count > 0 else {return nil}
         let pool0 = self[0]
         guard let estimatedAmountOfPool0 = try? pool0.getOutputAmount(fromInputAmount: inputAmount)
@@ -251,7 +257,7 @@ public extension OrcaSwap.PoolsPair {
     
     func getInputAmount(
         fromEstimatedAmount estimatedAmount: UInt64
-    ) throws -> UInt64? {
+    ) -> UInt64? {
         guard count > 0 else {return nil}
         
         // direct
@@ -277,7 +283,7 @@ public extension OrcaSwap.PoolsPair {
     func getMinimumAmountOut(
         inputAmount: UInt64,
         slippage: Double
-    ) throws -> UInt64? {
+    ) -> UInt64? {
         guard count > 0 else {return nil}
         let pool0 = self[0]
         // direct
@@ -296,6 +302,20 @@ public extension OrcaSwap.PoolsPair {
             else {return nil}
             return minimumAmountOut
         }
+    }
+    
+    func getIntermediaryToken(
+        inputAmount: UInt64,
+        slippage: Double
+    ) -> OrcaSwap.InterTokenInfo? {
+        guard count > 1 else {return nil}
+        let pool0 = self[0]
+        return .init(
+            tokenName: pool0.tokenBName,
+            outputAmount: try? pool0.getOutputAmount(fromInputAmount: inputAmount),
+            minAmountOut: try? pool0.getMinimumAmountOut(inputAmount: inputAmount, slippage: slippage),
+            isStableSwap: self[1].isStable == true
+        )
     }
 }
 
