@@ -8,6 +8,8 @@
 import Foundation
 import RxSwift
 
+private let N_COINS: UInt64 = 2
+
 public extension OrcaSwap {
     struct Pool: Decodable {
         let account: String
@@ -45,25 +47,50 @@ public extension OrcaSwap {
             return reversedPool
         }
         
-//        func getTokenAmountsFromInput(
-//            inputTokenName: String
-//        ) -> (UInt64, UInt64) {
-//            inputTokenName == tokenAName ? (tokenA)
-//        }
-//        
-//        func getOutputAmount(
-//            fromInputAmount inputAmount: UInt64,
-//            inputTokenName: String
-//        ) -> UInt64 {
-//            switch curveType {
-//            case "Stable":
-//                
-//            case "ConstantProduct":
-//                
-//            default:
-//                return 0
-//            }
-//        }
+        func getOutputAmount(
+            fromInputAmount inputAmount: UInt64,
+            inputTokenName: String
+        ) throws -> UInt64? {
+            guard let poolInputAmount = tokenABalance?.amountInUInt64,
+                  let poolOutputAmount = tokenBBalance?.amountInUInt64
+            else {throw OrcaSwapError.accountBalanceNotFound}
+            
+            let fees = try getFee(inputAmount)
+            let inputAmountLessFee = inputAmount - fees
+            
+            switch curveType {
+            case "Stable":
+                guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
+                return computeOutputAmount(
+                    inputAmount: inputAmountLessFee,
+                    inputPoolAmount: poolInputAmount,
+                    outputPoolAmount: poolOutputAmount,
+                    amp: amp
+                )
+            case "ConstantProduct":
+                let invariant = BInt(poolInputAmount) * BInt(poolOutputAmount)
+                let newPoolOutputAmount = ceilingDivision(invariant, BInt(poolInputAmount + inputAmountLessFee)).quotient
+                return poolOutputAmount - newPoolOutputAmount
+            default:
+                return nil
+            }
+        }
+        
+        // MARK: - Helpers
+        private func getFee(_ inputAmount: UInt64) throws -> UInt64 {
+            guard curveType == "Stable" || curveType == "ConstantProduct" else {throw OrcaSwapError.unknown}
+            let tradingFee = computeFee(baseAmount: inputAmount, feeNumerator: feeNumerator, feeDenominator: feeDenominator)
+            let ownerFee = computeFee(baseAmount: inputAmount, feeNumerator: ownerTradeFeeNumerator, feeDenominator: ownerTradeFeeDenominator)
+            return tradingFee + ownerFee
+            
+        }
+        
+        private func computeFee(baseAmount: UInt64, feeNumerator: UInt64, feeDenominator: UInt64) -> UInt64 {
+            if feeNumerator == 0 {
+                return 0
+            }
+            return UInt64(BInt(baseAmount) * BInt(feeNumerator) / BInt(feeDenominator))
+        }
     }
     
     typealias Pools = [String: Pool] // [poolId: string]: PoolConfig;
@@ -147,4 +174,93 @@ private extension String {
     var fixedTokenName: String {
         components(separatedBy: "[").first!
     }
+}
+
+private func ceilingDivision(_ dividend: BInt, _ divisor: BInt) -> (quotient: UInt64, divisor: UInt64) {
+    var divisor = divisor
+    var quotient = dividend / divisor
+    if quotient == 0 {
+        return (quotient: 0, divisor: UInt64(divisor))
+    }
+    
+    var remainder = dividend % divisor
+    if remainder > 0 {
+        quotient += 1
+        divisor = dividend / quotient
+        remainder = dividend / quotient
+        if remainder > 0 {
+            divisor += 1
+        }
+    }
+    
+    return (quotient: UInt64(quotient), divisor: UInt64(divisor))
+}
+
+private func computeOutputAmount(
+    inputAmount: UInt64,
+    inputPoolAmount: UInt64,
+    outputPoolAmount: UInt64,
+    amp: UInt64
+) -> UInt64 {
+    let leverage = amp * N_COINS
+    let newInputPoolAmount = inputAmount + inputPoolAmount
+    let d = computeD(leverage: leverage, amountA: inputPoolAmount, amountB: outputPoolAmount)
+    
+    let newOutputPoolAmount = _computeOutputAmount(leverage: leverage, newInputAmount: newInputPoolAmount, d: d)
+    let outputAmount = outputPoolAmount - newOutputPoolAmount
+    return outputAmount
+}
+
+// A * sum(x_i) * n**n + D = A * D * n**n + D**(n+1) / (n**n * prod(x_i))
+private func computeD(leverage: UInt64, amountA: UInt64, amountB: UInt64) -> UInt64 {
+    let amountATimesN = BInt(amountA) * BInt(N_COINS) + 1
+    let amountBTimesN = BInt(amountB) * BInt(N_COINS) + 1
+    let sumX = BInt(amountA) + BInt(amountB)
+    
+    if sumX == 0 {
+        return 0
+    }
+    
+    var dPrevious: BInt
+    var d = sumX
+    
+    for _ in 0..<32 {
+        var dProduct = d
+        dProduct = dProduct * d / amountATimesN
+        dProduct = dProduct * d / amountBTimesN
+        dPrevious = d
+        d = BInt(calculateStep(initialD: UInt64(d), leverage: leverage, sumX: UInt64(sumX), dProduct: UInt64(dProduct)))
+        if d == dPrevious {
+            break
+        }
+    }
+    
+    return UInt64(d)
+}
+
+// d = (leverage * sum_x + d_product * n_coins) * initial_d / ((leverage - 1) * initial_d + (n_coins + 1) * d_product)
+func calculateStep(
+  initialD: UInt64,
+  leverage: UInt64,
+  sumX: UInt64,
+  dProduct: UInt64
+) -> UInt64 {
+    let leverageMul = BInt(leverage) * BInt(sumX)
+    let dPMul = BInt(dProduct) * BInt(N_COINS)
+    
+    let leverageVal = (leverageMul + dPMul) * BInt(initialD)
+
+    let leverageSub = BInt(initialD) * BInt(leverage - 1)
+    let nCoinsSum = BInt(dProduct) * BInt(N_COINS + 1)
+    
+    let rVal = leverageSub + nCoinsSum
+    
+    return UInt64(leverageVal / rVal)
+}
+
+/// Compute swap amount `y` in proportion to `x`
+/// Solve for y:
+/// y**2 + y * (sum' - (A*n**n - 1) * D / (A * n**n)) = D ** (n + 1) / (n ** (2 * n) * prod' * A)
+/// y**2 + b*y = c
+private func _computeOutputAmount(leverage: UInt64, newInputAmount: UInt64, d: UInt64) -> UInt64 {
 }

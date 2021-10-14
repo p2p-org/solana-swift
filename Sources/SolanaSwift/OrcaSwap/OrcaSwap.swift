@@ -94,34 +94,13 @@ public class OrcaSwap {
     }
     
     /// Find best pool to swap
-//    public func findBestPool(
-//        pools: [[Pool]],
-//        inputAmount: UInt64?,
-//        outputAmount: UInt64?
-//    ) throws -> Pool? {
-//        // Check for availability
-//        guard let fromTokenName = fromTokenName,
-//           let toTokenName = toTokenName,
-//           inputAmount != nil || outputAmount != nil
-//        else {
-//            return nil
-//        }
-//        
-//        
-//        // find all available routes for this pair
-//        let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: toTokenName)
-//        guard !routes.isEmpty else {return nil}
-//
-//        // find the best route
-//        for route in routes {
-//            if let inputAmount = inputAmount {
-//                // find the pool that returns the best price
-//            } else {
-//                // find the pool that required least inputAmount for receiving outputAmount
-//                let outputAmount = outputAmount!
-//            }
-//        }
-//    }
+    public func findBestPool(
+        from pools: [[Pool]],
+        inputAmount: UInt64?,
+        outputAmount: UInt64?
+    ) throws -> Pool? {
+        
+    }
     
     /// Execute swap
 //    public func swap(

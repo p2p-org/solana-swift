@@ -11,6 +11,20 @@ public struct OrcaSwapError: Error {
     let description: String
     
     public static var swapInfoMissing: Self {
-        .init(description: "SwapInfoMissing")
+        .init(description: "Swap is not available")
+    }
+    
+    public static var accountBalanceNotFound: Self {
+        .init(description: "Account balance is not found")
+    }
+    
+    // MARK: - Pools
+    public static var ampDoesNotExistInPoolConfig: Self {
+        .init(description: "amp does not exist in poolConfig")
+    }
+    
+    // MARK: - Unknown
+    public static var unknown: Self {
+        .init(description: "Unknown error")
     }
 }
