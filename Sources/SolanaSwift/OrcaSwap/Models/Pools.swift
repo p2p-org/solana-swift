@@ -42,8 +42,6 @@ public extension OrcaSwap {
         var tokenABalance: SolanaSDK.TokenAccountBalance?
         var tokenBBalance: SolanaSDK.TokenAccountBalance?
         
-        var isStable: Bool? // contains [stable]
-        
         var reversed: Pool {
             var reversedPool = self
             swap(&reversedPool.tokenAccountA, &reversedPool.tokenAccountB)
@@ -125,6 +123,15 @@ public extension OrcaSwap {
             }
         }
         
+        func getMinimumAmountOut(
+            inputAmount: UInt64,
+            slippage: Double
+        ) throws -> UInt64? {
+            guard let estimatedOutputAmount = try getOutputAmount(fromInputAmount: inputAmount)
+            else {return nil}
+            return UInt64(Float64(estimatedOutputAmount) * Float64(1 - slippage))
+        }
+        
         // MARK: - Helpers
         private func getFee(_ inputAmount: UInt64) throws -> UInt64 {
             guard curveType == STABLE || curveType == CONSTANT_PRODUCT else {throw OrcaSwapError.unknown}
@@ -185,13 +192,10 @@ extension OrcaSwap.Pools {
     }
     
     private func fixedPool(
-        forPath path: String, // Ex. BTC/SOL[aquafarm][stable]
+        forPath path: String, // Ex. BTC/SOL[aquafarm]
         solanaClient: OrcaSwapSolanaClient
     ) -> Single<OrcaSwap.Pool?> {
         guard var pool = self[path] else {return .just(nil)}
-        if path.contains("[stable]") {
-            pool.isStable = true
-        }
         
         // get balances
         let getBalancesRequest: Single<(SolanaSDK.TokenAccountBalance, SolanaSDK.TokenAccountBalance)>
@@ -267,6 +271,30 @@ public extension OrcaSwap.PoolsPair {
             guard let inputAmountOfPool0 = try? pool0.getInputAmount(fromEstimatedAmount: inputAmountOfPool1)
             else {return nil}
             return inputAmountOfPool0
+        }
+    }
+    
+    func getMinimumAmountOut(
+        inputAmount: UInt64,
+        slippage: Double
+    ) throws -> UInt64? {
+        guard count > 0 else {return nil}
+        let pool0 = self[0]
+        // direct
+        if count == 1 {
+            guard let minimumAmountOut = try? pool0.getMinimumAmountOut(inputAmount: inputAmount, slippage: slippage)
+            else {return nil}
+            return minimumAmountOut
+        }
+        // transitive
+        else {
+            guard let outputAmountOfPool0 = try? pool0.getOutputAmount(fromInputAmount: inputAmount)
+            else {return nil}
+            
+            let pool1 = self[1]
+            guard let minimumAmountOut = try? pool1.getMinimumAmountOut(inputAmount: outputAmountOfPool0, slippage: slippage)
+            else {return nil}
+            return minimumAmountOut
         }
     }
 }
