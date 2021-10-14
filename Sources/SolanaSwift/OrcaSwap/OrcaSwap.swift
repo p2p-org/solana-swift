@@ -68,12 +68,12 @@ public class OrcaSwap {
             .sorted(by: <)
     }
     
-    /// Get pools for current pair
+    /// Get all tradable pools pairs for current token pair
     /// - Returns: route and parsed pools
-    public func getPools(
+    public func getTradablePoolsPairs(
         fromTokenName: String?,
         toTokenName: String?
-    ) -> Single<[[Pool]]> {
+    ) -> Single<[PoolsPair]> {
         guard let fromTokenName = fromTokenName,
               let toTokenName = toTokenName,
               let currentRoutes = try? findRoutes(fromTokenName: fromTokenName, toTokenName: toTokenName)
@@ -94,11 +94,42 @@ public class OrcaSwap {
     }
     
     /// Find best pool to swap from input amount
-    public func findBestPoolForInputAmount(
+    public func findBestPoolsPairForInputAmount(
         _ inputAmount: UInt64,
-        from pools: [[Pool]]
-    ) throws -> Pool? {
-        nil
+        from poolsPairs: [PoolsPair]
+    ) throws -> [Pool]? {
+        guard poolsPairs.count > 0 else {return nil}
+        
+        var bestPools: [Pool]?
+        var bestEstimatedAmount: UInt64 = 0
+        
+        for pair in poolsPairs {
+            guard pair.count > 0 else {continue}
+            let pool0 = pair[0]
+            guard let estimatedAmountOfPool0 = try? pool0.getOutputAmount(fromInputAmount: inputAmount)
+            else {continue}
+            
+            // direct
+            if pair.count == 1 {
+                if estimatedAmountOfPool0 > bestEstimatedAmount {
+                    bestEstimatedAmount = estimatedAmountOfPool0
+                    bestPools = pair
+                }
+            }
+            // transitive
+            else {
+                let pool1 = pair[1]
+                guard let estimatedAmountOfPool1 = try? pool1.getOutputAmount(fromInputAmount: estimatedAmountOfPool0)
+                else {continue}
+                
+                if estimatedAmountOfPool1 > bestEstimatedAmount {
+                    bestEstimatedAmount = estimatedAmountOfPool1
+                    bestPools = pair
+                }
+            }
+        }
+        
+        return bestPools
     }
     
     /// Find best pool to swap from estimated amount

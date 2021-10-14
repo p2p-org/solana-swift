@@ -49,8 +49,7 @@ public extension OrcaSwap {
         }
         
         func getOutputAmount(
-            fromInputAmount inputAmount: UInt64,
-            inputTokenName: String
+            fromInputAmount inputAmount: UInt64
         ) throws -> UInt64? {
             guard let poolInputAmount = tokenABalance?.amountInUInt64,
                   let poolOutputAmount = tokenBBalance?.amountInUInt64
@@ -95,6 +94,7 @@ public extension OrcaSwap {
     }
     
     typealias Pools = [String: Pool] // [poolId: string]: PoolConfig;
+    typealias PoolsPair = [Pool]
 }
 
 private var balancesCache = [String: SolanaSDK.TokenAccountBalance]()

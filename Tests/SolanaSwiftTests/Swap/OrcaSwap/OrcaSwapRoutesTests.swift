@@ -55,7 +55,7 @@ class OrcaSwapRoutesTests: XCTestCase {
 //            ]
 //        ]
         
-        let pools = try orcaSwap.getPools(fromTokenName: "BTC", toTokenName: "ETH").toBlocking().first()!
+        let pools = try orcaSwap.getTradablePoolsPairs(fromTokenName: "BTC", toTokenName: "ETH").toBlocking().first()!
         XCTAssertEqual(pools.count, 3) //
         XCTAssertEqual(pools.flatMap { $0 }.count, 5)
         
