@@ -93,13 +93,20 @@ public class OrcaSwap {
         return Single.zip(requests)
     }
     
-    /// Find best pool to swap
-    public func findBestPool(
-        from pools: [[Pool]],
-        inputAmount: UInt64?,
-        outputAmount: UInt64?
+    /// Find best pool to swap from input amount
+    public func findBestPoolForInputAmount(
+        _ inputAmount: UInt64,
+        from pools: [[Pool]]
     ) throws -> Pool? {
-        
+        nil
+    }
+    
+    /// Find best pool to swap from estimated amount
+    public func findBestPoolForEstimatedAmount(
+        _ estimatedAmount: UInt64,
+        from pools: [[Pool]]
+    ) throws -> Pool? {
+        nil
     }
     
     /// Execute swap
@@ -138,37 +145,9 @@ public class OrcaSwap {
         ]
         return info.routes.filter {validRoutesNames.contains($0.key)}
     }
-    
-//    func getRouteExecutionFromInput(
-//        route: Route,
-//        pools: Pools,
-//        inputAmount: UInt64,
-//        inputTokenName: String
-//    ) -> Single<Pool?> {
-//        guard route.count > 0 else {return .just(nil)}
-//
-//        let getPoolsRequests = route.map { route -> Single<Pool?> in
-//            pools.fixedPool(forRoute: route, inputTokenName: inputTokenName, solanaClient: solanaClient)
-//        }
-//
-//        return Single.zip(getPoolsRequests)
-//            .map { pools -> Pool? in
-//                let pools = pools.compactMap {$0}
-//                guard pools.count > 0 else {return nil}
-//
-//            }
-//    }
 }
 
 // MARK: - Helpers
-//private func orderRoutes(
-//    pools: OrcaSwap.Pools,
-//    routes: [OrcaSwap.Route],
-//    inputTokenName: String
-//) -> [OrcaSwap.Route] {
-//    // get all pools
-//
-//}
 
 private func findAllAvailableRoutes(tokens: OrcaSwap.Tokens, pools: OrcaSwap.Pools) -> OrcaSwap.Routes {
     let tokens = tokens.filter {$0.value.poolToken != true}
