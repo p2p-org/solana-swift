@@ -134,6 +134,33 @@ public extension OrcaSwap {
             return UInt64(Float64(estimatedOutputAmount) * Float64(1 - slippage))
         }
         
+        /// baseOutputAmount is the amount the user would receive if fees are included and slippage is excluded.
+        func getBaseOutputAmount(
+            inputAmount: UInt64
+        ) throws -> UInt64? {
+            guard let poolInputAmount = tokenABalance?.amountInUInt64,
+                  let poolOutputAmount = tokenBBalance?.amountInUInt64
+            else {throw OrcaSwapError.accountBalanceNotFound}
+            
+            let fees = try getFee(inputAmount)
+            let inputAmountLessFee = inputAmount - fees
+            
+            switch curveType {
+            case STABLE:
+                guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
+                return computeBaseOutputAmount(
+                    inputAmount: inputAmountLessFee,
+                    inputPoolAmount: poolInputAmount,
+                    outputPoolAmount: poolOutputAmount,
+                    amp: amp
+                )
+            case CONSTANT_PRODUCT:
+                return UInt64(BInt(inputAmountLessFee) * BInt(poolOutputAmount) / BInt(poolInputAmount))
+            default:
+                return nil
+            }
+        }
+        
         // MARK: - Helpers
         private func getFee(_ inputAmount: UInt64) throws -> UInt64 {
             guard curveType == STABLE || curveType == CONSTANT_PRODUCT else {throw OrcaSwapError.unknown}
@@ -317,6 +344,29 @@ public extension OrcaSwap.PoolsPair {
             isStableSwap: self[1].isStable == true
         )
     }
+    
+    /// baseOutputAmount is the amount the user would receive if fees are included and slippage is excluded.
+    func getBaseOutputAmount(
+        inputAmount: UInt64
+    ) throws -> UInt64? {
+        guard count > 0 else {return nil}
+        let pool0 = self[0]
+        guard let outputAmountOfPool0 = try? pool0.getBaseOutputAmount(inputAmount: inputAmount)
+        else {return nil}
+        
+        // direct
+        if count == 1 {
+            return outputAmountOfPool0
+        }
+        // transitive
+        else {
+            let pool1 = self[1]
+            guard let outputAmountOfPool1 = try? pool1.getBaseOutputAmount(inputAmount: outputAmountOfPool0)
+            else {return nil}
+            
+            return outputAmountOfPool1
+        }
+    }
 }
 
 private extension String {
@@ -451,4 +501,27 @@ private func computeInputAmount(
     )
     let inputAmount = newInputPoolAmount - inputPoolAmount
     return inputAmount
+}
+
+
+// Take the derivative of the invariant function over x
+private func computeBaseOutputAmount(
+  inputAmount: UInt64,
+  inputPoolAmount: UInt64,
+  outputPoolAmount: UInt64,
+  amp: UInt64
+) -> UInt64 {
+    let leverage = BInt(amp) * BInt(N_COINS)
+    let invariant = computeD(leverage: UInt64(leverage), amountA: inputPoolAmount, amountB: outputPoolAmount)
+    let a = BInt(amp) * 16
+    let b = a
+    let c = BInt(invariant) * 4 - (BInt(invariant) * BInt(amp) * 16)
+    
+    let numerator = (a * 2 * BInt(inputPoolAmount) + (b * BInt(outputPoolAmount)) + c)
+        * BInt(outputPoolAmount)
+    
+    let denominator = (a * BInt(inputPoolAmount) + (b * 2 * BInt(outputPoolAmount) + c))
+        * BInt(inputPoolAmount)
+    
+    return UInt64(BInt(inputAmount) * numerator / denominator)
 }
