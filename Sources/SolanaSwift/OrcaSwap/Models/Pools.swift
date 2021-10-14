@@ -9,6 +9,7 @@ import Foundation
 import RxSwift
 
 private let N_COINS: UInt64 = 2
+private let N_COINS_SQUARED: UInt64 = 4
 
 public extension OrcaSwap {
     struct Pool: Decodable {
@@ -263,4 +264,20 @@ func calculateStep(
 /// y**2 + y * (sum' - (A*n**n - 1) * D / (A * n**n)) = D ** (n + 1) / (n ** (2 * n) * prod' * A)
 /// y**2 + b*y = c
 private func _computeOutputAmount(leverage: UInt64, newInputAmount: UInt64, d: UInt64) -> UInt64 {
+    let c = BInt(d) ** Int(N_COINS + 1) / (BInt(newInputAmount) * BInt(N_COINS_SQUARED) * BInt(leverage))
+    
+    let b = BInt(newInputAmount) + (BInt(d) / BInt(leverage))
+    
+    var yPrevious: BInt
+    var y = BInt(d)
+    
+    for _ in 0..<32 {
+        yPrevious = y
+        y = ((y ** 2) + c) / ((y * 2) + b - d)
+        if y == yPrevious {
+            break
+        }
+    }
+    
+    return UInt64(y)
 }
