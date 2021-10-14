@@ -15,7 +15,7 @@ public class OrcaSwap {
     let apiClient: OrcaSwapAPIClient
     let solanaClient: OrcaSwapSolanaClient
     
-    private var info: OrcaSwap.SwapInfo?
+    var info: OrcaSwap.SwapInfo?
     private let lock = NSLock()
     
     // MARK: - Initializer
@@ -26,15 +26,15 @@ public class OrcaSwap {
     
     // MARK: - Methods
     /// Prepare all needed infos for swapping
-    public func load() -> Single<SwapInfo> {
-        if let cached = info {return .just(cached)}
+    public func load() -> Completable {
+        if info != nil {return .empty()}
         return Single.zip(
             apiClient.getTokens(),
             apiClient.getPools(),
             apiClient.getProgramID()
         )
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .map { tokens, pools, programId in
+            .map { tokens, pools, programId -> SwapInfo in
                 let routes = findAllAvailableRoutes(tokens: tokens, pools: pools)
                 let tokenNames = tokens.reduce([String: String]()) { result, token in
                     var result = result
@@ -54,6 +54,7 @@ public class OrcaSwap {
                 self?.info = info
                 self?.lock.unlock()
             })
+            .asCompletable()
     }
     
     /// Find posible destination token (symbol)

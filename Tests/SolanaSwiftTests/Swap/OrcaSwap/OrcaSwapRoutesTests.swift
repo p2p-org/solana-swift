@@ -14,11 +14,13 @@ class OrcaSwapRoutesTests: XCTestCase {
         apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
         solanaClient: OrcaSwap.MockSolanaClient()
     )
-    var swapInfo: OrcaSwap.SwapInfo!
+    var swapInfo: OrcaSwap.SwapInfo {
+        orcaSwap.info!
+    }
     
     override func setUpWithError() throws {
         try super.setUpWithError()
-        swapInfo = try orcaSwap.load().toBlocking().first()!
+        _ = orcaSwap.load().toBlocking().materialize()
     }
     
     func testLoadSwap() throws {
