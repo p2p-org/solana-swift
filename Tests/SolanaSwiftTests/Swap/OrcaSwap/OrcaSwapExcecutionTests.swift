@@ -88,8 +88,8 @@ class OrcaSwapExcecutionTests: XCTestCase {
     
     func testGetBestPoolsPair() throws {
         let inputAmount: UInt64 = 100000 // 0.1 BTC
-        let pools = try orcaSwap.getTradablePoolsPairs(fromTokenName: "BTC", toTokenName: "ETH").toBlocking().first()!
-        let bestPoolsPair = try orcaSwap.findBestPoolsPairForInputAmount(inputAmount, from: pools)
+        let poolsPairs = try orcaSwap.getTradablePoolsPairs(fromTokenName: "BTC", toTokenName: "ETH").toBlocking().first()!
+        let bestPoolsPair = try orcaSwap.findBestPoolsPairForInputAmount(inputAmount, from: poolsPairs)
         let estimatedAmount = try bestPoolsPair?.getOutputAmount(fromInputAmount: inputAmount)
         XCTAssertEqual(estimatedAmount, 1588996) // 1.588996 ETH
     }
