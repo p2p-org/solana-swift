@@ -64,7 +64,8 @@ public class OrcaSwap {
         fromTokenName: String
     ) throws -> [String] {
         let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: nil)
-        return routes.keys.compactMap {$0.components(separatedBy: "/").first(where: {$0 != fromTokenName})}
+        return routes.keys.compactMap {$0.components(separatedBy: "/")
+            .first(where: {!$0.contains(fromTokenName)})}
             .unique
             .sorted(by: <)
     }
