@@ -23,6 +23,10 @@ public struct OrcaSwapError: Error {
         .init(description: "amp does not exist in poolConfig")
     }
     
+    public static var estimatedAmountIsTooHigh: Self {
+        .init(description: "Estimated amount is too high")
+    }
+    
     // MARK: - Unknown
     public static var unknown: Self {
         .init(description: "Unknown error")
