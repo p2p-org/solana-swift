@@ -10,7 +10,15 @@ import RxSwift
 
 private var cache: OrcaSwap.SwapInfo?
 
-public class OrcaSwap {
+public protocol OrcaSwapType {
+    func load() -> Completable
+    func findPosibleDestinations(fromTokenName: String) throws -> [String]
+    func getTradablePoolsPairs(fromTokenName: String?, toTokenName: String?) -> Single<[OrcaSwap.PoolsPair]>
+    func findBestPoolsPairForInputAmount(_ inputAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
+    func findBestPoolForEstimatedAmount(_ estimatedAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
+}
+
+public class OrcaSwap: OrcaSwapType {
     // MARK: - Properties
     let apiClient: OrcaSwapAPIClient
     let solanaClient: OrcaSwapSolanaClient
