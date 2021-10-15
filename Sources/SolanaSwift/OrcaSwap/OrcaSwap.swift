@@ -147,15 +147,6 @@ public class OrcaSwap: OrcaSwapType {
         return bestPools
     }
     
-    /// Get info of intermediary token
-    public func getIntermediaryToken(
-        bestPoolsPair poolsPair: PoolsPair,
-        inputAmount: UInt64,
-        slippage: Double
-    ) -> InterTokenInfo? {
-        poolsPair.getIntermediaryToken(inputAmount: inputAmount, slippage: slippage)
-    }
-    
     /// Execute swap
 //    public func swap(
 //        fromWallet: SolanaSDK.Wallet,
