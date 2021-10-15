@@ -162,7 +162,7 @@ public extension OrcaSwap {
         }
         
         // MARK: - Helpers
-        private func getFee(_ inputAmount: UInt64) throws -> UInt64 {
+        func getFee(_ inputAmount: UInt64) throws -> UInt64 {
             guard curveType == STABLE || curveType == CONSTANT_PRODUCT else {throw OrcaSwapError.unknown}
             let tradingFee = computeFee(baseAmount: inputAmount, feeNumerator: feeNumerator, feeDenominator: feeDenominator)
             let ownerFee = computeFee(baseAmount: inputAmount, feeNumerator: ownerTradeFeeNumerator, feeDenominator: ownerTradeFeeDenominator)
