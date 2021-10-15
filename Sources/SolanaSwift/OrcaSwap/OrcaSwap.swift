@@ -12,7 +12,7 @@ private var cache: OrcaSwap.SwapInfo?
 
 public protocol OrcaSwapType {
     func load() -> Completable
-    func findPosibleDestinations(fromTokenName: String) throws -> [String]
+    func findPosibleDestinationMints(fromMint: String) throws -> [String]
     func getTradablePoolsPairs(fromTokenName: String?, toTokenName: String?) -> Single<[OrcaSwap.PoolsPair]>
     func findBestPoolsPairForInputAmount(_ inputAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
     func findBestPoolForEstimatedAmount(_ estimatedAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
@@ -68,14 +68,17 @@ public class OrcaSwap: OrcaSwapType {
     /// Find posible destination token (symbol)
     /// - Parameter fromTokenName: from token name (symbol)
     /// - Returns: List of token symbols that can be swapped to
-    public func findPosibleDestinations(
-        fromTokenName: String
+    public func findPosibleDestinationMints(
+        fromMint: String
     ) throws -> [String] {
-        let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: nil)
+        guard let tokens = info?.tokens,
+              let fromToken = tokens.first(where: {$0.value.mint == fromMint})
+        else {throw OrcaSwapError.unknown}
+        let routes = try findRoutes(fromTokenName: fromToken.key, toTokenName: nil)
         return routes.keys.compactMap {$0.components(separatedBy: "/")
-            .first(where: {!$0.contains(fromTokenName)})}
+            .first(where: {!$0.contains(fromToken.key)})}
             .unique
-            .sorted(by: <)
+            .compactMap {tokens[$0]?.mint}
     }
     
     /// Get all tradable pools pairs for current token pair
