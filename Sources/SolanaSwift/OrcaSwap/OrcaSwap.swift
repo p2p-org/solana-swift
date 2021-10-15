@@ -13,7 +13,7 @@ private var cache: OrcaSwap.SwapInfo?
 public protocol OrcaSwapType {
     func load() -> Completable
     func findPosibleDestinationMints(fromMint: String) throws -> [String]
-    func getTradablePoolsPairs(fromTokenName: String?, toTokenName: String?) -> Single<[OrcaSwap.PoolsPair]>
+    func getTradablePoolsPairs(fromMint: String, toMint: String) -> Single<[OrcaSwap.PoolsPair]>
     func findBestPoolsPairForInputAmount(_ inputAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
     func findBestPoolForEstimatedAmount(_ estimatedAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
 }
@@ -71,24 +71,24 @@ public class OrcaSwap: OrcaSwapType {
     public func findPosibleDestinationMints(
         fromMint: String
     ) throws -> [String] {
-        guard let tokens = info?.tokens,
-              let fromToken = tokens.first(where: {$0.value.mint == fromMint})
-        else {throw OrcaSwapError.unknown}
-        let routes = try findRoutes(fromTokenName: fromToken.key, toTokenName: nil)
+        guard let fromTokenName = getTokenFromMint(fromMint)?.name
+        else {throw OrcaSwapError.notFound}
+        
+        let routes = try findRoutes(fromTokenName: fromTokenName, toTokenName: nil)
         return routes.keys.compactMap {$0.components(separatedBy: "/")
-            .first(where: {!$0.contains(fromToken.key)})}
+            .first(where: {!$0.contains(fromTokenName)})}
             .unique
-            .compactMap {tokens[$0]?.mint}
+            .compactMap {info?.tokens[$0]?.mint}
     }
     
     /// Get all tradable pools pairs for current token pair
     /// - Returns: route and parsed pools
     public func getTradablePoolsPairs(
-        fromTokenName: String?,
-        toTokenName: String?
+        fromMint: String,
+        toMint: String
     ) -> Single<[PoolsPair]> {
-        guard let fromTokenName = fromTokenName,
-              let toTokenName = toTokenName,
+        guard let fromTokenName = getTokenFromMint(fromMint)?.name,
+              let toTokenName = getTokenFromMint(toMint)?.name,
               let currentRoutes = try? findRoutes(fromTokenName: fromTokenName, toTokenName: toTokenName)
                 .first?.value
         else {return .just([])}
@@ -185,6 +185,13 @@ public class OrcaSwap: OrcaSwapType {
             pair.reversed().joined(separator: "/")
         ]
         return info.routes.filter {validRoutesNames.contains($0.key)}
+    }
+    
+    /// Map mint to token info
+    private func getTokenFromMint(_ mint: String) -> (name: String, info: Token)? {
+        let tokenInfo = info?.tokens.first(where: {$0.value.mint == mint})
+        guard let name = tokenInfo?.key, let value = tokenInfo?.value else {return nil}
+        return (name: name, info: value)
     }
 }
 

@@ -10,6 +10,10 @@ import Foundation
 public struct OrcaSwapError: Error {
     let description: String
     
+    public static var notFound: Self {
+        .init(description: "Not found")
+    }
+    
     public static var swapInfoMissing: Self {
         .init(description: "Swap is not available")
     }
