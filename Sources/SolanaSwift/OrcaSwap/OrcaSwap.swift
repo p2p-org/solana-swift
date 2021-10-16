@@ -94,8 +94,9 @@ public class OrcaSwap: OrcaSwapType {
         else {return .just([])}
         
         // retrieve all routes
-        let requests: [Single<[Pool]>] = currentRoutes.map {
-            info!.pools.getPools(
+        let requests: [Single<[Pool]>] = currentRoutes.compactMap {
+            guard $0.count <= 2 else {return nil} // FIXME: Support more than 2 paths later
+            return info?.pools.getPools(
                 forRoute: $0,
                 fromTokenName: fromTokenName,
                 toTokenName: toTokenName,
@@ -195,7 +196,6 @@ public class OrcaSwap: OrcaSwapType {
             pair.reversed().joined(separator: "/")
         ]
         return info.routes.filter {validRoutesNames.contains($0.key)}
-            .filter {$0.value.count <= 2} // FIXME: Support more than 2 paths later
             .filter {!$0.value.isEmpty}
     }
     

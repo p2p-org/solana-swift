@@ -38,7 +38,7 @@ class OrcaSwapExcecutionTests: XCTestCase {
     
     func testFindDestinations() throws {
         let routes = try orcaSwap.findPosibleDestinationMints(fromMint: btcMint)
-        XCTAssertEqual(routes.count, 45)
+        XCTAssertEqual(routes.count, 21)
     }
     
     func testGetTradablePoolsPairs() throws {
