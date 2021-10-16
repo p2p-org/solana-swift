@@ -1,5 +1,5 @@
 //
-//  OrcaSwapExcecutionTests.swift
+//  OrcaSwapPreparationTests.swift
 //  
 //
 //  Created by Chung Tran on 13/10/2021.
@@ -9,7 +9,7 @@ import Foundation
 import XCTest
 @testable import SolanaSwift
 
-class OrcaSwapExcecutionTests: XCTestCase {
+class OrcaSwapPreparationTests: XCTestCase {
     let orcaSwap = OrcaSwap(
         apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
         solanaClient: OrcaSwap.MockSolanaClient()
@@ -123,6 +123,21 @@ class OrcaSwapExcecutionTests: XCTestCase {
         let bestPoolsPair2 = try orcaSwap.findBestPoolForEstimatedAmount(estimatedAmount2, from: poolsPairs)
         let inputAmount2 = bestPoolsPair2?.getInputAmount(fromEstimatedAmount: estimatedAmount2)
         XCTAssertEqual(inputAmount2, 100697) // 0.100697 BTC
+    }
+    
+    func testGetBestPoolsPairReversed() throws {
+        // when user enter input amount = 419.68 SOCN
+        let inputAmount: UInt64 = 419680000000 // 419.68 SOCN
+        let poolsPairs = try orcaSwap.getTradablePoolsPairs(fromMint: socnMint, toMint: btcMint).toBlocking().first()!
+        let bestPoolsPair = try orcaSwap.findBestPoolsPairForInputAmount(inputAmount, from: poolsPairs)
+        let estimatedAmount = bestPoolsPair?.getOutputAmount(fromInputAmount: inputAmount)
+        XCTAssertEqual(estimatedAmount, 1013077) // 1.013077 BTC
+        
+        // when user enter estimated amount that he wants to receive as 1 BTC
+        let estimatedAmount2: UInt64 = 1000000 // 1 BTC
+        let bestPoolsPair2 = try orcaSwap.findBestPoolForEstimatedAmount(estimatedAmount2, from: poolsPairs)
+        let inputAmount2 = bestPoolsPair2?.getInputAmount(fromEstimatedAmount: estimatedAmount2)
+        XCTAssertEqual(inputAmount2, 413909257520) // 413.909257520 BTC
     }
 }
 
