@@ -52,6 +52,16 @@ extension OrcaSwap {
             if pubkey == "5pUTGvN2AA2BEzBDU4CNDh3LHER15WS6J8oJf5XeZFD8" {
                 return .just(.init(uiAmount: 103486.885774058, amount: "103486885774058", decimals: 9, uiAmountString: "103486.885774058"))
             }
+            
+            // SOCN/SOL
+            if pubkey == "C8DRXUqxXtUgvgBR7BPAmy6tnRJYgVjG27VU44wWDMNV" {
+                return .just(.init(uiAmount: 20097.450122295, amount: "20097450122295", decimals: 9, uiAmountString: "20097.450122295"))
+            }
+            
+            if pubkey == "DzdxH5qJ68PiM1p5o6PbPLPpDj8m1ZshcaMFATcxDZix" {
+                return .just(.init(uiAmount: 27474.561069286, amount: "27474561069286", decimals: 9, uiAmountString: "27474.561069286"))
+            }
+            
             fatalError()
         }
     }

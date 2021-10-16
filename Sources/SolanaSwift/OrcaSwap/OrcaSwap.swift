@@ -195,6 +195,7 @@ public class OrcaSwap: OrcaSwapType {
             pair.reversed().joined(separator: "/")
         ]
         return info.routes.filter {validRoutesNames.contains($0.key)}
+            .filter {$0.value.count <= 2} // FIXME: Support more than 2 paths later
             .filter {!$0.value.isEmpty}
     }
     
