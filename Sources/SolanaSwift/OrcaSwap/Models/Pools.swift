@@ -198,7 +198,29 @@ extension OrcaSwap.Pools {
         return Single.zip(requests).map {$0.compactMap {$0}}
             .map { pools in
                 var pools = pools
-                // reverse pool if needed
+                
+                // modify orders
+                if pools.count == 2 {
+                    // reverse order of the 2 pools
+                    // Ex: Swap from SOCN -> BTC, but paths are
+                    // [
+                    //     "BTC/SOL[aquafarm]",
+                    //     "SOCN/SOL[stable][aquafarm]"
+                    // ]
+                    // Need to change to
+                    // [
+                    //     "SOCN/SOL[stable][aquafarm]",
+                    //     "BTC/SOL[aquafarm]"
+                    // ]
+                    
+                    if pools[0].tokenAName != fromTokenName && pools[0].tokenBName != fromTokenName {
+                        let temp = pools[0]
+                        pools[0] = pools[1]
+                        pools[1] = temp
+                    }
+                }
+
+                // reverse token A and token B in pool if needed
                 for i in 0..<pools.count {
                     if i == 0 {
                         var pool = pools[0]
