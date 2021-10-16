@@ -34,6 +34,10 @@ public extension OrcaSwapAPIClient {
 
 extension OrcaSwap {
     public struct APIClient: OrcaSwapAPIClient {
+        public init(network: String) {
+            self.network = network
+        }
+        
         public let network: String
         private let cache = [String: [String: Decodable]]() // Network: [DataType: Decodable]
         

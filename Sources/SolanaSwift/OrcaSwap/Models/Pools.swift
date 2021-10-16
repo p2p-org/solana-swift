@@ -14,7 +14,7 @@ private let STABLE = "Stable"
 private let CONSTANT_PRODUCT = "ConstantProduct"
 
 public extension OrcaSwap {
-    struct Pool: Decodable {
+    struct Pool: Decodable, Equatable {
         let account: String
         let authority: String
         let nonce: UInt64
