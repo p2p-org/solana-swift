@@ -65,9 +65,9 @@ public class OrcaSwap: OrcaSwapType {
             .asCompletable()
     }
     
-    /// Find posible destination token (symbol)
-    /// - Parameter fromTokenName: from token name (symbol)
-    /// - Returns: List of token symbols that can be swapped to
+    /// Find posible destination tokens by mint
+    /// - Parameter fromMint: from token mint
+    /// - Returns: List of token mints that can be swapped to
     public func findPosibleDestinationMints(
         fromMint: String
     ) throws -> [String] {
@@ -184,6 +184,7 @@ public class OrcaSwap: OrcaSwapType {
         guard let toTokenName = toTokenName else {
             // get all routes that have token A
             let routes = info.routes.filter {$0.key.components(separatedBy: "/").contains(fromTokenName)}
+                .filter {!$0.value.isEmpty}
             return routes
         }
 
@@ -194,6 +195,7 @@ public class OrcaSwap: OrcaSwapType {
             pair.reversed().joined(separator: "/")
         ]
         return info.routes.filter {validRoutesNames.contains($0.key)}
+            .filter {!$0.value.isEmpty}
     }
     
     /// Map mint to token info
