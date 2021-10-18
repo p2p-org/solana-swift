@@ -13,7 +13,7 @@ private let socnPubkey = "64DzCPdUpQUTnSgY6hP6ux125vY2v3aWbE4T4G42SM1j"
 private let solPubkey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
 private let usdcPubkey = "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3"
 
-class OrcaSwapIntegrationTests: XCTestCase {
+class OrcaSwapDirectTests: XCTestCase {
     var solanaSDK: SolanaSDK!
     var orcaSwap: OrcaSwap!
     
