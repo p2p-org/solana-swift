@@ -106,5 +106,20 @@ class OrcaSwapIntegrationTests: XCTestCase {
         
         XCTAssertNoThrow(try swapSimulation.toBlocking().first())
     }
+    
+    func testDirectSwapSPLToUncreatedSPL() throws {
+        let amount: Double = 0.1 // 0.1 USDC to MNGO
+        
+        let swapSimulation = orcaSwap.swap(
+            fromWalletPubkey: usdcPubkey,
+            toWalletPubkey: nil,
+            bestPoolsPair: [usdcMNGOAquafarmsPool],
+            amount: amount,
+            slippage: 0.005,
+            isSimulation: true
+        )
+        
+        XCTAssertNoThrow(try swapSimulation.toBlocking().first())
+    }
 }
 

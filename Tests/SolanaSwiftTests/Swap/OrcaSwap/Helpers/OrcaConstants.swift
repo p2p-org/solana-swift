@@ -14,6 +14,7 @@ let socnMint = "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm"
 let solMint = "So11111111111111111111111111111111111111112"
 let ninjaMint = "FgX1WD9WzMU3yLwXaFSarPfkgzjLb2DZCqmkx9ExpuvJ"
 let usdcMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+let mngoMint = "MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac"
 
 let socnSOLStableAquafarmsPool = OrcaSwap.Pool(
     account: "2q6UMko5kTnv866W9MTeAFau94pLpsdeNjDdSYSgZUXr",
@@ -126,5 +127,33 @@ let socnUSDCAquafarmsPool = OrcaSwap.Pool(
         decimals: 6,
         uiAmountString: "554749.837968"
     ),
+    isStable: nil
+)
+
+let usdcMNGOAquafarmsPool = OrcaSwap.Pool(
+    account: "Hk9ZCvmqVT1FHNkWJMrtMkkVnH1WqssWPAvmio5Vs3se",
+    authority: "5RyiYaHFDVupwnwxzKCRk7JY1CKhsczZXefMs3UUmx4Z",
+    nonce: 254,
+    poolTokenMint: "H9yC7jDng974WwcU4kTGs7BKf7nBNswpdsP5bzbdXjib",
+    tokenAccountA: "5yMoAhjfFaCPwEwKM2VeFFh2iBs5mHWLTJ4LuqZifsgN",
+    tokenAccountB: "J8bQnhcNyixFGBskQoJ2aSPXPWjvSzaaxF4YPs96XHDJ",
+    feeAccount: "FWKcKaMfaVezLRFr946MdgmpTZHG4A2GgqehAxjTyDAB",
+    hostFeeAccount: nil,
+    feeNumerator: 25,
+    feeDenominator: 10000,
+    ownerTradeFeeNumerator: 5,
+    ownerTradeFeeDenominator: 10000,
+    ownerWithdrawFeeNumerator: 0,
+    ownerWithdrawFeeDenominator: 0,
+    hostFeeNumerator: 0,
+    hostFeeDenominator: 0,
+    tokenAName: "USDC",
+    tokenBName: "MNGO",
+    curveType: "ConstantProduct",
+    amp: nil,
+    programVersion: 2,
+    deprecated: nil,
+    tokenABalance: .init(uiAmount: 455018.515099, amount: "455018515099", decimals: 6, uiAmountString: "455018.515099"),
+    tokenBBalance: .init(uiAmount: 1772765.337297, amount: "1772765337297", decimals: 6, uiAmountString: "1772765.337297"),
     isStable: nil
 )
