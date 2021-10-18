@@ -42,14 +42,14 @@ class OrcaSwapTransitiveTests: XCTestCase {
     
     // MARK: - Transitive SOL to SPL
     func testTransitiveSwapSOLToCreatedSPL() throws {
-        let amount: Double = 0.001 // 0.001 SOL to created SLIM
+        let amount: Double = 0.0001 // 0.0001 SOL to created SLIM
         
         let swapSimulation = orcaSwap.swap(
             fromWalletPubkey: OrcaSwap.solPubkey,
             toWalletPubkey: OrcaSwap.slimPubkey,
             bestPoolsPair: [OrcaSwap.solUSDCAquafarmsPool, OrcaSwap.usdcSLIMAquafarmsPool],
             amount: amount,
-            slippage: 0.005,
+            slippage: 0.001,
             isSimulation: true
         )
         

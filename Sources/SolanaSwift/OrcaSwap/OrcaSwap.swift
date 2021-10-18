@@ -237,7 +237,7 @@ public class OrcaSwap: OrcaSwapType {
                         .init(
                             account: pool1AccountInstructions.account,
                             instructions: pool0AccountInstructions.instructions + pool1AccountInstructions.instructions,
-                            cleanupInstructions: pool0AccountInstructions.cleanupInstructions + pool1AccountInstructions.instructions,
+                            cleanupInstructions: pool0AccountInstructions.cleanupInstructions + pool1AccountInstructions.cleanupInstructions,
                             signers: pool0AccountInstructions.signers + pool1AccountInstructions.signers
                         )
                     }
