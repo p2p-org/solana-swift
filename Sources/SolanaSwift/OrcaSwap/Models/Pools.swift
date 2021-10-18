@@ -46,9 +46,9 @@ public extension OrcaSwap {
         
         var reversed: Pool {
             var reversedPool = self
-            swap(&reversedPool.tokenAccountA, &reversedPool.tokenAccountB)
-            swap(&reversedPool.tokenAName, &reversedPool.tokenBName)
-            swap(&reversedPool.tokenABalance, &reversedPool.tokenBBalance)
+            Swift.swap(&reversedPool.tokenAccountA, &reversedPool.tokenAccountB)
+            Swift.swap(&reversedPool.tokenAName, &reversedPool.tokenBName)
+            Swift.swap(&reversedPool.tokenABalance, &reversedPool.tokenBBalance)
             return reversedPool
         }
         
@@ -158,6 +158,120 @@ public extension OrcaSwap {
                 return UInt64(BInt(inputAmountLessFee) * BInt(poolOutputAmount) / BInt(poolInputAmount))
             default:
                 return nil
+            }
+        }
+        
+        /// Construct exchange
+        func constructExchange(
+            tokens: Tokens,
+            solanaClient: OrcaSwapSolanaClient,
+            owner: Account,
+            fromTokenPubkey: String,
+            toTokenPubkey: String?,
+            amount: Lamports,
+            slippage: Double,
+            feeRelayerFeePayer: PublicKey?
+        ) -> Single<AccountInstructions> {
+            guard let fromMint = try? tokens[tokenAName]?.mint.toPublicKey(),
+                  let toMint = try? tokens[tokenBName]?.mint.toPublicKey(),
+                  let fromTokenPubkey = try? fromTokenPubkey.toPublicKey()
+            else {return .error(OrcaSwapError.notFound)}
+            
+            // prepare source
+            let prepareSourceRequest = solanaClient.prepareSourceAccountAndInstructions(
+                myNativeWallet: owner.publicKey,
+                source: fromTokenPubkey,
+                sourceMint: fromMint,
+                amount: amount,
+                feePayer: feeRelayerFeePayer ?? owner.publicKey
+            )
+            
+            // prepare destination
+            let prepareDestinationRequest = solanaClient.prepareDestinationAccountAndInstructions(
+                myAccount: owner.publicKey,
+                destination: try? toTokenPubkey?.toPublicKey(),
+                destinationMint: toMint,
+                feePayer: feeRelayerFeePayer ?? owner.publicKey,
+                closeAfterward: false // FIXME: Check later
+            )
+            
+            return Single.zip(
+                prepareSourceRequest,
+                prepareDestinationRequest
+            )
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .map { sourceAccountInstructions, destinationAccountInstructions -> AccountInstructions in
+                // form instructions
+                var instructions = [TransactionInstruction]()
+                var cleanupInstructions = [TransactionInstruction]()
+                
+                // source
+                instructions.append(contentsOf: sourceAccountInstructions.instructions)
+                cleanupInstructions.append(contentsOf: sourceAccountInstructions.cleanupInstructions)
+                
+                // destination
+                instructions.append(contentsOf: destinationAccountInstructions.instructions)
+                cleanupInstructions.append(contentsOf: destinationAccountInstructions.cleanupInstructions)
+                
+                // userTransferAuthorityPubkey
+                let userTransferAuthority = try Account(network: solanaClient.endpoint.network)
+                var userTransferAuthorityPubkey = userTransferAuthority.publicKey
+                
+                if feeRelayerFeePayer == nil {
+                    // approve (if send without feeRelayer)
+                    let approveTransaction = TokenProgram.approveInstruction(
+                        tokenProgramId: .tokenProgramId,
+                        account: sourceAccountInstructions.account,
+                        delegate: userTransferAuthorityPubkey,
+                        owner: owner.publicKey,
+                        amount: amount
+                    )
+                    instructions.append(approveTransaction)
+                } else {
+                    userTransferAuthorityPubkey = owner.publicKey
+                }
+                
+                // swap
+                guard let minAmountOut = try? getMinimumAmountOut(inputAmount: amount, slippage: slippage)
+                else {throw OrcaSwapError.couldNotEstimatedMinimumOutAmount}
+                
+                let swapInstruction = TokenSwapProgram.swapInstruction(
+                    tokenSwap: try account.toPublicKey(),
+                    authority: try authority.toPublicKey(),
+                    userTransferAuthority: userTransferAuthorityPubkey,
+                    userSource: sourceAccountInstructions.account,
+                    poolSource: try tokenAccountA.toPublicKey(),
+                    poolDestination: try tokenAccountB.toPublicKey(),
+                    userDestination: destinationAccountInstructions.account,
+                    poolMint: try poolTokenMint.toPublicKey(),
+                    feeAccount: try feeAccount.toPublicKey(),
+                    hostFeeAccount: try? hostFeeAccount?.toPublicKey(),
+                    swapProgramId: .orcaSwapId,
+                    tokenProgramId: .tokenProgramId,
+                    amountIn: amount,
+                    minimumAmountOut: minAmountOut
+                )
+                
+                instructions.append(swapInstruction)
+                
+                // send to proxy
+                if feeRelayerFeePayer != nil {
+                    fatalError("Fee Relayer is implementing")
+                }
+                
+                // send without proxy
+                else {
+                    var signers = [userTransferAuthority]
+                    signers.append(contentsOf: sourceAccountInstructions.signers)
+                    signers.append(contentsOf: destinationAccountInstructions.signers)
+                    
+                    return .init(
+                        account: destinationAccountInstructions.account,
+                        instructions: instructions,
+                        cleanupInstructions: cleanupInstructions,
+                        signers: signers
+                    )
+                }
             }
         }
         
@@ -475,7 +589,7 @@ private func computeD(leverage: UInt64, amountA: UInt64, amountB: UInt64) -> UIn
 }
 
 // d = (leverage * sum_x + d_product * n_coins) * initial_d / ((leverage - 1) * initial_d + (n_coins + 1) * d_product)
-func calculateStep(
+private func calculateStep(
   initialD: UInt64,
   leverage: UInt64,
   sumX: UInt64,

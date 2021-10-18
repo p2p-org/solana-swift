@@ -22,7 +22,23 @@ public struct OrcaSwapError: Error {
         .init(description: "Account balance is not found")
     }
     
+    public static var unauthorized: Self {
+        .init(description: "Unauthorized")
+    }
+    
+    public static var couldNotEstimatedMinimumOutAmount: Self {
+        .init(description: "Could not estimate minimum output amount")
+    }
+    
     // MARK: - Pools
+    public static var invalidInputAmount: Self {
+        .init(description: "Invalid input amount")
+    }
+    
+    public static var invalidPool: Self {
+        .init(description: "Invalid pool")
+    }
+    
     public static var ampDoesNotExistInPoolConfig: Self {
         .init(description: "amp does not exist in poolConfig")
     }

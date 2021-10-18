@@ -9,14 +9,11 @@ import Foundation
 import XCTest
 @testable import SolanaSwift
 
-private let btcMint = "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"
-private let ethMint = "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk"
-private let socnMint = "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm"
-
 class OrcaSwapPreparationTests: XCTestCase {
     let orcaSwap = OrcaSwap(
         apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
-        solanaClient: OrcaSwap.MockSolanaClient()
+        solanaClient: OrcaSwap.MockSolanaClient(),
+        accountProvider: OrcaSwap.MockAccountProvider()
     )
     var swapInfo: OrcaSwap.SwapInfo {
         orcaSwap.info!

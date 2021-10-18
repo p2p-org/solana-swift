@@ -19,7 +19,38 @@ extension OrcaSwap {
         }
     }
     
+    struct MockAccountProvider: OrcaSwapAccountProvider {
+        func getAccount() -> OrcaSwap.Account? {
+            try? .init(
+                phrase: "miracle pizza supply useful steak border same again youth silver access hundred"
+                    .components(separatedBy: " "),
+                network: .mainnetBeta,
+                derivablePath: .init(type: .deprecated, walletIndex: 0)
+            )
+        }
+        
+        func getNativeWalletAddress() -> OrcaSwap.PublicKey? {
+            getAccount()?.publicKey
+        }
+    }
+    
     struct MockSolanaClient: OrcaSwapSolanaClient {
+        func prepareSourceAccountAndInstructions(myNativeWallet: OrcaSwap.PublicKey, source: OrcaSwap.PublicKey, sourceMint: OrcaSwap.PublicKey, amount: OrcaSwap.Lamports, feePayer: OrcaSwap.PublicKey) -> Single<OrcaSwap.AccountInstructions> {
+            fatalError()
+        }
+        
+        func prepareDestinationAccountAndInstructions(myAccount: OrcaSwap.PublicKey, destination: OrcaSwap.PublicKey?, destinationMint: OrcaSwap.PublicKey, feePayer: OrcaSwap.PublicKey, closeAfterward: Bool) -> Single<OrcaSwap.AccountInstructions> {
+            fatalError()
+        }
+        
+        var endpoint: OrcaSwap.APIEndPoint {
+            fatalError()
+        }
+        
+        func serializeAndSend(instructions: [OrcaSwap.TransactionInstruction], recentBlockhash: String?, signers: [OrcaSwap.Account], isSimulation: Bool) -> Single<String> {
+            fatalError()
+        }
+        
         func getTokenAccountBalance(pubkey: String, commitment: SolanaSDK.Commitment?) -> Single<SolanaSDK.TokenAccountBalance> {
             // BTC/ETH
             if pubkey == "81w3VGbnszMKpUwh9EzAF9LpRzkKxc5XYCW64fuYk1jH" {
