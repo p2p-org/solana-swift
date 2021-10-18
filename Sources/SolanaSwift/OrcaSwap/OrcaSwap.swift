@@ -121,13 +121,13 @@ public class OrcaSwap: OrcaSwapType {
         _ inputAmount: UInt64,
         from poolsPairs: [PoolsPair]
     ) throws -> PoolsPair? {
-        var poolsPairs = poolsPairs
-        
-        // filter out deprecated pools
-        let indeprecatedPools = poolsPairs.filter {!$0.contains(where: {$0.deprecated == true})}
-        if indeprecatedPools.count > 0 {
-            poolsPairs = indeprecatedPools
-        }
+//        var poolsPairs = poolsPairs
+//
+//        // filter out deprecated pools
+//        let indeprecatedPools = poolsPairs.filter {!$0.contains(where: {$0.deprecated == true})}
+//        if indeprecatedPools.count > 0 {
+//            poolsPairs = indeprecatedPools
+//        }
         
         guard poolsPairs.count > 0 else {return nil}
         
@@ -151,13 +151,13 @@ public class OrcaSwap: OrcaSwapType {
         _ estimatedAmount: UInt64,
         from poolsPairs: [PoolsPair]
     ) throws -> PoolsPair? {
-        var poolsPairs = poolsPairs
-        
-        // filter out deprecated pools
-        let indeprecatedPools = poolsPairs.filter {!$0.contains(where: {$0.deprecated == true})}
-        if indeprecatedPools.count > 0 {
-            poolsPairs = indeprecatedPools
-        }
+//        var poolsPairs = poolsPairs
+//        
+//        // filter out deprecated pools
+//        let indeprecatedPools = poolsPairs.filter {!$0.contains(where: {$0.deprecated == true})}
+//        if indeprecatedPools.count > 0 {
+//            poolsPairs = indeprecatedPools
+//        }
         
         guard poolsPairs.count > 0 else {return nil}
         
