@@ -24,7 +24,7 @@ extension SolanaSDK {
     }
     
     public func getSwapPools() -> Single<[Pool]> {
-        getPools(swapProgramId: PublicKey.orcaSwapId.base58EncodedString)
+        getPools(swapProgramId: PublicKey.orcaSwapId().base58EncodedString)
             .map {
                 $0.filter {
                     $0.tokenABalance?.amountInUInt64 != 0 &&

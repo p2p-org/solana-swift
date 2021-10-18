@@ -251,7 +251,7 @@ public extension OrcaSwap {
                     poolMint: try poolTokenMint.toPublicKey(),
                     feeAccount: try feeAccount.toPublicKey(),
                     hostFeeAccount: try? hostFeeAccount?.toPublicKey(),
-                    swapProgramId: .orcaSwapId,
+                    swapProgramId: .orcaSwapId(version: deprecated == true ? 1: 2),
                     tokenProgramId: .tokenProgramId,
                     amountIn: amount,
                     minimumAmountOut: minAmountOut
