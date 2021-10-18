@@ -47,18 +47,8 @@ extension OrcaSwap {
         amp: 100,
         programVersion: 2,
         deprecated: nil,
-        tokenABalance: .init(
-            uiAmount: 20548.358418788,
-            amount: "20548358418788",
-            decimals: 9,
-            uiAmountString: "20548.358418788"
-        ),
-        tokenBBalance: .init(
-            uiAmount: 26424.277517753,
-            amount: "26424277517753",
-            decimals: 9,
-            uiAmountString: "26424.277517753"
-        ),
+        tokenABalance: .init(amount: "19645113670860", decimals: 9),
+        tokenBBalance: .init(amount: "27266410382891", decimals: 9),
         isStable: true
     )
 

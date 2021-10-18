@@ -222,7 +222,8 @@ public class OrcaSwap: OrcaSwapType {
                     toTokenPubkey: toWalletPubkey,
                     amount: amount,
                     slippage: slippage,
-                    feeRelayerFeePayer: feeRelayerFeePayer
+                    feeRelayerFeePayer: feeRelayerFeePayer,
+                    shouldCreateAssociatedTokenAccount: true
                 )
         } else {
             let pool0 = bestPoolsPair[0]
@@ -251,7 +252,8 @@ public class OrcaSwap: OrcaSwapType {
                             toTokenPubkey: intermediaryTokenAddress.base58EncodedString,
                             amount: amount,
                             slippage: slippage,
-                            feeRelayerFeePayer: feeRelayerFeePayer
+                            feeRelayerFeePayer: feeRelayerFeePayer,
+                            shouldCreateAssociatedTokenAccount: false
                         )
                         .flatMap {[weak self] pool0AccountInstructions -> Single<AccountInstructions> in
                             guard let self = self,
@@ -266,7 +268,8 @@ public class OrcaSwap: OrcaSwapType {
                                 toTokenPubkey: destinationTokenAddress.base58EncodedString,
                                 amount: amount,
                                 slippage: slippage,
-                                feeRelayerFeePayer: feeRelayerFeePayer
+                                feeRelayerFeePayer: feeRelayerFeePayer,
+                                shouldCreateAssociatedTokenAccount: false
                             )
                             .map {pool1AccountInstructions in
                                 .init(

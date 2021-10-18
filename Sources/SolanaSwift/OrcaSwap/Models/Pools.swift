@@ -170,7 +170,8 @@ public extension OrcaSwap {
             toTokenPubkey: String?,
             amount: Lamports,
             slippage: Double,
-            feeRelayerFeePayer: PublicKey?
+            feeRelayerFeePayer: PublicKey?,
+            shouldCreateAssociatedTokenAccount: Bool
         ) -> Single<AccountInstructions> {
             guard let fromMint = try? tokens[tokenAName]?.mint.toPublicKey(),
                   let toMint = try? tokens[tokenBName]?.mint.toPublicKey(),
@@ -188,7 +189,9 @@ public extension OrcaSwap {
             
             // prepare destination
             let prepareDestinationRequest: Single<AccountInstructions>
-            if let destination = try? toTokenPubkey?.toPublicKey() {
+            if let destination = try? toTokenPubkey?.toPublicKey(),
+               !shouldCreateAssociatedTokenAccount
+            {
                 prepareDestinationRequest = .just(.init(account: destination))
             } else {
                 prepareDestinationRequest = solanaClient.prepareDestinationAccountAndInstructions(

@@ -252,6 +252,13 @@ public extension SolanaSDK {
             self.uiAmountString = uiAmountString
         }
         
+        init(amount: String, decimals: UInt8?) {
+            self.uiAmount = UInt64(amount)?.convertToBalance(decimals: decimals)
+            self.amount = amount
+            self.decimals = decimals
+            self.uiAmountString = "\(uiAmount ?? 0)"
+        }
+        
 		public let uiAmount: Float64?
 		public let amount: String
 		public let decimals: UInt8?
