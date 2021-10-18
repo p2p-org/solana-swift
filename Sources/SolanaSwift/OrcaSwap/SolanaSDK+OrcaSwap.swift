@@ -9,3 +9,4 @@ import Foundation
 
 extension SolanaSDK: OrcaSwapSolanaClient {}
 extension SolanaSDK: OrcaSwapAccountProvider {}
+extension SolanaSDK.Socket: OrcaSwapSignatureNotificationHandler {}

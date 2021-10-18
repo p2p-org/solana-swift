@@ -384,7 +384,7 @@ extension SolanaSDK {
                     if isRegistered {
                         return .init(
                             account: associatedAddress,
-                            cleanupInstructions: cleanupInstructions
+                            cleanupInstructions: []
                         )
                     }
                     

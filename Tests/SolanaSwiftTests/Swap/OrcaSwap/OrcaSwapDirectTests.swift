@@ -34,7 +34,8 @@ class OrcaSwapDirectTests: XCTestCase {
         orcaSwap = OrcaSwap(
             apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
             solanaClient: solanaSDK,
-            accountProvider: solanaSDK
+            accountProvider: solanaSDK,
+            notificationHandler: OrcaSwap.MockSocket()
         )
         
         _ = orcaSwap.load().toBlocking().materialize()

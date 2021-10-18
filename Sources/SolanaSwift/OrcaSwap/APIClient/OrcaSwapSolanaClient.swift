@@ -41,3 +41,7 @@ public protocol OrcaSwapAccountProvider {
     func getAccount() -> OrcaSwap.Account?
     func getNativeWalletAddress() -> OrcaSwap.PublicKey?
 }
+
+public protocol OrcaSwapSignatureNotificationHandler {
+    func observeSignatureNotification(signature: String) -> Completable
+}

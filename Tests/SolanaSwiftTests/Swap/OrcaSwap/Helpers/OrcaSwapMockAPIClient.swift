@@ -96,6 +96,12 @@ extension OrcaSwap {
             fatalError()
         }
     }
+    
+    struct MockSocket: OrcaSwapSignatureNotificationHandler {
+        func observeSignatureNotification(signature: String) -> Completable {
+            fatalError()
+        }
+    }
 }
 
 func getFileFrom(type: String, network: String) -> Data {

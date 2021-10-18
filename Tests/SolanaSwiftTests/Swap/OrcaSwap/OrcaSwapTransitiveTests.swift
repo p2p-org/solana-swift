@@ -12,6 +12,7 @@ import XCTest
 class OrcaSwapTransitiveTests: XCTestCase {
     var solanaSDK: SolanaSDK!
     var orcaSwap: OrcaSwap!
+    var socket: SolanaSDK.Socket!
     
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -31,10 +32,13 @@ class OrcaSwapTransitiveTests: XCTestCase {
         )
         try accountStorage.save(account)
         
+        socket = SolanaSDK.Socket(endpoint: endpoint.socketUrl)
+        
         orcaSwap = OrcaSwap(
             apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
             solanaClient: solanaSDK,
-            accountProvider: solanaSDK
+            accountProvider: solanaSDK,
+            notificationHandler: socket
         )
         
         _ = orcaSwap.load().toBlocking().materialize()
@@ -42,17 +46,36 @@ class OrcaSwapTransitiveTests: XCTestCase {
     
     // MARK: - Transitive SOL to SPL
     func testTransitiveSwapSOLToCreatedSPL() throws {
-        let amount: Double = 0.0001 // 0.0001 SOL to created SLIM
+        let amount: Double = 0.001 // 0.001 SOL to created SLIM
         
         let swapSimulation = orcaSwap.swap(
             fromWalletPubkey: OrcaSwap.solPubkey,
             toWalletPubkey: OrcaSwap.slimPubkey,
             bestPoolsPair: [OrcaSwap.solUSDCAquafarmsPool, OrcaSwap.usdcSLIMAquafarmsPool],
             amount: amount,
-            slippage: 0.001,
+            slippage: 0.01,
             isSimulation: true
         )
         
         XCTAssertNoThrow(try swapSimulation.toBlocking().first())
+    }
+    
+    func testTransitiveSwapSOLToUncreatedSPL() throws {
+        socket.connect()
+        
+        let amount: Double = 0.01 // 0.001 SOL to uncreated KURO
+        
+        let swapSimulation = orcaSwap.swap(
+            fromWalletPubkey: OrcaSwap.solPubkey,
+            toWalletPubkey: nil,
+            bestPoolsPair: [OrcaSwap.solUSDCAquafarmsPool, OrcaSwap.usdcKUROAquafarmsPool],
+            amount: amount,
+            slippage: 0.5,
+            isSimulation: true
+        )
+        
+        XCTAssertNoThrow(try swapSimulation.toBlocking().first())
+        
+        socket.disconnect()
     }
 }

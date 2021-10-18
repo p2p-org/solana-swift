@@ -187,13 +187,18 @@ public extension OrcaSwap {
             )
             
             // prepare destination
-            let prepareDestinationRequest = solanaClient.prepareDestinationAccountAndInstructions(
-                myAccount: owner.publicKey,
-                destination: try? toTokenPubkey?.toPublicKey(),
-                destinationMint: toMint,
-                feePayer: feeRelayerFeePayer ?? owner.publicKey,
-                closeAfterward: false // FIXME: Check later
-            )
+            let prepareDestinationRequest: Single<AccountInstructions>
+            if let destination = try? toTokenPubkey?.toPublicKey() {
+                prepareDestinationRequest = .just(.init(account: destination))
+            } else {
+                prepareDestinationRequest = solanaClient.prepareDestinationAccountAndInstructions(
+                    myAccount: owner.publicKey,
+                    destination: try? toTokenPubkey?.toPublicKey(),
+                    destinationMint: toMint,
+                    feePayer: feeRelayerFeePayer ?? owner.publicKey,
+                    closeAfterward: false // FIXME: Check later
+                )
+            }
             
             return Single.zip(
                 prepareSourceRequest,

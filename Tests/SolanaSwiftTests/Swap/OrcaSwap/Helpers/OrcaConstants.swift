@@ -17,6 +17,7 @@ extension OrcaSwap {
     static let usdcMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
     static let mngoMint = "MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac"
     static let slimMint = "xxxxa1sKNGwFtw2kFn8XauW9xq8hBZ5kVtcSesTT9fW"
+    static let kuroMint = "2Kc38rfQ49DFaKHQaWbijkE7fcymUMLY5guUiUsDmFfn"
     
     static let socnPubkey = "64DzCPdUpQUTnSgY6hP6ux125vY2v3aWbE4T4G42SM1j"
     static let solPubkey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
@@ -218,6 +219,62 @@ extension OrcaSwap {
         deprecated: nil,
         tokenABalance: .init(uiAmount: 423867.437266, amount: "423867437266", decimals: 6, uiAmountString: "423867.437266"),
         tokenBBalance: .init(uiAmount: 200571.837175, amount: "200571837175", decimals: 6, uiAmountString: "200571.837175"),
+        isStable: nil
+    )
+    
+    static let solUSDCPool = OrcaSwap.Pool(
+        account: "6fTRDD7sYxCN7oyoSQaN1AWC3P2m8A6gVZzGrpej9DvL",
+        authority: "B52XRdfTsh8iUGbGEBJLHyDMjhaTW8cAFCmpASGJtnNK",
+        nonce: 253,
+        poolTokenMint: "ECFcUGwHHMaZynAQpqRHkYeTBnS5GnPWZywM8aggcs3A",
+        tokenAccountA: "FdiTt7XQ94fGkgorywN1GuXqQzmURHCDgYtUutWRcy4q",
+        tokenAccountB: "7VcwKUtdKnvcgNhZt5BQHsbPrXLxhdVomsgrr7k2N5P5",
+        feeAccount: "4pdzKqAGd1WbXn1L4UpY4r58irTfjFYMYNudBrqbQaYJ",
+        hostFeeAccount: nil,
+        feeNumerator: 30,
+        feeDenominator: 10000,
+        ownerTradeFeeNumerator: 0,
+        ownerTradeFeeDenominator: 0,
+        ownerWithdrawFeeNumerator: 0,
+        ownerWithdrawFeeDenominator: 0,
+        hostFeeNumerator: 0,
+        hostFeeDenominator: 0,
+        tokenAName: "SOL",
+        tokenBName: "USDC",
+        curveType: "ConstantProduct",
+        amp: nil,
+        programVersion: nil,
+        deprecated: true,
+        tokenABalance: .init(uiAmount: 367.286039883, amount: "367286039883", decimals: 9, uiAmountString: "367.286039883"),
+        tokenBBalance: .init(uiAmount: 57698.20799, amount: "57698207990", decimals: 6, uiAmountString: "57698.20799"),
+        isStable: nil
+    )
+    
+    static let usdcKUROAquafarmsPool = OrcaSwap.Pool(
+        account: "HdeYs4bpJKN2oTb7PHxbqq4kzKiLr772A5N2gWjY57ZT",
+        authority: "2KRcBDQJWEPygxcMMFMvR6dMTVtMkJV6kbxr5e9Kdj5Q",
+        nonce: 250,
+        poolTokenMint: "DRknxb4ZFxXUTG6UJ5HupNHG1SmvBSCPzsZ1o9gAhyBi",
+        tokenAccountA: "B252w7ZkUX4WyLUJKLEymEpRkYMqJhgv2PSj2Z2LWH34",
+        tokenAccountB: "DBckbD9CoRBFE8WdbbnFLDz6WdDDSZ7ReEeqdjL62fpG",
+        feeAccount: "5XuLrZqpX9gW3pJw7274EYwAft1ciTXndU4on96ERi9J",
+        hostFeeAccount: nil,
+        feeNumerator: 25,
+        feeDenominator: 10000,
+        ownerTradeFeeNumerator: 5,
+        ownerTradeFeeDenominator: 10000,
+        ownerWithdrawFeeNumerator: 0,
+        ownerWithdrawFeeDenominator: 0,
+        hostFeeNumerator: 0,
+        hostFeeDenominator: 0,
+        tokenAName: "USDC",
+        tokenBName: "KURO",
+        curveType: "ConstantProduct",
+        amp: nil,
+        programVersion: 2,
+        deprecated: nil,
+        tokenABalance: .init(uiAmount: 437928.692012, amount: "437928692012", decimals: 6, uiAmountString: "437928.692012"),
+        tokenBBalance: .init(uiAmount: 3184945.666107, amount: "3184945666107", decimals: 6, uiAmountString: "3184945.666107"),
         isStable: nil
     )
 }

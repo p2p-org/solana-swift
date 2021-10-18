@@ -13,7 +13,8 @@ class OrcaSwapPreparationTests: XCTestCase {
     let orcaSwap = OrcaSwap(
         apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
         solanaClient: OrcaSwap.MockSolanaClient(),
-        accountProvider: OrcaSwap.MockAccountProvider()
+        accountProvider: OrcaSwap.MockAccountProvider(),
+        notificationHandler: OrcaSwap.MockSocket()
     )
     var swapInfo: OrcaSwap.SwapInfo {
         orcaSwap.info!
