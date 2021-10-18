@@ -53,7 +53,7 @@ class OrcaSwapTransitiveTests: XCTestCase {
             toWalletPubkey: OrcaSwap.slimPubkey,
             bestPoolsPair: [OrcaSwap.solUSDCAquafarmsPool, OrcaSwap.usdcSLIMAquafarmsPool],
             amount: amount,
-            slippage: 0.01,
+            slippage: 0.05,
             isSimulation: true
         )
         
@@ -70,7 +70,7 @@ class OrcaSwapTransitiveTests: XCTestCase {
             toWalletPubkey: nil,
             bestPoolsPair: [OrcaSwap.solUSDCAquafarmsPool, OrcaSwap.usdcKUROAquafarmsPool],
             amount: amount,
-            slippage: 0.5,
+            slippage: 0.05,
             isSimulation: true
         )
         
