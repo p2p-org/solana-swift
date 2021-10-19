@@ -179,13 +179,18 @@ public extension OrcaSwap {
             else {return .error(OrcaSwapError.notFound)}
             
             // prepare source
-            let prepareSourceRequest = solanaClient.prepareSourceAccountAndInstructions(
-                myNativeWallet: owner.publicKey,
-                source: fromTokenPubkey,
-                sourceMint: fromMint,
-                amount: amount,
-                feePayer: feeRelayerFeePayer ?? owner.publicKey
-            )
+            let prepareSourceRequest: Single<AccountInstructions>
+            if !shouldCreateAssociatedTokenAccount {
+                prepareSourceRequest = .just(.init(account: fromTokenPubkey))
+            } else {
+                prepareSourceRequest = solanaClient.prepareSourceAccountAndInstructions(
+                    myNativeWallet: owner.publicKey,
+                    source: fromTokenPubkey,
+                    sourceMint: fromMint,
+                    amount: amount,
+                    feePayer: feeRelayerFeePayer ?? owner.publicKey
+                )
+            }
             
             // prepare destination
             let prepareDestinationRequest: Single<AccountInstructions>
