@@ -168,7 +168,7 @@ extension SolanaSDK {
                     poolMint: pool.swapData.tokenPool,
                     feeAccount: pool.swapData.feeAccount,
                     hostFeeAccount: nil,
-                    swapProgramId: .orcaSwapId,
+                    swapProgramId: .orcaSwapId(),
                     tokenProgramId: .tokenProgramId,
                     amountIn: amount,
                     minimumAmountOut: minAmountOut
@@ -384,7 +384,7 @@ extension SolanaSDK {
                     if isRegistered {
                         return .init(
                             account: associatedAddress,
-                            cleanupInstructions: cleanupInstructions
+                            cleanupInstructions: []
                         )
                     }
                     
@@ -502,7 +502,7 @@ extension SolanaSDK {
                     poolMint: feeCompensationPool.swapData.tokenPool,
                     feeAccount: feeCompensationPool.swapData.feeAccount,
                     hostFeeAccount: nil,
-                    swapProgramId: .orcaSwapId,
+                    swapProgramId: .orcaSwapId(),
                     tokenProgramId: .tokenProgramId,
                     amountIn: feeAmount,
                     minimumAmountOut: feeMinAmountOut

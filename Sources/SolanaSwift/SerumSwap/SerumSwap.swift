@@ -127,8 +127,8 @@ public struct SerumSwap {
     /// Executes a swap against the Serum DEX.
     /// - Returns: Signers and instructions for creating multiple transactions
     public func swap(
-        fromWallet: SolanaSDK.Wallet,
-        toWallet: SolanaSDK.Wallet,
+        fromWallet: Wallet,
+        toWallet: Wallet,
         amount: Double,
         slippage: Double,
         isSimulation: Bool = false

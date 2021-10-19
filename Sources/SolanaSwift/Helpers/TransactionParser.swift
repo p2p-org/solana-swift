@@ -372,7 +372,8 @@ public extension SolanaSDK {
             // ignore liqu
             instructions.firstIndex(
                 where: {
-                    $0.programId == PublicKey.orcaSwapId.base58EncodedString /*swap ocra*/ ||
+                    $0.programId == PublicKey.orcaSwapId(version: 1).base58EncodedString /*swap ocra*/ ||
+                        $0.programId == PublicKey.orcaSwapId(version: 2).base58EncodedString /*swap ocra*/ ||
                         $0.programId == "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL" /*main deprecated*/ ||
                         $0.programId == "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8" /*main deprecated*/
                 })
@@ -666,17 +667,6 @@ public extension SolanaSDK {
                     return .just($0)
                 }
         }
-    }
-}
-
-private extension Array where Element: Equatable {
-    var unique: [Element] {
-        var uniqueValues: [Element] = []
-        forEach { item in
-            guard !uniqueValues.contains(item) else { return }
-            uniqueValues.append(item)
-        }
-        return uniqueValues
     }
 }
 

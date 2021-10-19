@@ -119,24 +119,6 @@ solanaSDK.sendSPLTokens(
     })
     .disposed(by: disposeBag)
 ```
-
-* Swap with orca:
-```swift
-solanaSDK.swap(
-    source: PublicKey, // if source is a native SOL wallet, send the account's pubkey here anyway
-    sourceMint: PublicKey,
-    destination: PublicKey? = nil,
-    destinationMint: PublicKey,
-    slippage: Double,
-    amount: UInt64,
-    isSimulation: Bool = false
-)
-    .subscribe(onNext: {result in
-        print(result)
-    })
-    .disposed(by: disposeBag)
-```
-
 * Send custom method, which was not defined by using method `request<T: Decodable>(method:, path:, bcMethod:, parameters:) -> Single<T>`
 
 Example:
@@ -153,8 +135,62 @@ solanaSDK.observeAccountNotifications() // return an Observable<(pubkey: String,
 solanaSDK.observeSignatureNotification(signature: <SIGNATURE>) // return an Completable
 ```
 
-## How to use Serum swap (DEX)
-* create an instance of SerumSwap
+## How to use OrcaSwap
+* To test transitive swap with orca, the account must have some `SOL` and `KURO` token, then add this extensions to `Tests` target
+```swift
+extension OrcaSwapTransitiveTests {
+    var kuroPubkey: String {
+        <KURO-pubkey-here>
+    }
+    
+    var secretPhrase: String {
+        <account-seed-phrases>
+    }
+}
+```
+
+* Create instance of orca
+```swift
+let orcaSwap = OrcaSwap(
+    apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
+    solanaClient: solanaSDK,
+    accountProvider: solanaSDK,
+    notificationHandler: socket
+)
+```
+* Swap
+```swift
+// load any dependencies for swap to work
+orcaSwap.load()
+
+// find any destination that can be swapped to from a defined token mint
+orcaSwap.findPosibleDestinationMints(fromMint: btcMint)
+
+// get multiple tradable pools pairs (or routes) for a token pair (each pool pairs contains 1 or 2 pools for swapping)
+orcaSwap.getTradablePoolsPairs(fromMint: btcMint, toMint: ethMint)
+
+// get bestPool pair for swapping from tradable pools pairs that got from getTradablePoolsPair method, this method return a pool pair that can be used for swapping
+orcaSwap.findBestPoolsPairForInputAmount(inputAmount, from: poolsPairs)
+orcaSwap.findBestPoolsPairForEstimatedAmount(estimatedAmount, from: poolsPairs)
+
+// swap
+orcaSwap.swap(
+    fromWalletPubkey: <BTC wallet>,
+    toWalletPubkey: <ETH wallet>?,
+    bestPoolsPair: <best pool pair>,
+    amount: amount,
+    slippage: 0.05,
+    isSimulation: false
+)
+    .subscribe(onNext: {result in
+        print(result)
+    })
+    .disposed(by: disposeBag)
+```
+
+
+## How to use Serum swap (DEX) (NOT STABLE)
+* Create an instance of SerumSwap
 ```swift
 let serumSwap = SerumSwap(client: solanaSDK, accountProvider: solanaSDK)
 ```
