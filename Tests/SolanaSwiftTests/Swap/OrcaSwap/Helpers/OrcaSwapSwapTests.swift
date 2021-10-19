@@ -87,13 +87,13 @@ class OrcaSwapSwapTests: XCTestCase {
         isStable: true
     )
 
-    let solNinjaAquafarmsPool = OrcaSwap.Pool(
+    let ninjaSOLAquafarmsPool = OrcaSwap.Pool(
         account: "3ECUtPokme1nimJfuAkMtcm7QYjDEfXRQzmGC16LuYnz",
         authority: "H8f9n2PfehUc73gRWSRTPXvqUhUHVywdAxcfEtYmmyAo",
         nonce: 255,
         poolTokenMint: "4X1oYoFWYtLebk51zuh889r1WFLe8Z9qWApj87hQMfML",
-        tokenAccountA: "9SxzphwrrDVDkwkyvmtag9NLgpjSkTw35cRwg9rLMYWk",
-        tokenAccountB: "6Y9VyEYHgxVahiixzphNh4HAywpab9zVoD4S8q1sfuL8",
+        tokenAccountA: "6Y9VyEYHgxVahiixzphNh4HAywpab9zVoD4S8q1sfuL8",
+        tokenAccountB: "9SxzphwrrDVDkwkyvmtag9NLgpjSkTw35cRwg9rLMYWk",
         feeAccount: "43ViAbUVujnYtJyzGP4AhabMYCbLsExenT3WKsZjqJ7N",
         hostFeeAccount: nil,
         feeNumerator: 25,
@@ -104,24 +104,14 @@ class OrcaSwapSwapTests: XCTestCase {
         ownerWithdrawFeeDenominator: 0,
         hostFeeNumerator: 0,
         hostFeeDenominator: 0,
-        tokenAName: "SOL",
-        tokenBName: "NINJA",
+        tokenAName: "NINJA",
+        tokenBName: "SOL",
         curveType: "ConstantProduct",
         amp: nil,
         programVersion: 2,
         deprecated: nil,
-        tokenABalance: .init(
-            uiAmount: 19449.398641374,
-            amount: "19449398641374",
-            decimals: 9,
-            uiAmountString: "19449.398641374"
-        ),
-        tokenBBalance: .init(
-            uiAmount: 1796762.444462,
-            amount: "1796762444462",
-            decimals: 6,
-            uiAmountString: "1796762.444462"
-        ),
+        tokenABalance: .init(amount: "1796762444462", decimals: 6),
+        tokenBBalance: .init(amount: "19449398641374", decimals: 9),
         isStable: nil
     )
 
@@ -163,13 +153,13 @@ class OrcaSwapSwapTests: XCTestCase {
         isStable: nil
     )
 
-    let usdcMNGOAquafarmsPool = OrcaSwap.Pool(
+    let mngoUSDCAquafarmsPool = OrcaSwap.Pool(
         account: "Hk9ZCvmqVT1FHNkWJMrtMkkVnH1WqssWPAvmio5Vs3se",
         authority: "5RyiYaHFDVupwnwxzKCRk7JY1CKhsczZXefMs3UUmx4Z",
         nonce: 254,
         poolTokenMint: "H9yC7jDng974WwcU4kTGs7BKf7nBNswpdsP5bzbdXjib",
-        tokenAccountA: "5yMoAhjfFaCPwEwKM2VeFFh2iBs5mHWLTJ4LuqZifsgN",
-        tokenAccountB: "J8bQnhcNyixFGBskQoJ2aSPXPWjvSzaaxF4YPs96XHDJ",
+        tokenAccountA: "J8bQnhcNyixFGBskQoJ2aSPXPWjvSzaaxF4YPs96XHDJ",
+        tokenAccountB: "5yMoAhjfFaCPwEwKM2VeFFh2iBs5mHWLTJ4LuqZifsgN",
         feeAccount: "FWKcKaMfaVezLRFr946MdgmpTZHG4A2GgqehAxjTyDAB",
         hostFeeAccount: nil,
         feeNumerator: 25,
@@ -180,14 +170,14 @@ class OrcaSwapSwapTests: XCTestCase {
         ownerWithdrawFeeDenominator: 0,
         hostFeeNumerator: 0,
         hostFeeDenominator: 0,
-        tokenAName: "USDC",
-        tokenBName: "MNGO",
+        tokenAName: "MNGO",
+        tokenBName: "USDC",
         curveType: "ConstantProduct",
         amp: nil,
         programVersion: 2,
         deprecated: nil,
-        tokenABalance: .init(uiAmount: 455018.515099, amount: "455018515099", decimals: 6, uiAmountString: "455018.515099"),
-        tokenBBalance: .init(uiAmount: 1772765.337297, amount: "1772765337297", decimals: 6, uiAmountString: "1772765.337297"),
+        tokenABalance: .init(amount: "1772765337297", decimals: 6),
+        tokenBBalance: .init(amount: "455018515099", decimals: 6),
         isStable: nil
     )
     
@@ -219,13 +209,13 @@ class OrcaSwapSwapTests: XCTestCase {
         isStable: nil
     )
     
-    let usdcSLIMAquafarmsPool = OrcaSwap.Pool(
+    let slimUSDCAquafarmsPool = OrcaSwap.Pool(
         account: "8JPid6GtND2tU3A7x7GDfPPEWwS36rMtzF7YoHU44UoA",
         authority: "749y4fXb9SzqmrLEetQdui5iDucnNiMgCJ2uzc3y7cou",
         nonce: 255,
         poolTokenMint: "BVWwyiHVHZQMPHsiW7dZH7bnBVKmbxdeEjWqVRciHCyo",
-        tokenAccountA: "EFYW6YEiCGpavuMPS1zoXhgfNkPisWkQ3bQz1b4UfKek",
-        tokenAccountB: "ErcxwkPgLdyoVL6j2SsekZ5iysPZEDRGfAggh282kQb8",
+        tokenAccountA: "ErcxwkPgLdyoVL6j2SsekZ5iysPZEDRGfAggh282kQb8",
+        tokenAccountB: "EFYW6YEiCGpavuMPS1zoXhgfNkPisWkQ3bQz1b4UfKek",
         feeAccount: "E6aTzkZKdCECgpDtBZtVpqiGjxRDSAFh1SC9CdSoVK7a",
         hostFeeAccount: nil,
         feeNumerator: 25,
@@ -236,14 +226,14 @@ class OrcaSwapSwapTests: XCTestCase {
         ownerWithdrawFeeDenominator: 0,
         hostFeeNumerator: 0,
         hostFeeDenominator: 0,
-        tokenAName: "USDC",
-        tokenBName: "SLIM",
+        tokenAName: "SLIM",
+        tokenBName: "USDC",
         curveType: "ConstantProduct",
         amp: nil,
         programVersion: 2,
         deprecated: nil,
-        tokenABalance: .init(uiAmount: 423867.437266, amount: "423867437266", decimals: 6, uiAmountString: "423867.437266"),
-        tokenBBalance: .init(uiAmount: 200571.837175, amount: "200571837175", decimals: 6, uiAmountString: "200571.837175"),
+        tokenABalance: .init(uiAmount: 200571.837175, amount: "200571837175", decimals: 6, uiAmountString: "200571.837175"),
+        tokenBBalance: .init(uiAmount: 423867.437266, amount: "423867437266", decimals: 6, uiAmountString: "423867.437266"),
         isStable: nil
     )
     
@@ -275,13 +265,13 @@ class OrcaSwapSwapTests: XCTestCase {
         isStable: nil
     )
     
-    let usdcKUROAquafarmsPool = OrcaSwap.Pool(
+    let kuroUSDCAquafarmsPool = OrcaSwap.Pool(
         account: "HdeYs4bpJKN2oTb7PHxbqq4kzKiLr772A5N2gWjY57ZT",
         authority: "2KRcBDQJWEPygxcMMFMvR6dMTVtMkJV6kbxr5e9Kdj5Q",
         nonce: 250,
         poolTokenMint: "DRknxb4ZFxXUTG6UJ5HupNHG1SmvBSCPzsZ1o9gAhyBi",
-        tokenAccountA: "B252w7ZkUX4WyLUJKLEymEpRkYMqJhgv2PSj2Z2LWH34",
-        tokenAccountB: "DBckbD9CoRBFE8WdbbnFLDz6WdDDSZ7ReEeqdjL62fpG",
+        tokenAccountA: "DBckbD9CoRBFE8WdbbnFLDz6WdDDSZ7ReEeqdjL62fpG",
+        tokenAccountB: "B252w7ZkUX4WyLUJKLEymEpRkYMqJhgv2PSj2Z2LWH34" ,
         feeAccount: "5XuLrZqpX9gW3pJw7274EYwAft1ciTXndU4on96ERi9J",
         hostFeeAccount: nil,
         feeNumerator: 25,
@@ -292,14 +282,42 @@ class OrcaSwapSwapTests: XCTestCase {
         ownerWithdrawFeeDenominator: 0,
         hostFeeNumerator: 0,
         hostFeeDenominator: 0,
-        tokenAName: "USDC",
-        tokenBName: "KURO",
+        tokenAName: "KURO",
+        tokenBName: "USDC",
         curveType: "ConstantProduct",
         amp: nil,
         programVersion: 2,
         deprecated: nil,
-        tokenABalance: .init(uiAmount: 437928.692012, amount: "437928692012", decimals: 6, uiAmountString: "437928.692012"),
-        tokenBBalance: .init(uiAmount: 3184945.666107, amount: "3184945666107", decimals: 6, uiAmountString: "3184945.666107"),
+        tokenABalance: .init(uiAmount: 3184945.666107, amount: "3184945666107", decimals: 6, uiAmountString: "3184945.666107"),
+        tokenBBalance: .init(uiAmount: 437928.692012, amount: "437928692012", decimals: 6, uiAmountString: "437928.692012"),
+        isStable: nil
+    )
+    
+    let abrUSDCAquafarmsPool = OrcaSwap.Pool(
+        account: "rxwsjytcEBvXpXrXBL1rpsjhoh78imBn8WbxjKmLRge",
+        authority: "AcaxutE6Rh9vRxipTLdqinEdRK6R4ayUAAv2bZPh6UU9",
+        nonce: 252,
+        poolTokenMint: "GMzPbaCuQmeMUm1opH3oSCgKUjVgJUW14myq99RVPGX5",
+        tokenAccountA: "6FRxhbY7bvSiDojPiqoidjTyDjxaUyCoPQk3ifEdfFbm",
+        tokenAccountB: "8aTapFecZRZmC2bTeKr2voHFW2twNvbrh8nWYdXYQWkZ",
+        feeAccount: "7pPJGwd8Vq7aYmHaocQpQSfTn3UWYGKUgFkFhpMmRdDF",
+        hostFeeAccount: nil,
+        feeNumerator: 25,
+        feeDenominator: 10000,
+        ownerTradeFeeNumerator: 5,
+        ownerTradeFeeDenominator: 10000,
+        ownerWithdrawFeeNumerator: 0,
+        ownerWithdrawFeeDenominator: 0,
+        hostFeeNumerator: 0,
+        hostFeeDenominator: 0,
+        tokenAName: "ABR",
+        tokenBName: "USDC",
+        curveType: "ConstantProduct",
+        amp: nil,
+        programVersion: 2,
+        deprecated: nil,
+        tokenABalance: .init(amount: "256645842460208", decimals: 9),
+        tokenBBalance: .init(amount: "1555969818559", decimals: 6),
         isStable: nil
     )
 }
