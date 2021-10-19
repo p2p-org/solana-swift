@@ -19,4 +19,5 @@ extension OrcaSwap {
     public typealias TokenProgram = SolanaSDK.TokenProgram
     public typealias TokenSwapProgram = SolanaSDK.TokenSwapProgram
     public typealias APIEndPoint = SolanaSDK.APIEndPoint
+    public typealias SwapResponse = SolanaSDK.SwapResponse
 }
