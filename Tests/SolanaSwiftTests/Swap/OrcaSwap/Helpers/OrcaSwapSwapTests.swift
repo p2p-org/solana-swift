@@ -19,6 +19,10 @@ class OrcaSwapSwapTests: XCTestCase {
         "miracle pizza supply useful steak border same again youth silver access hundred"
     }
     
+    var notificationHandler: OrcaSwapSignatureNotificationHandler {
+        OrcaSwap.MockSocket()
+    }
+    
     override func setUpWithError() throws {
         try super.setUpWithError()
         
@@ -39,7 +43,7 @@ class OrcaSwapSwapTests: XCTestCase {
             apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
             solanaClient: solanaSDK,
             accountProvider: solanaSDK,
-            notificationHandler: OrcaSwap.MockSocket()
+            notificationHandler: notificationHandler
         )
         
         _ = orcaSwap.load().toBlocking().materialize()
@@ -54,11 +58,6 @@ class OrcaSwapSwapTests: XCTestCase {
     let mngoMint = "MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac"
     let slimMint = "xxxxa1sKNGwFtw2kFn8XauW9xq8hBZ5kVtcSesTT9fW"
     let kuroMint = "2Kc38rfQ49DFaKHQaWbijkE7fcymUMLY5guUiUsDmFfn"
-    
-    let socnPubkey = "64DzCPdUpQUTnSgY6hP6ux125vY2v3aWbE4T4G42SM1j"
-    let solPubkey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-    let usdcPubkey = "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3"
-    let slimPubkey = "ECHvg7FdfakbKQpeStwh1K3iU6XwfBQWMNrH7rUAQkN7"
 
     let socnSOLStableAquafarmsPool = OrcaSwap.Pool(
         account: "2q6UMko5kTnv866W9MTeAFau94pLpsdeNjDdSYSgZUXr",

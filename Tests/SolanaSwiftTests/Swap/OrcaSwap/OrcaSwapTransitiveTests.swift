@@ -11,20 +11,35 @@ import XCTest
 
 class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     var socket: SolanaSDK.Socket!
+    override var notificationHandler: OrcaSwapSignatureNotificationHandler {
+        socket
+    }
+    
+    var solPubkey: String {
+        solanaSDK.accountStorage.account!.publicKey.base58EncodedString
+    }
+    
+    override var endpoint: SolanaSDK.APIEndPoint! {
+        .init(url: "https://solana-api.projectserum.com", network: .mainnetBeta)
+    }
+    
+    override var phrase: String {
+        secretPhrase
+    }
     
     override func setUpWithError() throws {
-        try super.setUpWithError()
         socket = SolanaSDK.Socket(endpoint: endpoint.socketUrl)
+        try super.setUpWithError()
     }
     
     // MARK: - Transitive SOL to SPL
     func testTransitiveSwapSOLToCreatedSPL() throws {
-        let amount: Double = 0.001 // 0.001 SOL to created SLIM
+        let amount: Double = 0.01 // 0.001 SOL to created KURO
         
         let swapSimulation = orcaSwap.swap(
             fromWalletPubkey: solPubkey,
-            toWalletPubkey: slimPubkey,
-            bestPoolsPair: [solUSDCAquafarmsPool, usdcSLIMAquafarmsPool],
+            toWalletPubkey: kuroPubkey,
+            bestPoolsPair: [solUSDCAquafarmsPool, usdcKUROAquafarmsPool],
             amount: amount,
             slippage: 0.05,
             isSimulation: true
@@ -36,17 +51,17 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     func testTransitiveSwapSOLToUncreatedSPL() throws {
         socket.connect()
         
-        let amount: Double = 0.01 // 0.001 SOL to uncreated KURO
-        
+        let amount: Double = 0.001 // 0.001 SOL to created USDC
+
         let swapSimulation = orcaSwap.swap(
             fromWalletPubkey: solPubkey,
             toWalletPubkey: nil,
-            bestPoolsPair: [solUSDCAquafarmsPool, usdcKUROAquafarmsPool],
+            bestPoolsPair: [solUSDCAquafarmsPool, usdcSLIMAquafarmsPool],
             amount: amount,
             slippage: 0.05,
-            isSimulation: true
+            isSimulation: false
         )
-        
+
         XCTAssertNoThrow(try swapSimulation.toBlocking().first())
         
         socket.disconnect()

@@ -15,7 +15,7 @@ public protocol OrcaSwapType {
     func findPosibleDestinationMints(fromMint: String) throws -> [String]
     func getTradablePoolsPairs(fromMint: String, toMint: String) -> Single<[OrcaSwap.PoolsPair]>
     func findBestPoolsPairForInputAmount(_ inputAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
-    func findBestPoolForEstimatedAmount(_ estimatedAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
+    func findBestPoolsPairForEstimatedAmount(_ estimatedAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
 }
 
 public class OrcaSwap: OrcaSwapType {
@@ -147,7 +147,7 @@ public class OrcaSwap: OrcaSwapType {
     }
     
     /// Find best pool to swap from estimated amount
-    public func findBestPoolForEstimatedAmount(
+    public func findBestPoolsPairForEstimatedAmount(
         _ estimatedAmount: UInt64,
         from poolsPairs: [PoolsPair]
     ) throws -> PoolsPair? {

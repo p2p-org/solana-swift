@@ -10,6 +10,11 @@ import XCTest
 @testable import SolanaSwift
 
 class OrcaSwapDirectTests: OrcaSwapSwapTests {
+    let socnPubkey = "64DzCPdUpQUTnSgY6hP6ux125vY2v3aWbE4T4G42SM1j"
+    let solPubkey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+    let usdcPubkey = "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3"
+    let slimPubkey = "ECHvg7FdfakbKQpeStwh1K3iU6XwfBQWMNrH7rUAQkN7"
+    
     // MARK: - Direct SOL to SPL
     func testDirectSwapSOLToCreatedSPL() throws {
         let amount: Double = 0.001 // 0.001 SOL to created SOCN
