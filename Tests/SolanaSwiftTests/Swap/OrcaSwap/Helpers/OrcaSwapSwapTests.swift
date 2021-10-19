@@ -1,30 +1,66 @@
 //
-//  File.swift
+//  OrcaSwapSwapTests.swift
 //  
 //
-//  Created by Chung Tran on 18/10/2021.
+//  Created by Chung Tran on 19/10/2021.
 //
 
 import Foundation
+import XCTest
 @testable import SolanaSwift
 
-extension OrcaSwap {
-    static let btcMint = "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"
-    static let ethMint = "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk"
-    static let socnMint = "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm"
-    static let solMint = "So11111111111111111111111111111111111111112"
-    static let ninjaMint = "FgX1WD9WzMU3yLwXaFSarPfkgzjLb2DZCqmkx9ExpuvJ"
-    static let usdcMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-    static let mngoMint = "MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac"
-    static let slimMint = "xxxxa1sKNGwFtw2kFn8XauW9xq8hBZ5kVtcSesTT9fW"
-    static let kuroMint = "2Kc38rfQ49DFaKHQaWbijkE7fcymUMLY5guUiUsDmFfn"
+class OrcaSwapSwapTests: XCTestCase {
+    var solanaSDK: SolanaSDK!
+    var orcaSwap: OrcaSwap!
+    var endpoint: SolanaSDK.APIEndPoint! {
+        .init(url: "https://p2p.rpcpool.com/", network: .mainnetBeta)
+    }
+    var phrase: String {
+        "miracle pizza supply useful steak border same again youth silver access hundred"
+    }
     
-    static let socnPubkey = "64DzCPdUpQUTnSgY6hP6ux125vY2v3aWbE4T4G42SM1j"
-    static let solPubkey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-    static let usdcPubkey = "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3"
-    static let slimPubkey = "ECHvg7FdfakbKQpeStwh1K3iU6XwfBQWMNrH7rUAQkN7"
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        
+        let accountStorage = InMemoryAccountStorage()
+        
+        solanaSDK = SolanaSDK(
+            endpoint: endpoint,
+            accountStorage: accountStorage
+        )
+        
+        let account = try SolanaSDK.Account(
+            phrase: phrase.components(separatedBy: " "),
+            network: endpoint.network
+        )
+        try accountStorage.save(account)
+        
+        orcaSwap = OrcaSwap(
+            apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
+            solanaClient: solanaSDK,
+            accountProvider: solanaSDK,
+            notificationHandler: OrcaSwap.MockSocket()
+        )
+        
+        _ = orcaSwap.load().toBlocking().materialize()
+    }
+    
+    let btcMint = "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"
+    let ethMint = "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk"
+    let socnMint = "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm"
+    let solMint = "So11111111111111111111111111111111111111112"
+    let ninjaMint = "FgX1WD9WzMU3yLwXaFSarPfkgzjLb2DZCqmkx9ExpuvJ"
+    let usdcMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    let mngoMint = "MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac"
+    let slimMint = "xxxxa1sKNGwFtw2kFn8XauW9xq8hBZ5kVtcSesTT9fW"
+    let kuroMint = "2Kc38rfQ49DFaKHQaWbijkE7fcymUMLY5guUiUsDmFfn"
+    
+    let socnPubkey = "64DzCPdUpQUTnSgY6hP6ux125vY2v3aWbE4T4G42SM1j"
+    let solPubkey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+    let usdcPubkey = "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3"
+    let slimPubkey = "ECHvg7FdfakbKQpeStwh1K3iU6XwfBQWMNrH7rUAQkN7"
 
-    static let socnSOLStableAquafarmsPool = OrcaSwap.Pool(
+    let socnSOLStableAquafarmsPool = OrcaSwap.Pool(
         account: "2q6UMko5kTnv866W9MTeAFau94pLpsdeNjDdSYSgZUXr",
         authority: "Gyd77CwV23qq937x9UDa4TDkxEeQF9tp8ifotYxqW3Kd",
         nonce: 255,
@@ -52,7 +88,7 @@ extension OrcaSwap {
         isStable: true
     )
 
-    static let solNinjaAquafarmsPool = OrcaSwap.Pool(
+    let solNinjaAquafarmsPool = OrcaSwap.Pool(
         account: "3ECUtPokme1nimJfuAkMtcm7QYjDEfXRQzmGC16LuYnz",
         authority: "H8f9n2PfehUc73gRWSRTPXvqUhUHVywdAxcfEtYmmyAo",
         nonce: 255,
@@ -90,7 +126,7 @@ extension OrcaSwap {
         isStable: nil
     )
 
-    static let socnUSDCAquafarmsPool = OrcaSwap.Pool(
+    let socnUSDCAquafarmsPool = OrcaSwap.Pool(
         account: "6Gh36sNXrGWYiWr999d9iZtqgnipJbWuBohyHBN1cJpS",
         authority: "GXWEpRURaQZ9E62Q23EreTUfBy4hfemXgWFUWcg7YFgv",
         nonce: 255,
@@ -128,7 +164,7 @@ extension OrcaSwap {
         isStable: nil
     )
 
-    static let usdcMNGOAquafarmsPool = OrcaSwap.Pool(
+    let usdcMNGOAquafarmsPool = OrcaSwap.Pool(
         account: "Hk9ZCvmqVT1FHNkWJMrtMkkVnH1WqssWPAvmio5Vs3se",
         authority: "5RyiYaHFDVupwnwxzKCRk7JY1CKhsczZXefMs3UUmx4Z",
         nonce: 254,
@@ -156,7 +192,7 @@ extension OrcaSwap {
         isStable: nil
     )
     
-    static let solUSDCAquafarmsPool = OrcaSwap.Pool(
+    let solUSDCAquafarmsPool = OrcaSwap.Pool(
         account: "EGZ7tiLeH62TPV1gL8WwbXGzEPa9zmcpVnnkPKKnrE2U",
         authority: "JU8kmKzDHF9sXWsnoznaFDFezLsE5uomX2JkRMbmsQP",
         nonce: 252,
@@ -184,7 +220,7 @@ extension OrcaSwap {
         isStable: nil
     )
     
-    static let usdcSLIMAquafarmsPool = OrcaSwap.Pool(
+    let usdcSLIMAquafarmsPool = OrcaSwap.Pool(
         account: "8JPid6GtND2tU3A7x7GDfPPEWwS36rMtzF7YoHU44UoA",
         authority: "749y4fXb9SzqmrLEetQdui5iDucnNiMgCJ2uzc3y7cou",
         nonce: 255,
@@ -212,7 +248,7 @@ extension OrcaSwap {
         isStable: nil
     )
     
-    static let solUSDCPool = OrcaSwap.Pool(
+    let solUSDCPool = OrcaSwap.Pool(
         account: "6fTRDD7sYxCN7oyoSQaN1AWC3P2m8A6gVZzGrpej9DvL",
         authority: "B52XRdfTsh8iUGbGEBJLHyDMjhaTW8cAFCmpASGJtnNK",
         nonce: 253,
@@ -240,7 +276,7 @@ extension OrcaSwap {
         isStable: nil
     )
     
-    static let usdcKUROAquafarmsPool = OrcaSwap.Pool(
+    let usdcKUROAquafarmsPool = OrcaSwap.Pool(
         account: "HdeYs4bpJKN2oTb7PHxbqq4kzKiLr772A5N2gWjY57ZT",
         authority: "2KRcBDQJWEPygxcMMFMvR6dMTVtMkJV6kbxr5e9Kdj5Q",
         nonce: 250,

@@ -9,46 +9,15 @@ import Foundation
 import XCTest
 @testable import SolanaSwift
 
-class OrcaSwapDirectTests: XCTestCase {
-    var solanaSDK: SolanaSDK!
-    var orcaSwap: OrcaSwap!
-    
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        
-        let accountStorage = InMemoryAccountStorage()
-        
-        let endpoint = SolanaSDK.APIEndPoint(url: "https://p2p.rpcpool.com/", network: .mainnetBeta)
-        
-        solanaSDK = SolanaSDK(
-            endpoint: endpoint,
-            accountStorage: accountStorage
-        )
-        
-        let account = try SolanaSDK.Account(
-            phrase: "miracle pizza supply useful steak border same again youth silver access hundred".components(separatedBy: " "),
-            network: endpoint.network
-        )
-        try accountStorage.save(account)
-        
-        orcaSwap = OrcaSwap(
-            apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
-            solanaClient: solanaSDK,
-            accountProvider: solanaSDK,
-            notificationHandler: OrcaSwap.MockSocket()
-        )
-        
-        _ = orcaSwap.load().toBlocking().materialize()
-    }
-    
+class OrcaSwapDirectTests: OrcaSwapSwapTests {
     // MARK: - Direct SOL to SPL
     func testDirectSwapSOLToCreatedSPL() throws {
         let amount: Double = 0.001 // 0.001 SOL to created SOCN
         
         let swapSimulation = orcaSwap.swap(
-            fromWalletPubkey: OrcaSwap.solPubkey,
-            toWalletPubkey: OrcaSwap.socnPubkey,
-            bestPoolsPair: [OrcaSwap.socnSOLStableAquafarmsPool.reversed],
+            fromWalletPubkey: solPubkey,
+            toWalletPubkey: socnPubkey,
+            bestPoolsPair: [socnSOLStableAquafarmsPool.reversed],
             amount: amount,
             slippage: 0.05,
             isSimulation: true
@@ -61,9 +30,9 @@ class OrcaSwapDirectTests: XCTestCase {
         let amount: Double = 0.001 // 0.001 SOL to uncreated
         
         let swapSimulation = orcaSwap.swap(
-            fromWalletPubkey: OrcaSwap.solPubkey,
+            fromWalletPubkey: solPubkey,
             toWalletPubkey: nil,
-            bestPoolsPair: [OrcaSwap.solNinjaAquafarmsPool],
+            bestPoolsPair: [solNinjaAquafarmsPool],
             amount: amount,
             slippage: 0.05,
             isSimulation: true
@@ -77,9 +46,9 @@ class OrcaSwapDirectTests: XCTestCase {
         let amount: Double = 0.001 // 0.001 SOCN to Native SOL
         
         let swapSimulation = orcaSwap.swap(
-            fromWalletPubkey: OrcaSwap.socnPubkey,
-            toWalletPubkey: OrcaSwap.solPubkey,
-            bestPoolsPair: [OrcaSwap.socnSOLStableAquafarmsPool],
+            fromWalletPubkey: socnPubkey,
+            toWalletPubkey: solPubkey,
+            bestPoolsPair: [socnSOLStableAquafarmsPool],
             amount: amount,
             slippage: 0.05,
             isSimulation: true
@@ -93,9 +62,9 @@ class OrcaSwapDirectTests: XCTestCase {
         let amount: Double = 0.001 // 0.001 SOCN to USDC
         
         let swapSimulation = orcaSwap.swap(
-            fromWalletPubkey: OrcaSwap.socnPubkey,
-            toWalletPubkey: OrcaSwap.usdcPubkey,
-            bestPoolsPair: [OrcaSwap.socnUSDCAquafarmsPool],
+            fromWalletPubkey: socnPubkey,
+            toWalletPubkey: usdcPubkey,
+            bestPoolsPair: [socnUSDCAquafarmsPool],
             amount: amount,
             slippage: 0.05,
             isSimulation: true
@@ -108,9 +77,9 @@ class OrcaSwapDirectTests: XCTestCase {
         let amount: Double = 0.1 // 0.1 USDC to MNGO
         
         let swapSimulation = orcaSwap.swap(
-            fromWalletPubkey: OrcaSwap.usdcPubkey,
+            fromWalletPubkey: usdcPubkey,
             toWalletPubkey: nil,
-            bestPoolsPair: [OrcaSwap.usdcMNGOAquafarmsPool],
+            bestPoolsPair: [usdcMNGOAquafarmsPool],
             amount: amount,
             slippage: 0.05,
             isSimulation: true

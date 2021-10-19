@@ -10,6 +10,10 @@ import XCTest
 @testable import SolanaSwift
 
 class OrcaSwapPreparationTests: XCTestCase {
+    let btcMint = "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E"
+    let ethMint = "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk"
+    let socnMint = "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm"
+    
     let orcaSwap = OrcaSwap(
         apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
         solanaClient: OrcaSwap.MockSolanaClient(),
@@ -41,7 +45,7 @@ class OrcaSwapPreparationTests: XCTestCase {
     
     // MARK: - Find destinations
     func testFindDestinations() throws {
-        let routes = try orcaSwap.findPosibleDestinationMints(fromMint: OrcaSwap.btcMint)
+        let routes = try orcaSwap.findPosibleDestinationMints(fromMint: btcMint)
         XCTAssertEqual(routes.count, 21)
     }
     
@@ -61,7 +65,7 @@ class OrcaSwapPreparationTests: XCTestCase {
 //            ]
 //        ]
     func testGetTradablePoolsPairs() throws {
-        let pools = try orcaSwap.getTradablePoolsPairs(fromMint: OrcaSwap.btcMint, toMint: OrcaSwap.ethMint).toBlocking().first()!
+        let pools = try orcaSwap.getTradablePoolsPairs(fromMint: btcMint, toMint: ethMint).toBlocking().first()!
         XCTAssertEqual(pools.count, 3) //
         XCTAssertEqual(pools.flatMap { $0 }.count, 5)
         
@@ -93,7 +97,7 @@ class OrcaSwapPreparationTests: XCTestCase {
     func testGetBestPoolsPair() throws {
         // when user enter input amount = 0.1 BTC
         let inputAmount: UInt64 = 100000 // 0.1 BTC
-        let poolsPairs = try orcaSwap.getTradablePoolsPairs(fromMint: OrcaSwap.btcMint, toMint: OrcaSwap.ethMint).toBlocking().first()!
+        let poolsPairs = try orcaSwap.getTradablePoolsPairs(fromMint: btcMint, toMint: ethMint).toBlocking().first()!
         let bestPoolsPair = try orcaSwap.findBestPoolsPairForInputAmount(inputAmount, from: poolsPairs)
         let estimatedAmount = bestPoolsPair?.getOutputAmount(fromInputAmount: inputAmount)
         XCTAssertEqual(estimatedAmount, 1588996) // 1.588996 ETH
@@ -121,7 +125,7 @@ class OrcaSwapPreparationTests: XCTestCase {
 //            ]
 //        ]
     func testGetTradablePoolsPairsReversed() throws {
-        let poolsPair = try orcaSwap.getTradablePoolsPairs(fromMint: OrcaSwap.socnMint, toMint: OrcaSwap.btcMint).toBlocking().first()!.first!
+        let poolsPair = try orcaSwap.getTradablePoolsPairs(fromMint: socnMint, toMint: btcMint).toBlocking().first()!.first!
         XCTAssertEqual(poolsPair.count, 2) // there is only 1 pair
         
         let socnSOL = poolsPair.first!
@@ -140,7 +144,7 @@ class OrcaSwapPreparationTests: XCTestCase {
     func testGetBestPoolsPairReversed() throws {
         // when user enter input amount = 419.68 SOCN
         let inputAmount: UInt64 = 419680000000 // 419.68 SOCN
-        let poolsPairs = try orcaSwap.getTradablePoolsPairs(fromMint: OrcaSwap.socnMint, toMint: OrcaSwap.btcMint).toBlocking().first()!
+        let poolsPairs = try orcaSwap.getTradablePoolsPairs(fromMint: socnMint, toMint: btcMint).toBlocking().first()!
         let bestPoolsPair = try orcaSwap.findBestPoolsPairForInputAmount(inputAmount, from: poolsPairs)
         let estimatedAmount = bestPoolsPair?.getOutputAmount(fromInputAmount: inputAmount)
         XCTAssertEqual(estimatedAmount, 1013077) // 1.013077 BTC
