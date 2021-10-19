@@ -37,7 +37,7 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
         let swapSimulation = orcaSwap.swap(
             fromWalletPubkey: solPubkey,
             toWalletPubkey: nil,
-            bestPoolsPair: [solNinjaAquafarmsPool],
+            bestPoolsPair: [ninjaSOLAquafarmsPool.reversed],
             amount: amount,
             slippage: 0.05,
             isSimulation: true
@@ -84,7 +84,7 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
         let swapSimulation = orcaSwap.swap(
             fromWalletPubkey: usdcPubkey,
             toWalletPubkey: nil,
-            bestPoolsPair: [usdcMNGOAquafarmsPool],
+            bestPoolsPair: [mngoUSDCAquafarmsPool.reversed],
             amount: amount,
             slippage: 0.05,
             isSimulation: true

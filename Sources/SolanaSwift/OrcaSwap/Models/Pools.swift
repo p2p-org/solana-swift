@@ -44,13 +44,11 @@ public extension OrcaSwap {
         
         var isStable: Bool?
         
-        var isReversed: Bool?
         var reversed: Pool {
             var reversedPool = self
             Swift.swap(&reversedPool.tokenAccountA, &reversedPool.tokenAccountB)
             Swift.swap(&reversedPool.tokenAName, &reversedPool.tokenBName)
             Swift.swap(&reversedPool.tokenABalance, &reversedPool.tokenBBalance)
-            reversedPool.isReversed = true
             return reversedPool
         }
         
@@ -249,10 +247,10 @@ public extension OrcaSwap {
                     tokenSwap: try account.toPublicKey(),
                     authority: try authority.toPublicKey(),
                     userTransferAuthority: userTransferAuthorityPubkey,
-                    userSource: isReversed == true ? destinationAccountInstructions.account: sourceAccountInstructions.account,
+                    userSource: sourceAccountInstructions.account,
                     poolSource: try tokenAccountA.toPublicKey(),
                     poolDestination: try tokenAccountB.toPublicKey(),
-                    userDestination: isReversed == true ? sourceAccountInstructions.account: destinationAccountInstructions.account,
+                    userDestination: destinationAccountInstructions.account,
                     poolMint: try poolTokenMint.toPublicKey(),
                     feeAccount: try feeAccount.toPublicKey(),
                     hostFeeAccount: try? hostFeeAccount?.toPublicKey(),
