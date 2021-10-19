@@ -15,4 +15,9 @@ extension OrcaSwap {
         let programIds: ProgramID
         let tokenNames: [String: String] // [Mint: TokenName]
     }
+    
+    public struct SwapResponse {
+        public let transactionId: String
+        public let newWalletPubkey: String?
+    }
 }

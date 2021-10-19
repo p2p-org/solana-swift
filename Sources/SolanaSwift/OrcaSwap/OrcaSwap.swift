@@ -16,6 +16,14 @@ public protocol OrcaSwapType {
     func getTradablePoolsPairs(fromMint: String, toMint: String) -> Single<[OrcaSwap.PoolsPair]>
     func findBestPoolsPairForInputAmount(_ inputAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
     func findBestPoolsPairForEstimatedAmount(_ estimatedAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
+    func swap(
+        fromWalletPubkey: String,
+        toWalletPubkey: String?,
+        bestPoolsPair: OrcaSwap.PoolsPair,
+        amount: Double,
+        slippage: Double,
+        isSimulation: Bool
+    ) -> Single<OrcaSwap.SwapResponse>
 }
 
 public class OrcaSwap: OrcaSwapType {
@@ -193,7 +201,7 @@ public class OrcaSwap: OrcaSwapType {
         amount: Double,
         slippage: Double,
         isSimulation: Bool = false
-    ) -> Single<TransactionID> {
+    ) -> Single<SwapResponse> {
         guard let owner = accountProvider.getAccount() else {
             return .error(OrcaSwapError.unauthorized)
         }
@@ -296,6 +304,7 @@ public class OrcaSwap: OrcaSwapType {
                         signers: [owner] + accountInstructions.signers,
                         isSimulation: isSimulation
                     )
+                    .map {.init(transactionId: $0, newWalletPubkey: toWalletPubkey == nil ? accountInstructions.account.base58EncodedString: nil)}
                 }
             }
     }
