@@ -64,19 +64,35 @@ class OrcaSwapSwapTests: XCTestCase {
     }
     
     // MARK: - Helper
+    struct RawPool {
+        init(name: String, reversed: Bool = false) {
+            self.name = name
+            self.reversed = reversed
+        }
+        
+        let name: String
+        let reversed: Bool
+    }
+    
     func fillPoolsBalancesAndSwap(
         fromWalletPubkey: String,
         toWalletPubkey: String?,
-        bestPoolsPair: OrcaSwap.PoolsPair,
+        bestPoolsPair: [RawPool],
         amount: Double,
         slippage: Double,
         isSimulation: Bool
     ) throws -> Single<OrcaSwap.SwapResponse> {
         let amount: Double = 0.001 // 0.001 SOL to created SOCN
         
-        let bestPoolsPair = try bestPoolsPair.map {pool in
-            try pool.filledWithUpdatedBalances(solanaClient: solanaSDK).toBlocking().first()!
-        }
+        let bestPoolsPair = try Single.zip(
+            bestPoolsPair.map { rawPool -> Single<OrcaSwap.Pool> in
+                var pool = poolsRepository[rawPool.name]!
+                if rawPool.reversed {
+                    pool = pool.reversed
+                }
+                return pool.filledWithUpdatedBalances(solanaClient: solanaSDK)
+            }
+        ).toBlocking().first()!
         
         let swapSimulation = orcaSwap.swap(
             fromWalletPubkey: fromWalletPubkey,

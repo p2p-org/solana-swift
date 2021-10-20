@@ -24,18 +24,14 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     
     // MARK: - Transitive SOL to SPL
     func testTransitiveSwapSOLToCreatedSPL() throws {
-        let amount: Double = 0.01 // 0.001 SOL to created KURO
-        
-        let pools = [
-            poolsRepository["SOL/USDC[aquafarm]"]!,
-            poolsRepository["KURO/USDC[aquafarm]"]!.reversed
-        ]
-        
         let swapSimulation = try fillPoolsBalancesAndSwap(
             fromWalletPubkey: solPubkey,
             toWalletPubkey: kuroPubkey,
-            bestPoolsPair: pools,
-            amount: amount,
+            bestPoolsPair: [
+                .init(name: "SOL/USDC[aquafarm]"),
+                .init(name: "KURO/USDC[aquafarm]", reversed: true)
+            ],
+            amount: 0.01,
             slippage: 0.5,
             isSimulation: true
         )
@@ -44,18 +40,14 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     }
     
     func testTransitiveSwapSOLToUncreatedSPL() throws {
-        let amount: Double = 0.001 // 0.001 SOL to created USDC
-        
-        let pools = [
-            poolsRepository["SOL/USDC[aquafarm]"]!,
-            poolsRepository["ABR/USDC[aquafarm]"]!.reversed
-        ]
-
         let swapSimulation = try fillPoolsBalancesAndSwap(
             fromWalletPubkey: solPubkey,
             toWalletPubkey: nil,
-            bestPoolsPair: pools,
-            amount: amount,
+            bestPoolsPair: [
+                .init(name: "SOL/USDC[aquafarm]"),
+                .init(name: "ABR/USDC[aquafarm]", reversed: true)
+            ],
+            amount: 0.001,
             slippage: 0.5,
             isSimulation: true
         )
@@ -65,18 +57,14 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     
     // MARK: - Transitive SPL to SPL
     func testTransitiveSwapSPLToCreatedSPL() throws {
-        let amount: Double = 0.01 // 0.01 SLIM to KURO
-        
-        let pools = [
-            poolsRepository["SLIM/USDC[aquafarm]"]!,
-            poolsRepository["KURO/USDC[aquafarm]"]!.reversed
-        ]
-        
         let swapSimulation = try fillPoolsBalancesAndSwap(
             fromWalletPubkey: slimPubkey,
             toWalletPubkey: kuroPubkey,
-            bestPoolsPair: pools,
-            amount: amount,
+            bestPoolsPair: [
+                .init(name: "SLIM/USDC[aquafarm]"),
+                .init(name: "KURO/USDC[aquafarm]", reversed: true)
+            ],
+            amount: 0.01,
             slippage: 0.5,
             isSimulation: true
         )
@@ -85,18 +73,14 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     }
     
     func testTransitiveSwapSPLToUncreatedSPL() throws {
-        let amount: Double = 0.01 // 0.01 SLIM to ABR
-        
-        let pools = [
-            poolsRepository["SLIM/USDC[aquafarm]"]!,
-            poolsRepository["ABR/USDC[aquafarm]"]!.reversed
-        ]
-        
         let swapSimulation = try fillPoolsBalancesAndSwap(
             fromWalletPubkey: slimPubkey,
             toWalletPubkey: nil,
-            bestPoolsPair: pools,
-            amount: amount,
+            bestPoolsPair: [
+                .init(name: "SLIM/USDC[aquafarm]"),
+                .init(name: "ABR/USDC[aquafarm]", reversed: true)
+            ],
+            amount: 0.01,
             slippage: 0.05,
             isSimulation: true
         )
