@@ -180,7 +180,7 @@ public extension OrcaSwap {
             
             // prepare source
             let prepareSourceRequest: Single<AccountInstructions>
-            if !shouldCreateAssociatedTokenAccount {
+            if !shouldCreateAssociatedTokenAccount && fromTokenPubkey != owner.publicKey {
                 prepareSourceRequest = .just(.init(account: fromTokenPubkey))
             } else {
                 prepareSourceRequest = solanaClient.prepareSourceAccountAndInstructions(
