@@ -84,6 +84,6 @@ public protocol SerumSwapTokenListContainer {
     func getTokensList() -> Single<[SerumSwap.Token]>
 }
 
-public protocol SerumSwapSignatureNotificationHandler {
-    func observeSignatureNotification(signature: String) -> Completable
+public protocol SerumSwapSignatureConfirmationHandler {
+    func waitForConfirmation(signature: String) -> Completable
 }

@@ -10,8 +10,8 @@ import Foundation
 import RxSwift
 @testable import SolanaSwift
 
-struct FakeSocket: SerumSwapSignatureNotificationHandler {
-    func observeSignatureNotification(signature: String) -> Completable {
+struct FakeSocket: SerumSwapSignatureConfirmationHandler {
+    func waitForConfirmation(signature: String) -> Completable {
         .empty().delay(.seconds(2), scheduler: MainScheduler.instance)
     }
 }

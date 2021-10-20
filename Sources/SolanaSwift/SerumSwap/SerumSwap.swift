@@ -25,7 +25,7 @@ public struct SerumSwap {
     // MARK: - Properties
     let client: SerumSwapAPIClient
     let accountProvider: SerumSwapAccountProvider
-    let signatureNotificationHandler: SerumSwapSignatureNotificationHandler
+    let signatureNotificationHandler: SerumSwapSignatureConfirmationHandler
     let swapMarkets: SwapMarkets
     public let BASE_TAKER_FEE_BPS = 0.0022
     public var FEE_MULTIPLIER: Double {1 - BASE_TAKER_FEE_BPS}
@@ -35,7 +35,7 @@ public struct SerumSwap {
         client: SerumSwapAPIClient,
         accountProvider: SerumSwapAccountProvider,
         tokenListContainer: SerumSwapTokenListContainer,
-        signatureNotificationHandler: SerumSwapSignatureNotificationHandler
+        signatureNotificationHandler: SerumSwapSignatureConfirmationHandler
     ) {
         self.client = client
         self.accountProvider = accountProvider
@@ -714,8 +714,7 @@ public struct SerumSwap {
                         if isSimulation {
                             return .empty()
                         }
-                        return signatureNotificationHandler.observeSignatureNotification(signature: signature)
-                            .timeout(.seconds(30), scheduler: MainScheduler.instance)
+                        return signatureNotificationHandler.waitForConfirmation(signature: signature)
                     }
                     .andThen(
                         Single<(from: PublicKey, to: PublicKey, cleanupInstructions: [TransactionInstruction])>.just((from: from.account, to: to.account, cleanupInstructions: from.cleanupInstructions + to.cleanupInstructions))
