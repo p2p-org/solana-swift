@@ -197,7 +197,8 @@ extension SerumSwap {
                 return client.getProgramAccounts(
                     publicKey: programId.base58EncodedString,
                     configs: .init(filters: filter),
-                    decodedTo: LayoutV1.self
+                    decodedTo: LayoutV1.self,
+                    log: false
                 )
                 .map {
                     try $0.accounts.map {
@@ -216,7 +217,8 @@ extension SerumSwap {
             return client.getProgramAccounts(
                 publicKey: programId.base58EncodedString,
                 configs: .init(encoding: "base64", filters: filter),
-                decodedTo: LayoutV2.self
+                decodedTo: LayoutV2.self,
+                log: false
             )
             .map {
                 try $0.accounts.map {

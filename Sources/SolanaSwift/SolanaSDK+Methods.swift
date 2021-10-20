@@ -123,15 +123,15 @@ public extension SolanaSDK {
     func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") -> Single<UInt64> {
         request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
     }
-    func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String], decodedTo: T.Type) -> Single<[BufferInfo<T>]?> {
+    func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String], decodedTo: T.Type, log: Bool = true) -> Single<[BufferInfo<T>]?> {
         let configs = RequestConfiguration(encoding: "base64")
         guard !pubkeys.isEmpty else {return .just([])}
-        return (request(parameters: [pubkeys, configs]) as Single<Rpc<[BufferInfo<T>]?>>)
+        return (request(parameters: [pubkeys, configs], log: log) as Single<Rpc<[BufferInfo<T>]?>>)
             .map {$0.value}
     }
-    func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type) -> Single<ProgramAccounts<T>>
+    func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type, log: Bool = true) -> Single<ProgramAccounts<T>>
     {
-        request(parameters: [publicKey, configs])
+        request(parameters: [publicKey, configs], log: log)
     }
     func getRecentBlockhash(commitment: Commitment? = nil) -> Single<String> {
         (request(parameters: [RequestConfiguration(commitment: commitment)]) as Single<Rpc<Fee>>)
@@ -295,9 +295,10 @@ public extension SolanaSDK {
     
     func getMultipleMintDatas(
         mintAddresses: [String],
-        programId: String = PublicKey.tokenProgramId.base58EncodedString
+        programId: String = PublicKey.tokenProgramId.base58EncodedString,
+        log: Bool = true
     ) -> Single<[String: Mint]> {
-        getMultipleAccounts(pubkeys: mintAddresses, decodedTo: Mint.self)
+        getMultipleAccounts(pubkeys: mintAddresses, decodedTo: Mint.self, log: log)
             .map {
                 if $0?.contains(where: {$0.owner != programId}) == true
                 {

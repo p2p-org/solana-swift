@@ -24,7 +24,8 @@ public protocol SerumSwapAPIClient {
     func getProgramAccounts<T: DecodableBufferLayout>(
         publicKey: String,
         configs: SerumSwap.RequestConfiguration?,
-        decodedTo: T.Type
+        decodedTo: T.Type,
+        log: Bool
     ) -> Single<SerumSwap.ProgramAccounts<T>>
     // Returns the `usdxMint` quoted market address *if* no open orders account already exists.
     func getMarketAddressIfNeeded(

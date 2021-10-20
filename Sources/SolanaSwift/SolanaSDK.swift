@@ -33,7 +33,8 @@ public class SolanaSDK {
         path: String = "",
         bcMethod: String = #function,
         parameters: [Encodable?] = [],
-        onMethodNotFoundReplaceWith replacingMethod: String? = nil
+        onMethodNotFoundReplaceWith replacingMethod: String? = nil,
+        log: Bool = true
     ) -> Single<T>{
         guard let url = URL(string: (overridingEndpoint != nil ? overridingEndpoint!: endpoint.url) + path) else {
             return .error(Error.invalidRequest(reason: "Invalid URL"))
@@ -44,7 +45,9 @@ public class SolanaSDK {
         
         let requestAPI = RequestAPI(method: bcMethod, params: params)
         
-        Logger.log(message: "\(method.rawValue) \(bcMethod) [id=\(requestAPI.id)] \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)
+        if log {
+            Logger.log(message: "\(method.rawValue) \(bcMethod) [id=\(requestAPI.id)] \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)
+        }
         
         do {
             var urlRequest = try URLRequest(url: url, method: method, headers: [.contentType("application/json")])
@@ -54,7 +57,10 @@ public class SolanaSDK {
                 .responseData()
                 .map {(response, data) -> T in
                     // Print
-                    Logger.log(message: String(data: data, encoding: .utf8) ?? "", event: .response, apiMethod: bcMethod)
+                    
+                    if log {
+                        Logger.log(message: String(data: data, encoding: .utf8) ?? "", event: .response, apiMethod: bcMethod)
+                    }
                     
                     let statusCode = response.statusCode
                     let isValidStatusCode = (200..<300).contains(statusCode)

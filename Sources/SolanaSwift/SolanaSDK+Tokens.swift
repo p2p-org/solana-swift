@@ -18,7 +18,7 @@ extension SolanaSDK {
             .do(onSuccess: {self.supportedTokensCache = $0})
     }
     
-    public func getTokenWallets(account: String? = nil) -> Single<[Wallet]> {
+    public func getTokenWallets(account: String? = nil, log: Bool = true) -> Single<[Wallet]> {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.unauthorized)
         }
@@ -36,7 +36,8 @@ extension SolanaSDK {
             getProgramAccounts(
                 publicKey: PublicKey.tokenProgramId.base58EncodedString,
                 configs: configs,
-                decodedTo: AccountInfo.self
+                decodedTo: AccountInfo.self,
+                log: log
             )
                 .map {$0.accounts},
             getTokensList()
@@ -70,7 +71,8 @@ extension SolanaSDK {
                 }
                 
                 return self.getMultipleMintDatas(
-                    mintAddresses: unknownAccounts.map{$0.1.mint.base58EncodedString}
+                    mintAddresses: unknownAccounts.map{$0.1.mint.base58EncodedString},
+                    log: log
                 )
                     .map {mintDatas -> [Wallet] in
                         guard mintDatas.count == unknownAccounts.count
