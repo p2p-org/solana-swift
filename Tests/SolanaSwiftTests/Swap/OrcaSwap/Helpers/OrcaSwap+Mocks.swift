@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  OrcaSwap+Mocks.swift
 //  
 //
 //  Created by Chung Tran on 13/10/2021.
@@ -102,11 +102,11 @@ extension OrcaSwap {
             fatalError()
         }
     }
-}
-
-private func getFileFrom(type: String, network: String) -> Data {
-    let thisSourceFile = URL(fileURLWithPath: #file)
-    let thisDirectory = thisSourceFile.deletingLastPathComponent()
-    let resourceURL = thisDirectory.appendingPathComponent("../../../Resources/Orca/\(type)/orca-\(type)-\(network).json")
-    return try! Data(contentsOf: resourceURL)
+    
+    static func getFileFrom(type: String, network: String) -> Data {
+        let thisSourceFile = URL(fileURLWithPath: #file)
+        let thisDirectory = thisSourceFile.deletingLastPathComponent()
+        let resourceURL = thisDirectory.appendingPathComponent("../../../Resources/Orca/\(type)/orca-\(type)-\(network).json")
+        return try! Data(contentsOf: resourceURL)
+    }
 }

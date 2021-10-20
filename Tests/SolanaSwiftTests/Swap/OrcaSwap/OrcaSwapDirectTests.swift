@@ -19,12 +19,14 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
     func testDirectSwapSOLToCreatedSPL() throws {
         let amount: Double = 0.001 // 0.001 SOL to created SOCN
         
-        let swapSimulation = orcaSwap.swap(
+        let pool = poolsRepository["SOCN/SOL[stable][aquafarm]"]!.reversed
+        
+        let swapSimulation = try fillPoolsBalancesAndSwap(
             fromWalletPubkey: solPubkey,
             toWalletPubkey: socnPubkey,
-            bestPoolsPair: [socnSOLStableAquafarmsPool.reversed],
+            bestPoolsPair: [pool],
             amount: amount,
-            slippage: 0.5,
+            slippage: 0.05,
             isSimulation: true
         )
         
@@ -34,12 +36,14 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
     func testDirectSwapSOLToUncreatedSPL() throws {
         let amount: Double = 0.001 // 0.001 SOL to uncreated
         
-        let swapSimulation = orcaSwap.swap(
+        let pool = poolsRepository["NINJA/SOL[aquafarm]"]!.reversed
+        
+        let swapSimulation = try fillPoolsBalancesAndSwap(
             fromWalletPubkey: solPubkey,
             toWalletPubkey: nil,
-            bestPoolsPair: [ninjaSOLAquafarmsPool.reversed],
+            bestPoolsPair: [pool],
             amount: amount,
-            slippage: 0.5,
+            slippage: 0.05,
             isSimulation: true
         )
         
@@ -50,12 +54,14 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
     func testDirectSwapSPLToSOL() throws {
         let amount: Double = 0.001 // 0.001 SOCN to Native SOL
         
-        let swapSimulation = orcaSwap.swap(
+        let pool = poolsRepository["SOCN/SOL[stable][aquafarm]"]!
+        
+        let swapSimulation = try fillPoolsBalancesAndSwap(
             fromWalletPubkey: socnPubkey,
             toWalletPubkey: solPubkey,
-            bestPoolsPair: [socnSOLStableAquafarmsPool],
+            bestPoolsPair: [pool],
             amount: amount,
-            slippage: 0.5,
+            slippage: 0.05,
             isSimulation: true
         )
         
@@ -66,10 +72,12 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
     func testDirectSwapSPLToCreatedSPL() throws {
         let amount: Double = 0.001 // 0.001 SOCN to USDC
         
-        let swapSimulation = orcaSwap.swap(
+        let pool = poolsRepository["SOCN/USDC[aquafarm]"]!
+        
+        let swapSimulation = try fillPoolsBalancesAndSwap(
             fromWalletPubkey: socnPubkey,
             toWalletPubkey: usdcPubkey,
-            bestPoolsPair: [socnUSDCAquafarmsPool],
+            bestPoolsPair: [pool],
             amount: amount,
             slippage: 0.5,
             isSimulation: true
@@ -81,10 +89,12 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
     func testDirectSwapSPLToUncreatedSPL() throws {
         let amount: Double = 0.1 // 0.1 USDC to MNGO
         
-        let swapSimulation = orcaSwap.swap(
+        let pool = poolsRepository["MNGO/USDC[aquafarm]"]!.reversed
+        
+        let swapSimulation = try fillPoolsBalancesAndSwap(
             fromWalletPubkey: usdcPubkey,
             toWalletPubkey: nil,
-            bestPoolsPair: [mngoUSDCAquafarmsPool.reversed],
+            bestPoolsPair: [pool],
             amount: amount,
             slippage: 0.5,
             isSimulation: true
