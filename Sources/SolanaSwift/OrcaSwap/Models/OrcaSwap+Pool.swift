@@ -197,14 +197,25 @@ public extension OrcaSwap {
             if let destination = try? toTokenPubkey?.toPublicKey(),
                !shouldCreateAssociatedTokenAccount
             {
-                prepareDestinationRequest = .just(.init(account: destination))
+                prepareDestinationRequest = .just(
+                    .init(
+                        account: destination,
+                        cleanupInstructions: toMint == .wrappedSOLMint ? [
+                            TokenProgram.closeAccountInstruction(
+                                account: destination,
+                                destination: owner.publicKey,
+                                owner: owner.publicKey
+                            )
+                        ]: []
+                    )
+                )
             } else {
                 prepareDestinationRequest = solanaClient.prepareDestinationAccountAndInstructions(
                     myAccount: owner.publicKey,
                     destination: try? toTokenPubkey?.toPublicKey(),
                     destinationMint: toMint,
                     feePayer: feeRelayerFeePayer ?? owner.publicKey,
-                    closeAfterward: false // FIXME: Check later
+                    closeAfterward: toMint == .wrappedSOLMint // FIXME: Check later
                 )
             }
             
