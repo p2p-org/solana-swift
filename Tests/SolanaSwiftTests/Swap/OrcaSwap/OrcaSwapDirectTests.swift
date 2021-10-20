@@ -24,7 +24,7 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
             toWalletPubkey: socnPubkey,
             bestPoolsPair: [socnSOLStableAquafarmsPool.reversed],
             amount: amount,
-            slippage: 0.05,
+            slippage: 0.5,
             isSimulation: true
         )
         
@@ -39,7 +39,7 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
             toWalletPubkey: nil,
             bestPoolsPair: [ninjaSOLAquafarmsPool.reversed],
             amount: amount,
-            slippage: 0.05,
+            slippage: 0.5,
             isSimulation: true
         )
         
@@ -55,7 +55,7 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
             toWalletPubkey: solPubkey,
             bestPoolsPair: [socnSOLStableAquafarmsPool],
             amount: amount,
-            slippage: 0.05,
+            slippage: 0.5,
             isSimulation: true
         )
         
@@ -71,7 +71,7 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
             toWalletPubkey: usdcPubkey,
             bestPoolsPair: [socnUSDCAquafarmsPool],
             amount: amount,
-            slippage: 0.05,
+            slippage: 0.5,
             isSimulation: true
         )
         
@@ -86,7 +86,7 @@ class OrcaSwapDirectTests: OrcaSwapSwapTests {
             toWalletPubkey: nil,
             bestPoolsPair: [mngoUSDCAquafarmsPool.reversed],
             amount: amount,
-            slippage: 0.05,
+            slippage: 0.5,
             isSimulation: true
         )
         

@@ -204,8 +204,8 @@ class OrcaSwapSwapTests: XCTestCase {
         amp: nil,
         programVersion: 2,
         deprecated: nil,
-        tokenABalance: .init(uiAmount: 229589.261208922, amount: "229589261208922", decimals: 9, uiAmountString: "229589.261208922"),
-        tokenBBalance: .init(uiAmount: 36310284.213312, amount: "36310284213312", decimals: 6, uiAmountString: "36310284.213312"),
+        tokenABalance: .init(amount: "334075024095439", decimals: 9),
+        tokenBBalance: .init(amount: "52249519621869", decimals: 6),
         isStable: nil
     )
     
@@ -232,8 +232,8 @@ class OrcaSwapSwapTests: XCTestCase {
         amp: nil,
         programVersion: 2,
         deprecated: nil,
-        tokenABalance: .init(uiAmount: 200571.837175, amount: "200571837175", decimals: 6, uiAmountString: "200571.837175"),
-        tokenBBalance: .init(uiAmount: 423867.437266, amount: "423867437266", decimals: 6, uiAmountString: "423867.437266"),
+        tokenABalance: .init(amount: "195221062081", decimals: 6),
+        tokenBBalance: .init(amount: "453569857795", decimals: 6),
         isStable: nil
     )
     
@@ -316,8 +316,8 @@ class OrcaSwapSwapTests: XCTestCase {
         amp: nil,
         programVersion: 2,
         deprecated: nil,
-        tokenABalance: .init(amount: "256645842460208", decimals: 9),
-        tokenBBalance: .init(amount: "1555969818559", decimals: 6),
+        tokenABalance: .init(amount: "266875572394607", decimals: 9),
+        tokenBBalance: .init(amount: "1513596288948", decimals: 6),
         isStable: nil
     )
 }

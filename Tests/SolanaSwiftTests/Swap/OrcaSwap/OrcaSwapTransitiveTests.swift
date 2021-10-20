@@ -41,7 +41,7 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
             toWalletPubkey: kuroPubkey,
             bestPoolsPair: [solUSDCAquafarmsPool, kuroUSDCAquafarmsPool.reversed],
             amount: amount,
-            slippage: 0.05,
+            slippage: 0.5,
             isSimulation: true
         )
         
@@ -58,8 +58,8 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
             toWalletPubkey: nil,
             bestPoolsPair: [solUSDCAquafarmsPool, slimUSDCAquafarmsPool.reversed],
             amount: amount,
-            slippage: 0.05,
-            isSimulation: false
+            slippage: 0.5,
+            isSimulation: true
         )
 
         XCTAssertNoThrow(try swapSimulation.toBlocking().first())
@@ -76,7 +76,7 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
             toWalletPubkey: kuroPubkey,
             bestPoolsPair: [slimUSDCAquafarmsPool, kuroUSDCAquafarmsPool.reversed],
             amount: amount,
-            slippage: 0.05,
+            slippage: 0.5,
             isSimulation: true
         )
         
