@@ -31,7 +31,7 @@ public class OrcaSwap: OrcaSwapType {
     let apiClient: OrcaSwapAPIClient
     let solanaClient: OrcaSwapSolanaClient
     let accountProvider: OrcaSwapAccountProvider
-    let notificationHandler: OrcaSwapSignatureNotificationHandler
+    let notificationHandler: OrcaSwapSignatureConfirmationHandler
     
     var info: OrcaSwap.SwapInfo?
     private let lock = NSLock()
@@ -41,7 +41,7 @@ public class OrcaSwap: OrcaSwapType {
         apiClient: OrcaSwapAPIClient,
         solanaClient: OrcaSwapSolanaClient,
         accountProvider: OrcaSwapAccountProvider,
-        notificationHandler: OrcaSwapSignatureNotificationHandler
+        notificationHandler: OrcaSwapSignatureConfirmationHandler
     ) {
         self.apiClient = apiClient
         self.solanaClient = solanaClient
@@ -394,7 +394,7 @@ public class OrcaSwap: OrcaSwapType {
                             // wait for confirmation and return the addresses
                             .flatMapCompletable { [weak self] txid in
                                 guard let self = self else {throw OrcaSwapError.unknown}
-                                return self.notificationHandler.observeSignatureNotification(signature: txid)
+                                return self.notificationHandler.waitForConfirmation(signature: txid)
                             }
                             .andThen(.just((intAccountInstructions.account, desAccountInstructions.account)))
                     }

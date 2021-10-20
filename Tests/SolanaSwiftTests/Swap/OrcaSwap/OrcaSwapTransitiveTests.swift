@@ -10,11 +10,6 @@ import XCTest
 @testable import SolanaSwift
 
 class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
-    var socket: SolanaSDK.Socket!
-    override var notificationHandler: OrcaSwapSignatureNotificationHandler {
-        socket
-    }
-    
     var solPubkey: String {
         solanaSDK.accountStorage.account!.publicKey.base58EncodedString
     }
@@ -25,11 +20,6 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     
     override var phrase: String {
         secretPhrase
-    }
-    
-    override func setUpWithError() throws {
-        socket = SolanaSDK.Socket(endpoint: endpoint.socketUrl)
-        try super.setUpWithError()
     }
     
     // MARK: - Transitive SOL to SPL
@@ -54,8 +44,6 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     }
     
     func testTransitiveSwapSOLToUncreatedSPL() throws {
-        socket.connect()
-        
         let amount: Double = 0.001 // 0.001 SOL to created USDC
         
         let pools = [
@@ -73,8 +61,6 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
         )
 
         XCTAssertNoThrow(try swapSimulation.toBlocking().first())
-        
-        socket.disconnect()
     }
     
     // MARK: - Transitive SPL to SPL
@@ -99,7 +85,6 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     }
     
     func testTransitiveSwapSPLToUncreatedSPL() throws {
-        socket.connect()
         let amount: Double = 0.01 // 0.01 SLIM to ABR
         
         let pools = [
@@ -117,6 +102,5 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
         )
         
         XCTAssertNoThrow(try swapSimulation.toBlocking().first())
-        socket.disconnect()
     }
 }

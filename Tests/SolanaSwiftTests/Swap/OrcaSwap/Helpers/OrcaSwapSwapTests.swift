@@ -32,10 +32,6 @@ class OrcaSwapSwapTests: XCTestCase {
         "miracle pizza supply useful steak border same again youth silver access hundred"
     }
     
-    var notificationHandler: OrcaSwapSignatureNotificationHandler {
-        OrcaSwap.MockSocket()
-    }
-    
     var poolsRepository: [String: OrcaSwap.Pool]!
     
     // MARK: - Setup
@@ -59,7 +55,7 @@ class OrcaSwapSwapTests: XCTestCase {
             apiClient: OrcaSwap.MockAPIClient(network: "mainnet"),
             solanaClient: solanaSDK,
             accountProvider: solanaSDK,
-            notificationHandler: notificationHandler
+            notificationHandler: solanaSDK
         )
         
         _ = orcaSwap.load().toBlocking().materialize()

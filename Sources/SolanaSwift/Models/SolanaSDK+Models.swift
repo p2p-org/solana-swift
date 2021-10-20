@@ -173,6 +173,7 @@ public extension SolanaSDK {
 		public let slot: UInt64
 		public let confirmations: UInt64?
 		public let err: TransactionError?
+        public let confirmationStatus: String?
 	}
     struct TransactionInfo: Decodable {
         public let blockTime: UInt64?

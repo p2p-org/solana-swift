@@ -97,8 +97,8 @@ extension OrcaSwap {
         }
     }
     
-    struct MockSocket: OrcaSwapSignatureNotificationHandler {
-        func observeSignatureNotification(signature: String) -> Completable {
+    struct MockSocket: OrcaSwapSignatureConfirmationHandler {
+        func waitForConfirmation(signature: String) -> Completable {
             fatalError()
         }
     }
