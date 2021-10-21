@@ -260,7 +260,7 @@ extension SolanaSDK {
         }
         
         // if token is native
-        return self.prepareForCreatingTempAccountAndClose(
+        return self.prepareCreatingWSOLAccountAndCloseWhenDone(
             from: source,
             amount: amount,
             payer: feePayer
@@ -292,8 +292,8 @@ extension SolanaSDK {
     }
     
     // MARK: - Helpers
-    private func prepareForCreatingTempAccountAndClose(
-        from source: PublicKey,
+    public func prepareCreatingWSOLAccountAndCloseWhenDone(
+        from owner: PublicKey,
         amount: Lamports,
         payer: PublicKey
     ) -> Single<AccountInstructions> {
@@ -301,7 +301,8 @@ extension SolanaSDK {
             dataLength: UInt64(AccountInfo.BUFFER_LENGTH)
         )
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-            .map { minimumBalanceForRentExemption in
+            .map { [weak self] minimumBalanceForRentExemption in
+                guard let self = self else {throw Error.unknown}
                 // create new account
                 let newAccount = try Account(network: self.endpoint.network)
                 
@@ -309,7 +310,7 @@ extension SolanaSDK {
                     account: newAccount.publicKey,
                     instructions: [
                         SystemProgram.createAccountInstruction(
-                            from: source,
+                            from: owner,
                             toNewPubkey: newAccount.publicKey,
                             lamports: amount + minimumBalanceForRentExemption
                         ),
@@ -334,7 +335,7 @@ extension SolanaSDK {
             }
     }
     
-    private func prepareForCreatingAssociatedTokenAccount(
+    public func prepareForCreatingAssociatedTokenAccount(
         owner: PublicKey,
         mint: PublicKey,
         feePayer: PublicKey,
@@ -423,7 +424,7 @@ extension SolanaSDK {
         cleanupInstructions: [TransactionInstruction]
     ) -> Single<TransactionID> {
         // create feepayer wsol account
-        let getFeePayerWsolAccount = prepareForCreatingTempAccountAndClose(
+        let getFeePayerWsolAccount = prepareCreatingWSOLAccountAndCloseWhenDone(
             from: feePayer,
             amount: 0,
             payer: feePayer

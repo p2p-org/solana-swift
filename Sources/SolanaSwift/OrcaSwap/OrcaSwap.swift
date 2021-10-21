@@ -357,17 +357,15 @@ public class OrcaSwap: OrcaSwapType {
         else {return .error(OrcaSwapError.unauthorized)}
         
         return Single.zip(
-            solanaClient.prepareDestinationAccountAndInstructions( // create associated token for intermediary token
-                myAccount: owner.publicKey,
-                destination: nil,
-                destinationMint: intermediaryTokenMint,
+            solanaClient.prepareForCreatingAssociatedTokenAccount(
+                owner: owner.publicKey,
+                mint: intermediaryTokenMint,
                 feePayer: feeRelayerFeePayer ?? owner.publicKey,
                 closeAfterward: true
             ),
-            solanaClient.prepareDestinationAccountAndInstructions( // create associated token for destination token
-                myAccount: owner.publicKey,
-                destination: try? toWalletPubkey?.toPublicKey(),
-                destinationMint: destinationMint,
+            solanaClient.prepareForCreatingAssociatedTokenAccount(
+                owner: owner.publicKey,
+                mint: destinationMint,
                 feePayer: feeRelayerFeePayer ?? owner.publicKey,
                 closeAfterward: false
             )

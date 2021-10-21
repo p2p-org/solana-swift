@@ -185,9 +185,9 @@ public extension OrcaSwap {
                 owner.publicKey == fromTokenPubkey
             {
                 prepareSourceRequest = solanaClient.prepareCreatingWSOLAccountAndCloseWhenDone(
-                    owner: owner.publicKey,
+                    from: owner.publicKey,
                     amount: amount,
-                    accountRentExempt: nil
+                    payer: feeRelayerFeePayer ?? owner.publicKey
                 )
             } else {
                 prepareSourceRequest = .just(.init(account: fromTokenPubkey))
@@ -199,14 +199,16 @@ public extension OrcaSwap {
                 prepareDestinationRequest = .just(.init(account: toTokenPubkey))
             } else if toMint == .wrappedSOLMint {
                 prepareDestinationRequest = solanaClient.prepareCreatingWSOLAccountAndCloseWhenDone(
-                    owner: owner.publicKey,
+                    from: owner.publicKey,
                     amount: 0,
-                    accountRentExempt: nil
+                    payer: feeRelayerFeePayer ?? owner.publicKey
                 )
             } else {
-                prepareDestinationRequest = solanaClient.prepareCreatingAssociatedTokenAccount(
+                prepareDestinationRequest = solanaClient.prepareForCreatingAssociatedTokenAccount(
                     owner: owner.publicKey,
-                    tokenMint: toMint
+                    mint: toMint,
+                    feePayer: feeRelayerFeePayer ?? owner.publicKey,
+                    closeAfterward: false
                 )
             }
             

@@ -16,14 +16,16 @@ public protocol OrcaSwapSolanaClient {
     ) -> Single<UInt64>
     
     func prepareCreatingWSOLAccountAndCloseWhenDone(
-        owner: OrcaSwap.PublicKey,
-        amount: UInt64,
-        accountRentExempt: UInt64?
+        from owner: OrcaSwap.PublicKey,
+        amount: OrcaSwap.Lamports,
+        payer: OrcaSwap.PublicKey
     ) -> Single<OrcaSwap.AccountInstructions>
     
-    func prepareCreatingAssociatedTokenAccount(
+    func prepareForCreatingAssociatedTokenAccount(
         owner: OrcaSwap.PublicKey,
-        tokenMint: OrcaSwap.PublicKey
+        mint: OrcaSwap.PublicKey,
+        feePayer: OrcaSwap.PublicKey,
+        closeAfterward: Bool
     ) -> Single<OrcaSwap.AccountInstructions>
     
     var endpoint: OrcaSwap.APIEndPoint {get}
