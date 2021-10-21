@@ -201,8 +201,19 @@ public extension OrcaSwap {
                 if let toTokenPubkey = try? toTokenPubkey?.toPublicKey(),
                    toTokenPubkey != owner.publicKey
                 {
-                    // wrapped sol has already been created, just return it
-                    prepareDestinationRequest = .just(.init(account: toTokenPubkey))
+                    // wrapped sol has already been created, just return it, then close later
+                    prepareDestinationRequest = .just(
+                        .init(
+                            account: toTokenPubkey,
+                            cleanupInstructions: [
+                                TokenProgram.closeAccountInstruction(
+                                    account: toTokenPubkey,
+                                    destination: feeRelayerFeePayer ?? owner.publicKey, // FIXME
+                                    owner: feeRelayerFeePayer ?? owner.publicKey // FIXME
+                                )
+                            ]
+                        )
+                    )
                 } else {
                     // create wrapped sol
                     prepareDestinationRequest = solanaClient.prepareCreatingWSOLAccountAndCloseWhenDone(
