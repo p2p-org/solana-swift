@@ -221,18 +221,15 @@ public class OrcaSwap: OrcaSwapType {
         let requestInstructions: Single<AccountInstructions>
         
         if bestPoolsPair.count == 1 {
-            requestInstructions = bestPoolsPair[0]
-                .constructExchange(
-                    tokens: info.tokens,
-                    solanaClient: solanaClient,
-                    owner: owner,
-                    fromTokenPubkey: fromWalletPubkey,
-                    toTokenPubkey: toWalletPubkey,
-                    amount: amount,
-                    slippage: slippage,
-                    feeRelayerFeePayer: feeRelayerFeePayer,
-                    shouldCreateAssociatedTokenAccount: true
-                )
+            return directSwap(
+                pool: bestPoolsPair[0],
+                fromTokenPubkey: fromWalletPubkey,
+                toTokenPubkey: toWalletPubkey,
+                amount: amount,
+                slippage: slippage,
+                feeRelayerFeePayer: feeRelayerFeePayer,
+                isSimulation: isSimulation
+            )
         } else {
             let pool0 = bestPoolsPair[0]
             let pool1 = bestPoolsPair[1]
@@ -243,7 +240,7 @@ public class OrcaSwap: OrcaSwapType {
             
             // FIRST TRANSACTION
             
-            requestInstructions = createIntermediaryTokenAndDestinationTokenAddressIfNeeded(
+            return createIntermediaryTokenAndDestinationTokenAddressIfNeeded(
                 pool0: pool0,
                 pool1: pool1,
                 toWalletPubkey: toWalletPubkey,
@@ -251,62 +248,20 @@ public class OrcaSwap: OrcaSwapType {
             )
                 .flatMap {[weak self] intermediaryTokenAddress, destinationTokenAddress in
                     guard let self = self else {throw OrcaSwapError.unknown}
-                    return pool0
-                        .constructExchange(
-                            tokens: info.tokens,
-                            solanaClient: self.solanaClient,
-                            owner: owner,
-                            fromTokenPubkey: fromWalletPubkey,
-                            toTokenPubkey: intermediaryTokenAddress.base58EncodedString,
-                            amount: amount,
-                            slippage: slippage,
-                            feeRelayerFeePayer: feeRelayerFeePayer,
-                            shouldCreateAssociatedTokenAccount: false
-                        )
-                        .flatMap {[weak self] pool0AccountInstructions -> Single<AccountInstructions> in
-                            guard let self = self,
-                                  let amount = try pool0.getMinimumAmountOut(inputAmount: amount, slippage: slippage)
-                            else {throw OrcaSwapError.unknown}
-                            
-                            return pool1.constructExchange(
-                                tokens: info.tokens,
-                                solanaClient: self.solanaClient,
-                                owner: owner,
-                                fromTokenPubkey: intermediaryTokenAddress.base58EncodedString,
-                                toTokenPubkey: destinationTokenAddress.base58EncodedString,
-                                amount: amount,
-                                slippage: slippage,
-                                feeRelayerFeePayer: feeRelayerFeePayer,
-                                shouldCreateAssociatedTokenAccount: false
-                            )
-                            .map {pool1AccountInstructions in
-                                .init(
-                                    account: pool1AccountInstructions.account,
-                                    instructions: pool0AccountInstructions.instructions + pool1AccountInstructions.instructions,
-                                    cleanupInstructions: pool0AccountInstructions.cleanupInstructions + pool1AccountInstructions.cleanupInstructions,
-                                    signers: pool0AccountInstructions.signers + pool1AccountInstructions.signers
-                                )
-                            }
-                        }
-                }
-        }
-        
-        return requestInstructions
-            .flatMap {[weak self] accountInstructions in
-                guard let self = self else {throw OrcaSwapError.unknown}
-                
-                if let feePayer = feeRelayerFeePayer {
-                    fatalError("Fee relayer is implementing")
-                } else {
-                    return self.solanaClient.serializeAndSend(
-                        instructions: accountInstructions.instructions + accountInstructions.cleanupInstructions,
-                        recentBlockhash: nil,
-                        signers: [owner] + accountInstructions.signers,
+                    return self.transitiveSwap(
+                        pool0: pool0,
+                        pool1: pool1,
+                        fromTokenPubkey: fromWalletPubkey,
+                        intermediaryTokenAddress: intermediaryTokenAddress.base58EncodedString,
+                        destinationTokenAddress: destinationTokenAddress.base58EncodedString,
+                        isDestinationNew: toWalletPubkey == nil,
+                        amount: amount,
+                        slippage: slippage,
+                        feeRelayerFeePayer: feeRelayerFeePayer,
                         isSimulation: isSimulation
                     )
-                    .map {.init(transactionId: $0, newWalletPubkey: toWalletPubkey == nil ? accountInstructions.account.base58EncodedString: nil)}
                 }
-            }
+        }
     }
     
     /// Find routes for from and to token name, aka symbol
@@ -342,6 +297,124 @@ public class OrcaSwap: OrcaSwapType {
         let tokenInfo = info?.tokens.first(where: {$0.value.mint == mint})
         guard let name = tokenInfo?.key, let value = tokenInfo?.value else {return nil}
         return (name: name, info: value)
+    }
+    
+    private func directSwap(
+        pool: Pool,
+        fromTokenPubkey: String,
+        toTokenPubkey: String?,
+        amount: UInt64,
+        slippage: Double,
+        feeRelayerFeePayer: PublicKey?,
+        isSimulation: Bool
+    ) -> Single<SwapResponse> {
+        guard let owner = accountProvider.getAccount() else {return .error(OrcaSwapError.unauthorized)}
+        
+        return pool
+            .constructExchange(
+                tokens: info!.tokens,
+                solanaClient: solanaClient,
+                owner: owner,
+                fromTokenPubkey: fromTokenPubkey,
+                toTokenPubkey: toTokenPubkey,
+                amount: amount,
+                slippage: slippage,
+                feeRelayerFeePayer: feeRelayerFeePayer,
+                shouldCreateAssociatedTokenAccount: true
+            )
+            .flatMap {[weak self] accountInstructions in
+                guard let self = self else {throw OrcaSwapError.unknown}
+                
+                if let feePayer = feeRelayerFeePayer {
+                    fatalError("Fee relayer is implementing")
+                } else {
+                    return self.solanaClient.serializeAndSend(
+                        instructions: accountInstructions.instructions + accountInstructions.cleanupInstructions,
+                        recentBlockhash: nil,
+                        signers: [owner] + accountInstructions.signers,
+                        isSimulation: isSimulation
+                    )
+                    .map {.init(transactionId: $0, newWalletPubkey: toTokenPubkey == nil ? accountInstructions.account.base58EncodedString: nil)}
+                }
+            }
+    }
+    
+    private func transitiveSwap(
+        pool0: Pool,
+        pool1: Pool,
+        fromTokenPubkey: String,
+        intermediaryTokenAddress: String,
+        destinationTokenAddress: String,
+        isDestinationNew: Bool,
+        amount: UInt64,
+        slippage: Double,
+        feeRelayerFeePayer: PublicKey?,
+        isSimulation: Bool
+    ) -> Single<SwapResponse> {
+        guard let owner = accountProvider.getAccount() else {return .error(OrcaSwapError.unauthorized)}
+        guard let info = info else {return .error(OrcaSwapError.swapInfoMissing)}
+        
+        return pool0
+            .constructExchange(
+                tokens: info.tokens,
+                solanaClient: self.solanaClient,
+                owner: owner,
+                fromTokenPubkey: fromTokenPubkey,
+                toTokenPubkey: intermediaryTokenAddress,
+                amount: amount,
+                slippage: slippage,
+                feeRelayerFeePayer: feeRelayerFeePayer,
+                shouldCreateAssociatedTokenAccount: false
+            )
+            .flatMap {[weak self] pool0AccountInstructions -> Single<AccountInstructions> in
+                guard let self = self,
+                      let amount = try pool0.getMinimumAmountOut(inputAmount: amount, slippage: slippage)
+                else {throw OrcaSwapError.unknown}
+                
+                return pool1.constructExchange(
+                    tokens: info.tokens,
+                    solanaClient: self.solanaClient,
+                    owner: owner,
+                    fromTokenPubkey: intermediaryTokenAddress,
+                    toTokenPubkey: destinationTokenAddress,
+                    amount: amount,
+                    slippage: slippage,
+                    feeRelayerFeePayer: feeRelayerFeePayer,
+                    shouldCreateAssociatedTokenAccount: false
+                )
+                .map {pool1AccountInstructions in
+                    .init(
+                        account: pool1AccountInstructions.account,
+                        instructions: pool0AccountInstructions.instructions + pool1AccountInstructions.instructions,
+                        cleanupInstructions: pool0AccountInstructions.cleanupInstructions + pool1AccountInstructions.cleanupInstructions,
+                        signers: pool0AccountInstructions.signers + pool1AccountInstructions.signers
+                    )
+                }
+            }
+            .flatMap {[weak self] accountInstructions in
+                guard let self = self else {throw OrcaSwapError.unknown}
+                
+                if let feePayer = feeRelayerFeePayer {
+                    fatalError("Fee relayer is implementing")
+                } else {
+                    return self.solanaClient.serializeAndSend(
+                        instructions: accountInstructions.instructions + accountInstructions.cleanupInstructions,
+                        recentBlockhash: nil,
+                        signers: [owner] + accountInstructions.signers,
+                        isSimulation: isSimulation
+                    )
+                    .map {.init(transactionId: $0, newWalletPubkey: isDestinationNew ? accountInstructions.account.base58EncodedString: nil)}
+                }
+            }
+            .retry { errors in
+                errors.enumerated().flatMap{ (index, error) -> Observable<Int64> in
+                    if error.readableDescription == "InvalidAccountData" {
+                        return .timer(.seconds(1), scheduler: MainScheduler.instance)
+                    }
+                    return .error(error)
+                }
+            }
+            .timeout(.seconds(60), scheduler: MainScheduler.instance)
     }
     
     private func createIntermediaryTokenAndDestinationTokenAddressIfNeeded(
