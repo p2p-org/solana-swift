@@ -195,9 +195,9 @@ public extension OrcaSwap {
             
             // If necessary, create a TokenAccount for the output token
             let prepareDestinationRequest: Single<AccountInstructions>
-            if let toTokenPubkey = try? toTokenPubkey?.toPublicKey() {
-                prepareDestinationRequest = .just(.init(account: toTokenPubkey))
-            } else if toMint == .wrappedSOLMint {
+            
+            // If destination token is Solana, create WSOL if needed
+            if toMint == .wrappedSOLMint {
                 if let toTokenPubkey = try? toTokenPubkey?.toPublicKey(),
                    toTokenPubkey != owner.publicKey
                 {
@@ -222,7 +222,15 @@ public extension OrcaSwap {
                         payer: feeRelayerFeePayer ?? owner.publicKey
                     )
                 }
-            } else {
+            }
+            
+            // If destination is another token and has already been created
+            else if let toTokenPubkey = try? toTokenPubkey?.toPublicKey() {
+                prepareDestinationRequest = .just(.init(account: toTokenPubkey))
+            }
+            
+            // Create associated token address
+            else {
                 prepareDestinationRequest = solanaClient.prepareForCreatingAssociatedTokenAccount(
                     owner: owner.publicKey,
                     mint: toMint,
