@@ -11,20 +11,19 @@ import RxSwift
 public protocol OrcaSwapSolanaClient {
     func getTokenAccountBalance(pubkey: String, commitment: SolanaSDK.Commitment?) -> Single<SolanaSDK.TokenAccountBalance>
     
-    func prepareSourceAccountAndInstructions(
-        myNativeWallet: OrcaSwap.PublicKey,
-        source: OrcaSwap.PublicKey,
-        sourceMint: OrcaSwap.PublicKey,
-        amount: OrcaSwap.Lamports,
-        feePayer: OrcaSwap.PublicKey
+    func getMinimumBalanceForRentExemption(
+        span: UInt64
+    ) -> Single<UInt64>
+    
+    func prepareCreatingWSOLAccountAndCloseWhenDone(
+        owner: OrcaSwap.PublicKey,
+        amount: UInt64,
+        accountRentExempt: UInt64?
     ) -> Single<OrcaSwap.AccountInstructions>
     
-    func prepareDestinationAccountAndInstructions(
-        myAccount: OrcaSwap.PublicKey,
-        destination: OrcaSwap.PublicKey?,
-        destinationMint: OrcaSwap.PublicKey,
-        feePayer: OrcaSwap.PublicKey,
-        closeAfterward: Bool
+    func prepareCreatingAssociatedTokenAccount(
+        owner: OrcaSwap.PublicKey,
+        tokenMint: OrcaSwap.PublicKey
     ) -> Single<OrcaSwap.AccountInstructions>
     
     var endpoint: OrcaSwap.APIEndPoint {get}
