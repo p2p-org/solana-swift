@@ -100,7 +100,7 @@ class OrcaSwapSwapTests: XCTestCase {
             bestPoolsPair: bestPoolsPair,
             amount: amount,
             slippage: 0.5,
-            isSimulation: true
+            isSimulation: isSimulation
         )
         
         return swapSimulation
