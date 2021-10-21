@@ -35,11 +35,15 @@ extension OrcaSwap {
     }
     
     struct MockSolanaClient: OrcaSwapSolanaClient {
-        func prepareSourceAccountAndInstructions(myNativeWallet: OrcaSwap.PublicKey, source: OrcaSwap.PublicKey, sourceMint: OrcaSwap.PublicKey, amount: OrcaSwap.Lamports, feePayer: OrcaSwap.PublicKey) -> Single<OrcaSwap.AccountInstructions> {
+        func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64> {
             fatalError()
         }
         
-        func prepareDestinationAccountAndInstructions(myAccount: OrcaSwap.PublicKey, destination: OrcaSwap.PublicKey?, destinationMint: OrcaSwap.PublicKey, feePayer: OrcaSwap.PublicKey, closeAfterward: Bool) -> Single<OrcaSwap.AccountInstructions> {
+        func prepareCreatingWSOLAccountAndCloseWhenDone(from owner: OrcaSwap.PublicKey, amount: OrcaSwap.Lamports, payer: OrcaSwap.PublicKey) -> Single<OrcaSwap.AccountInstructions> {
+            fatalError()
+        }
+        
+        func prepareForCreatingAssociatedTokenAccount(owner: OrcaSwap.PublicKey, mint: OrcaSwap.PublicKey, feePayer: OrcaSwap.PublicKey, closeAfterward: Bool) -> Single<OrcaSwap.AccountInstructions> {
             fatalError()
         }
         
