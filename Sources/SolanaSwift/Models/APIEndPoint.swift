@@ -9,31 +9,40 @@ import Foundation
 
 extension SolanaSDK {
     public struct APIEndPoint: Hashable, Codable {
-        public init(url: String, network: SolanaSDK.Network, socketUrl: String? = nil) {
-            self.url = url
+        public init(address: String, network: SolanaSDK.Network, socketUrl: String? = nil, additionalQuery: String? = nil) {
+            self.address = address
             self.network = network
-            self.socketUrl = socketUrl ?? url.replacingOccurrences(of: "http", with: "ws")
+            self.socketUrl = socketUrl ?? address.replacingOccurrences(of: "http", with: "ws")
+            self.additionalQuery = additionalQuery
         }
         
-        public let url: String
+        public let address: String
         public var network: Network
         public var socketUrl: String
+        public let additionalQuery: String?
         
-        public static var definedEndpoints: [Self] {
+        public static var defaultEndpoints: [Self] {
             var endpoints: [Self] = [
-                .init(url: "https://p2p.rpcpool.com/", network: .mainnetBeta),
-                .init(url: "https://solana-api.projectserum.com", network: .mainnetBeta),
-                .init(url: "https://api.mainnet-beta.solana.com", network: .mainnetBeta)
-//                .init(url: "https://datahub-proxy.p2p.org", network: .mainnetBeta),
-//                .init(url: "https://api.devnet.solana.com", network: .devnet),
-//                .init(url: "https://api.testnet.solana.com", network: .testnet)
+                .init(address: "https://solana-api.projectserum.com", network: .mainnetBeta),
+                .init(address: "https://api.mainnet-beta.solana.com", network: .mainnetBeta)
+//                .init(address: "https://datahub-proxy.p2p.org", network: .mainnetBeta),
+//                .init(address: "https://api.devnet.solana.com", network: .devnet),
+//                .init(address: "https://api.testnet.solana.com", network: .testnet)
             ]
 //            #if DEBUG
-            endpoints.append(.init(url: "https://api.testnet.solana.com", network: .testnet))
-            endpoints.append(.init(url: "https://api.devnet.solana.com", network: .devnet))
+            endpoints.append(.init(address: "https://api.testnet.solana.com", network: .testnet))
+            endpoints.append(.init(address: "https://api.devnet.solana.com", network: .devnet))
 //            #endif
             
             return endpoints
+        }
+        
+        public func getURL() -> String {
+            var url = self.address
+            if let query = additionalQuery {
+                url += "/" + query
+            }
+            return url
         }
     }
 }

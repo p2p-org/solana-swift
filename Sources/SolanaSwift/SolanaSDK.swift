@@ -36,7 +36,7 @@ public class SolanaSDK {
         onMethodNotFoundReplaceWith replacingMethod: String? = nil,
         log: Bool = true
     ) -> Single<T>{
-        guard let url = URL(string: (overridingEndpoint != nil ? overridingEndpoint!: endpoint.url) + path) else {
+        guard let url = URL(string: (overridingEndpoint != nil ? overridingEndpoint!: endpoint.getURL()) + path) else {
             return .error(Error.invalidRequest(reason: "Invalid URL"))
         }
         let params = parameters.compactMap {$0}
