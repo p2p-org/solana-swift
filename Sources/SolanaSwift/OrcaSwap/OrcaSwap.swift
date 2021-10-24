@@ -16,6 +16,17 @@ public protocol OrcaSwapType {
     func getTradablePoolsPairs(fromMint: String, toMint: String) -> Single<[OrcaSwap.PoolsPair]>
     func findBestPoolsPairForInputAmount(_ inputAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
     func findBestPoolsPairForEstimatedAmount(_ estimatedAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
+    func getFees(
+        fromWalletPubkey: String,
+        intermediaryTokenPubkey: String?,
+        toWalletPubkey: String?,
+        feeRelayerFeePayerPubkey: String?,
+        bestPoolsPair: OrcaSwap.PoolsPair,
+        inputAmount: Double,
+        slippage: Double,
+        lamportsPerSignature: UInt64,
+        minRentExempt: UInt64
+    ) throws -> (transactionFees: UInt64, liquidityProviderFees: [UInt64])
     func swap(
         fromWalletPubkey: String,
         toWalletPubkey: String?,
@@ -182,6 +193,47 @@ public class OrcaSwap: OrcaSwapType {
         }
         
         return bestPools
+    }
+    
+    /// Get fees from current context
+    /// - Returns: transactions fees (fees for signatures), liquidity provider fees (fees in intermediary token?, fees in destination token)
+    public func getFees(
+        fromWalletPubkey: String,
+        intermediaryTokenPubkey: String?,
+        toWalletPubkey: String?,
+        feeRelayerFeePayerPubkey: String?,
+        bestPoolsPair: OrcaSwap.PoolsPair,
+        inputAmount: Double,
+        slippage: Double,
+        lamportsPerSignature: UInt64,
+        minRentExempt: UInt64
+    ) throws -> (transactionFees: UInt64, liquidityProviderFees: [UInt64]) {
+        guard let owner = accountProvider.getNativeWalletAddress() else {throw OrcaSwapError.unauthorized}
+        
+        let numberOfPools = UInt64(bestPoolsPair.count)
+        let numberOfTransactions: UInt64 = numberOfPools == 2 && (intermediaryTokenPubkey == nil || toWalletPubkey == nil) ? 2: 1
+        
+        var transactionFees: UInt64 = 0
+        
+        // owner's signatures
+        transactionFees += lamportsPerSignature * numberOfTransactions
+        
+        if feeRelayerFeePayerPubkey == nil {
+            // userAuthoritys' signatures
+            transactionFees += lamportsPerSignature * numberOfPools
+        } else {
+            fatalError("feeRelayer is being implemented")
+        }
+        
+        // when swap from native SOL, a fee for creating it is needed
+        if fromWalletPubkey == owner.base58EncodedString {
+            transactionFees += lamportsPerSignature
+            transactionFees += minRentExempt
+        }
+        
+        let liquidityProviderFees = try bestPoolsPair.calculateLiquidityProviderFees(inputAmount: inputAmount, slippage: slippage)
+        
+        return (transactionFees: transactionFees, liquidityProviderFees: liquidityProviderFees)
     }
     
     /// Execute swap

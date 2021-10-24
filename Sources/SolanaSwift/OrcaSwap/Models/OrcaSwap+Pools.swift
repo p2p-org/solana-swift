@@ -199,13 +199,17 @@ public extension OrcaSwap.PoolsPair {
     }
     
     func calculateLiquidityProviderFees(
-        inputAmount: UInt64,
+        inputAmount: Double,
         slippage: Double
     ) throws -> [UInt64] {
         guard count > 1 else {return []}
+        let pool0 = self[0]
+        
+        guard let sourceDecimals = pool0.tokenABalance?.decimals else {throw OrcaSwapError.unknown}
+        let inputAmount = inputAmount.toLamport(decimals: sourceDecimals)
+                
         // 1 pool
         var result = [UInt64]()
-        let pool0 = self[0]
         let fee0 = try pool0.calculatingFees(inputAmount)
         result.append(fee0)
         
