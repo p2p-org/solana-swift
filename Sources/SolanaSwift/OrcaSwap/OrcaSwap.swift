@@ -17,8 +17,8 @@ public protocol OrcaSwapType {
     func findBestPoolsPairForInputAmount(_ inputAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
     func findBestPoolsPairForEstimatedAmount(_ estimatedAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
     func getFees(
+        myWalletsMints: [String],
         fromWalletPubkey: String,
-        intermediaryTokenPubkey: String?,
         toWalletPubkey: String?,
         feeRelayerFeePayerPubkey: String?,
         bestPoolsPair: OrcaSwap.PoolsPair,
@@ -198,8 +198,8 @@ public class OrcaSwap: OrcaSwapType {
     /// Get fees from current context
     /// - Returns: transactions fees (fees for signatures), liquidity provider fees (fees in intermediary token?, fees in destination token)
     public func getFees(
+        myWalletsMints: [String],
         fromWalletPubkey: String,
-        intermediaryTokenPubkey: String?,
         toWalletPubkey: String?,
         feeRelayerFeePayerPubkey: String?,
         bestPoolsPair: OrcaSwap.PoolsPair,
@@ -211,7 +211,20 @@ public class OrcaSwap: OrcaSwapType {
         guard let owner = accountProvider.getNativeWalletAddress() else {throw OrcaSwapError.unauthorized}
         
         let numberOfPools = UInt64(bestPoolsPair.count)
-        let numberOfTransactions: UInt64 = numberOfPools == 2 && (intermediaryTokenPubkey == nil || toWalletPubkey == nil) ? 2: 1
+        guard numberOfPools >= 1 else {throw OrcaSwapError.unknown}
+        
+        var numberOfTransactions: UInt64 = 1
+        
+        if numberOfPools == 2 {
+            let myTokens = myWalletsMints.compactMap {getTokenFromMint($0)}.map {$0.name}
+            let intermediaryTokenName = bestPoolsPair[0].tokenBName
+            
+            if !myTokens.contains(intermediaryTokenName) ||
+                toWalletPubkey == nil
+            {
+                numberOfTransactions += 1
+            }
+        }
         
         var transactionFees: UInt64 = 0
         
