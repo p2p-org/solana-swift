@@ -57,30 +57,11 @@ public extension OrcaSwap {
 extension OrcaSwap.Pool {
     func getOutputAmount(
         fromInputAmount inputAmount: UInt64
-    ) throws -> UInt64? {
-        guard let poolInputAmount = tokenABalance?.amountInUInt64,
-              let poolOutputAmount = tokenBBalance?.amountInUInt64
-        else {throw OrcaSwapError.accountBalanceNotFound}
-        
+    ) throws -> UInt64 {
         let fees = try getFee(inputAmount)
         let inputAmountLessFee = inputAmount - fees
         
-        switch curveType {
-        case STABLE:
-            guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
-            return computeOutputAmount(
-                inputAmount: inputAmountLessFee,
-                inputPoolAmount: poolInputAmount,
-                outputPoolAmount: poolOutputAmount,
-                amp: amp
-            )
-        case CONSTANT_PRODUCT:
-            let invariant = BInt(poolInputAmount) * BInt(poolOutputAmount)
-            let newPoolOutputAmount = ceilingDivision(invariant, BInt(poolInputAmount + inputAmountLessFee)).quotient
-            return poolOutputAmount - newPoolOutputAmount
-        default:
-            return nil
-        }
+        return try _getOutputAmount(from: inputAmountLessFee)
     }
     
     func getInputAmount(
@@ -128,12 +109,16 @@ extension OrcaSwap.Pool {
         }
     }
     
+    func calculatingFees(_ inputAmount: UInt64) throws -> UInt64 {
+        let inputFees = try getFee(inputAmount)
+        return try _getOutputAmount(from: inputFees)
+    }
+    
     func getMinimumAmountOut(
         inputAmount: UInt64,
         slippage: Double
     ) throws -> UInt64? {
-        guard let estimatedOutputAmount = try getOutputAmount(fromInputAmount: inputAmount)
-        else {return nil}
+        let estimatedOutputAmount = try getOutputAmount(fromInputAmount: inputAmount)
         return UInt64(Float64(estimatedOutputAmount) * Float64(1 - slippage))
     }
     
@@ -329,6 +314,29 @@ extension OrcaSwap.Pool {
         let ownerFee = computeFee(baseAmount: inputAmount, feeNumerator: ownerTradeFeeNumerator, feeDenominator: ownerTradeFeeDenominator)
         return tradingFee + ownerFee
         
+    }
+    
+    private func _getOutputAmount(from inputAmount: UInt64) throws -> UInt64 {
+        guard let poolInputAmount = tokenABalance?.amountInUInt64,
+              let poolOutputAmount = tokenBBalance?.amountInUInt64
+        else {throw OrcaSwapError.accountBalanceNotFound}
+        
+        switch curveType {
+        case STABLE:
+            guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
+            return computeOutputAmount(
+                inputAmount: inputAmount,
+                inputPoolAmount: poolInputAmount,
+                outputPoolAmount: poolOutputAmount,
+                amp: amp
+            )
+        case CONSTANT_PRODUCT:
+            let invariant = BInt(poolInputAmount) * BInt(poolOutputAmount)
+            let newPoolOutputAmount = ceilingDivision(invariant, BInt(poolInputAmount + inputAmount)).quotient
+            return poolOutputAmount - newPoolOutputAmount
+        default:
+            throw OrcaSwapError.unknown
+        }
     }
     
     private func computeFee(baseAmount: UInt64, feeNumerator: UInt64, feeDenominator: UInt64) -> UInt64 {
