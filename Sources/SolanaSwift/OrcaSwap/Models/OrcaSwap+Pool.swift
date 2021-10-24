@@ -51,289 +51,291 @@ public extension OrcaSwap {
             Swift.swap(&reversedPool.tokenABalance, &reversedPool.tokenBBalance)
             return reversedPool
         }
+    }
+}
+
+extension OrcaSwap.Pool {
+    func getOutputAmount(
+        fromInputAmount inputAmount: UInt64
+    ) throws -> UInt64? {
+        guard let poolInputAmount = tokenABalance?.amountInUInt64,
+              let poolOutputAmount = tokenBBalance?.amountInUInt64
+        else {throw OrcaSwapError.accountBalanceNotFound}
         
-        func getOutputAmount(
-            fromInputAmount inputAmount: UInt64
-        ) throws -> UInt64? {
-            guard let poolInputAmount = tokenABalance?.amountInUInt64,
-                  let poolOutputAmount = tokenBBalance?.amountInUInt64
-            else {throw OrcaSwapError.accountBalanceNotFound}
-            
-            let fees = try getFee(inputAmount)
-            let inputAmountLessFee = inputAmount - fees
-            
-            switch curveType {
-            case STABLE:
-                guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
-                return computeOutputAmount(
-                    inputAmount: inputAmountLessFee,
-                    inputPoolAmount: poolInputAmount,
-                    outputPoolAmount: poolOutputAmount,
-                    amp: amp
-                )
-            case CONSTANT_PRODUCT:
-                let invariant = BInt(poolInputAmount) * BInt(poolOutputAmount)
-                let newPoolOutputAmount = ceilingDivision(invariant, BInt(poolInputAmount + inputAmountLessFee)).quotient
-                return poolOutputAmount - newPoolOutputAmount
-            default:
-                return nil
-            }
+        let fees = try getFee(inputAmount)
+        let inputAmountLessFee = inputAmount - fees
+        
+        switch curveType {
+        case STABLE:
+            guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
+            return computeOutputAmount(
+                inputAmount: inputAmountLessFee,
+                inputPoolAmount: poolInputAmount,
+                outputPoolAmount: poolOutputAmount,
+                amp: amp
+            )
+        case CONSTANT_PRODUCT:
+            let invariant = BInt(poolInputAmount) * BInt(poolOutputAmount)
+            let newPoolOutputAmount = ceilingDivision(invariant, BInt(poolInputAmount + inputAmountLessFee)).quotient
+            return poolOutputAmount - newPoolOutputAmount
+        default:
+            return nil
+        }
+    }
+    
+    func getInputAmount(
+        fromEstimatedAmount estimatedAmount: UInt64
+    ) throws -> UInt64? {
+        guard let poolInputAmount = tokenABalance?.amountInUInt64,
+              let poolOutputAmount = tokenBBalance?.amountInUInt64
+        else {throw OrcaSwapError.accountBalanceNotFound}
+        
+        if estimatedAmount > poolOutputAmount {
+            throw OrcaSwapError.estimatedAmountIsTooHigh
         }
         
-        func getInputAmount(
-            fromEstimatedAmount estimatedAmount: UInt64
-        ) throws -> UInt64? {
-            guard let poolInputAmount = tokenABalance?.amountInUInt64,
-                  let poolOutputAmount = tokenBBalance?.amountInUInt64
-            else {throw OrcaSwapError.accountBalanceNotFound}
+        switch curveType {
+        case STABLE:
+            guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
+            let inputAmountLessFee = computeInputAmount(outputAmount: estimatedAmount, inputPoolAmount: poolInputAmount, outputPoolAmount: poolOutputAmount, amp: amp)
+            let inputAmount = BInt(inputAmountLessFee) * BInt(feeDenominator) / BInt(feeDenominator - feeNumerator)
+            return UInt64(inputAmount)
+        case CONSTANT_PRODUCT:
+            let invariant = BInt(poolInputAmount) * BInt(poolOutputAmount)
             
-            if estimatedAmount > poolOutputAmount {
-                throw OrcaSwapError.estimatedAmountIsTooHigh
+            let newPoolInputAmount = ceilingDivision(invariant, BInt(poolOutputAmount - estimatedAmount)).quotient
+            let inputAmountLessFee = BInt(newPoolInputAmount - poolInputAmount)
+            
+            let feeRatioNumerator: BInt
+            let feeRatioDenominator: BInt
+            
+            if ownerTradeFeeDenominator == 0 {
+                feeRatioNumerator = BInt(feeDenominator)
+                feeRatioDenominator = BInt(feeDenominator - feeNumerator)
+            } else {
+                feeRatioNumerator = BInt(feeDenominator) * BInt(ownerTradeFeeDenominator)
+                feeRatioDenominator = BInt(feeDenominator)
+                    * BInt(ownerTradeFeeDenominator)
+                    - (BInt(feeNumerator) * BInt(ownerTradeFeeDenominator))
+                    - (BInt(ownerTradeFeeNumerator) * BInt(feeDenominator))
             }
             
-            switch curveType {
-            case STABLE:
-                guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
-                let inputAmountLessFee = computeInputAmount(outputAmount: estimatedAmount, inputPoolAmount: poolInputAmount, outputPoolAmount: poolOutputAmount, amp: amp)
-                let inputAmount = BInt(inputAmountLessFee) * BInt(feeDenominator) / BInt(feeDenominator - feeNumerator)
-                return UInt64(inputAmount)
-            case CONSTANT_PRODUCT:
-                let invariant = BInt(poolInputAmount) * BInt(poolOutputAmount)
-                
-                let newPoolInputAmount = ceilingDivision(invariant, BInt(poolOutputAmount - estimatedAmount)).quotient
-                let inputAmountLessFee = BInt(newPoolInputAmount - poolInputAmount)
-                
-                let feeRatioNumerator: BInt
-                let feeRatioDenominator: BInt
-                
-                if ownerTradeFeeDenominator == 0 {
-                    feeRatioNumerator = BInt(feeDenominator)
-                    feeRatioDenominator = BInt(feeDenominator - feeNumerator)
-                } else {
-                    feeRatioNumerator = BInt(feeDenominator) * BInt(ownerTradeFeeDenominator)
-                    feeRatioDenominator = BInt(feeDenominator)
-                        * BInt(ownerTradeFeeDenominator)
-                        - (BInt(feeNumerator) * BInt(ownerTradeFeeDenominator))
-                        - (BInt(ownerTradeFeeNumerator) * BInt(feeDenominator))
-                }
-                
-                let inputAmount = inputAmountLessFee * feeRatioNumerator / feeRatioDenominator
-                return UInt64(inputAmount)
-                
-            default:
-                return nil
-            }
+            let inputAmount = inputAmountLessFee * feeRatioNumerator / feeRatioDenominator
+            return UInt64(inputAmount)
+            
+        default:
+            return nil
+        }
+    }
+    
+    func getMinimumAmountOut(
+        inputAmount: UInt64,
+        slippage: Double
+    ) throws -> UInt64? {
+        guard let estimatedOutputAmount = try getOutputAmount(fromInputAmount: inputAmount)
+        else {return nil}
+        return UInt64(Float64(estimatedOutputAmount) * Float64(1 - slippage))
+    }
+    
+    /// baseOutputAmount is the amount the user would receive if fees are included and slippage is excluded.
+    func getBaseOutputAmount(
+        inputAmount: UInt64
+    ) throws -> UInt64? {
+        guard let poolInputAmount = tokenABalance?.amountInUInt64,
+              let poolOutputAmount = tokenBBalance?.amountInUInt64
+        else {throw OrcaSwapError.accountBalanceNotFound}
+        
+        let fees = try getFee(inputAmount)
+        let inputAmountLessFee = inputAmount - fees
+        
+        switch curveType {
+        case STABLE:
+            guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
+            return computeBaseOutputAmount(
+                inputAmount: inputAmountLessFee,
+                inputPoolAmount: poolInputAmount,
+                outputPoolAmount: poolOutputAmount,
+                amp: amp
+            )
+        case CONSTANT_PRODUCT:
+            return UInt64(BInt(inputAmountLessFee) * BInt(poolOutputAmount) / BInt(poolInputAmount))
+        default:
+            return nil
+        }
+    }
+    
+    /// Construct exchange
+    func constructExchange(
+        tokens: OrcaSwap.Tokens,
+        solanaClient: OrcaSwapSolanaClient,
+        owner: OrcaSwap.Account,
+        fromTokenPubkey: String,
+        toTokenPubkey: String?,
+        amount: OrcaSwap.Lamports,
+        slippage: Double,
+        feeRelayerFeePayer: OrcaSwap.PublicKey?,
+        shouldCreateAssociatedTokenAccount: Bool
+    ) -> Single<OrcaSwap.AccountInstructions> {
+        guard let fromMint = try? tokens[tokenAName]?.mint.toPublicKey(),
+              let toMint = try? tokens[tokenBName]?.mint.toPublicKey(),
+              let fromTokenPubkey = try? fromTokenPubkey.toPublicKey()
+        else {return .error(OrcaSwapError.notFound)}
+        
+        // Create fromTokenAccount when needed
+        let prepareSourceRequest: Single<OrcaSwap.AccountInstructions>
+        
+        if fromMint == .wrappedSOLMint &&
+            owner.publicKey == fromTokenPubkey
+        {
+            prepareSourceRequest = solanaClient.prepareCreatingWSOLAccountAndCloseWhenDone(
+                from: owner.publicKey,
+                amount: amount,
+                payer: feeRelayerFeePayer ?? owner.publicKey
+            )
+        } else {
+            prepareSourceRequest = .just(.init(account: fromTokenPubkey))
         }
         
-        func getMinimumAmountOut(
-            inputAmount: UInt64,
-            slippage: Double
-        ) throws -> UInt64? {
-            guard let estimatedOutputAmount = try getOutputAmount(fromInputAmount: inputAmount)
-            else {return nil}
-            return UInt64(Float64(estimatedOutputAmount) * Float64(1 - slippage))
-        }
+        // If necessary, create a TokenAccount for the output token
+        let prepareDestinationRequest: Single<OrcaSwap.AccountInstructions>
         
-        /// baseOutputAmount is the amount the user would receive if fees are included and slippage is excluded.
-        func getBaseOutputAmount(
-            inputAmount: UInt64
-        ) throws -> UInt64? {
-            guard let poolInputAmount = tokenABalance?.amountInUInt64,
-                  let poolOutputAmount = tokenBBalance?.amountInUInt64
-            else {throw OrcaSwapError.accountBalanceNotFound}
-            
-            let fees = try getFee(inputAmount)
-            let inputAmountLessFee = inputAmount - fees
-            
-            switch curveType {
-            case STABLE:
-                guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
-                return computeBaseOutputAmount(
-                    inputAmount: inputAmountLessFee,
-                    inputPoolAmount: poolInputAmount,
-                    outputPoolAmount: poolOutputAmount,
-                    amp: amp
-                )
-            case CONSTANT_PRODUCT:
-                return UInt64(BInt(inputAmountLessFee) * BInt(poolOutputAmount) / BInt(poolInputAmount))
-            default:
-                return nil
-            }
-        }
-        
-        /// Construct exchange
-        func constructExchange(
-            tokens: Tokens,
-            solanaClient: OrcaSwapSolanaClient,
-            owner: Account,
-            fromTokenPubkey: String,
-            toTokenPubkey: String?,
-            amount: Lamports,
-            slippage: Double,
-            feeRelayerFeePayer: PublicKey?,
-            shouldCreateAssociatedTokenAccount: Bool
-        ) -> Single<AccountInstructions> {
-            guard let fromMint = try? tokens[tokenAName]?.mint.toPublicKey(),
-                  let toMint = try? tokens[tokenBName]?.mint.toPublicKey(),
-                  let fromTokenPubkey = try? fromTokenPubkey.toPublicKey()
-            else {return .error(OrcaSwapError.notFound)}
-            
-            // Create fromTokenAccount when needed
-            let prepareSourceRequest: Single<AccountInstructions>
-            
-            if fromMint == .wrappedSOLMint &&
-                owner.publicKey == fromTokenPubkey
+        // If destination token is Solana, create WSOL if needed
+        if toMint == .wrappedSOLMint {
+            if let toTokenPubkey = try? toTokenPubkey?.toPublicKey(),
+               toTokenPubkey != owner.publicKey
             {
-                prepareSourceRequest = solanaClient.prepareCreatingWSOLAccountAndCloseWhenDone(
-                    from: owner.publicKey,
-                    amount: amount,
-                    payer: feeRelayerFeePayer ?? owner.publicKey
+                // wrapped sol has already been created, just return it, then close later
+                prepareDestinationRequest = .just(
+                    .init(
+                        account: toTokenPubkey,
+                        cleanupInstructions: [
+                            OrcaSwap.TokenProgram.closeAccountInstruction(
+                                account: toTokenPubkey,
+                                destination: feeRelayerFeePayer ?? owner.publicKey, // FIXME
+                                owner: feeRelayerFeePayer ?? owner.publicKey // FIXME
+                            )
+                        ]
+                    )
                 )
             } else {
-                prepareSourceRequest = .just(.init(account: fromTokenPubkey))
-            }
-            
-            // If necessary, create a TokenAccount for the output token
-            let prepareDestinationRequest: Single<AccountInstructions>
-            
-            // If destination token is Solana, create WSOL if needed
-            if toMint == .wrappedSOLMint {
-                if let toTokenPubkey = try? toTokenPubkey?.toPublicKey(),
-                   toTokenPubkey != owner.publicKey
-                {
-                    // wrapped sol has already been created, just return it, then close later
-                    prepareDestinationRequest = .just(
-                        .init(
-                            account: toTokenPubkey,
-                            cleanupInstructions: [
-                                TokenProgram.closeAccountInstruction(
-                                    account: toTokenPubkey,
-                                    destination: feeRelayerFeePayer ?? owner.publicKey, // FIXME
-                                    owner: feeRelayerFeePayer ?? owner.publicKey // FIXME
-                                )
-                            ]
-                        )
-                    )
-                } else {
-                    // create wrapped sol
-                    prepareDestinationRequest = solanaClient.prepareCreatingWSOLAccountAndCloseWhenDone(
-                        from: owner.publicKey,
-                        amount: 0,
-                        payer: feeRelayerFeePayer ?? owner.publicKey
-                    )
-                }
-            }
-            
-            // If destination is another token and has already been created
-            else if let toTokenPubkey = try? toTokenPubkey?.toPublicKey() {
-                prepareDestinationRequest = .just(.init(account: toTokenPubkey))
-            }
-            
-            // Create associated token address
-            else {
-                prepareDestinationRequest = solanaClient.prepareForCreatingAssociatedTokenAccount(
-                    owner: owner.publicKey,
-                    mint: toMint,
-                    feePayer: feeRelayerFeePayer ?? owner.publicKey,
-                    closeAfterward: false
+                // create wrapped sol
+                prepareDestinationRequest = solanaClient.prepareCreatingWSOLAccountAndCloseWhenDone(
+                    from: owner.publicKey,
+                    amount: 0,
+                    payer: feeRelayerFeePayer ?? owner.publicKey
                 )
             }
-            
-            // Combine request
-            return Single.zip(
-                prepareSourceRequest,
-                prepareDestinationRequest
+        }
+        
+        // If destination is another token and has already been created
+        else if let toTokenPubkey = try? toTokenPubkey?.toPublicKey() {
+            prepareDestinationRequest = .just(.init(account: toTokenPubkey))
+        }
+        
+        // Create associated token address
+        else {
+            prepareDestinationRequest = solanaClient.prepareForCreatingAssociatedTokenAccount(
+                owner: owner.publicKey,
+                mint: toMint,
+                feePayer: feeRelayerFeePayer ?? owner.publicKey,
+                closeAfterward: false
             )
-                .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-                .map { sourceAccountInstructions, destinationAccountInstructions in
-                    // form instructions
-                    var instructions = [TransactionInstruction]()
-                    var cleanupInstructions = [TransactionInstruction]()
+        }
+        
+        // Combine request
+        return Single.zip(
+            prepareSourceRequest,
+            prepareDestinationRequest
+        )
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .map { sourceAccountInstructions, destinationAccountInstructions in
+                // form instructions
+                var instructions = [OrcaSwap.TransactionInstruction]()
+                var cleanupInstructions = [OrcaSwap.TransactionInstruction]()
+                
+                // source
+                instructions.append(contentsOf: sourceAccountInstructions.instructions)
+                cleanupInstructions.append(contentsOf: sourceAccountInstructions.cleanupInstructions)
+                
+                // destination
+                instructions.append(contentsOf: destinationAccountInstructions.instructions)
+                cleanupInstructions.append(contentsOf: destinationAccountInstructions.cleanupInstructions)
+                
+                // userTransferAuthorityPubkey
+                let userTransferAuthority = try OrcaSwap.Account(network: solanaClient.endpoint.network)
+                let userTransferAuthorityPubkey: OrcaSwap.PublicKey
+                
+                // approve (for non fee-relayer only)
+                if let feePayer = feeRelayerFeePayer {
+                    userTransferAuthorityPubkey = owner.publicKey
+                    fatalError("Fee Relayer is implementing")
+                } else {
+                    userTransferAuthorityPubkey = userTransferAuthority.publicKey
                     
-                    // source
-                    instructions.append(contentsOf: sourceAccountInstructions.instructions)
-                    cleanupInstructions.append(contentsOf: sourceAccountInstructions.cleanupInstructions)
-                    
-                    // destination
-                    instructions.append(contentsOf: destinationAccountInstructions.instructions)
-                    cleanupInstructions.append(contentsOf: destinationAccountInstructions.cleanupInstructions)
-                    
-                    // userTransferAuthorityPubkey
-                    let userTransferAuthority = try Account(network: solanaClient.endpoint.network)
-                    let userTransferAuthorityPubkey: PublicKey
-                    
-                    // approve (for non fee-relayer only)
-                    if let feePayer = feeRelayerFeePayer {
-                        userTransferAuthorityPubkey = owner.publicKey
-                        fatalError("Fee Relayer is implementing")
-                    } else {
-                        userTransferAuthorityPubkey = userTransferAuthority.publicKey
-                        
-                        let approveTransaction = TokenProgram.approveInstruction(
-                            tokenProgramId: .tokenProgramId,
-                            account: sourceAccountInstructions.account,
-                            delegate: userTransferAuthorityPubkey,
-                            owner: owner.publicKey,
-                            amount: amount
-                        )
-                        instructions.append(approveTransaction)
-                    }
-                    
-                    // swap instructions
-                    guard let minAmountOut = try? getMinimumAmountOut(inputAmount: amount, slippage: slippage)
-                    else {throw OrcaSwapError.couldNotEstimatedMinimumOutAmount}
-                    
-                    let swapInstruction = TokenSwapProgram.swapInstruction(
-                        tokenSwap: try account.toPublicKey(),
-                        authority: try authority.toPublicKey(),
-                        userTransferAuthority: userTransferAuthorityPubkey,
-                        userSource: sourceAccountInstructions.account,
-                        poolSource: try tokenAccountA.toPublicKey(),
-                        poolDestination: try tokenAccountB.toPublicKey(),
-                        userDestination: destinationAccountInstructions.account,
-                        poolMint: try poolTokenMint.toPublicKey(),
-                        feeAccount: try feeAccount.toPublicKey(),
-                        hostFeeAccount: try? hostFeeAccount?.toPublicKey(),
-                        swapProgramId: .orcaSwapId(version: deprecated == true ? 1: 2),
+                    let approveTransaction = OrcaSwap.TokenProgram.approveInstruction(
                         tokenProgramId: .tokenProgramId,
-                        amountIn: amount,
-                        minimumAmountOut: minAmountOut
+                        account: sourceAccountInstructions.account,
+                        delegate: userTransferAuthorityPubkey,
+                        owner: owner.publicKey,
+                        amount: amount
                     )
-                    
-                    instructions.append(swapInstruction)
-                    
-                    if let feePayer = feeRelayerFeePayer {
-                        fatalError("Fee Relayer is implementing")
-                    } else {
-                        var signers = [userTransferAuthority]
-                        signers.append(contentsOf: sourceAccountInstructions.signers)
-                        signers.append(contentsOf: destinationAccountInstructions.signers)
-                        
-                        return .init(
-                            account: destinationAccountInstructions.account,
-                            instructions: instructions,
-                            cleanupInstructions: cleanupInstructions,
-                            signers: signers
-                        )
-                    }
+                    instructions.append(approveTransaction)
                 }
-        }
-        
-        // MARK: - Helpers
-        func getFee(_ inputAmount: UInt64) throws -> UInt64 {
-            guard curveType == STABLE || curveType == CONSTANT_PRODUCT else {throw OrcaSwapError.unknown}
-            let tradingFee = computeFee(baseAmount: inputAmount, feeNumerator: feeNumerator, feeDenominator: feeDenominator)
-            let ownerFee = computeFee(baseAmount: inputAmount, feeNumerator: ownerTradeFeeNumerator, feeDenominator: ownerTradeFeeDenominator)
-            return tradingFee + ownerFee
-            
-        }
-        
-        private func computeFee(baseAmount: UInt64, feeNumerator: UInt64, feeDenominator: UInt64) -> UInt64 {
-            if feeNumerator == 0 {
-                return 0
+                
+                // swap instructions
+                guard let minAmountOut = try? getMinimumAmountOut(inputAmount: amount, slippage: slippage)
+                else {throw OrcaSwapError.couldNotEstimatedMinimumOutAmount}
+                
+                let swapInstruction = OrcaSwap.TokenSwapProgram.swapInstruction(
+                    tokenSwap: try account.toPublicKey(),
+                    authority: try authority.toPublicKey(),
+                    userTransferAuthority: userTransferAuthorityPubkey,
+                    userSource: sourceAccountInstructions.account,
+                    poolSource: try tokenAccountA.toPublicKey(),
+                    poolDestination: try tokenAccountB.toPublicKey(),
+                    userDestination: destinationAccountInstructions.account,
+                    poolMint: try poolTokenMint.toPublicKey(),
+                    feeAccount: try feeAccount.toPublicKey(),
+                    hostFeeAccount: try? hostFeeAccount?.toPublicKey(),
+                    swapProgramId: .orcaSwapId(version: deprecated == true ? 1: 2),
+                    tokenProgramId: .tokenProgramId,
+                    amountIn: amount,
+                    minimumAmountOut: minAmountOut
+                )
+                
+                instructions.append(swapInstruction)
+                
+                if let feePayer = feeRelayerFeePayer {
+                    fatalError("Fee Relayer is implementing")
+                } else {
+                    var signers = [userTransferAuthority]
+                    signers.append(contentsOf: sourceAccountInstructions.signers)
+                    signers.append(contentsOf: destinationAccountInstructions.signers)
+                    
+                    return .init(
+                        account: destinationAccountInstructions.account,
+                        instructions: instructions,
+                        cleanupInstructions: cleanupInstructions,
+                        signers: signers
+                    )
+                }
             }
-            return UInt64(BInt(baseAmount) * BInt(feeNumerator) / BInt(feeDenominator))
+    }
+    
+    // MARK: - Helpers
+    func getFee(_ inputAmount: UInt64) throws -> UInt64 {
+        guard curveType == STABLE || curveType == CONSTANT_PRODUCT else {throw OrcaSwapError.unknown}
+        let tradingFee = computeFee(baseAmount: inputAmount, feeNumerator: feeNumerator, feeDenominator: feeDenominator)
+        let ownerFee = computeFee(baseAmount: inputAmount, feeNumerator: ownerTradeFeeNumerator, feeDenominator: ownerTradeFeeDenominator)
+        return tradingFee + ownerFee
+        
+    }
+    
+    private func computeFee(baseAmount: UInt64, feeNumerator: UInt64, feeDenominator: UInt64) -> UInt64 {
+        if feeNumerator == 0 {
+            return 0
         }
+        return UInt64(BInt(baseAmount) * BInt(feeNumerator) / BInt(feeDenominator))
     }
 }
 

@@ -12,7 +12,7 @@ import XCTest
 
 class RenVMBurnAndReleaseTests: RestAPITests {
     override var endpoint: SolanaSDK.APIEndPoint {
-        .init(url: "https://api.devnet.solana.com", network: .devnet)
+        .init(address: "https://api.devnet.solana.com", network: .devnet)
     }
     
     override var overridingAccount: String? {

@@ -26,7 +26,7 @@ class OrcaSwapSwapTests: XCTestCase {
     var solanaSDK: SolanaSDK!
     var orcaSwap: OrcaSwap!
     var endpoint: SolanaSDK.APIEndPoint! {
-        .init(url: "https://p2p.rpcpool.com/", network: .mainnetBeta)
+        .init(address: "https://p2p.rpcpool.com/", network: .mainnetBeta)
     }
     var phrase: String {
         "miracle pizza supply useful steak border same again youth silver access hundred"

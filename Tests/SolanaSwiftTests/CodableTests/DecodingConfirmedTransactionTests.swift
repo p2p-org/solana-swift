@@ -12,7 +12,7 @@ import XCTest
 
 class DecodingConfirmedTransactionTests: XCTestCase {
     let endpoint = SolanaSDK.APIEndPoint(
-        url: "https://api.mainnet-beta.solana.com",
+        address: "https://api.mainnet-beta.solana.com",
         network: .mainnetBeta
     )
     var solanaSDK: SolanaSDK!

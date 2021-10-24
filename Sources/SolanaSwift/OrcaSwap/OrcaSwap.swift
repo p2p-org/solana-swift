@@ -184,15 +184,6 @@ public class OrcaSwap: OrcaSwapType {
         return bestPools
     }
     
-    public func calculateFees(
-        availablePoolsPairs: [PoolsPair],
-        bestPoolsPair: PoolsPair?
-    ) -> UInt64? {
-        // TODO: - Later
-//        let poolsPair = bestPoolsPair ?? availablePoolsPairs.first
-        return nil
-    }
-    
     /// Execute swap
     public func swap(
         fromWalletPubkey: String,

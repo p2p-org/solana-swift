@@ -11,7 +11,7 @@ import SolanaSwift
 class RestAPITests: XCTestCase {
     var endpoint: SolanaSDK.APIEndPoint {
         .init(
-            url: "https://api.mainnet-beta.solana.com",
+            address: "https://api.mainnet-beta.solana.com",
             network: .mainnetBeta
         )
     }

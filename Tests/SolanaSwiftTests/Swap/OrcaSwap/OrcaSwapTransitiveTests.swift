@@ -15,7 +15,7 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     }
     
     override var endpoint: SolanaSDK.APIEndPoint! {
-        .init(url: "https://solana-api.projectserum.com", network: .mainnetBeta)
+        .init(address: "https://solana-api.projectserum.com", network: .mainnetBeta)
     }
     
     override var phrase: String {
