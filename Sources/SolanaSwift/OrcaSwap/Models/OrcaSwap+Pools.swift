@@ -198,6 +198,28 @@ public extension OrcaSwap.PoolsPair {
         )
     }
     
+    func calculateLiquidityProviderFees(
+        inputAmount: UInt64,
+        slippage: Double
+    ) throws -> [UInt64] {
+        guard count > 1 else {return []}
+        // 1 pool
+        var result = [UInt64]()
+        let pool0 = self[0]
+        let fee0 = try pool0.calculatingFees(inputAmount)
+        result.append(fee0)
+        
+        // 2 pool
+        if count == 2 {
+            let pool1 = self[1]
+            if let inputAmount = try? pool0.getMinimumAmountOut(inputAmount: inputAmount, slippage: slippage) {
+                let fee1 = try pool1.calculatingFees(inputAmount)
+                result.append(fee1)
+            }
+        }
+        return result
+    }
+    
     /// baseOutputAmount is the amount the user would receive if fees are included and slippage is excluded.
     private func getBaseOutputAmount(
         inputAmount: UInt64

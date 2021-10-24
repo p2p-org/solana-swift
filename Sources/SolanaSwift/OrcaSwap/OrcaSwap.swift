@@ -193,14 +193,7 @@ public class OrcaSwap: OrcaSwapType {
         slippage: Double,
         isSimulation: Bool = false
     ) -> Single<SwapResponse> {
-        guard let owner = accountProvider.getAccount() else {
-            return .error(OrcaSwapError.unauthorized)
-        }
-        
-        guard let info = info, bestPoolsPair.count > 0 else {
-            return .error(OrcaSwapError.swapInfoMissing)
-        }
-        
+        guard bestPoolsPair.count > 0 else {return .error(OrcaSwapError.swapInfoMissing)}
         guard let fromDecimals = bestPoolsPair[0].tokenABalance?.decimals else {
             return .error(OrcaSwapError.invalidPool)
         }
@@ -208,8 +201,6 @@ public class OrcaSwap: OrcaSwapType {
         let amount = amount.toLamport(decimals: fromDecimals)
         
         var feeRelayerFeePayer: PublicKey? // TODO: - Fee relayer
-        
-        let requestInstructions: Single<AccountInstructions>
         
         if bestPoolsPair.count == 1 {
             return directSwap(
@@ -300,10 +291,11 @@ public class OrcaSwap: OrcaSwapType {
         isSimulation: Bool
     ) -> Single<SwapResponse> {
         guard let owner = accountProvider.getAccount() else {return .error(OrcaSwapError.unauthorized)}
+        guard let info = info else {return .error(OrcaSwapError.swapInfoMissing)}
         
         return pool
             .constructExchange(
-                tokens: info!.tokens,
+                tokens: info.tokens,
                 solanaClient: solanaClient,
                 owner: owner,
                 fromTokenPubkey: fromTokenPubkey,
