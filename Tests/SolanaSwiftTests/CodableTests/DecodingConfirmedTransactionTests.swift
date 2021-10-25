@@ -36,6 +36,13 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.newWallet?.token.symbol, "ETH")
         XCTAssertEqual(transaction.newWallet?.pubkey, "8jpWBKSoU7SXz9gJPJS53TEXXuWcg1frXLEdnfomxLwZ")
     }
+
+    func testDecodingCreateBOPAccountTransaction() throws {
+        let transaction = try parse(fileName: "CreateBOPAccountTransaction").value as! SolanaSDK.CreateAccountTransaction
+        
+        XCTAssertEqual(transaction.newWallet?.token.symbol, "BOP")
+        XCTAssertEqual(transaction.newWallet?.pubkey, "3qjHF2CHQbPEkuq3cTbS9iwfWfSsHsqmgyMj7M2ZuVSx")
+    }
     
     func testDecodingCloseAccountTransaction() throws {
         let transaction = try parse(fileName: "CloseAccountTransaction").value as! SolanaSDK.CloseAccountTransaction
