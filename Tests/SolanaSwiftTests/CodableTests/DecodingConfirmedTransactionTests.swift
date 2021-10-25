@@ -90,7 +90,6 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
         XCTAssertEqual(transaction.destination?.pubkey, "3YuhjsaohzpzEYAsonBQakYDj3VFWimhDn7bci8ERKTh")
         XCTAssertEqual(transaction.authority, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
-        XCTAssertEqual(transaction.destinationAuthority, "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm")
         XCTAssertEqual(transaction.amount, 0.012111)
     }
     
