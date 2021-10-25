@@ -63,10 +63,7 @@ public extension SolanaSDK {
                 ).map({ $0 as AnyHashable })
             
             case isCreateAccountTransaction(instructions: instructions):
-                single = parseCreateAccountTransaction(
-                        instruction: instructions[0],
-                        initializeAccountInstruction: instructions.last
-                ).map({ $0 as AnyHashable })
+                single = parseCreateAccountTransaction(instructions: instructions).map({ $0 as AnyHashable })
             
             case isCloseAccountTransaction(instructions: instructions):
                 single = parseCloseAccountTransaction(
@@ -113,40 +110,53 @@ public extension SolanaSDK {
         // MARK: - Create account
         /**
          Check if transaction is create account transaction
-         - Returns:
          */
         private func isCreateAccountTransaction(instructions: [ParsedInstruction]) -> Bool {
-            instructions.count == 2 &&
-                    instructions.first?.parsed?.type == "createAccount" &&
-                    instructions.last?.parsed?.type == "initializeAccount"
+            switch (instructions.count) {
+            case 1: return instructions[0].program == "spl-associated-token-account"
+            case 2: return instructions.first?.parsed?.type == "createAccount" && instructions.last?.parsed?.type == "initializeAccount"
+            default: return false
+            }
         }
         
         private func parseCreateAccountTransaction(
-                instruction: ParsedInstruction,
-                initializeAccountInstruction: ParsedInstruction?
+                instructions: [ParsedInstruction]
         ) -> Single<CreateAccountTransaction> {
-            let info = instruction.parsed?.info
-            let initializeAccountInfo = initializeAccountInstruction?.parsed?.info
-            
-            let fee = info?.lamports?.convertToBalance(decimals: Decimals.SOL)
-            
-            return getTokenWithMint(initializeAccountInfo?.mint)
-                    .map { token in
-                        CreateAccountTransaction(
-                                fee: fee,
-                                newWallet: Wallet(
-                                        pubkey: info?.newAccount,
-                                        lamports: nil,
-                                        token: token
-                                )
-                        )
-                    }
+            if let program = instructions.getFirstProgram(with: "spl-associated-token-account") {
+                return getTokenWithMint(program.parsed?.info.mint).map { token in
+                    CreateAccountTransaction(
+                            fee: nil,
+                            newWallet: Wallet(
+                                    pubkey: program.parsed?.info.account,
+                                    token: token
+                            )
+                    )
+                }
+            } else {
+                let info = instructions[0].parsed?.info
+                let initializeAccountInfo = instructions.last?.parsed?.info
+                
+                let fee = info?.lamports?.convertToBalance(decimals: Decimals.SOL)
+                return getTokenWithMint(initializeAccountInfo?.mint)
+                        .map { token in
+                            CreateAccountTransaction(
+                                    fee: fee,
+                                    newWallet: Wallet(
+                                            pubkey: info?.newAccount,
+                                            lamports: nil,
+                                            token: token
+                                    )
+                            )
+                        }
+            }
         }
         
         // MARK: - Close account
         private func isCloseAccountTransaction(instructions: [ParsedInstruction]) -> Bool {
-            instructions.count == 1 &&
-                    instructions.first?.parsed?.type == "closeAccount"
+            switch (instructions.count) {
+            case 1: return instructions.first?.parsed?.type == "closeAccount"
+            default: return false
+            }
         }
         
         private func parseCloseAccountTransaction(
@@ -179,11 +189,8 @@ public extension SolanaSDK {
          Check is transaction is transfer transaction
          */
         private func isTransferTransaction(instructions: [ParsedInstruction]) -> Bool {
-            instructions.count == 1 &&
-                    instructions.count == 4 &&
-                    instructions.count == 2 &&
-                    instructions.last?.parsed?.type == "transfer" &&
-                    instructions.last?.parsed?.type == "transferChecked"
+            (instructions.count == 1 || instructions.count == 4 || instructions.count == 2) &&
+                    (instructions.last?.parsed?.type == "transfer" || instructions.last?.parsed?.type == "transferChecked")
         }
         
         private func parseTransferTransaction(
@@ -360,10 +367,14 @@ public extension SolanaSDK {
          */
         private func isLiquidityToPool(innerInstructions: [InnerInstruction]?) -> Bool {
             let instructions = innerInstructions?.first?.instructions
-            return instructions?.count == 3 &&
-                    instructions![0].parsed?.type == "transfer" &&
-                    instructions![1].parsed?.type == "transfer" &&
-                    instructions![2].parsed?.type == "mintTo"
+            switch (instructions?.count) {
+            case 3:
+                return instructions![0].parsed?.type == "transfer" &&
+                        instructions![1].parsed?.type == "transfer" &&
+                        instructions![2].parsed?.type == "mintTo"
+            default:
+                return false
+            }
         }
         
         /**
@@ -372,10 +383,15 @@ public extension SolanaSDK {
         */
         private func isBurn(innerInstructions: [InnerInstruction]?) -> Bool {
             let instructions = innerInstructions?.first?.instructions
-            return instructions?.count == 3 &&
-                    instructions![0].parsed?.type == "burn" &&
-                    instructions![1].parsed?.type == "transfer" &&
-                    instructions![2].parsed?.type == "transfer"
+            switch (instructions?.count) {
+            case 3:
+                return instructions?.count == 3 &&
+                        instructions![0].parsed?.type == "burn" &&
+                        instructions![1].parsed?.type == "transfer" &&
+                        instructions![2].parsed?.type == "transfer"
+            default:
+                return false
+            }
         }
         
         private func getOrcaSwapInstructionIndex(
