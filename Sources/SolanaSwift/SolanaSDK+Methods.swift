@@ -188,8 +188,8 @@ public extension SolanaSDK {
         (request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountInfo>]>>)
             .map {$0.value}
     }
-    func getTokenAccountsByOwner(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountInfo>]> {
-        (request(parameters: [pubkey, mint, programId, configs]) as Single<Rpc<[TokenAccount<AccountInfo>]>>)
+    func getTokenAccountsByOwner(pubkey: String, params: OwnerInfoParams? = nil, configs: RequestConfiguration? = nil) -> Single<[TokenAccount<AccountInfo>]> {
+        (request(parameters: [pubkey, params, configs]) as Single<Rpc<[TokenAccount<AccountInfo>]>>)
             .map {$0.value}
     }
     func getTokenLargestAccounts(pubkey: String, commitment: Commitment? = nil) -> Single<[TokenAmount]> {
