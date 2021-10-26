@@ -52,6 +52,7 @@ public extension SolanaSDK {
                 // transferChecked
                 let tokenAmount: TokenAccountBalance?
             }
+            
             let info: Info
             let type: String?
         }
@@ -63,5 +64,15 @@ public extension SolanaSDK {
         // swap
         public let data: String?
         let accounts: [String]?
+    }
+}
+
+extension Sequence where Iterator.Element == SolanaSDK.ParsedInstruction {
+    func containProgram(with name: String) -> Bool {
+        getFirstProgram(with: name) != nil
+    }
+    
+    func getFirstProgram(with name: String) -> SolanaSDK.ParsedInstruction? {
+        first(where: { $0.program == name })
     }
 }
