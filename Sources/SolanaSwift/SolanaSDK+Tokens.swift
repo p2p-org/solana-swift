@@ -27,7 +27,8 @@ extension SolanaSDK {
             getTokenAccountsByOwner(
                 pubkey: account,
                 params: .init(mint: nil, programId: PublicKey.tokenProgramId.base58EncodedString),
-                configs: .init(encoding: "base64")
+                configs: .init(encoding: "base64"),
+                log: log
             ),
             getTokensList()
         )
