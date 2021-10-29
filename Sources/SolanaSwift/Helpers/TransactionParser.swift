@@ -19,9 +19,9 @@ public extension SolanaSDK {
         private let orcaSwapParser: OrcaSwapParser
         
         // MARK: - Initializers
-        public init(solanaSDK: SolanaSDK) {
+        public init(solanaSDK: SolanaSDK, orcaSwapParser: OrcaSwapParser? = nil) {
             self.solanaSDK = solanaSDK
-            orcaSwapParser = SolanaSDK.OrcaSwapParser(solanaSDK: solanaSDK)
+            self.orcaSwapParser = orcaSwapParser ?? SolanaSDK.OrcaSwapParserImpl(solanaSDK: solanaSDK)
         }
         
         // MARK: - Methods
@@ -32,7 +32,6 @@ public extension SolanaSDK {
                 p2pFeePayerPubkeys: [String]
         ) -> Single<ParsedTransaction> {
             // get data
-            let innerInstructions = transactionInfo.meta?.innerInstructions
             let instructions = transactionInfo.transaction.message.instructions
             
             // single
@@ -42,7 +41,7 @@ public extension SolanaSDK {
             
             case orcaSwapParser.can(instructions: instructions):
                 single = orcaSwapParser.parse(transactionInfo: transactionInfo, myAccountSymbol: myAccountSymbol)
-                    .map({$0 as AnyHashable})
+                    .map({ $0 == nil ? nil : $0 as AnyHashable })
             
             case isSerumSwapInstruction(instructions: instructions):
                 single = parseSerumSwapTransaction(
@@ -52,7 +51,7 @@ public extension SolanaSDK {
                         innerInstruction: transactionInfo.meta?.innerInstructions?
                                 .first(where: { $0.instructions.contains(where: { $0.programId == PublicKey.dexPID.base58EncodedString }) }),
                         myAccountSymbol: myAccountSymbol
-                ).map({ $0 as AnyHashable })
+                ).map({ $0 == nil ? nil : $0 as AnyHashable })
             
             case isCreateAccountTransaction(instructions: instructions):
                 single = parseCreateAccountTransaction(instructions: instructions).map({ $0 as AnyHashable })
