@@ -16,10 +16,12 @@ public extension SolanaSDK {
     struct TransactionParser: SolanaSDKTransactionParserType {
         // MARK: - Properties
         private let solanaSDK: SolanaSDK
+        private let orcaSwapParser: OrcaSwapParser
         
         // MARK: - Initializers
         public init(solanaSDK: SolanaSDK) {
             self.solanaSDK = solanaSDK
+            orcaSwapParser = SolanaSDK.OrcaSwapParser(solanaSDK: solanaSDK)
         }
         
         // MARK: - Methods
@@ -38,19 +40,9 @@ public extension SolanaSDK {
             
             switch (true) {
             
-            case isOrcaSwap(instructions: instructions):
-                switch (true) {
-                case isLiquidityToPool(innerInstructions: innerInstructions): single = .just(nil)
-                case isBurn(innerInstructions: innerInstructions): single = .just(nil)
-                default:
-                    single = parseSwapTransaction(
-                            index: getOrcaSwapInstructionIndex(instructions: instructions)!,
-                            instructions: instructions,
-                            innerInstructions: innerInstructions,
-                            postTokenBalances: transactionInfo.meta?.postTokenBalances,
-                            myAccountSymbol: myAccountSymbol
-                    ).map({ $0 as AnyHashable })
-                }
+            case orcaSwapParser.can(instructions: instructions):
+                single = orcaSwapParser.parse(transactionInfo: transactionInfo, myAccountSymbol: myAccountSymbol)
+                    .map({$0 as AnyHashable})
             
             case isSerumSwapInstruction(instructions: instructions):
                 single = parseSerumSwapTransaction(
@@ -123,7 +115,7 @@ public extension SolanaSDK {
                 instructions: [ParsedInstruction]
         ) -> Single<CreateAccountTransaction> {
             if let program = instructions.getFirstProgram(with: "spl-associated-token-account") {
-                return getTokenWithMint(program.parsed?.info.mint).map { token in
+                return solanaSDK.getTokenWithMint(program.parsed?.info.mint).map { token in
                     CreateAccountTransaction(
                             fee: nil,
                             newWallet: Wallet(
@@ -137,7 +129,7 @@ public extension SolanaSDK {
                 let initializeAccountInfo = instructions.last?.parsed?.info
                 
                 let fee = info?.lamports?.convertToBalance(decimals: Decimals.SOL)
-                return getTokenWithMint(initializeAccountInfo?.mint)
+                return solanaSDK.getTokenWithMint(initializeAccountInfo?.mint)
                         .map { token in
                             CreateAccountTransaction(
                                     fee: fee,
@@ -171,7 +163,7 @@ public extension SolanaSDK {
             }
             
             let reimbursedAmount = reimbursedAmountLamports?.convertToBalance(decimals: Decimals.SOL)
-            return getTokenWithMint(preTokenBalance?.mint)
+            return solanaSDK.getTokenWithMint(preTokenBalance?.mint)
                     .map { token in
                         CloseAccountTransaction(
                                 reimbursedAmount: reimbursedAmount,
@@ -289,7 +281,7 @@ public extension SolanaSDK {
                     }
                 }
                 
-                request = getTokenWithMint(tokenBalance.mint)
+                request = solanaSDK.getTokenWithMint(tokenBalance.mint)
                         .map { token in
                             let source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
                             let destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
@@ -306,9 +298,9 @@ public extension SolanaSDK {
             
             // Mint not found, retrieve mint
             else {
-                request = getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
+                request = solanaSDK.getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
                         .flatMap { info in
-                            self.getTokenWithMint(info?.mint.base58EncodedString)
+                            solanaSDK.getTokenWithMint(info?.mint.base58EncodedString)
                                     .map { token in
                                         let source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
                                         let destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
@@ -333,7 +325,7 @@ public extension SolanaSDK {
                 guard let account = transaction.destination?.pubkey else {
                     return .just(transaction)
                 }
-                return getAccountInfo(account: account)
+                return solanaSDK.getAccountInfo(account: account)
                         .map {
                             $0?.owner.base58EncodedString
                         }
@@ -349,206 +341,6 @@ public extension SolanaSDK {
                             )
                         }
             }
-        }
-        
-        // MARK: - Swap
-        
-        /**
-         Check the transaction is orca swap.
-         - Parameter instructions: instructions
-         */
-        private func isOrcaSwap(instructions: [ParsedInstruction]) -> Bool {
-            getOrcaSwapInstructionIndex(instructions: instructions) != nil
-        }
-        
-        /**
-         Check liquidity to pool
-         - Parameter instructions: inner instructions
-         */
-        private func isLiquidityToPool(innerInstructions: [InnerInstruction]?) -> Bool {
-            let instructions = innerInstructions?.first?.instructions
-            switch (instructions?.count) {
-            case 3:
-                return instructions![0].parsed?.type == "transfer" &&
-                        instructions![1].parsed?.type == "transfer" &&
-                        instructions![2].parsed?.type == "mintTo"
-            default:
-                return false
-            }
-        }
-        
-        /**
-        Check liquidity to pool
-        - Parameter instructions: inner instructions
-        */
-        private func isBurn(innerInstructions: [InnerInstruction]?) -> Bool {
-            let instructions = innerInstructions?.first?.instructions
-            switch (instructions?.count) {
-            case 3:
-                return instructions?.count == 3 &&
-                        instructions![0].parsed?.type == "burn" &&
-                        instructions![1].parsed?.type == "transfer" &&
-                        instructions![2].parsed?.type == "transfer"
-            default:
-                return false
-            }
-        }
-        
-        private func getOrcaSwapInstructionIndex(
-                instructions: [ParsedInstruction]
-        ) -> Int? {
-            // ignore liqu
-            instructions.firstIndex(
-                    where: {
-                        $0.programId == PublicKey.orcaSwapId(version: 1).base58EncodedString /*swap ocra*/ ||
-                                $0.programId == PublicKey.orcaSwapId(version: 2).base58EncodedString /*swap ocra*/ ||
-                                $0.programId == "9qvG1zUp8xF1Bi4m6UdRNby1BAAuaDrUxSpv4CmRRMjL" /*main deprecated*/ ||
-                                $0.programId == "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8" /*main deprecated*/
-                    })
-        }
-        
-        private func parseSwapTransaction(
-                index: Int,
-                instructions: [ParsedInstruction],
-                innerInstructions: [InnerInstruction]?,
-                postTokenBalances: [TokenBalance]?,
-                myAccountSymbol: String?
-        ) -> Single<SwapTransaction?> {
-            // get instruction
-            guard index < instructions.count else {
-                return .just(nil)
-            }
-            let instruction = instructions[index]
-            
-            // group request
-            var request: Single<(source: Wallet?, destination: Wallet?)>
-            var sourceAmountLamports: Lamports?
-            var destinationAmountLamports: Lamports?
-            
-            // check inner instructions
-            if let data = instruction.data,
-               let instructionIndex = Base58.decode(data).first,
-               instructionIndex == 1,
-               let swapInnerInstruction = innerInstructions?.first(where: { $0.index == index }) {
-                // get instructions
-                let transfersInstructions = swapInnerInstruction.instructions.filter {
-                    $0.parsed?.type == "transfer"
-                }
-                guard transfersInstructions.count >= 2 else {
-                    return .just(nil)
-                }
-                
-                let sourceInstruction = transfersInstructions[0]
-                let destinationInstruction = transfersInstructions[1]
-                
-                let sourceInfo = sourceInstruction.parsed?.info
-                let destinationInfo = destinationInstruction.parsed?.info
-                
-                // get source
-                var accountInfoRequests = [Single<AccountInfo?>]()
-                var sourcePubkey: PublicKey?
-                if let sourceString = sourceInfo?.source {
-                    sourcePubkey = try? PublicKey(string: sourceString)
-                    accountInfoRequests.append(
-                            getAccountInfo(account: sourceString, retryWithAccount: sourceInfo?.destination)
-                    )
-                }
-                
-                var destinationPubkey: PublicKey?
-                if let destinationString = destinationInfo?.destination {
-                    destinationPubkey = try? PublicKey(string: destinationString)
-                    accountInfoRequests.append(
-                            getAccountInfo(account: destinationString, retryWithAccount: destinationInfo?.source)
-                    )
-                }
-                
-                request = Single.zip(accountInfoRequests)
-                        .flatMap { params -> Single<(source: Wallet?, destination: Wallet?)> in
-                            // get source, destination account info
-                            let sourceAccountInfo = params[0]
-                            let destinationAccountInfo = params[1]
-                            
-                            return Single.zip(
-                                            getTokenWithMint(sourceAccountInfo?.mint.base58EncodedString),
-                                            getTokenWithMint(destinationAccountInfo?.mint.base58EncodedString)
-                                    )
-                                    .map { sourceToken, destinationToken in
-                                        let source = Wallet(
-                                                pubkey: sourcePubkey?.base58EncodedString,
-                                                lamports: sourceAccountInfo?.lamports,
-                                                token: sourceToken
-                                        )
-                                        let destination = Wallet(
-                                                pubkey: destinationPubkey?.base58EncodedString,
-                                                lamports: destinationAccountInfo?.lamports,
-                                                token: destinationToken
-                                        )
-                                        return (source: source, destination: destination)
-                                    }
-                        }
-                
-                sourceAmountLamports = Lamports(sourceInfo?.amount ?? "0")
-                destinationAmountLamports = Lamports(destinationInfo?.amount ?? "0")
-            }
-            
-            // check instructions for failed transaction
-            else if let approveInstruction = instructions
-                    .first(where: { $0.parsed?.type == "approve" }),
-                    let sourceAmountString = approveInstruction.parsed?.info.amount,
-                    let sourceMint = postTokenBalances?.first?.mint,
-                    let destinationMint = postTokenBalances?.last?.mint {
-                // form request
-                request = Single.zip(
-                                getTokenWithMint(sourceMint),
-                                getTokenWithMint(destinationMint)
-                        )
-                        .map { sourceToken, destinationToken in
-                            let source = Wallet(
-                                    pubkey: approveInstruction.parsed?.info.source,
-                                    lamports: Lamports(postTokenBalances?.first?.uiTokenAmount.amount ?? "0"),
-                                    token: sourceToken
-                            )
-                            var destinationPubkey: String?
-                            
-                            if destinationToken.symbol == "SOL" {
-                                destinationPubkey = approveInstruction.parsed?.info.owner
-                            }
-                            let destination = Wallet(
-                                    pubkey: destinationPubkey,
-                                    lamports: Lamports(postTokenBalances?.last?.uiTokenAmount.amount ?? "0"),
-                                    token: destinationToken
-                            )
-                            return (source: source, destination: destination)
-                        }
-                
-                sourceAmountLamports = Lamports(sourceAmountString)
-                destinationAmountLamports = nil // because of the error
-            }
-            
-            // unknown
-            else {
-                return .just(nil)
-            }
-            
-            // get token account info
-            return request
-                    .map { params -> SwapTransaction? in
-                        guard let source = params.source,
-                              let destination = params.destination
-                                else {
-                            return nil
-                        }
-                        
-                        // get decimals
-                        return SwapTransaction(
-                                source: source,
-                                sourceAmount: sourceAmountLamports?.convertToBalance(decimals: source.token.decimals),
-                                destination: destination,
-                                destinationAmount: destinationAmountLamports?.convertToBalance(decimals: destination.token.decimals),
-                                myAccountSymbol: myAccountSymbol
-                        )
-                    }
-                    .catchAndReturn(nil)
         }
         
         // MARK: - Serum swap
@@ -663,9 +455,9 @@ public extension SolanaSDK {
             
             // get token from mint address and finish request
             return Single.zip(
-                            getTokenWithMint(mints[0]),
-                            getTokenWithMint(mints[1])
-                    )
+                    solanaSDK.getTokenWithMint(mints[0]),
+                    solanaSDK.getTokenWithMint(mints[1])
+                )
                     .map { fromToken, toToken in
                         let sourceWallet = Wallet(
                                 pubkey: fromAddress,
@@ -688,38 +480,6 @@ public extension SolanaSDK {
                         )
                     }
         }
-        
-        // MARK: - Helpers
-        private func getTokenWithMint(_ mint: String?) -> Single<Token> {
-            guard let mint = mint else {
-                return .just(.unsupported(mint: nil))
-            }
-            return solanaSDK.getTokensList()
-                    .map {
-                        $0.first(where: { $0.address == mint }) ?? .unsupported(mint: mint)
-                    }
-        }
-        
-        private func getAccountInfo(account: String?, retryWithAccount retryAccount: String? = nil) -> Single<AccountInfo?> {
-            guard let account = account else {
-                return .just(nil)
-            }
-            return solanaSDK.getAccountInfo(
-                            account: account,
-                            decodedTo: AccountInfo.self
-                    )
-                    .map {
-                        Optional($0.data)
-                    }
-                    .catchAndReturn(nil)
-                    .flatMap {
-                        if $0 == nil,
-                           let retryAccount = retryAccount {
-                            return getAccountInfo(account: retryAccount)
-                        }
-                        return .just($0)
-                    }
-        }
     }
 }
 
@@ -727,5 +487,38 @@ private extension String {
     var isUSDxMint: Bool {
         self == SolanaSDK.PublicKey.usdtMint.base58EncodedString ||
                 self == SolanaSDK.PublicKey.usdcMint.base58EncodedString
+    }
+}
+
+extension SolanaSDK {
+    func getAccountInfo(account: String?, retryWithAccount retryAccount: String? = nil) -> Single<AccountInfo?> {
+        guard let account = account else {
+            return .just(nil)
+        }
+        return getAccountInfo(
+                account: account,
+                decodedTo: AccountInfo.self
+            )
+            .map {
+                Optional($0.data)
+            }
+            .catchAndReturn(nil)
+            .flatMap {
+                if $0 == nil,
+                   let retryAccount = retryAccount {
+                    return self.getAccountInfo(account: retryAccount)
+                }
+                return .just($0)
+            }
+    }
+    
+    func getTokenWithMint(_ mint: String?) -> Single<Token> {
+        guard let mint = mint else {
+            return .just(.unsupported(mint: nil))
+        }
+        return getTokensList()
+            .map {
+                $0.first(where: { $0.address == mint }) ?? .unsupported(mint: mint)
+            }
     }
 }
