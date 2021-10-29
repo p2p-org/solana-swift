@@ -16,7 +16,9 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         network: .mainnetBeta
     )
     var solanaSDK: SolanaSDK!
+    
     var parser: SolanaSDK.TransactionParser!
+    var oldParser: SolanaSDK.TransactionParser!
     
     override func setUpWithError() throws {
         let accountStorage = InMemoryAccountStorage()
@@ -26,7 +28,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         
         try accountStorage.save(account)
         
-        parser = SolanaSDK.TransactionParser(solanaSDK: solanaSDK)
+        parser = SolanaSDK.TransactionParser(solanaSDK: solanaSDK, orcaSwapParser: nil)
+        oldParser = SolanaSDK.TransactionParser(solanaSDK: solanaSDK, orcaSwapParser: SolanaSDK.OldOrcaSwapParserImpl(solanaSDK: solanaSDK))
     }
     
     func testDecodingCreateAccountTransaction() throws {
@@ -227,13 +230,29 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.destinationAmount?.toLamport(decimals: transaction.destination?.token.decimals ?? 0), 1993604)
     }
     
+    func testSwap01() throws {
+        let trx1 = try parse(fileName: "Swap1").value as! SolanaSDK.SwapTransaction
+        let trx2 = try parse(fileName: "Swap1", parser: oldParser).value as! SolanaSDK.SwapTransaction
+        
+        XCTAssertEqual(trx1.source?.token.symbol, trx2.source?.token.symbol)
+        XCTAssertEqual(trx1.source?.pubkey, trx2.source?.pubkey)
+        XCTAssertEqual(trx1.sourceAmount, trx2.sourceAmount)
+        
+        XCTAssertEqual(trx1.destination?.token.symbol, trx2.destination?.token.symbol)
+        XCTAssertEqual(trx1.destination?.pubkey, trx2.destination?.pubkey)
+        XCTAssertEqual(trx1.destinationAmount, trx2.destinationAmount)
+    }
+    
     private func parse(
         fileName: String,
+        parser: SolanaSDK.TransactionParser? = nil,
         myAccount: String? = nil,
         myAccountSymbol: String? = nil
     ) throws -> SolanaSDK.ParsedTransaction {
         let transactionInfo = try transactionInfoFromJSONFileName(fileName)
-        return try parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: myAccountSymbol, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
+        
+        let _parser: SolanaSDK.TransactionParser = parser ?? self.parser
+        return try _parser.parse(transactionInfo: transactionInfo, myAccount: myAccount, myAccountSymbol: myAccountSymbol, p2pFeePayerPubkeys: ["FG4Y3yX4AAchp1HvNZ7LfzFTewF2f6nDoMDCohTFrdpT"])
             .toBlocking().first()!
     }
     
