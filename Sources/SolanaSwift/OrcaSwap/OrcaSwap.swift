@@ -21,8 +21,8 @@ public protocol OrcaSwapType {
         fromWalletPubkey: String,
         toWalletPubkey: String?,
         feeRelayerFeePayerPubkey: String?,
-        bestPoolsPair: OrcaSwap.PoolsPair,
-        inputAmount: Double,
+        bestPoolsPair: OrcaSwap.PoolsPair?,
+        inputAmount: Double?,
         slippage: Double,
         lamportsPerSignature: UInt64,
         minRentExempt: UInt64
@@ -202,22 +202,22 @@ public class OrcaSwap: OrcaSwapType {
         fromWalletPubkey: String,
         toWalletPubkey: String?,
         feeRelayerFeePayerPubkey: String?,
-        bestPoolsPair: OrcaSwap.PoolsPair,
-        inputAmount: Double,
+        bestPoolsPair: OrcaSwap.PoolsPair?,
+        inputAmount: Double?,
         slippage: Double,
         lamportsPerSignature: UInt64,
         minRentExempt: UInt64
     ) throws -> (transactionFees: UInt64, liquidityProviderFees: [UInt64]) {
         guard let owner = accountProvider.getNativeWalletAddress() else {throw OrcaSwapError.unauthorized}
         
-        let numberOfPools = UInt64(bestPoolsPair.count)
-        guard numberOfPools >= 1 else {throw OrcaSwapError.unknown}
+        var transactionFees: UInt64 = 0
         
+        let numberOfPools = UInt64(bestPoolsPair?.count ?? 0)
         var numberOfTransactions: UInt64 = 1
         
         if numberOfPools == 2 {
             let myTokens = myWalletsMints.compactMap {getTokenFromMint($0)}.map {$0.name}
-            let intermediaryTokenName = bestPoolsPair[0].tokenBName
+            let intermediaryTokenName = bestPoolsPair![0].tokenBName
             
             if !myTokens.contains(intermediaryTokenName) ||
                 toWalletPubkey == nil
@@ -225,8 +225,6 @@ public class OrcaSwap: OrcaSwapType {
                 numberOfTransactions += 1
             }
         }
-        
-        var transactionFees: UInt64 = 0
         
         // owner's signatures
         transactionFees += lamportsPerSignature * numberOfTransactions
@@ -244,7 +242,10 @@ public class OrcaSwap: OrcaSwapType {
             transactionFees += minRentExempt
         }
         
-        let liquidityProviderFees = try bestPoolsPair.calculateLiquidityProviderFees(inputAmount: inputAmount, slippage: slippage)
+        var liquidityProviderFees = [UInt64]()
+        if let inputAmount = inputAmount {
+            liquidityProviderFees = try bestPoolsPair?.calculateLiquidityProviderFees(inputAmount: inputAmount, slippage: slippage) ?? []
+        }
         
         return (transactionFees: transactionFees, liquidityProviderFees: liquidityProviderFees)
     }
