@@ -59,8 +59,7 @@ extension OrcaSwap.Pool {
         fromInputAmount inputAmount: UInt64
     ) throws -> UInt64 {
         let fees = try getFee(inputAmount)
-        let inputAmountLessFee = inputAmount - fees
-        
+        let inputAmountLessFee = inputAmount.minus(fees)
         return try _getOutputAmount(from: inputAmountLessFee)
     }
     
@@ -79,20 +78,20 @@ extension OrcaSwap.Pool {
         case STABLE:
             guard let amp = amp else {throw OrcaSwapError.ampDoesNotExistInPoolConfig}
             let inputAmountLessFee = computeInputAmount(outputAmount: estimatedAmount, inputPoolAmount: poolInputAmount, outputPoolAmount: poolOutputAmount, amp: amp)
-            let inputAmount = BInt(inputAmountLessFee) * BInt(feeDenominator) / BInt(feeDenominator - feeNumerator)
+            let inputAmount = (BInt(inputAmountLessFee) * BInt(feeDenominator)).divide(BInt(feeDenominator.minus(feeNumerator)))
             return UInt64(inputAmount)
         case CONSTANT_PRODUCT:
             let invariant = BInt(poolInputAmount) * BInt(poolOutputAmount)
             
-            let newPoolInputAmount = ceilingDivision(invariant, BInt(poolOutputAmount - estimatedAmount)).quotient
-            let inputAmountLessFee = BInt(newPoolInputAmount - poolInputAmount)
+            let newPoolInputAmount = ceilingDivision(invariant, BInt(poolOutputAmount.minus(estimatedAmount))).quotient
+            let inputAmountLessFee = BInt(newPoolInputAmount.minus(poolInputAmount))
             
             let feeRatioNumerator: BInt
             let feeRatioDenominator: BInt
             
             if ownerTradeFeeDenominator == 0 {
                 feeRatioNumerator = BInt(feeDenominator)
-                feeRatioDenominator = BInt(feeDenominator - feeNumerator)
+                feeRatioDenominator = BInt(feeDenominator.minus(feeNumerator))
             } else {
                 feeRatioNumerator = BInt(feeDenominator) * BInt(ownerTradeFeeDenominator)
                 feeRatioDenominator = BInt(feeDenominator)
@@ -101,7 +100,7 @@ extension OrcaSwap.Pool {
                     - (BInt(ownerTradeFeeNumerator) * BInt(feeDenominator))
             }
             
-            let inputAmount = inputAmountLessFee * feeRatioNumerator / feeRatioDenominator
+            let inputAmount = (inputAmountLessFee * feeRatioNumerator).divide(feeRatioDenominator)
             return UInt64(inputAmount)
             
         default:
@@ -131,7 +130,7 @@ extension OrcaSwap.Pool {
         else {throw OrcaSwapError.accountBalanceNotFound}
         
         let fees = try getFee(inputAmount)
-        let inputAmountLessFee = inputAmount - fees
+        let inputAmountLessFee = inputAmount.minus(fees)
         
         switch curveType {
         case STABLE:
@@ -143,7 +142,7 @@ extension OrcaSwap.Pool {
                 amp: amp
             )
         case CONSTANT_PRODUCT:
-            return UInt64(BInt(inputAmountLessFee) * BInt(poolOutputAmount) / BInt(poolInputAmount))
+            return UInt64((BInt(inputAmountLessFee) * BInt(poolOutputAmount)).divide(BInt(poolInputAmount)))
         default:
             return nil
         }
@@ -333,7 +332,7 @@ extension OrcaSwap.Pool {
         case CONSTANT_PRODUCT:
             let invariant = BInt(poolInputAmount) * BInt(poolOutputAmount)
             let newPoolOutputAmount = ceilingDivision(invariant, BInt(poolInputAmount + inputAmount)).quotient
-            return poolOutputAmount - newPoolOutputAmount
+            return poolOutputAmount.minus(newPoolOutputAmount)
         default:
             throw OrcaSwapError.unknown
         }
@@ -343,13 +342,13 @@ extension OrcaSwap.Pool {
         if feeNumerator == 0 {
             return 0
         }
-        return UInt64(BInt(baseAmount) * BInt(feeNumerator) / BInt(feeDenominator))
+        return UInt64((BInt(baseAmount) * BInt(feeNumerator)).divide(BInt(feeDenominator)))
     }
 }
 
 private func ceilingDivision(_ dividend: BInt, _ divisor: BInt) -> (quotient: UInt64, divisor: UInt64) {
     var divisor = divisor
-    var quotient = dividend / divisor
+    var quotient = dividend.divide(divisor)
     if quotient == 0 {
         return (quotient: 0, divisor: UInt64(divisor))
     }
@@ -357,8 +356,8 @@ private func ceilingDivision(_ dividend: BInt, _ divisor: BInt) -> (quotient: UI
     var remainder = dividend % divisor
     if remainder > 0 {
         quotient += 1
-        divisor = dividend / quotient
-        remainder = dividend / quotient
+        divisor = dividend.divide(quotient)
+        remainder = dividend.divide(quotient)
         if remainder > 0 {
             divisor += 1
         }
@@ -378,7 +377,7 @@ private func computeOutputAmount(
     let d = computeD(leverage: leverage, amountA: inputPoolAmount, amountB: outputPoolAmount)
     
     let newOutputPoolAmount = _computeOutputAmount(leverage: leverage, newInputAmount: newInputPoolAmount, d: d)
-    let outputAmount = outputPoolAmount - newOutputPoolAmount
+    let outputAmount = outputPoolAmount.minus(newOutputPoolAmount)
     return outputAmount
 }
 
@@ -397,8 +396,8 @@ private func computeD(leverage: UInt64, amountA: UInt64, amountB: UInt64) -> UIn
     
     for _ in 0..<32 {
         var dProduct = d
-        dProduct = dProduct * d / amountATimesN
-        dProduct = dProduct * d / amountBTimesN
+        dProduct = (dProduct * d).divide(amountATimesN)
+        dProduct = (dProduct * d).divide(amountBTimesN)
         dPrevious = d
         d = BInt(calculateStep(initialD: UInt64(d), leverage: leverage, sumX: UInt64(sumX), dProduct: UInt64(dProduct)))
         if d == dPrevious {
@@ -421,12 +420,12 @@ private func calculateStep(
     
     let leverageVal = (leverageMul + dPMul) * BInt(initialD)
 
-    let leverageSub = BInt(initialD) * BInt(leverage - 1)
+    let leverageSub = BInt(initialD) * BInt(leverage.minus(1))
     let nCoinsSum = BInt(dProduct) * BInt(N_COINS + 1)
     
     let rVal = leverageSub + nCoinsSum
     
-    return UInt64(leverageVal / rVal)
+    return UInt64(leverageVal.divide(rVal))
 }
 
 /// Compute swap amount `y` in proportion to `x`
@@ -434,16 +433,16 @@ private func calculateStep(
 /// y**2 + y * (sum' - (A*n**n - 1) * D / (A * n**n)) = D ** (n + 1) / (n ** (2 * n) * prod' * A)
 /// y**2 + b*y = c
 private func _computeOutputAmount(leverage: UInt64, newInputAmount: UInt64, d: UInt64) -> UInt64 {
-    let c = BInt(d) ** Int(N_COINS + 1) / (BInt(newInputAmount) * BInt(N_COINS_SQUARED) * BInt(leverage))
+    let c = (BInt(d) ** Int(N_COINS + 1)).divide((BInt(newInputAmount)) * BInt(N_COINS_SQUARED) * BInt(leverage))
     
-    let b = BInt(newInputAmount) + (BInt(d) / BInt(leverage))
+    let b = BInt(newInputAmount) + (BInt(d).divide(BInt(leverage)))
     
     var yPrevious: BInt
     var y = BInt(d)
     
     for _ in 0..<32 {
         yPrevious = y
-        y = ((y ** 2) + c) / ((y * 2) + b - BInt(d))
+        y = ((y ** 2) + c).divide((y * 2) + b - BInt(d))
         if y == yPrevious {
             break
         }
@@ -470,8 +469,8 @@ private func computeInputAmount(
         newInputAmount: UInt64(newOutputPoolAmount),
         d: d
     )
-    let inputAmount = newInputPoolAmount - inputPoolAmount
-    return inputAmount
+    
+    return newInputPoolAmount.minus(inputPoolAmount)
 }
 
 
@@ -494,5 +493,19 @@ private func computeBaseOutputAmount(
     let denominator = (a * BInt(inputPoolAmount) + (b * 2 * BInt(outputPoolAmount) + c))
         * BInt(inputPoolAmount)
     
-    return UInt64(BInt(inputAmount) * numerator / denominator)
+    return UInt64((BInt(inputAmount) * numerator).divide(denominator))
+}
+
+private extension UInt64 {
+    func minus(_ num: UInt64) -> UInt64 {
+        if self <= num {return 0}
+        return self - num
+    }
+}
+
+private extension BInt {
+    func divide(_ divider: BInt) -> BInt {
+        if divider == 0 {return 0}
+        return self / divider
+    }
 }
