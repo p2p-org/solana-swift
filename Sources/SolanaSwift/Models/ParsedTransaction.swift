@@ -100,8 +100,8 @@ public extension SolanaSDK {
                     return transaction.source?.token.symbol ?? ""
                 case .receive:
                     return transaction.destination?.token.symbol ?? ""
-                default:
-                    return ""
+                case .transitiv:
+                    return transaction.destination?.token.symbol ?? ""
                 }
             default:
                 return ""
