@@ -79,8 +79,8 @@ public extension SolanaSDK {
                     amount = -(transaction.sourceAmount ?? 0)
                 case .receive:
                     amount = transaction.destinationAmount ?? 0
-                default:
-                    break
+                case .transitiv:
+                    amount = transaction.destinationAmount ?? 0
                 }
                 return amount
             default:
@@ -100,8 +100,8 @@ public extension SolanaSDK {
                     return transaction.source?.token.symbol ?? ""
                 case .receive:
                     return transaction.destination?.token.symbol ?? ""
-                default:
-                    return ""
+                case .transitiv:
+                    return transaction.destination?.token.symbol ?? ""
                 }
             default:
                 return ""
@@ -188,7 +188,7 @@ public extension SolanaSDK {
         }
         
         public enum Direction {
-            case spend, receive
+            case spend, receive, transitiv
         }
         
         // source
@@ -205,14 +205,14 @@ public extension SolanaSDK {
             SwapTransaction(source: nil, sourceAmount: nil, destination: nil, destinationAmount: nil, myAccountSymbol: nil)
         }
         
-        public var direction: Direction? {
+        public var direction: Direction {
             if myAccountSymbol == source?.token.symbol {
                 return .spend
             }
             if myAccountSymbol == destination?.token.symbol {
                 return .receive
             }
-            return nil
+            return .transitiv
         }
     }
 }
