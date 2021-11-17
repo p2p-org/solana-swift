@@ -32,7 +32,7 @@ public extension OrcaSwap {
         let hostFeeNumerator: UInt64
         let hostFeeDenominator: UInt64
         var tokenAName: String
-        var tokenBName: String
+        public internal(set) var tokenBName: String
         let curveType: String
         let amp: UInt64?
         let programVersion: UInt64?
@@ -50,6 +50,10 @@ public extension OrcaSwap {
             Swift.swap(&reversedPool.tokenAName, &reversedPool.tokenBName)
             Swift.swap(&reversedPool.tokenABalance, &reversedPool.tokenBBalance)
             return reversedPool
+        }
+        
+        public func getTokenBDecimals() -> SolanaSDK.Decimals? {
+            tokenBBalance?.decimals
         }
     }
 }
