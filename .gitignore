@@ -39,6 +39,5 @@ Carthage/Build
 # `pod install` in .travis.yml
 #
 # Pods/
-OrcaSwapTransitiveTests-Secret.swift
 
 .build
