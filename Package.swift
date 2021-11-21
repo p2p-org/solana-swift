@@ -40,5 +40,10 @@ let package = Package(
             dependencies: ["SolanaSwift", "BufferLayoutSwift", "secp256k1", "TweetNacl", "RxSwift", .product(name: "RxBlocking", package: "RxSwift")],
             resources: [ .process("Resources") ]
         ),
+        .testTarget(
+            name: "SolanaSwiftAutoTests",
+            dependencies: ["SolanaSwift", "BufferLayoutSwift", "secp256k1", "TweetNacl", "RxSwift", .product(name: "RxBlocking", package: "RxSwift")],
+            resources: [ .process("Resources") ]
+        ),
     ]
 )

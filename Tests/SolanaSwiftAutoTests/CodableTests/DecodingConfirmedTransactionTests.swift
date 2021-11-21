@@ -8,6 +8,7 @@
 
 import Foundation
 import XCTest
+import RxBlocking
 @testable import SolanaSwift
 
 class DecodingConfirmedTransactionTests: XCTestCase {
