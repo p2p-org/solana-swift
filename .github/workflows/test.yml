@@ -1,6 +1,6 @@
 name: Swift
 
-on: [pull_request]
+on: [ pull_request ]
 
 jobs:
   build:
@@ -12,6 +12,9 @@ jobs:
       - uses: fwal/setup-swift@v1
         with:
           swift-version: "5.4.0"
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
       - name: Build
         run: swift build
       - name: Run tests
