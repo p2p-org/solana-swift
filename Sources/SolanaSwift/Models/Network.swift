@@ -14,5 +14,9 @@ extension SolanaSDK {
         case testnet = "testnet"
         
         public var cluster: String {rawValue}
+        
+        public var isTestnet: Bool {
+            self != .mainnetBeta
+        }
     }
 }
