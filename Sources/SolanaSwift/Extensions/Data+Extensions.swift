@@ -24,6 +24,21 @@ public extension Data {
         return len
     }
     
+    mutating func decodeLength() throws -> Int {
+        var len = 0
+        var size = 0
+        while true {
+            guard let elem = bytes.first else { break }
+            try popFirst()
+            len = len | ((Int(elem) & 0x7f) << (size * 7))
+            size += 1
+            if Int16(elem) & 0x80 == 0 {
+                break
+            }
+        }
+        return len
+    }
+    
     static func encodeLength(_ len: Int) -> Data {
         encodeLength(UInt(len))
     }

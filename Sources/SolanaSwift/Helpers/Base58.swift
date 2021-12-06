@@ -12,6 +12,10 @@ public struct Base58 {
     static let base58Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
     
     // Encode
+    public static func encode(_ data: Data) -> String {
+        return encode(data.bytes)
+    }
+    
     public static func encode(_ bytes: [UInt8]) -> String {
         var bytes = bytes
         var zerosCount = 0

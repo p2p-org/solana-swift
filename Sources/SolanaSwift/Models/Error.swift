@@ -34,6 +34,7 @@ public extension SolanaSDK {
         
         case unauthorized
         case notFound
+        case assertionFailed
         
         // Invalid Requests
         case invalidRequest(reason: String? = nil)

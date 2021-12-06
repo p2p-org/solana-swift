@@ -25,7 +25,7 @@ public extension SolanaSDK {
         
         public init(string: String?) throws {
             guard let string = string, string.utf8.count >= SolanaSDK.PublicKey.numberOfBytes
-            else {
+                else {
                 throw Error.other("Invalid public key input")
             }
             let bytes = Base58.decode(string)
@@ -61,6 +61,14 @@ public extension SolanaSDK {
         public func short(numOfSymbolsRevealed: Int = 4) -> String {
             let pubkey = base58EncodedString
             return pubkey.prefix(numOfSymbolsRevealed) + "..." + pubkey.suffix(numOfSymbolsRevealed)
+        }
+        
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(bytes)
+        }
+        
+        public static func == (lhs: PublicKey, rhs: PublicKey) -> Bool {
+            return lhs.bytes == rhs.bytes
         }
     }
 }
