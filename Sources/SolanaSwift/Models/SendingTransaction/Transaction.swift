@@ -9,29 +9,31 @@ import Foundation
 import TweetNacl
 
 extension SolanaSDK {
-    struct Transaction: Encodable {
-        private var signatures = [Signature]()
-        var feePayer: PublicKey?
-        var instructions = [TransactionInstruction]()
-        var recentBlockhash: String?
+    public struct Transaction: Encodable {
+        fileprivate static let SIGNATURE_LENGTH = 64
+        fileprivate static let DEFAULT_SIGNATURE = Data(repeating: 0, count: 64)
+        
+        public var signatures = [Signature]()
+        public var feePayer: PublicKey?
+        public var instructions = [TransactionInstruction]()
+        public var recentBlockhash: String?
 //        TODO: nonceInfo
         
         // MARK: - Methods
-        mutating func sign(signers: [Account]) throws {
-            guard signers.count > 0 else {throw Error.invalidRequest(reason: "No signers")}
+        public mutating func sign(signers: [Account]) throws {
+            guard signers.count > 0 else { throw Error.invalidRequest(reason: "No signers") }
             
             // unique signers
-            let signers = signers.reduce([Account](), {signers, signer in
+            let signers = signers.reduce([Account](), { signers, signer in
                 var uniqueSigners = signers
-                if !uniqueSigners.contains(where: {$0.publicKey == signer.publicKey})
-                {
+                if !uniqueSigners.contains(where: { $0.publicKey == signer.publicKey }) {
                     uniqueSigners.append(signer)
                 }
                 return uniqueSigners
             })
             
             // map signatures
-            signatures = signers.map {Signature(signature: nil, publicKey: $0.publicKey)}
+            signatures = signers.map { Signature(signature: nil, publicKey: $0.publicKey) }
             
             // construct message
             let message = try compile()
@@ -39,7 +41,7 @@ extension SolanaSDK {
             try partialSign(message: message, signers: signers)
         }
         
-        mutating func serialize(
+        public mutating func serialize(
             requiredAllSignatures: Bool = true,
             verifySignatures: Bool = false
         ) throws -> Data {
@@ -47,17 +49,15 @@ extension SolanaSDK {
             let serializedMessage = try serializeMessage()
             
             // verification
-            if verifySignatures && !_verifySignatures(serializedMessage: serializedMessage, requiredAllSignatures: requiredAllSignatures)
-            {
+            if verifySignatures && !_verifySignatures(serializedMessage: serializedMessage, requiredAllSignatures: requiredAllSignatures) {
                 throw Error.invalidRequest(reason: "Signature verification failed")
             }
             
             return _serialize(serializedMessage: serializedMessage)
         }
         
-        
         // MARK: - Helpers
-        mutating func addSignature(_ signature: Signature) throws {
+        public mutating func addSignature(_ signature: Signature) throws {
             let _ = try compile() // Ensure signatures array is populated
             
             try _addSignature(signature)
@@ -72,7 +72,7 @@ extension SolanaSDK {
         }
         
         func findSignature(pubkey: PublicKey) -> Signature? {
-            signatures.first(where: {$0.publicKey == pubkey})
+            signatures.first(where: { $0.publicKey == pubkey })
         }
         
         // MARK: - Signing
@@ -88,8 +88,8 @@ extension SolanaSDK {
         private mutating func _addSignature(_ signature: Signature) throws {
             guard let data = signature.signature,
                   data.count == 64,
-                  let index = signatures.firstIndex(where: {$0.publicKey == signature.publicKey})
-            else {
+                  let index = signatures.firstIndex(where: { $0.publicKey == signature.publicKey })
+                else {
                 throw Error.other("Signer not valid: \(signature.publicKey.base58EncodedString)")
             }
             
@@ -99,12 +99,12 @@ extension SolanaSDK {
         // MARK: - Compiling
         private mutating func compile() throws -> Message {
             let message = try compileMessage()
-            let signedKeys = message.accountKeys.filter {$0.isSigner}
+            let signedKeys = message.accountKeys[0..<Int(message.header.numRequiredSignatures)]
             
             if signatures.count == signedKeys.count {
                 var isValid = true
                 for (index, signature) in signatures.enumerated() {
-                    if signedKeys[index].publicKey != signature.publicKey {
+                    if signedKeys[index] != signature.publicKey {
                         isValid = false
                         break
                     }
@@ -114,7 +114,7 @@ extension SolanaSDK {
                 }
             }
             
-            signatures = signedKeys.map {Signature(signature: nil, publicKey: $0.publicKey)}
+            signatures = signedKeys.map { Signature(signature: nil, publicKey: $0) }
             return message
         }
         
@@ -141,6 +141,7 @@ extension SolanaSDK {
                 }
             }
             
+            // Append programID account metas
             for programId in programIds {
                 accountMetas.append(
                     .init(publicKey: programId, isSigner: false, isWritable: false)
@@ -149,15 +150,15 @@ extension SolanaSDK {
             
             // sort accountMetas, first by signer, then by writable
             accountMetas.sort { (x, y) -> Bool in
-                if x.isSigner != y.isSigner {return x.isSigner}
-                if x.isWritable != y.isWritable {return x.isWritable}
+                if x.isSigner != y.isSigner { return x.isSigner }
+                if x.isWritable != y.isWritable { return x.isWritable }
                 return false
             }
             
             // filterOut duplicate account metas, keeps writable one
-            accountMetas = accountMetas.reduce([Account.Meta](), {result, accountMeta in
+            accountMetas = accountMetas.reduce([Account.Meta](), { result, accountMeta in
                 var uniqueMetas = result
-                if let index = uniqueMetas.firstIndex(where: {$0.publicKey == accountMeta.publicKey}) {
+                if let index = uniqueMetas.firstIndex(where: { $0.publicKey == accountMeta.publicKey }) {
                     // if accountMeta exists
                     uniqueMetas[index].isWritable = uniqueMetas[index].isWritable || accountMeta.isWritable
                 } else {
@@ -166,21 +167,50 @@ extension SolanaSDK {
                 return uniqueMetas
             })
             
+            // Cull duplicate account metas
+            var uniqueMetas: [SolanaSDK.Account.Meta] = []
+            accountMetas.forEach { accountMeta in
+                let pubkey = accountMeta.publicKey.base58EncodedString
+                let uniqueIndex = uniqueMetas.index { x in x.publicKey.base58EncodedString == pubkey }
+                if let uniqueIndex = uniqueIndex {
+                    uniqueMetas[uniqueIndex].isWritable = uniqueMetas[uniqueIndex].isWritable || accountMeta.isWritable
+                } else {
+                    uniqueMetas.append(accountMeta)
+                }
+            }
+            
             // move fee payer to front
-            accountMetas.removeAll(where: {$0.publicKey == feePayer})
-            accountMetas.insert(
-                Account.Meta(publicKey: feePayer, isSigner: true, isWritable: true),
-                at: 0
-            )
+            let feePayerIndex = uniqueMetas.index { x in x.publicKey == feePayer }
+            if let feePayerIndex = feePayerIndex {
+                var payerMeta = uniqueMetas.remove(at: feePayerIndex)
+                payerMeta.isSigner = true;
+                payerMeta.isWritable = true;
+                uniqueMetas.insert(payerMeta, at: 0)
+            } else {
+                uniqueMetas.insert(
+                    SolanaSDK.Account.Meta(
+                        publicKey: feePayer,
+                        isSigner: true,
+                        isWritable: true),
+                    at: 0)
+            }
+            
+            //accountMetas.removeAll(where: { $0.publicKey == feePayer })
+            //accountMetas.insert(
+            //    Account.Meta(publicKey: feePayer, isSigner: true, isWritable: true),
+            //    at: 0
+            //)
             
             // verify signers
             for signature in signatures {
-                if let index = try? accountMetas.index(ofElementWithPublicKey: signature.publicKey)
-                {
-                    if !accountMetas[index].isSigner {
+                if let index = try? uniqueMetas.index(ofElementWithPublicKey: signature.publicKey) {
+                    if !uniqueMetas[index].isSigner {
+                        // TODO: check
+                        uniqueMetas[index].isSigner = true;
 //                        accountMetas[index].isSigner = true
 //                        Logger.log(message: "Transaction references a signature that is unnecessary, only the fee payer and instruction signer accounts should sign a transaction. This behavior is deprecated and will throw an error in the next major version release.", event: .warning)
-                        throw Error.invalidRequest(reason: "Transaction references a signature that is unnecessary")
+                        print("WARN: Transaction references a signature that is unnecessary")
+//                        throw Error.invalidRequest(reason: "Transaction references a signature that is unnecessary")
                     }
                 } else {
                     throw Error.invalidRequest(reason: "Unknown signer: \(signature.publicKey.base58EncodedString)")
@@ -193,7 +223,7 @@ extension SolanaSDK {
             var signedKeys = [Account.Meta]()
             var unsignedKeys = [Account.Meta]()
             
-            for accountMeta in accountMetas {
+            uniqueMetas.forEach { accountMeta in
                 // signed keys
                 if accountMeta.isSigner {
                     signedKeys.append(accountMeta)
@@ -215,11 +245,20 @@ extension SolanaSDK {
             }
             
             accountMetas = signedKeys + unsignedKeys
+            let accountKeys = accountMetas.map { $0.publicKey }
+            let instructions = instructions.compile(accountKeys: accountKeys)
+            try instructions.forEach { instruction in
+                if instruction.programIdIndex < 0 { throw Error.assertionFailed }
+                try instruction.accounts.forEach { keyIndex in
+                    if (keyIndex < 0) { throw Error.assertionFailed }
+                }
+            }
             
             return Message(
-                accountKeys: accountMetas,
+                header: header,
+                accountKeys: accountKeys,
                 recentBlockhash: recentBlockhash,
-                programInstructions: instructions
+                instructions: instructions
             )
         }
         
@@ -234,8 +273,7 @@ extension SolanaSDK {
                         return false
                     }
                 } else {
-                    if (try? NaclSign.signDetachedVerify(message: serializedMessage, sig: signature.signature!, publicKey: signature.publicKey.data)) != true
-                    {
+                    if (try? NaclSign.signDetachedVerify(message: serializedMessage, sig: signature.signature!, publicKey: signature.publicKey.data)) != true {
                         return false
                     }
                 }
@@ -246,15 +284,15 @@ extension SolanaSDK {
         // MARK: - Serializing
         private mutating func _serialize(serializedMessage: Data) -> Data {
             // signature length
-            var signaturesLength = signatures.count
+            let signaturesLength = signatures.count
             
             // signature data
-            let signaturesData = signatures.reduce(Data(), {result, signature in
+            let signaturesData = signatures.reduce(Data(), { result, signature in
                 var data = result
                 if let signature = signature.signature {
                     data.append(signature)
                 } else {
-                    signaturesLength -= 1
+                    data.append(SolanaSDK.Transaction.DEFAULT_SIGNATURE)
                 }
                 return data
             })
@@ -268,19 +306,67 @@ extension SolanaSDK {
             data.append(serializedMessage)
             return data
         }
+        
+        static public func from(data: Data) throws -> Transaction {
+            var data = data
+            var signatures: [String] = []
+            let signatureCount = try data.decodeLength()
+            
+            for index in stride(from: 0, through: signatureCount - 1, by: 1) {
+                let signatureData = data.prefix(Transaction.SIGNATURE_LENGTH)
+                data = data.dropFirst(Transaction.SIGNATURE_LENGTH)
+                signatures.append(Base58.encode(signatureData))
+            }
+    
+            print(data.base64EncodedString())
+            return populate(try Transaction.Message.from(data: data), signatures)
+        }
+        
+        static func populate(_ message: Transaction.Message, _ signatures: [String]) -> Transaction {
+            var transaction = Transaction()
+            
+            transaction.recentBlockhash = message.recentBlockhash
+            if (message.header.numRequiredSignatures > 0) {
+                transaction.feePayer = message.accountKeys[0]
+            }
+            signatures.enumerated().forEach { (index, signature) in
+                let sigPubkeyPair = SolanaSDK.Transaction.Signature(
+                    signature: signature == Base58.encode(SolanaSDK.Transaction.DEFAULT_SIGNATURE) ? nil : Data(bytes: Base58.decode(signature)),
+                    publicKey: message.accountKeys[index]
+                )
+                transaction.signatures.append(sigPubkeyPair)
+            }
+            
+            message.instructions.forEach { instruction in
+                let keys: [SolanaSDK.Account.Meta] = instruction.accounts.map { account in
+                    let pubkey = message.accountKeys[account]
+                    return SolanaSDK.Account.Meta(
+                        publicKey: pubkey,
+                        isSigner: transaction.signatures.contains { keyObj in keyObj.publicKey == pubkey } || message.isAccountSigner(index: account),
+                        isWritable: message.isAccountWritable(index: account)
+                    )
+                }
+                
+                transaction.instructions.append(
+                    TransactionInstruction(keys: keys, programId: message.accountKeys[instruction.programIdIndexValue], data: instruction.data)
+                )
+            }
+            
+            return transaction
+        }
     }
 }
 
 extension SolanaSDK.Transaction {
-    struct Signature: Encodable {
-        var signature: Data?
-        var publicKey: SolanaSDK.PublicKey
+    public struct Signature: Encodable {
+        public var signature: Data?
+        public var publicKey: SolanaSDK.PublicKey
         
         enum CodingKeys: String, CodingKey {
             case signature, publicKey
         }
         
-        func encode(to encoder: Encoder) throws {
+        public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(Base58.encode((signature?.bytes ?? [])), forKey: .signature)
             try container.encode(publicKey.base58EncodedString, forKey: .publicKey)
