@@ -12,7 +12,7 @@ extension Array where Element == SolanaSDK.Token {
         reduce(Self()) { (result, token) -> Self in
             var result = result
             if !result.contains(where: {$0.address == token.address}) &&
-                !token.tags.contains(where: {$0.name == "ntf"}) &&
+                !token.tags.contains(where: {$0.name == "nft"}) &&
                 !token.tags.contains(where: {$0.name == "leveraged"}) &&
                 !token.tags.contains(where: {$0.name == "bull"}) &&
                 !token.tags.contains(where: {$0.name == "lp-token"})
