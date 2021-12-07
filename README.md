@@ -18,6 +18,7 @@ Solana-blockchain client, written in pure swift.
 ## Example
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.
+Demo wallet: [p2p-wallet](https://github.com/p2p-org/p2p-wallet-ios)
 
 ## Requirements
 - iOS 11 or later
