@@ -236,8 +236,24 @@ public class OrcaSwap: OrcaSwapType {
             fatalError("feeRelayer is being implemented")
         }
         
-        // when swap from native SOL, a fee for creating it is needed
-        if fromWalletPubkey == owner.base58EncodedString {
+        // when swap from or to native SOL, a fee for creating it is needed
+        if fromWalletPubkey == owner.base58EncodedString || toWalletPubkey == owner.base58EncodedString
+        {
+            transactionFees += lamportsPerSignature
+            transactionFees += minRentExempt
+        }
+        
+        // when intermediary token is SOL, a fee for creating WSOL is needed
+        if numberOfPools == 2,
+           let decimals = bestPoolsPair![0].tokenABalance?.decimals,
+           let inputAmount = inputAmount,
+           let intermediaryToken = bestPoolsPair?
+                .getIntermediaryToken(
+                    inputAmount: inputAmount.toLamport(decimals: decimals),
+                    slippage: slippage
+                ),
+           intermediaryToken.tokenName == "SOL"
+        {
             transactionFees += lamportsPerSignature
             transactionFees += minRentExempt
         }
