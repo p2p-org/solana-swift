@@ -108,7 +108,7 @@ extension RenVM {
                     .map {(response, data) -> T in
                         // Print
                         if log {
-                            Logger.log(message: "renBTC event  " + method + " " + (String(data: data, encoding: .utf8) ?? ""), event: .response, apiMethod: method)
+//                            Logger.log(message: "renBTC event  " + method + " " + (String(data: data, encoding: .utf8) ?? ""), event: .response, apiMethod: method)
                         }
                         
                         let statusCode = response.statusCode
