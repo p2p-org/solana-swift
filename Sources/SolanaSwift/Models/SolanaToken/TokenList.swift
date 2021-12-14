@@ -65,7 +65,7 @@ extension SolanaSDK {
                 _tags: [],
                 chainId: 101,
                 address: mint ?? "<undefined>",
-                symbol: "",
+                symbol: symbol,
                 name: mint ?? "<undefined>",
                 decimals: decimals,
                 logoURI: nil,
