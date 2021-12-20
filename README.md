@@ -137,7 +137,7 @@ solanaSDK.observeSignatureNotification(signature: <SIGNATURE>) // return an Comp
 ```
 
 ## How to use OrcaSwap
-* To test transitive swap with orca, the account must have some `SOL` and `KURO` token, then add this extensions to `Tests` target
+* To test transitive swap with orca, the account must have some `SOL`, `SLIM` and `KURO` token
 ```swift
 extension OrcaSwapTransitiveTests {
     var kuroPubkey: String {
@@ -146,6 +146,10 @@ extension OrcaSwapTransitiveTests {
     
     var secretPhrase: String {
         <account-seed-phrases>
+    }
+    
+    var slimPubkey: String {
+        <SLIM-pubkey-here>
     }
 }
 ```
