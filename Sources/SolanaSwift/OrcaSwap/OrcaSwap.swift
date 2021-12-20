@@ -299,25 +299,26 @@ public class OrcaSwap: OrcaSwapType {
             let pool1 = bestPoolsPair[1]
             
             // TO AVOID `TRANSACTION IS TOO LARGE` ERROR, WE SPLIT OPERATION INTO 2 TRANSACTIONS
-            // FIRST TRANSACTION IS TO CREATE ASSOCIATED TOKEN ADDRESS FOR INTERMEDIARY TOKEN (IF NOT YET CREATED) AND WAIT FOR CONFIRMATION
-            // SECOND TRANSACTION TAKE THE RESULT OF FIRST TRANSACTION (ADDRESSES) TO REDUCE ITS SIZE
+            // FIRST TRANSACTION IS TO CREATE ASSOCIATED TOKEN ADDRESS FOR INTERMEDIARY TOKEN OR DESTINATION TOKEN (IF NOT YET CREATED) AND WAIT FOR CONFIRMATION **IF THEY ARE NOT WSOL**
+            // SECOND TRANSACTION TAKE THE RESULT OF FIRST TRANSACTION (ADDRESSES) TO REDUCE ITS SIZE. **IF INTERMEDIATE TOKEN OR DESTINATION TOKEN IS WSOL, IT SHOULD BE INCLUDED IN THIS TRANSACTION**
             
-            // FIRST TRANSACTION
-            
+            // First transaction
             return createIntermediaryTokenAndDestinationTokenAddressIfNeeded(
                 pool0: pool0,
                 pool1: pool1,
                 toWalletPubkey: toWalletPubkey,
                 feeRelayerFeePayer: feeRelayerFeePayer
             )
-                .flatMap {[weak self] intermediaryTokenAddress, destinationTokenAddress in
+                .flatMap {[weak self] intermediaryTokenAddress, destinationTokenAddress, wsolAccountInstructions in
                     guard let self = self else {throw OrcaSwapError.unknown}
+                    // Second transaction
                     return self.transitiveSwap(
                         pool0: pool0,
                         pool1: pool1,
                         fromTokenPubkey: fromWalletPubkey,
                         intermediaryTokenAddress: intermediaryTokenAddress.base58EncodedString,
                         destinationTokenAddress: destinationTokenAddress.base58EncodedString,
+                        wsolAccountInstructions: wsolAccountInstructions,
                         isDestinationNew: toWalletPubkey == nil,
                         amount: amount,
                         slippage: slippage,
@@ -410,6 +411,7 @@ public class OrcaSwap: OrcaSwapType {
         fromTokenPubkey: String,
         intermediaryTokenAddress: String,
         destinationTokenAddress: String,
+        wsolAccountInstructions: AccountInstructions?,
         isDestinationNew: Bool,
         amount: UInt64,
         slippage: Double,
@@ -459,11 +461,17 @@ public class OrcaSwap: OrcaSwapType {
             .flatMap {[weak self] accountInstructions in
                 guard let self = self else {throw OrcaSwapError.unknown}
                 
+                var instructions = accountInstructions.instructions + accountInstructions.cleanupInstructions
+                if let wsolAccountInstructions = wsolAccountInstructions {
+                    instructions.insert(contentsOf: wsolAccountInstructions.instructions, at: 0)
+                    instructions.append(contentsOf: wsolAccountInstructions.cleanupInstructions)
+                }
+                
                 if let feePayer = feeRelayerFeePayer {
                     fatalError("Fee relayer is implementing")
                 } else {
                     return self.solanaClient.serializeAndSend(
-                        instructions: accountInstructions.instructions + accountInstructions.cleanupInstructions,
+                        instructions: instructions,
                         recentBlockhash: nil,
                         signers: [owner] + accountInstructions.signers,
                         isSimulation: isSimulation
@@ -487,7 +495,7 @@ public class OrcaSwap: OrcaSwapType {
         pool1: Pool,
         toWalletPubkey: String?,
         feeRelayerFeePayer: PublicKey?
-    ) -> Single<(PublicKey, PublicKey)> {
+    ) -> Single<(PublicKey, PublicKey, AccountInstructions?)> /*intermediaryTokenAddress, destination token address, WSOL account and instructions*/ {
         
         guard let owner = accountProvider.getAccount(),
               let intermediaryTokenMint = try? info?.tokens[pool0.tokenBName]?.mint.toPublicKey(),
@@ -508,12 +516,24 @@ public class OrcaSwap: OrcaSwapType {
                 closeAfterward: false
             )
         )
-            .flatMap { intAccountInstructions, desAccountInstructions -> Single<(PublicKey, PublicKey)> in
-                let instructions = intAccountInstructions.instructions + desAccountInstructions.instructions
+            .flatMap { intAccountInstructions, desAccountInstructions -> Single<(PublicKey, PublicKey, AccountInstructions?)> in
+                // get all creating instructions, PASS WSOL ACCOUNT INSTRUCTIONS TO THE SECOND TRANSACTION
+                var instructions = [TransactionInstruction]()
+                var wsolAccountInstructions: AccountInstructions?
+                if intermediaryTokenMint == .wrappedSOLMint {
+                    wsolAccountInstructions = intAccountInstructions
+                } else {
+                    instructions.append(contentsOf: intAccountInstructions.instructions)
+                }
+                if destinationMint == .wrappedSOLMint {
+                    wsolAccountInstructions = desAccountInstructions
+                } else {
+                    instructions.append(contentsOf: desAccountInstructions.instructions)
+                }
                 
                 // if token address has already been created, then no need to send any transactions
-                if instructions.count == 0 {
-                    return .just((intAccountInstructions.account, desAccountInstructions.account))
+                if instructions.isEmpty {
+                    return .just((intAccountInstructions.account, desAccountInstructions.account, wsolAccountInstructions))
                 }
                 
                 // if creating transaction is needed
@@ -532,7 +552,7 @@ public class OrcaSwap: OrcaSwapType {
                                 guard let self = self else {throw OrcaSwapError.unknown}
                                 return self.notificationHandler.waitForConfirmation(signature: txid)
                             }
-                            .andThen(.just((intAccountInstructions.account, desAccountInstructions.account)))
+                            .andThen(.just((intAccountInstructions.account, desAccountInstructions.account, wsolAccountInstructions)))
                     }
                 }
             }
