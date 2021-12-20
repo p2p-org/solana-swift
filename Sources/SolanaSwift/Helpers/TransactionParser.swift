@@ -49,7 +49,7 @@ public extension SolanaSDK {
                         instructions: instructions,
                         preTokenBalances: transactionInfo.meta?.preTokenBalances,
                         innerInstruction: transactionInfo.meta?.innerInstructions?
-                                .first(where: { $0.instructions.contains(where: { $0.programId == PublicKey.dexPID.base58EncodedString }) }),
+                                .first(where: { $0.instructions.contains(where: { $0.programId == PublicKey.serumSwapPID.base58EncodedString }) }),
                         myAccountSymbol: myAccountSymbol
                 ).map({ $0 == nil ? nil : $0 as AnyHashable })
             
