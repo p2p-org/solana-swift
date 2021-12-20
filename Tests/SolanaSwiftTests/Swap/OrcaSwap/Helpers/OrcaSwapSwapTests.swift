@@ -82,8 +82,6 @@ class OrcaSwapSwapTests: XCTestCase {
         slippage: Double,
         isSimulation: Bool
     ) throws -> Single<OrcaSwap.SwapResponse> {
-        let amount: Double = 0.001 // 0.001 SOL to created SOCN
-        
         let bestPoolsPair = try Single.zip(
             bestPoolsPair.map { rawPool -> Single<OrcaSwap.Pool> in
                 var pool = poolsRepository[rawPool.name]!

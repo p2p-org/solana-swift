@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Chung Tran on 18/10/2021.
 //
@@ -8,6 +8,20 @@
 import Foundation
 import XCTest
 @testable import SolanaSwift
+
+extension OrcaSwapTransitiveTests {
+    var kuroPubkey: String {
+        fatalError("Insert kuroPubkey")
+    }
+    
+    var secretPhrase: String {
+        fatalError("Insert secret key")
+    }
+    
+    var slimPubkey: String {
+        fatalError("Insert slimpubkey")
+    }
+}
 
 class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
     var solPubkey: String {
@@ -31,7 +45,7 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
                 .init(name: "SOL/USDC[aquafarm]"),
                 .init(name: "KURO/USDC[aquafarm]", reversed: true)
             ],
-            amount: 0.01,
+            amount: 0.001,
             slippage: 0.5,
             isSimulation: true
         )
@@ -52,6 +66,23 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
             isSimulation: true
         )
 
+        XCTAssertNoThrow(try swapSimulation.toBlocking().first())
+    }
+    
+    // MARK: - Transitive SPL to SOL
+    func testTransitiveSwapSPLToSOL() throws {
+        let swapSimulation = try fillPoolsBalancesAndSwap(
+            fromWalletPubkey: kuroPubkey,
+            toWalletPubkey: solPubkey,
+            bestPoolsPair: [
+                .init(name: "KURO/USDC[aquafarm]"),
+                .init(name: "SOL/USDC[aquafarm]", reversed: true)
+            ],
+            amount: 1,
+            slippage: 0.05,
+            isSimulation: false
+        )
+        
         XCTAssertNoThrow(try swapSimulation.toBlocking().first())
     }
     
@@ -82,7 +113,7 @@ class OrcaSwapTransitiveTests: OrcaSwapSwapTests {
             ],
             amount: 0.01,
             slippage: 0.05,
-            isSimulation: true
+            isSimulation: false
         )
         
         XCTAssertNoThrow(try swapSimulation.toBlocking().first())
