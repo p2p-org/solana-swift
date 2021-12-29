@@ -15,13 +15,13 @@ private let CONSTANT_PRODUCT = "ConstantProduct"
 
 public extension OrcaSwap {
     struct Pool: Decodable, Equatable {
-        let account: String
-        let authority: String
+        public let account: String
+        public let authority: String
         let nonce: UInt64
-        let poolTokenMint: String
-        var tokenAccountA: String
-        var tokenAccountB: String
-        let feeAccount: String
+        public let poolTokenMint: String
+        public var tokenAccountA: String
+        public var tokenAccountB: String
+        public let feeAccount: String
         let hostFeeAccount: String?
         let feeNumerator: UInt64
         let feeDenominator: UInt64
@@ -54,6 +54,10 @@ public extension OrcaSwap {
         
         public func getTokenBDecimals() -> SolanaSDK.Decimals? {
             tokenBBalance?.decimals
+        }
+        
+        public var swapProgramId: SolanaSDK.PublicKey {
+            .orcaSwapId(version: deprecated == true ? 1: 2)
         }
     }
 }
@@ -285,7 +289,7 @@ extension OrcaSwap.Pool {
                     poolMint: try poolTokenMint.toPublicKey(),
                     feeAccount: try feeAccount.toPublicKey(),
                     hostFeeAccount: try? hostFeeAccount?.toPublicKey(),
-                    swapProgramId: .orcaSwapId(version: deprecated == true ? 1: 2),
+                    swapProgramId: swapProgramId,
                     tokenProgramId: .tokenProgramId,
                     amountIn: amount,
                     minimumAmountOut: minAmountOut
