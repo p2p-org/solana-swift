@@ -35,7 +35,7 @@ extension SolanaSDK.PublicKey {
     }
     
     // MARK: - Helpers
-    static func findProgramAddress(
+    public static func findProgramAddress(
         seeds: [Data],
         programId: Self
     ) throws -> (Self, UInt8) {
