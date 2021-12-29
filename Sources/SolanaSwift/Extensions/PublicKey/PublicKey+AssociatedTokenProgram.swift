@@ -80,7 +80,7 @@ extension SolanaSDK.PublicKey {
         return try SolanaSDK.PublicKey(data: publicKeyBytes)
     }
     
-    static func createWithSeed(
+    public static func createWithSeed(
         fromPublicKey: SolanaSDK.PublicKey,
         seed: String,
         programId: SolanaSDK.PublicKey
