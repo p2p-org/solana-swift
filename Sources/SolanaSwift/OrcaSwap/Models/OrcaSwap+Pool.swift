@@ -63,6 +63,25 @@ public extension OrcaSwap {
 }
 
 extension OrcaSwap.Pool {
+    // MARK: - Public methods
+    public func getMinimumAmountOut(
+        inputAmount: UInt64,
+        slippage: Double
+    ) throws -> UInt64? {
+        let estimatedOutputAmount = try getOutputAmount(fromInputAmount: inputAmount)
+        return UInt64(Float64(estimatedOutputAmount) * Float64(1 - slippage))
+    }
+    
+    public func getInputAmount(
+        minimumReceiveAmount: UInt64,
+        slippage: Double
+    ) throws -> UInt64? {
+        guard slippage != 1 else {return nil}
+        let estimatedAmount = UInt64(Float64(minimumReceiveAmount) / Float64(1 - slippage))
+        return try getInputAmount(fromEstimatedAmount: estimatedAmount)
+    }
+    
+    // MARK: - Internal methods
     func getOutputAmount(
         fromInputAmount inputAmount: UInt64
     ) throws -> UInt64 {
@@ -119,14 +138,6 @@ extension OrcaSwap.Pool {
     func calculatingFees(_ inputAmount: UInt64) throws -> UInt64 {
         let inputFees = try getFee(inputAmount)
         return try _getOutputAmount(from: inputFees)
-    }
-    
-    func getMinimumAmountOut(
-        inputAmount: UInt64,
-        slippage: Double
-    ) throws -> UInt64? {
-        let estimatedOutputAmount = try getOutputAmount(fromInputAmount: inputAmount)
-        return UInt64(Float64(estimatedOutputAmount) * Float64(1 - slippage))
     }
     
     /// baseOutputAmount is the amount the user would receive if fees are included and slippage is excluded.
