@@ -103,6 +103,14 @@ public extension SolanaSDK.Account {
             self.isWritable = isWritable
         }
         
+        public func readonly(publicKey: SolanaSDK.PublicKey, isSigner: Bool) -> Self {
+            .init(publicKey: publicKey, isSigner: isSigner, isWritable: false)
+        }
+        
+        public func writable(publicKey: SolanaSDK.PublicKey, isSigner: Bool) -> Self {
+            .init(publicKey: publicKey, isSigner: isSigner, isWritable: true)
+        }
+        
         public var debugDescription: String {
             "{\"publicKey\": \"\(publicKey.base58EncodedString)\", \"isSigner\": \(isSigner), \"isWritable\": \(isWritable)}"
         }
