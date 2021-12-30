@@ -19,6 +19,8 @@ extension SolanaSDK {
         public var recentBlockhash: String?
 //        TODO: nonceInfo
         
+        public init() {}
+        
         // MARK: - Methods
         public mutating func sign(signers: [Account]) throws {
             guard signers.count > 0 else { throw Error.invalidRequest(reason: "No signers") }
