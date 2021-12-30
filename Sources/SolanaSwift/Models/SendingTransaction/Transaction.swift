@@ -41,6 +41,11 @@ extension SolanaSDK {
             try partialSign(message: message, signers: signers)
         }
         
+        public mutating func calculateTransactionFee(lamportsPerSignatures: UInt64) throws -> UInt64 {
+            let message = try compile()
+            return UInt64(message.header.numRequiredSignatures) * lamportsPerSignatures
+        }
+        
         public mutating func serialize(
             requiredAllSignatures: Bool = true,
             verifySignatures: Bool = false
