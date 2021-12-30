@@ -103,11 +103,11 @@ public extension SolanaSDK.Account {
             self.isWritable = isWritable
         }
         
-        public func readonly(publicKey: SolanaSDK.PublicKey, isSigner: Bool) -> Self {
+        public static func readonly(publicKey: SolanaSDK.PublicKey, isSigner: Bool) -> Self {
             .init(publicKey: publicKey, isSigner: isSigner, isWritable: false)
         }
         
-        public func writable(publicKey: SolanaSDK.PublicKey, isSigner: Bool) -> Self {
+        public static func writable(publicKey: SolanaSDK.PublicKey, isSigner: Bool) -> Self {
             .init(publicKey: publicKey, isSigner: isSigner, isWritable: true)
         }
         
