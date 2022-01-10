@@ -78,7 +78,7 @@ extension SolanaSDK {
             _verifySignatures(serializedMessage: try serializeMessage(), requiredAllSignatures: true)
         }
         
-        func findSignature(pubkey: PublicKey) -> Signature? {
+        public func findSignature(pubkey: PublicKey) -> Signature? {
             signatures.first(where: { $0.publicKey == pubkey })
         }
         
