@@ -160,6 +160,26 @@ public extension OrcaSwap.PoolsPair {
         }
     }
     
+    func getInputAmount(
+        minimumAmountOut: UInt64,
+        slippage: Double
+    ) -> UInt64? {
+        guard count > 0 else {return nil}
+        let pool0 = self[0]
+        // direct
+        if count == 1 {
+            guard let inputAmount = try? pool0.getInputAmount(minimumReceiveAmount: minimumAmountOut, slippage: slippage)
+            else {return nil}
+            return inputAmount
+        } else {
+            let pool1 = self[1]
+            guard let inputAmountPool1 = try? pool1.getInputAmount(minimumReceiveAmount: minimumAmountOut, slippage: slippage),
+                  let inputAmountPool0 = try? pool0.getInputAmount(minimumReceiveAmount: inputAmountPool1, slippage: slippage)
+            else {return nil}
+            return inputAmountPool0
+        }
+    }
+    
     func getMinimumAmountOut(
         inputAmount: UInt64,
         slippage: Double
