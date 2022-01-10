@@ -12,6 +12,7 @@ private var cache: OrcaSwap.SwapInfo?
 
 public protocol OrcaSwapType {
     func load() -> Completable
+    func getMint(tokenName: String) -> String?
     func findPosibleDestinationMints(fromMint: String) throws -> [String]
     func getTradablePoolsPairs(fromMint: String, toMint: String) -> Single<[OrcaSwap.PoolsPair]>
     func findBestPoolsPairForInputAmount(_ inputAmount: UInt64,from poolsPairs: [OrcaSwap.PoolsPair]) throws -> OrcaSwap.PoolsPair?
@@ -91,6 +92,11 @@ public class OrcaSwap: OrcaSwapType {
                 self?.lock.unlock()
             })
             .asCompletable()
+    }
+    
+    /// Get token's mint address by its name
+    public func getMint(tokenName: String) -> String? {
+        info?.tokenNames.first(where: {$0.value == tokenName})?.key
     }
     
     /// Find posible destination tokens by mint

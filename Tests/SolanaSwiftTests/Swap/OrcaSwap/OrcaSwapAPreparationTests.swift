@@ -43,6 +43,10 @@ class OrcaSwapPreparationTests: XCTestCase {
         XCTAssertEqual(swapInfo.tokenNames.count, 117)
     }
     
+    func testGetTokenMint() throws {
+        XCTAssertEqual(orcaSwap.getMint(tokenName: "BTC"), "9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E")
+    }
+    
     // MARK: - Find destinations
     func testFindDestinations() throws {
         let routes = try orcaSwap.findPosibleDestinationMints(fromMint: btcMint)
