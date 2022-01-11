@@ -172,6 +172,7 @@ extension OrcaSwap.Pool {
         tokens: OrcaSwap.Tokens,
         solanaClient: OrcaSwapSolanaClient,
         owner: OrcaSwap.Account,
+        userTransferAuthority: OrcaSwap.Account,
         fromTokenPubkey: String,
         toTokenPubkey: String?,
         amount: OrcaSwap.Lamports,
@@ -265,7 +266,6 @@ extension OrcaSwap.Pool {
                 cleanupInstructions.append(contentsOf: destinationAccountInstructions.cleanupInstructions)
                 
                 // userTransferAuthorityPubkey
-                let userTransferAuthority = try OrcaSwap.Account(network: solanaClient.endpoint.network)
                 let userTransferAuthorityPubkey: OrcaSwap.PublicKey
                 
                 // approve (for non fee-relayer only)
@@ -311,7 +311,7 @@ extension OrcaSwap.Pool {
                 if let feePayer = feeRelayerFeePayer {
                     fatalError("Fee Relayer is implementing")
                 } else {
-                    var signers = [userTransferAuthority]
+                    var signers = [OrcaSwap.Account]()
                     signers.append(contentsOf: sourceAccountInstructions.signers)
                     signers.append(contentsOf: destinationAccountInstructions.signers)
                     
