@@ -371,24 +371,18 @@ public class OrcaSwap: OrcaSwapType {
         guard let owner = accountProvider.getAccount() else {return .error(OrcaSwapError.unauthorized)}
         guard let info = info else {return .error(OrcaSwapError.swapInfoMissing)}
         
-        return createSolanaAccountAsync(network: .mainnetBeta)
-            .flatMap {[weak self] userTransferAuthority -> Single<(AccountInstructions, Account)> in
-                guard let self = self else {return .error(OrcaSwapError.unknown)}
-                return pool
-                    .constructExchange(
-                        tokens: info.tokens,
-                        solanaClient: self.solanaClient,
-                        owner: owner,
-                        userTransferAuthority: userTransferAuthority,
-                        fromTokenPubkey: fromTokenPubkey,
-                        toTokenPubkey: toTokenPubkey,
-                        amount: amount,
-                        slippage: slippage,
-                        feeRelayerFeePayer: nil,
-                        shouldCreateAssociatedTokenAccount: true
-                    )
-                    .map {($0, userTransferAuthority)}
-            }
+        return [pool]
+            .constructExchange(
+                tokens: info.tokens,
+                solanaClient: self.solanaClient,
+                owner: owner,
+                fromTokenPubkey: fromTokenPubkey,
+                toTokenPubkey: toTokenPubkey,
+                amount: amount,
+                slippage: slippage,
+                feeRelayerFeePayer: nil,
+                shouldCreateAssociatedTokenAccount: true
+            )
             .flatMap {[weak self] accountInstructions, userTransferAuthority in
                 guard let self = self else {throw OrcaSwapError.unknown}
                 
@@ -417,50 +411,19 @@ public class OrcaSwap: OrcaSwapType {
         guard let owner = accountProvider.getAccount() else {return .error(OrcaSwapError.unauthorized)}
         guard let info = info else {return .error(OrcaSwapError.swapInfoMissing)}
         
-        return createSolanaAccountAsync(network: .mainnetBeta)
-            .flatMap {[weak self] userTransferAuthority -> Single<(AccountInstructions, Account)> in
-                guard let self = self else {return .error(OrcaSwapError.unknown)}
-                return pool0
-                    .constructExchange(
-                        tokens: info.tokens,
-                        solanaClient: self.solanaClient,
-                        owner: owner,
-                        userTransferAuthority: userTransferAuthority,
-                        fromTokenPubkey: fromTokenPubkey,
-                        toTokenPubkey: intermediaryTokenAddress,
-                        amount: amount,
-                        slippage: slippage,
-                        feeRelayerFeePayer: nil,
-                        shouldCreateAssociatedTokenAccount: false
-                    )
-                    .flatMap {[weak self] pool0AccountInstructions -> Single<AccountInstructions> in
-                        guard let self = self,
-                              let amount = try pool0.getMinimumAmountOut(inputAmount: amount, slippage: slippage)
-                        else {throw OrcaSwapError.unknown}
-                        
-                        return pool1.constructExchange(
-                            tokens: info.tokens,
-                            solanaClient: self.solanaClient,
-                            owner: owner,
-                            userTransferAuthority: userTransferAuthority,
-                            fromTokenPubkey: intermediaryTokenAddress,
-                            toTokenPubkey: destinationTokenAddress,
-                            amount: amount,
-                            slippage: slippage,
-                            feeRelayerFeePayer: nil,
-                            shouldCreateAssociatedTokenAccount: false
-                        )
-                        .map {pool1AccountInstructions in
-                            .init(
-                                account: pool1AccountInstructions.account,
-                                instructions: pool0AccountInstructions.instructions + pool1AccountInstructions.instructions,
-                                cleanupInstructions: pool0AccountInstructions.cleanupInstructions + pool1AccountInstructions.cleanupInstructions,
-                                signers: pool0AccountInstructions.signers + pool1AccountInstructions.signers
-                            )
-                        }
-                    }
-                    .map {($0, userTransferAuthority)}
-            }
+        return [pool0, pool1]
+            .constructExchange(
+                tokens: info.tokens,
+                solanaClient: solanaClient,
+                owner: owner,
+                fromTokenPubkey: fromTokenPubkey,
+                intermediaryTokenAddress: intermediaryTokenAddress,
+                toTokenPubkey: destinationTokenAddress,
+                amount: amount,
+                slippage: slippage,
+                feeRelayerFeePayer: nil,
+                shouldCreateAssociatedTokenAccount: false
+            )
             .flatMap {[weak self] accountInstructions, userTransferAuthority in
                 guard let self = self else {throw OrcaSwapError.unknown}
                 
@@ -559,19 +522,6 @@ public class OrcaSwap: OrcaSwapType {
 }
 
 // MARK: - Helpers
-private func createSolanaAccountAsync(network: SolanaSDK.Network) -> Single<SolanaSDK.Account> {
-    .create { observer in
-        do {
-            let account = try SolanaSDK.Account(network: network)
-            observer(.success(account))
-        } catch {
-            observer(.failure(error))
-        }
-        return Disposables.create()
-    }
-    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
-}
-
 private func findAllAvailableRoutes(tokens: OrcaSwap.Tokens, pools: OrcaSwap.Pools) -> OrcaSwap.Routes {
     let tokens = tokens.filter {$0.value.poolToken != true}
         .map {$0.key}
