@@ -10,12 +10,28 @@ import RxSwift
 
 extension SolanaSDK {
     public func getTokensList() -> Single<[Token]> {
-        if let cache = supportedTokensCache {
-            return .just(cache)
-        }
-        let parser = TokensListParser()
-        return parser.parse(network: endpoint.network.cluster)
-            .do(onSuccess: {self.supportedTokensCache = $0})
+        let getCacheTokensRequest = Single<[Token]?>
+            .create { [weak self] observer in
+                if let cache = self?.supportedTokensCache {
+                    observer(.success(cache))
+                } else {
+                    observer(.success(nil))
+                }
+                return Disposables.create()
+            }
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+        
+        return getCacheTokensRequest
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
+            .flatMap { [weak self] tokens in
+                guard let self = self else {return .just([])}
+                if let tokens = tokens {
+                    return .just(tokens)
+                }
+                let parser = TokensListParser()
+                return parser.parse(network: self.endpoint.network.cluster)
+                    .do(onSuccess: {[weak self] in self?.supportedTokensCache = $0})
+            }
     }
     
     public func getTokenWallets(account: String? = nil, log: Bool = true) -> Single<[Wallet]> {
