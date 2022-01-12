@@ -27,7 +27,7 @@ public protocol OrcaSwapType {
         slippage: Double,
         lamportsPerSignature: UInt64,
         minRentExempt: UInt64
-    ) throws -> (transactionFees: UInt64, liquidityProviderFees: [UInt64])
+    ) throws -> OrcaSwapFeesModel
     func swap(
         fromWalletPubkey: String,
         toWalletPubkey: String?,
@@ -213,10 +213,11 @@ public class OrcaSwap: OrcaSwapType {
         slippage: Double,
         lamportsPerSignature: UInt64,
         minRentExempt: UInt64
-    ) throws -> (transactionFees: UInt64, liquidityProviderFees: [UInt64]) {
+    ) throws -> OrcaSwapFeesModel {
         guard let owner = accountProvider.getNativeWalletAddress() else {throw OrcaSwapError.unauthorized}
         
         var transactionFees: UInt64 = 0
+        var accountCreationFee: UInt64?
         
         let numberOfPools = UInt64(bestPoolsPair?.count ?? 0)
         var numberOfTransactions: UInt64 = 1
@@ -246,7 +247,7 @@ public class OrcaSwap: OrcaSwapType {
         if fromWalletPubkey == owner.base58EncodedString || toWalletPubkey == owner.base58EncodedString
         {
             transactionFees += lamportsPerSignature
-            transactionFees += minRentExempt
+            accountCreationFee = accountCreationFee.map { $0 + minRentExempt } ?? minRentExempt
         }
         
         // when intermediary token is SOL, a fee for creating WSOL is needed
@@ -261,7 +262,7 @@ public class OrcaSwap: OrcaSwapType {
            intermediaryToken.tokenName == "SOL"
         {
             transactionFees += lamportsPerSignature
-            transactionFees += minRentExempt
+            accountCreationFee = accountCreationFee.map { $0 + minRentExempt } ?? minRentExempt
         }
         
         var liquidityProviderFees = [UInt64]()
@@ -269,7 +270,11 @@ public class OrcaSwap: OrcaSwapType {
             liquidityProviderFees = try bestPoolsPair?.calculateLiquidityProviderFees(inputAmount: inputAmount, slippage: slippage) ?? []
         }
         
-        return (transactionFees: transactionFees, liquidityProviderFees: liquidityProviderFees)
+        return .init(
+            transactionFees: transactionFees,
+            accountCreationFee: accountCreationFee,
+            liquidityProviderFees: liquidityProviderFees
+        )
     }
     
     /// Execute swap
