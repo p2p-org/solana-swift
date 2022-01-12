@@ -81,6 +81,31 @@ extension OrcaSwap.Pool {
         return try getInputAmount(fromEstimatedAmount: estimatedAmount)
     }
     
+    public func createSwapInstruction(
+        userTransferAuthorityPubkey: OrcaSwap.PublicKey,
+        sourceTokenAddress: OrcaSwap.PublicKey,
+        destinationTokenAddress: OrcaSwap.PublicKey,
+        amountIn: UInt64,
+        minAmountOut: UInt64
+    ) throws -> SolanaSDK.TransactionInstruction {
+        OrcaSwap.TokenSwapProgram.swapInstruction(
+            tokenSwap: try account.toPublicKey(),
+            authority: try authority.toPublicKey(),
+            userTransferAuthority: userTransferAuthorityPubkey,
+            userSource: sourceTokenAddress,
+            poolSource: try tokenAccountA.toPublicKey(),
+            poolDestination: try tokenAccountB.toPublicKey(),
+            userDestination: destinationTokenAddress,
+            poolMint: try poolTokenMint.toPublicKey(),
+            feeAccount: try feeAccount.toPublicKey(),
+            hostFeeAccount: try? hostFeeAccount?.toPublicKey(),
+            swapProgramId: swapProgramId,
+            tokenProgramId: .tokenProgramId,
+            amountIn: amountIn,
+            minimumAmountOut: minAmountOut
+        )
+    }
+    
     // MARK: - Internal methods
     func getOutputAmount(
         fromInputAmount inputAmount: UInt64
@@ -289,21 +314,12 @@ extension OrcaSwap.Pool {
                 guard let minAmountOut = try? getMinimumAmountOut(inputAmount: amount, slippage: slippage)
                 else {throw OrcaSwapError.couldNotEstimatedMinimumOutAmount}
                 
-                let swapInstruction = OrcaSwap.TokenSwapProgram.swapInstruction(
-                    tokenSwap: try account.toPublicKey(),
-                    authority: try authority.toPublicKey(),
-                    userTransferAuthority: userTransferAuthorityPubkey,
-                    userSource: sourceAccountInstructions.account,
-                    poolSource: try tokenAccountA.toPublicKey(),
-                    poolDestination: try tokenAccountB.toPublicKey(),
-                    userDestination: destinationAccountInstructions.account,
-                    poolMint: try poolTokenMint.toPublicKey(),
-                    feeAccount: try feeAccount.toPublicKey(),
-                    hostFeeAccount: try? hostFeeAccount?.toPublicKey(),
-                    swapProgramId: swapProgramId,
-                    tokenProgramId: .tokenProgramId,
+                let swapInstruction = try createSwapInstruction(
+                    userTransferAuthorityPubkey: userTransferAuthorityPubkey,
+                    sourceTokenAddress: sourceAccountInstructions.account,
+                    destinationTokenAddress: destinationAccountInstructions.account,
                     amountIn: amount,
-                    minimumAmountOut: minAmountOut
+                    minAmountOut: minAmountOut
                 )
                 
                 instructions.append(swapInstruction)
