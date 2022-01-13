@@ -179,7 +179,7 @@ public extension SolanaSDK {
         (request(parameters: [pubkey, RequestConfiguration(commitment: commitment)]) as Single<Rpc<TokenAccountBalance>>)
             .map {
                 if UInt64($0.value.amount) == nil {
-                    throw Error.invalidResponse(ResponseError(code: nil, message: "Could not retrieve balance", data: nil))
+                    throw Error.couldNotRetrieveAccountInfo
                 }
                 return $0.value
             }
