@@ -53,7 +53,7 @@ public extension SolanaSDK {
         case unknown
         
         // Predefined error
-        static var couldNotRetrieveAccountInfo: Self {
+        public static var couldNotRetrieveAccountInfo: Self {
             .other("Could not retrieve account info")
         }
     }
