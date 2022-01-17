@@ -144,8 +144,7 @@ public extension SolanaSDK {
             destination: PublicKey,
             owner: PublicKey
         ) -> TransactionInstruction {
-            
-            TransactionInstruction(
+            .init(
                 keys: [
                     Account.Meta(publicKey: account, isSigner: false, isWritable: true),
                     Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
@@ -154,6 +153,22 @@ public extension SolanaSDK {
                 programId: tokenProgramId,
                 data: [Index.closeAccount]
             )
+        }
+        
+        public static func closeAccountInstruction(
+            account: PublicKey,
+            destination: PublicKey,
+            owner: PublicKey,
+            signers: [PublicKey]
+        ) -> TransactionInstruction {
+            .init(
+                keys: [
+                    .writable(publicKey: account, isSigner: false),
+                    .writable(publicKey: destination, isSigner: false),
+                    .readonly(publicKey: owner, isSigner: signers.isEmpty)
+                ] + signers.map {.readonly(publicKey: $0, isSigner: true)},
+                programId: .tokenProgramId,
+                data: [Index.closeAccount])
         }
         
         public static func transferCheckedInstruction(
