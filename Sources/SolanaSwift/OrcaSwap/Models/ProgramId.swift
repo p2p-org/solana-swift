@@ -10,6 +10,6 @@ import Foundation
 public extension OrcaSwap {
     struct ProgramID: Decodable {
         let serumTokenSwap, tokenSwapV2, tokenSwap, token: String
-        let aquafarm: String
+        let aquafarm: String?
     }
 }

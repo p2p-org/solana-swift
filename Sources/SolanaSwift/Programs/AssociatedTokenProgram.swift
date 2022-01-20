@@ -9,9 +9,9 @@ import Foundation
 import TweetNacl
 
 extension SolanaSDK {
-    struct AssociatedTokenProgram {
+    public struct AssociatedTokenProgram {
         // MARK: - Interface
-        static func createAssociatedTokenAccountInstruction(
+        public static func createAssociatedTokenAccountInstruction(
             associatedProgramId: PublicKey = .splAssociatedTokenAccountProgramId,
             programId: PublicKey = .tokenProgramId,
             mint: PublicKey,

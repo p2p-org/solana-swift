@@ -51,4 +51,8 @@ public struct OrcaSwapError: Error {
     public static var unknown: Self {
         .init(description: "Unknown error")
     }
+    
+    public static var intermediaryTokenAddressNotFound: Self {
+        .init(description: "Intermediary token address not found")
+    }
 }

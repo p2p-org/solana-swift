@@ -113,6 +113,90 @@ extension OrcaSwap.Pools {
 }
 
 public extension OrcaSwap.PoolsPair {
+    func constructExchange(
+        tokens: OrcaSwap.Tokens,
+        solanaClient: OrcaSwapSolanaClient,
+        owner: OrcaSwap.Account,
+        fromTokenPubkey: String,
+        intermediaryTokenAddress: String? = nil,
+        toTokenPubkey: String?,
+        amount: OrcaSwap.Lamports,
+        slippage: Double,
+        feeRelayerFeePayer: OrcaSwap.PublicKey?,
+        shouldCreateAssociatedTokenAccount: Bool
+    ) -> Single<(OrcaSwap.AccountInstructions, OrcaSwap.Account)> {
+        guard count > 0 && count <= 2 else {return .error(OrcaSwapError.invalidPool)}
+        
+        if count == 1 {
+            // direct swap
+            return createSolanaAccountAsync(network: .mainnetBeta)
+                .flatMap {userTransferAuthority in
+                    return self[0]
+                        .constructExchange(
+                            tokens: tokens,
+                            solanaClient: solanaClient,
+                            owner: owner,
+                            userTransferAuthority: userTransferAuthority,
+                            fromTokenPubkey: fromTokenPubkey,
+                            toTokenPubkey: toTokenPubkey,
+                            amount: amount,
+                            slippage: slippage,
+                            feeRelayerFeePayer: nil,
+                            shouldCreateAssociatedTokenAccount: true
+                        )
+                        .map {($0, userTransferAuthority)}
+                }
+        } else {
+            // transitive swap
+            guard let intermediaryTokenAddress = intermediaryTokenAddress else {
+                return .error(OrcaSwapError.intermediaryTokenAddressNotFound)
+            }
+
+            return createSolanaAccountAsync(network: .mainnetBeta)
+                .flatMap { userTransferAuthority in
+                    return self[0]
+                        .constructExchange(
+                            tokens: tokens,
+                            solanaClient: solanaClient,
+                            owner: owner,
+                            userTransferAuthority: userTransferAuthority,
+                            fromTokenPubkey: fromTokenPubkey,
+                            toTokenPubkey: intermediaryTokenAddress,
+                            amount: amount,
+                            slippage: slippage,
+                            feeRelayerFeePayer: nil,
+                            shouldCreateAssociatedTokenAccount: false
+                        )
+                        .flatMap { pool0AccountInstructions in
+                            guard let amount = try self[0].getMinimumAmountOut(inputAmount: amount, slippage: slippage)
+                            else {throw OrcaSwapError.unknown}
+                            
+                            return self[1].constructExchange(
+                                tokens: tokens,
+                                solanaClient: solanaClient,
+                                owner: owner,
+                                userTransferAuthority: userTransferAuthority,
+                                fromTokenPubkey: intermediaryTokenAddress,
+                                toTokenPubkey: toTokenPubkey,
+                                amount: amount,
+                                slippage: slippage,
+                                feeRelayerFeePayer: nil,
+                                shouldCreateAssociatedTokenAccount: false
+                            )
+                                .map {pool1AccountInstructions in
+                                    .init(
+                                        account: pool1AccountInstructions.account,
+                                        instructions: pool0AccountInstructions.instructions + pool1AccountInstructions.instructions,
+                                        cleanupInstructions: pool0AccountInstructions.cleanupInstructions + pool1AccountInstructions.cleanupInstructions,
+                                        signers: pool0AccountInstructions.signers + pool1AccountInstructions.signers
+                                    )
+                                }
+                        }
+                        .map {($0, userTransferAuthority)}
+                }
+        }
+    }
+    
     func getOutputAmount(
         fromInputAmount inputAmount: UInt64
     ) -> UInt64? {
@@ -280,6 +364,20 @@ public extension OrcaSwap.PoolsPair {
         
         return (baseOutputAmountDecimal - inputAmountDecimal) / baseOutputAmountDecimal * 100
     }
+}
+
+// MARK: - Helpers
+private func createSolanaAccountAsync(network: SolanaSDK.Network) -> Single<SolanaSDK.Account> {
+    .create { observer in
+        do {
+            let account = try SolanaSDK.Account(network: network)
+            observer(.success(account))
+        } catch {
+            observer(.failure(error))
+        }
+        return Disposables.create()
+    }
+    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
 }
 
 private extension String {
