@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'SolanaSwift'
-  s.version          = '1.1.5'
+  s.version          = '1.1.6'
   s.summary          = 'A client for Solana written in Swift.'
 
 # This description is used to generate tags and improve search results.
