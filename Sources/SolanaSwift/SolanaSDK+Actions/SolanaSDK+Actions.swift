@@ -65,12 +65,12 @@ extension SolanaSDK {
             }
     }
     
-    public func serializeTransaction(
+    public func createTransactionAndSign(
         instructions: [TransactionInstruction],
         recentBlockhash: String? = nil,
         signers: [Account],
         feePayer: PublicKey? = nil
-    ) -> Single<String> {
+    ) -> Single<Transaction> {
         // get recentBlockhash
         let getRecentBlockhashRequest: Single<String>
         if let recentBlockhash = recentBlockhash {
@@ -85,12 +85,30 @@ extension SolanaSDK {
         
         // serialize transaction
         return getRecentBlockhashRequest
-            .map {recentBlockhash -> String in
+            .map {recentBlockhash in
                 var transaction = Transaction()
                 transaction.instructions = instructions
                 transaction.feePayer = feePayer
                 transaction.recentBlockhash = recentBlockhash
                 try transaction.sign(signers: signers)
+                return transaction
+            }
+    }
+    
+    public func serializeTransaction(
+        instructions: [TransactionInstruction],
+        recentBlockhash: String? = nil,
+        signers: [Account],
+        feePayer: PublicKey? = nil
+    ) -> Single<String> {
+        createTransactionAndSign(
+            instructions: instructions,
+            recentBlockhash: recentBlockhash,
+            signers: signers,
+            feePayer: feePayer
+        )
+            .map {transaction -> String in
+                var transaction = transaction
                 let serializedTransaction = try transaction.serialize().bytes.toBase64()
                 
                 if let decodedTransaction = transaction.jsonString {

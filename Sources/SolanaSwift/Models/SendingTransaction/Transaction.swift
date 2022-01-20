@@ -16,7 +16,7 @@ extension SolanaSDK {
         public var signatures = [Signature]()
         public var feePayer: PublicKey?
         public var instructions = [TransactionInstruction]()
-        public var recentBlockhash: String?
+        public internal(set) var recentBlockhash: String?
 //        TODO: nonceInfo
         
         public init() {}
