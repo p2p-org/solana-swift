@@ -12,6 +12,7 @@ import RxSwift
 
 public protocol SolanaSDKAccountStorage {
     var account: SolanaSDK.Account? {get}
+    func save(_ account: SolanaSDK.Account) throws
 }
 
 public class SolanaSDK {
