@@ -15,7 +15,7 @@ extension SolanaSDK {
     }
     
     public struct AccountInstructions {
-        init(
+        public init(
             account: SolanaSDK.PublicKey,
             instructions: [SolanaSDK.TransactionInstruction] = [],
             cleanupInstructions: [SolanaSDK.TransactionInstruction] = [],
@@ -31,10 +31,10 @@ extension SolanaSDK {
             self.secretKey = secretKey
         }
         
-        let account: PublicKey
-        var instructions: [TransactionInstruction]
-        let cleanupInstructions: [TransactionInstruction]
-        let signers: [Account]
+        public let account: PublicKey
+        public var instructions: [TransactionInstruction]
+        public let cleanupInstructions: [TransactionInstruction]
+        public let signers: [Account]
         
         // additionally return new wallet address
         fileprivate private(set) var newWalletPubkey: String?
