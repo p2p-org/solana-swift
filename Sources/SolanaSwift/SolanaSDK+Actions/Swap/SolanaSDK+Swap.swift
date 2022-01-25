@@ -38,7 +38,7 @@ extension SolanaSDK {
         
         public let account: PublicKey
         public var instructions: [TransactionInstruction]
-        public let cleanupInstructions: [TransactionInstruction]
+        public var cleanupInstructions: [TransactionInstruction]
         public let signers: [Account]
         
         // additionally return new wallet address
