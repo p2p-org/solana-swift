@@ -21,8 +21,7 @@ extension SolanaSDK {
     public func sendNativeSOL(
         to destination: String,
         amount: UInt64,
-        isSimulation: Bool = false,
-        customProxy: SolanaCustomFeeRelayerProxy? = nil
+        isSimulation: Bool = false
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
@@ -56,32 +55,6 @@ extension SolanaSDK {
                         to: try PublicKey(string: destination),
                         lamports: amount
                     )
-                    
-                    // if a proxy is existed, form signature, instruction and send them to this proxy
-                    if let proxy = customProxy {
-                        // form signature
-                        return Single.zip(
-                            proxy.getFeePayer(),
-                            self.getRecentBlockhash()
-                        )
-                            .map {feePayer, recentBlockhash in
-                                (try self.getSignatureForProxy(
-                                    feePayer: feePayer,
-                                    instructions: [instruction],
-                                    recentBlockhash: recentBlockhash),
-                                 recentBlockhash)
-                            }
-                            .flatMap {signature, recentBlockhash in
-                                proxy.transferSOL(
-                                    sender: account.publicKey.base58EncodedString,
-                                    recipient: destination,
-                                    amount: amount,
-                                    signature: signature,
-                                    blockhash: recentBlockhash,
-                                    isSimulation: isSimulation
-                                )
-                            }
-                    }
                     
                     // if not, serialize and send instructions normally
                     return self.serializeAndSend(
@@ -118,30 +91,22 @@ extension SolanaSDK {
         from fromPublicKey: String,
         to destinationAddress: String,
         amount: UInt64,
-        isSimulation: Bool = false,
-        customProxy: SolanaCustomFeeRelayerProxy? = nil
+        feePayer: PublicKey? = nil,
+        transferChecked: Bool = false,
+        isSimulation: Bool = false
     ) -> Single<TransactionID> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
         }
         
-        // OPTIONAL: custom fee payer request (for custom proxy)
-        let customFeePayerRequest: Single<PublicKey>
-        if let proxy = customProxy {
-            customFeePayerRequest = proxy.getFeePayer().map {try .init(string: $0)}
-        } else {
-            customFeePayerRequest = .just(account.publicKey)
-        }
+        let feePayer = feePayer ?? account.publicKey
         
         // Request
-        return Single.zip(
-            findSPLTokenDestinationAddress(
-                mintAddress: mintAddress,
-                destinationAddress: destinationAddress
-            ),
-            customFeePayerRequest
+        return findSPLTokenDestinationAddress(
+            mintAddress: mintAddress,
+            destinationAddress: destinationAddress
         )
-            .flatMap {splDestinationAddress, feePayer in
+            .flatMap {splDestinationAddress in
                 // get address
                 let toPublicKey = splDestinationAddress.destination
                 
@@ -172,7 +137,7 @@ extension SolanaSDK {
                 let sendInstruction: TransactionInstruction
                 
                 // use transfer checked transaction for proxy, otherwise use normal transfer transaction
-                if customProxy != nil {
+                if transferChecked {
                     // transfer checked transaction
                     sendInstruction = TokenProgram.transferCheckedInstruction(
                         programId: .tokenProgramId,
@@ -197,40 +162,11 @@ extension SolanaSDK {
                 
                 instructions.append(sendInstruction)
                 
-                // if a proxy is existed, form signature, instruction and send them to this proxy
-                if let proxy = customProxy {
-                    // form signature
-                    return Single.zip(
-                        proxy.getFeePayer(),
-                        self.getRecentBlockhash()
-                    )
-                        .map {feePayer, recentBlockhash in
-                            (try self.getSignatureForProxy(
-                                feePayer: feePayer,
-                                instructions: instructions,
-                                recentBlockhash: recentBlockhash),
-                             recentBlockhash)
-                        }
-                        .flatMap {signature, recentBlockhash in
-                            // get real destination: if associated token has been registered, then send token to this address, if not, send token to SOL account address
-                            var realDestination = destinationAddress
-                            if !splDestinationAddress.isUnregisteredAsocciatedToken
-                            {
-                                realDestination = splDestinationAddress.destination.base58EncodedString
-                            }
-                            
-                            return proxy.transferSPLToken(
-                                sender: fromPublicKey.base58EncodedString,
-                                recipient: realDestination,
-                                mintAddress: mintAddress,
-                                authority: account.publicKey.base58EncodedString,
-                                amount: amount,
-                                decimals: decimals,
-                                signature: signature,
-                                blockhash: recentBlockhash
-                            )
-                        }
-                }
+//                var realDestination = destinationAddress
+//                if !splDestinationAddress.isUnregisteredAsocciatedToken
+//                {
+//                    realDestination = splDestinationAddress.destination.base58EncodedString
+//                }
                 
                 // if not, serialize and send instructions normally
                 return self.serializeAndSend(instructions: instructions, signers: [account], isSimulation: isSimulation)
