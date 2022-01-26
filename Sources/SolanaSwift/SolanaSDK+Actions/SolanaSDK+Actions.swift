@@ -9,6 +9,71 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
+    public func prepareTransaction(
+        instructions: [TransactionInstruction],
+        signers: [Account],
+        feePayer: PublicKey
+    ) -> Single<PreparedTransaction> {
+        getRecentBlockhash()
+            .map { recentBlockhash in
+                var transaction = Transaction()
+                transaction.instructions = instructions
+                transaction.recentBlockhash = recentBlockhash
+                transaction.feePayer = feePayer
+                try transaction.sign(signers: signers)
+                return .init(transaction: transaction, signers: signers)
+            }
+    }
+    
+    public func serializeAndSend(
+        preparedTransaction: PreparedTransaction,
+        isSimulation: Bool
+    ) -> Single<String> {
+        do {
+            let serializedTransaction = try preparedTransaction.serialize()
+            let request: Single<String>
+            
+            if isSimulation {
+                request = simulateTransaction(transaction: serializedTransaction)
+                    .map {result -> String in
+                        if result.err != nil {
+                            throw Error.other("Simulation error")
+                        }
+                        return "<simulated transaction id>"
+                    }
+            } else {
+                request = sendTransaction(serializedTransaction: serializedTransaction)
+            }
+            
+            let maxAttemps = 3
+            var numberOfTries = 0
+            return request
+                .catch {error in
+                    if numberOfTries <= maxAttemps,
+                       let error = error as? SolanaSDK.Error
+                    {
+                        var shouldRetry = false
+                        switch error {
+                        case .other(let message) where message == "Blockhash not found":
+                            shouldRetry = true
+                        case .invalidResponse(let response) where response.message == "Blockhash not found":
+                            shouldRetry = true
+                        default:
+                            break
+                        }
+                        
+                        if shouldRetry {
+                            numberOfTries += 1
+                            return self.serializeAndSend(preparedTransaction: preparedTransaction, isSimulation: isSimulation)
+                        }
+                    }
+                    throw error
+                }
+        } catch {
+            return .error(error)
+        }
+    }
+    
     /// Traditional sending without FeeRelayer
     /// - Parameters:
     ///   - instructions: transaction's instructions
