@@ -21,5 +21,13 @@ extension SolanaSDK {
             #endif
             return serializedTransaction
         }
+        
+        public func findSignature(publicKey: PublicKey) throws -> String {
+            guard let signature = transaction.findSignature(pubkey: publicKey)?.signature
+            else {
+                throw Error.other("Signature not found")
+            }
+            return Base58.encode(signature.bytes)
+        }
     }
 }

@@ -103,8 +103,7 @@ extension SolanaSDK {
         to destinationAddress: String,
         amount: UInt64,
         feePayer: PublicKey? = nil,
-        transferChecked: Bool = false,
-        isSimulation: Bool = false
+        transferChecked: Bool = false
     ) -> Single<(preparedTransaction: PreparedTransaction, realDestination: String)> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
@@ -213,8 +212,7 @@ extension SolanaSDK {
             to: destinationAddress,
             amount: amount,
             feePayer: feePayer,
-            transferChecked: transferChecked,
-            isSimulation: isSimulation
+            transferChecked: transferChecked
         )
             .map {$0.preparedTransaction}
             .flatMap { [weak self] preparedTransaction in
