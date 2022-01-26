@@ -11,22 +11,21 @@ import RxSwift
 extension SolanaSDK {
     public typealias SPLTokenDestinationAddress = (destination: PublicKey, isUnregisteredAsocciatedToken: Bool)
     
-    /// Send SOL to another account
+    /// Create prepared transaction for sending SOL
     /// - Parameters:
-    ///   - toPublicKey: destination address
-    ///   - amount: amount to send
-    ///   - isSimulation: define if this is a simulation or real transaction
-    ///   - customProxy: (optional) forward sending to a fee-relayer proxy
-    /// - Returns: transaction id
-    public func sendNativeSOL(
+    ///   - destination: destination wallet address
+    ///   - amount: amount in lamports
+    ///   - feePayer: customm fee payer, can be omited if the authorized user is the payer
+    /// - Returns: PreparedTransaction, can be send either directly or via custom fee relayer
+    public func prepareSendingNativeSOL(
         to destination: String,
         amount: UInt64,
-        isSimulation: Bool = false
-    ) -> Single<TransactionID> {
+        feePayer: PublicKey? = nil
+    ) -> Single<PreparedTransaction> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
         }
-        
+        let feePayer = feePayer ?? account.publicKey
         do {
             let fromPublicKey = account.publicKey
             
@@ -48,7 +47,8 @@ extension SolanaSDK {
                     }
                     throw error
                 }
-                .flatMap {
+                .flatMap { [weak self] in
+                    guard let self = self else {return .error(Error.unknown)}
                     // form instruction
                     let instruction = SystemProgram.transferInstruction(
                         from: fromPublicKey,
@@ -56,36 +56,47 @@ extension SolanaSDK {
                         lamports: amount
                     )
                     
-                    // if not, serialize and send instructions normally
-                    return self.serializeAndSend(
-                        instructions: [instruction],
-                        signers: [account],
-                        isSimulation: isSimulation
-                    )
+                    return self.prepareTransaction(instructions: [instruction], signers: [account], feePayer: feePayer)
                 }
-                .catch {error in
-                    var error = error
-                    if error.localizedDescription == "Invalid param: WrongSize"
-                    {
-                        error = Error.other("Wrong wallet address")
-                    }
-                    throw error
-                }
+                
         } catch {
             return .error(error)
         }
     }
     
-    /// Send SPLTokens to another account
+    /// Send SOL to another account
     /// - Parameters:
-    ///   - mintAddress: the mint address to define Token
-    ///   - fromPublicKey: source wallet address
-    ///   - destinationAddress: destination wallet address
+    ///   - destination: destination address
     ///   - amount: amount to send
-    ///   - isSimulation: define if this is a simulation or real transaction
-    ///   - customProxy: (optional) forward sending to a fee-relayer proxy
+    ///   - feePayer: customm fee payer, can be omited if the authorized user is the payer
     /// - Returns: transaction id
-    public func sendSPLTokens(
+    public func sendNativeSOL(
+        to destination: String,
+        amount: UInt64,
+        feePayer: PublicKey? = nil,
+        isSimulation: Bool = false
+    ) -> Single<TransactionID> {
+        prepareSendingNativeSOL(
+            to: destination,
+            amount: amount,
+            feePayer: feePayer
+        )
+            .flatMap { [weak self] preparedTransaction in
+                guard let self = self else {return .error(Error.unknown)}
+                return self.serializeAndSend(preparedTransaction: preparedTransaction, isSimulation: isSimulation)
+            }
+            .catch {error in
+                var error = error
+                if error.localizedDescription == "Invalid param: WrongSize"
+                {
+                    error = Error.other("Wrong wallet address")
+                }
+                throw error
+            }
+    }
+    
+    /// Create prepared transaction for sending SPL token
+    public func prepareSendingSPLTokens(
         mintAddress: String,
         decimals: Decimals,
         from fromPublicKey: String,
@@ -94,7 +105,7 @@ extension SolanaSDK {
         feePayer: PublicKey? = nil,
         transferChecked: Bool = false,
         isSimulation: Bool = false
-    ) -> Single<TransactionID> {
+    ) -> Single<(preparedTransaction: PreparedTransaction, realDestination: String)> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
         }
@@ -106,7 +117,9 @@ extension SolanaSDK {
             mintAddress: mintAddress,
             destinationAddress: destinationAddress
         )
-            .flatMap {splDestinationAddress in
+            .flatMap { [weak self] splDestinationAddress in
+                guard let self = self else {return .error(Error.unknown)}
+                
                 // get address
                 let toPublicKey = splDestinationAddress.destination
                 
@@ -162,14 +175,51 @@ extension SolanaSDK {
                 
                 instructions.append(sendInstruction)
                 
-//                var realDestination = destinationAddress
-//                if !splDestinationAddress.isUnregisteredAsocciatedToken
-//                {
-//                    realDestination = splDestinationAddress.destination.base58EncodedString
-//                }
+                var realDestination = destinationAddress
+                if !splDestinationAddress.isUnregisteredAsocciatedToken
+                {
+                    realDestination = splDestinationAddress.destination.base58EncodedString
+                }
                 
                 // if not, serialize and send instructions normally
-                return self.serializeAndSend(instructions: instructions, signers: [account], isSimulation: isSimulation)
+                return self.prepareTransaction(instructions: instructions, signers: [account], feePayer: feePayer)
+                    .map {(preparedTransaction: $0, realDestination: realDestination)}
+            }
+    }
+    
+    /// Send SPLTokens to another account
+    /// - Parameters:
+    ///   - mintAddress: the mint address to define Token
+    ///   - fromPublicKey: source wallet address
+    ///   - destinationAddress: destination wallet address
+    ///   - amount: amount to send
+    ///   - isSimulation: define if this is a simulation or real transaction
+    ///   - customProxy: (optional) forward sending to a fee-relayer proxy
+    /// - Returns: transaction id
+    public func sendSPLTokens(
+        mintAddress: String,
+        decimals: Decimals,
+        from fromPublicKey: String,
+        to destinationAddress: String,
+        amount: UInt64,
+        feePayer: PublicKey? = nil,
+        transferChecked: Bool = false,
+        isSimulation: Bool = false
+    ) -> Single<TransactionID> {
+        prepareSendingSPLTokens(
+            mintAddress: mintAddress,
+            decimals: decimals,
+            from: fromPublicKey,
+            to: destinationAddress,
+            amount: amount,
+            feePayer: feePayer,
+            transferChecked: transferChecked,
+            isSimulation: isSimulation
+        )
+            .map {$0.preparedTransaction}
+            .flatMap { [weak self] preparedTransaction in
+                guard let self = self else {return .error(Error.unknown)}
+                return self.serializeAndSend(preparedTransaction: preparedTransaction, isSimulation: isSimulation)
             }
             .catch {error in
                 var error = error
