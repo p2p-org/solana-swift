@@ -20,6 +20,7 @@ extension SolanaSDK {
                 transaction.instructions = instructions
                 transaction.recentBlockhash = recentBlockhash
                 transaction.feePayer = feePayer
+                try transaction.sign(signers: signers)
                 return .init(transaction: transaction, signers: signers)
             }
     }
@@ -29,7 +30,7 @@ extension SolanaSDK {
         isSimulation: Bool
     ) -> Single<String> {
         do {
-            let serializedTransaction = try preparedTransaction.signAndSerialize()
+            let serializedTransaction = try preparedTransaction.serialize()
             let request: Single<String>
             
             if isSimulation {
