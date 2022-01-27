@@ -113,12 +113,12 @@ extension SolanaSDK.Transaction {
             )
         }
         
-        func isAccountWritable(index: Int) -> Bool {
+        public func isAccountWritable(index: Int) -> Bool {
             (index < header.numRequiredSignatures - header.numReadonlySignedAccounts)
                 || (index >= header.numRequiredSignatures && index < accountKeys.count - header.numReadonlyUnsignedAccounts)
         }
         
-        func isAccountSigner(index: Int) -> Bool {
+        public func isAccountSigner(index: Int) -> Bool {
             index < header.numRequiredSignatures
         }
         
