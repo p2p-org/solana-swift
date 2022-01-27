@@ -178,7 +178,7 @@ extension SolanaSDK.Transaction.Message {
         let dataLength: [UInt8]
         public let data: [UInt8]
         
-        var accounts: [Int] {
+        public var accounts: [Int] {
             get {
                 keyIndices.map { x in Int(x) }
             }
