@@ -172,11 +172,11 @@ extension SolanaSDK.Transaction.Message {
     
     // TODO: follow code from solana!
     public struct CompiledInstruction {
-        let programIdIndex: UInt8
+        public let programIdIndex: UInt8
         let keyIndicesCount: [UInt8]
         let keyIndices: [UInt8]
         let dataLength: [UInt8]
-        let data: [UInt8]
+        public let data: [UInt8]
         
         var accounts: [Int] {
             get {
