@@ -16,10 +16,10 @@ extension SolanaSDK.Transaction {
         private static let RECENT_BLOCK_HASH_LENGTH = 32
         
         // MARK: - Properties
-        var header: Header
-        var accountKeys: [SolanaSDK.PublicKey]
+        public internal(set) var header: Header
+        public internal(set) var accountKeys: [SolanaSDK.PublicKey]
         var recentBlockhash: BlockHash
-        var instructions: [CompiledInstruction]
+        public internal(set) var instructions: [CompiledInstruction]
         
         init(header: Header, accountKeys: [SolanaSDK.PublicKey], recentBlockhash: BlockHash, instructions: [CompiledInstruction]) {
             self.header = header

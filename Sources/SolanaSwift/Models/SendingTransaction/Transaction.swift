@@ -125,7 +125,7 @@ extension SolanaSDK {
             return message
         }
         
-        private func compileMessage() throws -> Message {
+        public func compileMessage() throws -> Message {
             // verify instructions
             guard instructions.count > 0 else {
                 throw Error.other("No instructions provided")
