@@ -2,13 +2,15 @@ import Foundation
 
 extension SolanaSDK {
     public struct PreparedTransaction {
-        public init(transaction: SolanaSDK.Transaction, signers: [SolanaSDK.Account]) {
+        public init(transaction: SolanaSDK.Transaction, signers: [SolanaSDK.Account], expectedFee: FeeAmount) {
             self.transaction = transaction
             self.signers = signers
+            self.expectedFee = expectedFee
         }
         
         public var transaction: Transaction
         public var signers: [Account]
+        public var expectedFee: FeeAmount
         
         public func serialize() throws -> String {
             var transaction = transaction

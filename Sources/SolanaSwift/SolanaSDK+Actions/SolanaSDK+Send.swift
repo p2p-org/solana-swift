@@ -56,7 +56,12 @@ extension SolanaSDK {
                         lamports: amount
                     )
                     
-                    return self.prepareTransaction(instructions: [instruction], signers: [account], feePayer: feePayer)
+                    return self.prepareTransaction(
+                        instructions: [instruction],
+                        signers: [account],
+                        feePayer: feePayer,
+                        accountsCreationFee: 0
+                    )
                 }
                 
         } catch {
@@ -112,11 +117,14 @@ extension SolanaSDK {
         let feePayer = feePayer ?? account.publicKey
         
         // Request
-        return findSPLTokenDestinationAddress(
-            mintAddress: mintAddress,
-            destinationAddress: destinationAddress
+        return Single.zip(
+            findSPLTokenDestinationAddress(
+                mintAddress: mintAddress,
+                destinationAddress: destinationAddress
+            ),
+            getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
         )
-            .flatMap { [weak self] splDestinationAddress in
+            .flatMap { [weak self] splDestinationAddress, minRentExempt in
                 guard let self = self else {return .error(Error.unknown)}
                 
                 // get address
@@ -132,6 +140,7 @@ extension SolanaSDK {
                 var instructions = [TransactionInstruction]()
                 
                 // create associated token address
+                var accountsCreationFee: UInt64 = 0
                 if splDestinationAddress.isUnregisteredAsocciatedToken {
                     let mint = try PublicKey(string: mintAddress)
                     let owner = try PublicKey(string: destinationAddress)
@@ -143,6 +152,7 @@ extension SolanaSDK {
                         payer: feePayer
                     )
                     instructions.append(createATokenInstruction)
+                    accountsCreationFee += minRentExempt
                 }
                 
                 // send instruction
@@ -181,7 +191,12 @@ extension SolanaSDK {
                 }
                 
                 // if not, serialize and send instructions normally
-                return self.prepareTransaction(instructions: instructions, signers: [account], feePayer: feePayer)
+                return self.prepareTransaction(
+                    instructions: instructions,
+                    signers: [account],
+                    feePayer: feePayer,
+                    accountsCreationFee: accountsCreationFee
+                )
                     .map {(preparedTransaction: $0, realDestination: realDestination)}
             }
     }

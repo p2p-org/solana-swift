@@ -12,16 +12,30 @@ extension SolanaSDK {
     public func prepareTransaction(
         instructions: [TransactionInstruction],
         signers: [Account],
-        feePayer: PublicKey
+        feePayer: PublicKey,
+        accountsCreationFee: Lamports
     ) -> Single<PreparedTransaction> {
-        getRecentBlockhash()
-            .map { recentBlockhash in
+        Single.zip(
+            getFees().map {$0.feeCalculator?.lamportsPerSignature}.map {$0 ?? 0},
+            getRecentBlockhash()
+        )
+            .map { lamportsPerSignature, recentBlockhash in
                 var transaction = Transaction()
                 transaction.instructions = instructions
                 transaction.recentBlockhash = recentBlockhash
                 transaction.feePayer = feePayer
+                
+                // calculate fee first
+                let expectedFee = FeeAmount(
+                    transaction: try transaction.calculateTransactionFee(lamportsPerSignatures: lamportsPerSignature),
+                    accountBalances: accountsCreationFee
+                )
+                
+                // resign transaction
                 try transaction.sign(signers: signers)
-                return .init(transaction: transaction, signers: signers)
+                
+                
+                return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
             }
     }
     

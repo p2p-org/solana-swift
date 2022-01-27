@@ -38,6 +38,15 @@ class RestAPITransactionTests: RestAPITests {
         let balance = try solanaSDK.getBalance().toBlocking().first()
         XCTAssertNotNil(balance)
         
+        // calculate fees
+        let preparedTransaction = try solanaSDK.prepareSendingNativeSOL(
+            to: toPublicKey,
+            amount: balance!/10
+        ).toBlocking().first()!
+        
+        XCTAssertEqual(preparedTransaction.expectedFee, .init(transaction: 5000, accountBalances: 0))
+        
+        // send simulation
         _ = try solanaSDK.sendNativeSOL(
             to: toPublicKey,
             amount: balance!/10,
@@ -51,6 +60,19 @@ class RestAPITransactionTests: RestAPITests {
         let source = "DjY1uZozQTPz9c6WsjpPC3jXWp7u98KzyuyQTRzcGHFk"
         let destination = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
         
+        // calculate fees
+        let preparedTransaction = try solanaSDK.prepareSendingSPLTokens(
+            mintAddress: mintAddress,
+            decimals: 6,
+            from: source,
+            to: destination,
+            amount: Double(0.001).toLamport(decimals: 6),
+            feePayer: "B4PdyoVU39hoCaiTLPtN9nJxy6rEpbciE3BNPvHkCeE2"
+        ).toBlocking().first()!.preparedTransaction
+        
+        XCTAssertEqual(preparedTransaction.expectedFee, .init(transaction: 10000, accountBalances: 2039280))
+        
+        // send simulation
         _ = try solanaSDK.sendSPLTokens(
             mintAddress: mintAddress,
             decimals: 6,
