@@ -114,7 +114,8 @@ extension SolanaSDK {
         feePayer: PublicKey? = nil,
         transferChecked: Bool = false,
         recentBlockhash: String? = nil,
-        lamportsPerSignature: Lamports? = nil
+        lamportsPerSignature: Lamports? = nil,
+        minRentExemption: Lamports? = nil
     ) -> Single<(preparedTransaction: PreparedTransaction, realDestination: String)> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
@@ -122,13 +123,20 @@ extension SolanaSDK {
         
         let feePayer = feePayer ?? account.publicKey
         
+        let minRentExemptionRequest: Single<Lamports>
+        if let minRentExemption = minRentExemption {
+            minRentExemptionRequest = .just(minRentExemption)
+        } else {
+            minRentExemptionRequest = getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
+        }
+        
         // Request
         return Single.zip(
             findSPLTokenDestinationAddress(
                 mintAddress: mintAddress,
                 destinationAddress: destinationAddress
             ),
-            getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
+            minRentExemptionRequest
         )
             .flatMap { [weak self] splDestinationAddress, minRentExempt in
                 guard let self = self else {return .error(Error.unknown)}
