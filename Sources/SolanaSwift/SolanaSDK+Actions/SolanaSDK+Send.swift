@@ -20,7 +20,9 @@ extension SolanaSDK {
     public func prepareSendingNativeSOL(
         to destination: String,
         amount: UInt64,
-        feePayer: PublicKey? = nil
+        feePayer: PublicKey? = nil,
+        recentBlockhash: String? = nil,
+        lamportsPerSignature: Lamports? = nil
     ) -> Single<PreparedTransaction> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
@@ -60,7 +62,9 @@ extension SolanaSDK {
                         instructions: [instruction],
                         signers: [account],
                         feePayer: feePayer,
-                        accountsCreationFee: 0
+                        accountsCreationFee: 0,
+                        recentBlockhash: recentBlockhash,
+                        lamportsPerSignature: lamportsPerSignature
                     )
                 }
                 
@@ -108,7 +112,9 @@ extension SolanaSDK {
         to destinationAddress: String,
         amount: UInt64,
         feePayer: PublicKey? = nil,
-        transferChecked: Bool = false
+        transferChecked: Bool = false,
+        recentBlockhash: String? = nil,
+        lamportsPerSignature: Lamports? = nil
     ) -> Single<(preparedTransaction: PreparedTransaction, realDestination: String)> {
         guard let account = self.accountStorage.account else {
             return .error(Error.unauthorized)
@@ -195,7 +201,9 @@ extension SolanaSDK {
                     instructions: instructions,
                     signers: [account],
                     feePayer: feePayer,
-                    accountsCreationFee: accountsCreationFee
+                    accountsCreationFee: accountsCreationFee,
+                    recentBlockhash: recentBlockhash,
+                    lamportsPerSignature: lamportsPerSignature
                 )
                     .map {(preparedTransaction: $0, realDestination: realDestination)}
             }
