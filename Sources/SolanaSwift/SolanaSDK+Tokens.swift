@@ -38,14 +38,24 @@ extension SolanaSDK {
         guard let account = account ?? accountStorage.account?.publicKey.base58EncodedString else {
             return .error(Error.unauthorized)
         }
+        let memcmp = EncodableWrapper(
+            wrapped:
+                ["offset": EncodableWrapper(wrapped: 32),
+                 "bytes": EncodableWrapper(wrapped: account)]
+        )
+        let configs = RequestConfiguration(commitment: "recent", encoding: "base64", dataSlice: nil, filters: [
+            ["memcmp": memcmp],
+            ["dataSize": .init(wrapped: 165)]
+        ])
         
         return Single.zip(
-            getTokenAccountsByOwner(
-                pubkey: account,
-                params: .init(mint: nil, programId: PublicKey.tokenProgramId.base58EncodedString),
-                configs: .init(encoding: "base64"),
+            getProgramAccounts(
+                publicKey: PublicKey.tokenProgramId.base58EncodedString,
+                configs: configs,
+                decodedTo: AccountInfo.self,
                 log: log
-            ),
+            )
+                .map {$0.accounts},
             getTokensList()
         )
             .flatMap { list, supportedTokens -> Single<[Wallet]> in
