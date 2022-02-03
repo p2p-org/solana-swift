@@ -24,5 +24,9 @@ extension SolanaSDK {
         public var total: UInt64 {
             transaction + accountBalances
         }
+        
+        public static var zero: Self {
+            .init(transaction: 0, accountBalances: 0)
+        }
     }
 }
