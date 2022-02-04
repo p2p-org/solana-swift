@@ -28,7 +28,7 @@ Solana-blockchain client, written in pure swift, which supports keypair generati
   s.source           = { :git => 'https://github.com/p2p-org/solana-swift.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '12.0'
+  s.ios.deployment_target = '13.0'
 
   s.source_files = 'Sources/SolanaSwift/**/*'
   s.resources = 'Sources/SolanaSwift/Resources/*'
