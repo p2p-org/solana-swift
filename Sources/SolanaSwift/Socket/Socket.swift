@@ -32,7 +32,7 @@ extension SolanaSDK {
         public init(endpoint: String) {
             var request = URLRequest(url: URL(string: endpoint)!)
             request.timeoutInterval = 5
-            socket = WebSocket(request: request)
+            socket = WebSocket(request: request, engine: NativeEngine())
             defer {socket.delegate = self}
         }
         

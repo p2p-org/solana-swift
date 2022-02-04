@@ -44,8 +44,6 @@ extension SolanaSDK.Socket: WebSocketDelegate {
             if let error = error {
                 onError(SolanaSDK.Error.socket(error))
             }
-            // reconnect
-            socket.connect()
         }
     }
     
