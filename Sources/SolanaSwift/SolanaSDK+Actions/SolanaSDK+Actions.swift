@@ -13,11 +13,29 @@ extension SolanaSDK {
         instructions: [TransactionInstruction],
         signers: [Account],
         feePayer: PublicKey,
-        accountsCreationFee: Lamports
+        accountsCreationFee: Lamports,
+        recentBlockhash: String? = nil,
+        lamportsPerSignature: Lamports? = nil
     ) -> Single<PreparedTransaction> {
-        Single.zip(
-            getFees().map {$0.feeCalculator?.lamportsPerSignature}.map {$0 ?? 0},
-            getRecentBlockhash()
+        // get recentBlockhash
+        let getRecentBlockhashRequest: Single<String>
+        if let recentBlockhash = recentBlockhash {
+            getRecentBlockhashRequest = .just(recentBlockhash)
+        } else {
+            getRecentBlockhashRequest = getRecentBlockhash()
+        }
+        
+        // get lamports per signature
+        let getLamportsPerSignature: Single<Lamports>
+        if let lamportsPerSignature = lamportsPerSignature {
+            getLamportsPerSignature = .just(lamportsPerSignature)
+        } else {
+            getLamportsPerSignature = getFees().map {$0.feeCalculator?.lamportsPerSignature}.map {$0 ?? 0}
+        }
+        
+        return Single.zip(
+            getLamportsPerSignature,
+            getRecentBlockhashRequest
         )
             .map { lamportsPerSignature, recentBlockhash in
                 var transaction = Transaction()
