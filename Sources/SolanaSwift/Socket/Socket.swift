@@ -32,7 +32,11 @@ extension SolanaSDK {
         public init(endpoint: String) {
             var request = URLRequest(url: URL(string: endpoint)!)
             request.timeoutInterval = 5
-            socket = WebSocket(request: request, engine: NativeEngine())
+            if #available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) {
+                socket = WebSocket(request: request, engine: NativeEngine())
+            } else {
+                socket = WebSocket(request: request)
+            }
             defer {socket.delegate = self}
         }
         
