@@ -48,7 +48,8 @@ extension SolanaSDK {
             ),
             getTokensList()
         )
-            .flatMap { list, supportedTokens -> Single<[Wallet]> in
+            .flatMap { [weak self] list, supportedTokens -> Single<[Wallet]> in
+                guard let self = self else {return .just([])}
                 var knownWallets = [Wallet]()
                 var unknownAccounts = [(String, AccountInfo)]()
                 

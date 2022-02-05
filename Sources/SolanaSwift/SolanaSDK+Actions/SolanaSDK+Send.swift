@@ -24,7 +24,7 @@ extension SolanaSDK {
         recentBlockhash: String? = nil,
         lamportsPerSignature: Lamports? = nil
     ) -> Single<PreparedTransaction> {
-        guard let account = self.accountStorage.account else {
+        guard let account = accountStorage.account else {
             return .error(Error.unauthorized)
         }
         let feePayer = feePayer ?? account.publicKey
@@ -117,7 +117,7 @@ extension SolanaSDK {
         lamportsPerSignature: Lamports? = nil,
         minRentExemption: Lamports? = nil
     ) -> Single<(preparedTransaction: PreparedTransaction, realDestination: String)> {
-        guard let account = self.accountStorage.account else {
+        guard let account = accountStorage.account else {
             return .error(Error.unauthorized)
         }
         
@@ -310,7 +310,8 @@ extension SolanaSDK {
                 // throw another error
                 throw error
             }
-            .flatMap {toPublicKey -> Single<SPLTokenDestinationAddress> in
+            .flatMap { [weak self] toPublicKey -> Single<SPLTokenDestinationAddress> in
+                guard let self = self else {throw Error.unknown}
                 let toPublicKey = try PublicKey(string: toPublicKey)
                 // if destination address is an SOL account address
                 if destinationAddress != toPublicKey.base58EncodedString {

@@ -17,13 +17,14 @@ extension SolanaSDK {
         mintAddress: String,
         isSimulation: Bool = false
     ) -> Single<(signature: String, newPubkey: String)> {
-        guard let payer = self.accountStorage.account else {
+        guard let payer = accountStorage.account else {
             return .error(Error.unauthorized)
         }
 
         var newAccount: Account!
         return Single.zip(getRecentBlockhash(), getCreatingTokenAccountFee())
-            .flatMap { (recentBlockhash, minBalance) in
+            .flatMap { [weak self] (recentBlockhash, minBalance) in
+                guard let self = self else {throw Error.unknown}
                 
                 let mintAddress = try PublicKey(string: mintAddress)
                 

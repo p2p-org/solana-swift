@@ -502,12 +502,12 @@ extension SolanaSDK {
                 Optional($0.data)
             }
             .catchAndReturn(nil)
-            .flatMap {
-                if $0 == nil,
+            .flatMap { [weak self] info in
+                if let self = self, info == nil,
                    let retryAccount = retryAccount {
                     return self.getAccountInfo(account: retryAccount)
                 }
-                return .just($0)
+                return .just(info)
             }
     }
     

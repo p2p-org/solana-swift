@@ -67,7 +67,7 @@ extension SolanaSDK: SerumSwapAPIClient {
     }
     
     public func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64> {
-        self.getMinimumBalanceForRentExemption(dataLength: span)
+        getMinimumBalanceForRentExemption(dataLength: span)
     }
     
     public func getMarketAddressIfNeeded(usdxMint: PublicKey, baseMint: PublicKey) -> Single<PublicKey> {

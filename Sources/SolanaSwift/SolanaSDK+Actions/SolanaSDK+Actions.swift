@@ -80,7 +80,8 @@ extension SolanaSDK {
             let maxAttemps = 3
             var numberOfTries = 0
             return request
-                .catch {error in
+                .catch {[weak self] error in
+                    guard let self = self else {throw Error.unknown}
                     if numberOfTries <= maxAttemps,
                        let error = error as? SolanaSDK.Error
                     {
@@ -126,9 +127,10 @@ extension SolanaSDK {
             recentBlockhash: recentBlockhash,
             signers: signers
         )
-            .flatMap {
+            .flatMap { [weak self] transaction in
+                guard let self = self else {throw Error.unknown}
                 if isSimulation {
-                    return self.simulateTransaction(transaction: $0)
+                    return self.simulateTransaction(transaction: transaction)
                         .map {result -> String in
                             if result.err != nil {
                                 throw Error.other("Simulation error")
@@ -136,10 +138,11 @@ extension SolanaSDK {
                             return "<simulated transaction id>"
                         }
                 } else {
-                    return self.sendTransaction(serializedTransaction: $0)
+                    return self.sendTransaction(serializedTransaction: transaction)
                 }
             }
-            .catch {error in
+            .catch { [weak self] error in
+                guard let self = self else {throw Error.unknown}
                 if numberOfTries <= maxAttemps,
                    let error = error as? SolanaSDK.Error
                 {

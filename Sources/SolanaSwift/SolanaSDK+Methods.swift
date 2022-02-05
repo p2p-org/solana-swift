@@ -321,7 +321,7 @@ public extension SolanaSDK {
 
 private extension PrimitiveSequence{
     func retry(maxAttempts: Int, delay: RxTimeInterval) -> PrimitiveSequence<Trait, Element> {
-        return self.retry { errors in
+        return retry { errors in
             return errors.enumerated().flatMap{ (index, error) -> Observable<Int64> in
                 if index < maxAttempts {
                     return Observable<Int64>.timer(delay, scheduler: MainScheduler.instance)

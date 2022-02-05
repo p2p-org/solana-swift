@@ -100,7 +100,10 @@ extension SolanaSDK {
         public func observeAccountNotifications() -> Observable<(pubkey: String, lamports: Lamports)>
         {
             observeNotification(.account)
-                .flatMap {self.decodeDataToAccountNotification(data: $0)}
+                .flatMap { [weak self] data -> Observable<(pubkey: String, lamports: Lamports)> in
+                    guard let self = self else {throw SolanaSDK.Error.unknown}
+                    return self.decodeDataToAccountNotification(data: data)
+                }
         }
         
         // MARK: - Signature notifications
@@ -231,7 +234,7 @@ extension SolanaSDK {
                let subscriber = subscribers.first(where: {$0.pubkey == subscription.account}),
                subscriber.isNative
             {
-                account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
+                account = accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
                 lamports = result.params?.result?.value.lamports
             } else if let result = try? decoder
                 .decode(TokenAccountNotification.self, from: data),
@@ -239,7 +242,7 @@ extension SolanaSDK {
                       let subscriber = subscribers.first(where: {$0.pubkey == subscription.account}),
                       !subscriber.isNative
             {
-                account = self.accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
+                account = accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
                 let string = result.params?.result?.value.data.parsed.info.tokenAmount.amount ?? "0"
                 lamports = Lamports(string)
             }

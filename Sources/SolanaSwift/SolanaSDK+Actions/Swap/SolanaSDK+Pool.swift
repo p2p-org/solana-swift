@@ -35,7 +35,8 @@ extension SolanaSDK {
     
     func getPools(swapProgramId: String) -> Single<[Pool]> {
         getProgramAccounts(publicKey: swapProgramId, decodedTo: TokenSwapInfo.self)
-            .flatMap { programs -> Single<[ParsedSwapInfo]> in
+            .flatMap { [weak self] programs -> Single<[ParsedSwapInfo]> in
+                guard let self = self else {throw Error.unknown}
                 
                 // get parsed swap info
                 let result = programs.accounts.compactMap {program -> ParsedSwapInfo? in
@@ -94,8 +95,9 @@ extension SolanaSDK {
 //                Logger.log(message: String(data: try JSONEncoder().encode(parsedInfo), encoding: .utf8)!, event: .response)
 //
 //            })
-            .map { parsedSwapInfos in
-                parsedSwapInfos.map {self.getPool(parsedSwapInfo: $0)}
+            .map { [weak self] parsedSwapInfos in
+                guard let self = self else {throw Error.unknown}
+                return parsedSwapInfos.map {self.getPool(parsedSwapInfo: $0)}
                     .compactMap {$0}
             }
     }

@@ -28,7 +28,8 @@ extension SolanaSDK {
         )
             .map {Optional($0)}
             .catchAndReturn(nil)
-            .flatMap {info in
+            .flatMap { [weak self] info in
+                guard let self = self else {throw Error.unknown}
                 // if associated token account has been created
                 if info?.owner == PublicKey.tokenProgramId.base58EncodedString &&
                     info?.data != nil

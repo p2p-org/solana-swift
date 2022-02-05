@@ -82,7 +82,8 @@ public class SolanaSDK {
                 }
                 .take(1)
                 .asSingle()
-                .catch { error in
+                .catch {[weak self] error in
+                    guard let self = self else {throw Error.unknown}
                     if let error = error as? Error, let replacingMethod = replacingMethod
                     {
                         switch error {
