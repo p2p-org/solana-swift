@@ -70,6 +70,7 @@ extension SolanaSDK.Socket: WebSocketDelegate {
     /// On socket error
     /// - Parameter error: socket's error
     func onError(_ error: Error) {
+        guard !status.value.isError else {return}
         status.accept(.error(error))
         Logger.log(message: "Socket error: \(error.localizedDescription)", event: .error)
     }

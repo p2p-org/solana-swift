@@ -25,5 +25,14 @@ extension SolanaSDK.Socket {
                 return false
             }
         }
+        
+        var isError: Bool {
+            switch self {
+            case .error:
+                return true
+            default:
+                return false
+            }
+        }
     }
 }
