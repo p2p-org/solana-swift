@@ -37,7 +37,7 @@ public protocol RenVMSolanaTransactionSenderType {
 }
 
 extension RenVM {
-    public struct SolanaChain: RenVMChainType {
+    public class SolanaChain: RenVMChainType {
         // MARK: - Constants
         static let gatewayRegistryStateKey  = "GatewayRegistryState"
         let gatewayStateKey                 = "GatewayStateV0.1.4"
@@ -49,12 +49,20 @@ extension RenVM {
         let solanaClient: RenVMSolanaAPIClientType
         let sender: RenVMSolanaTransactionSenderType
         
+        // MARK: - Initializer
+        private init(gatewayRegistryData: RenVM.SolanaChain.GatewayRegistryData, client: RenVMRpcClientType, solanaClient: RenVMSolanaAPIClientType, sender: RenVMSolanaTransactionSenderType) {
+            self.gatewayRegistryData = gatewayRegistryData
+            self.client = client
+            self.solanaClient = solanaClient
+            self.sender = sender
+        }
+        
         // MARK: - Methods
         public static func load(
             client: RenVMRpcClientType,
             solanaClient: RenVMSolanaAPIClientType,
             sender: RenVMSolanaTransactionSenderType
-        ) -> Single<Self> {
+        ) -> Single<SolanaChain> {
             do {
                 let pubkey = try SolanaSDK.PublicKey(string: client.network.gatewayRegistry)
                 let stateKey = try SolanaSDK.PublicKey.findProgramAddress(
@@ -122,16 +130,17 @@ extension RenVM {
                 sender.getFeePayer(),
                 solanaClient.getMinimumBalanceForRentExemption(span: 165)
             )
-                .flatMap { feePayer, accountCreationFee -> Single<SolanaSDK.PreparedTransaction> in
-                    let tokenMint = try getSPLTokenPubkey(mintTokenSymbol: mintTokenSymbol)
-                    let associatedTokenAddress = try getAssociatedTokenAddress(address: address.data, mintTokenSymbol: mintTokenSymbol)
+                .flatMap { [weak self] feePayer, accountCreationFee -> Single<SolanaSDK.PreparedTransaction> in
+                    guard let self = self else {throw Error.unknown}
+                    let tokenMint = try self.getSPLTokenPubkey(mintTokenSymbol: mintTokenSymbol)
+                    let associatedTokenAddress = try self.getAssociatedTokenAddress(address: address.data, mintTokenSymbol: mintTokenSymbol)
                     let createAccountInstruction = SolanaSDK.AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
                         mint: tokenMint,
                         associatedAccount: try SolanaSDK.PublicKey(data: associatedTokenAddress),
                         owner: address,
                         payer: feePayer
                     )
-                    return solanaClient.prepareTransaction(
+                    return self.solanaClient.prepareTransaction(
                         instructions: [createAccountInstruction],
                         signers: [signer],
                         feePayer: feePayer,
@@ -140,8 +149,9 @@ extension RenVM {
                         lamportsPerSignature: nil
                     )
                 }
-                .flatMap { preparedTransaction in
-                    sender.serializeAndSend(preparedTransaction: preparedTransaction, isSimulation: false)
+                .flatMap { [weak self] preparedTransaction in
+                    guard let self = self else {throw Error.unknown}
+                    return self.sender.serializeAndSend(preparedTransaction: preparedTransaction, isSimulation: false)
                 }
         }
         
@@ -216,16 +226,18 @@ extension RenVM {
             ).map {$0.data}
             
             return requestGatewayInfo
-                .flatMap {gatewayState -> Single<SolanaSDK.PreparedTransaction> in
+                .flatMap {[weak self] gatewayState -> Single<SolanaSDK.PreparedTransaction> in
+                    guard let self = self else {throw Error.unknown}
                     let secpInstruction = RenProgram.createInstructionWithEthAddress2(
                         ethAddress: Data(gatewayState.renVMAuthority.bytes),
                         message: renVMMessage,
                         signature: sig[0..<64],
                         recoveryId: sig[64] - 27
                     )
-                    return sender.getFeePayer()
-                        .flatMap { feePayer in
-                            solanaClient.prepareTransaction(
+                    return self.sender.getFeePayer()
+                        .flatMap { [weak self] feePayer in
+                            guard let self = self else {throw Error.unknown}
+                            return self.solanaClient.prepareTransaction(
                                 instructions: [
                                     mintInstruction,
                                     secpInstruction
@@ -238,8 +250,9 @@ extension RenVM {
                             )
                         }
                 }
-                .flatMap { preparedTransaction in
-                    sender.serializeAndSend(preparedTransaction: preparedTransaction, isSimulation: false)
+                .flatMap { [weak self] preparedTransaction in
+                    guard let self = self else {throw Error.unknown}
+                    return self.sender.serializeAndSend(preparedTransaction: preparedTransaction, isSimulation: false)
                 }
         }
         
@@ -266,7 +279,8 @@ extension RenVM {
                     decodedTo: GatewayStateData.self
                 )
                     .map {$0.data}
-                    .flatMap {gatewayState -> Single<BurnAndRelease.BurnDetails> in
+                    .flatMap { [weak self] gatewayState -> Single<BurnAndRelease.BurnDetails> in
+                        guard let self = self else {throw Error.unknown}
                         let nonce = gatewayState.burnCount + 1
                         let burnLogAccountId = try SolanaSDK.PublicKey.findProgramAddress(
                             seeds: [Data(nonce.bytes)],
@@ -292,9 +306,10 @@ extension RenVM {
                             programId: program
                         )
                         
-                        return sender.getFeePayer()
-                            .flatMap { feePayer in
-                                solanaClient.prepareTransaction(
+                        return self.sender.getFeePayer()
+                            .flatMap { [weak self] feePayer in
+                                guard let self = self else {throw Error.unknown}
+                                return self.solanaClient.prepareTransaction(
                                     instructions: [
                                         burnCheckedInstruction,
                                         burnInstruction
@@ -305,8 +320,9 @@ extension RenVM {
                                     recentBlockhash: nil,
                                     lamportsPerSignature: nil
                                 )
-                                    .flatMap { preparedTransaction in
-                                        sender.serializeAndSend(preparedTransaction: preparedTransaction, isSimulation: false)
+                                    .flatMap { [weak self] preparedTransaction in
+                                        guard let self = self else {throw Error.unknown}
+                                        return self.sender.serializeAndSend(preparedTransaction: preparedTransaction, isSimulation: false)
                                     }
                             }
                             .map {signature in
@@ -334,9 +350,10 @@ extension RenVM {
             
             let mintLogAccount = try SolanaSDK.PublicKey.findProgramAddress(seeds: [renVMMessage.keccak256], programId: program).0
             return solanaClient.getMintData(mintAddress: mintLogAccount.base58EncodedString, programId: program.base58EncodedString)
-                .flatMap {mint -> Single<String> in
+                .flatMap { [weak self] mint -> Single<String> in
+                    guard let self = self else {return .just("")}
                     if !mint.isInitialized {return .just("")}
-                    return solanaClient.getConfirmedSignaturesForAddress2(
+                    return self.solanaClient.getConfirmedSignaturesForAddress2(
                         account: mintLogAccount.base58EncodedString,
                         configs: nil
                     )
