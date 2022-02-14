@@ -139,6 +139,9 @@ solanaSDK.observeSignatureNotification(signature: <SIGNATURE>) // return an Comp
 ## How to use OrcaSwap
 OrcaSwap has been moved to new library [OrcaSwapSwift](https://github.com/p2p-org/OrcaSwapSwift) 
 
+## How to use RenVM
+RenVM has been moved to new library [RenVMSwift](https://github.com/p2p-org/RenVMSwift)
+
 
 ## How to use Serum swap (DEX) (NOT STABLE)
 * Create an instance of SerumSwap
