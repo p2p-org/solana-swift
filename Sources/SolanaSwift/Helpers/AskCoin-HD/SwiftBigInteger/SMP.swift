@@ -255,7 +255,7 @@ public struct BInt:
 	}
 
 	/// Create an instance initialized to a string value.
-	init(_ str: String)
+	public init(_ str: String)
 	{
 		var str = str
 		var sign = false

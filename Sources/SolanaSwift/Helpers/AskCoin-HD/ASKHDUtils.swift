@@ -69,7 +69,7 @@ extension Data {
 	func ask_BTCHash256() -> Data {
 		return self.sha256().sha256()
 	}
-	func ask_BTCHash160() -> Data {
+	public func ask_BTCHash160() -> Data {
 		return RIPEMD.digest(sha256())
 	}
 	func ask_BTCHash160String() -> String {

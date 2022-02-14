@@ -86,8 +86,8 @@ public extension Bignum
 extension Data {
 
     /// Hexadecimal string representation of the underlying data
-    var hexString: String {
-        return withUnsafeBytes { (buf: UnsafePointer<UInt8>) -> String in
+    public var hexString: String {
+        withUnsafeBytes { (buf: UnsafePointer<UInt8>) -> String in
             let charA = UInt8(UnicodeScalar("a").value)
             let char0 = UInt8(UnicodeScalar("0").value)
 
