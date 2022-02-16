@@ -250,7 +250,6 @@ public extension SolanaSDK {
         // transaction was finalized.
         getSignatureStatus(signature: signature)
             .map { status -> Bool in
-                (status.confirmations ?? 0) > 0 ||
                     status.confirmations == nil ||
                     status.confirmationStatus == "finalized"
             }
