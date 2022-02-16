@@ -252,7 +252,7 @@ public extension SolanaSDK {
             .map { status -> Bool in
                 (status.confirmations ?? 0) > 0 ||
                     status.confirmations == nil ||
-                    status.confirmationStatus == "confirmed"
+                    status.confirmationStatus == "finalized"
             }
             .flatMapCompletable { confirmed in
                 if confirmed {return .empty()}
