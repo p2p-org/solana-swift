@@ -316,6 +316,45 @@ public extension SolanaSDK {
                 return mintDict
             }
     }
+    
+    func checkIfAssociatedTokenAccountExists(
+        owner: PublicKey? = nil,
+        mint: String
+    ) -> Single<Bool?> {
+        Single<PublicKey>.deferred { [weak self] in
+            guard let self = self else {
+                throw Error.unknown
+            }
+            guard let owner = owner ?? self.accountStorage.account?.publicKey else {
+                throw Error.unauthorized
+            }
+            
+            let mintAddress = try mint.toPublicKey()
+            
+            let associatedTokenAccount = try PublicKey.associatedTokenAddress(
+                walletAddress: owner,
+                tokenMintAddress: mintAddress
+            )
+            
+            return .just(associatedTokenAccount)
+        }
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .flatMap { [weak self] associatedTokenAccount in
+                guard let self = self else {throw Error.unknown}
+                return self.getAccountInfo(
+                    account: associatedTokenAccount.base58EncodedString,
+                    decodedTo: AccountInfo.self
+                )
+                    .map {info -> Bool in
+                        // detect if destination address is already a SPLToken address
+                        if info.data.mint.base58EncodedString == mint {
+                            return true
+                        }
+                        return false
+                    }
+                    .catchAndReturn(false)
+            }
+    }
 }
 
 private extension PrimitiveSequence{

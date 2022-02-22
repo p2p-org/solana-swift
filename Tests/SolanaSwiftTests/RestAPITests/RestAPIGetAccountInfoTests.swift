@@ -59,4 +59,12 @@ class RestAPIGetAccountInfoTests: RestAPITests {
         XCTAssertEqual(usdt?.decimals, 6)
         XCTAssertEqual(usdt?.freezeAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
     }
+    
+    func testCheckIfAssociatedTokenAccountExists() throws {
+        let exist = try solanaSDK.checkIfAssociatedTokenAccountExists(owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM", mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v").toBlocking().first()!!
+        XCTAssertTrue(exist)
+        
+        let exist2 = try solanaSDK.checkIfAssociatedTokenAccountExists(owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM", mint: "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk").toBlocking().first()!!
+        XCTAssertFalse(exist2)
+    }
 }
