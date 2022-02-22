@@ -61,10 +61,10 @@ class RestAPIGetAccountInfoTests: RestAPITests {
     }
     
     func testCheckIfAssociatedTokenAccountExists() throws {
-        let exist = try solanaSDK.checkIfAssociatedTokenAccountExists(owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM", mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v").toBlocking().first()!!
+        let exist = try solanaSDK.checkIfAssociatedTokenAccountExists(owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM", mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v").toBlocking().first()!
         XCTAssertTrue(exist)
         
-        let exist2 = try solanaSDK.checkIfAssociatedTokenAccountExists(owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM", mint: "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk").toBlocking().first()!!
+        let exist2 = try solanaSDK.checkIfAssociatedTokenAccountExists(owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM", mint: "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk").toBlocking().first()!
         XCTAssertFalse(exist2)
     }
 }

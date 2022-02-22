@@ -320,7 +320,7 @@ public extension SolanaSDK {
     func checkIfAssociatedTokenAccountExists(
         owner: PublicKey? = nil,
         mint: String
-    ) -> Single<Bool?> {
+    ) -> Single<Bool> {
         Single<PublicKey>.deferred { [weak self] in
             guard let self = self else {
                 throw Error.unknown
