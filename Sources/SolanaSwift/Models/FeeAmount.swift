@@ -12,17 +12,19 @@ extension SolanaSDK {
             public var unit: String
         }
         
-        public init(transaction: UInt64, accountBalances: UInt64, others: [OtherFee]? = nil) {
+        public init(transaction: UInt64, accountBalances: UInt64, deposit: UInt64 = 0, others: [OtherFee]? = nil) {
             self.transaction = transaction
             self.accountBalances = accountBalances
             self.others = others
+            self.deposit = deposit
         }
         
         public var transaction: UInt64
         public var accountBalances: UInt64
+        public var deposit: UInt64
         public var others: [OtherFee]?
         public var total: UInt64 {
-            transaction + accountBalances
+            transaction + accountBalances + deposit
         }
         
         public static var zero: Self {
