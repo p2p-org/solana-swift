@@ -352,7 +352,12 @@ public extension SolanaSDK {
                         }
                         return false
                     }
-                    .catchAndReturn(false)
+                    .catch {error in
+                        if error.isEqualTo(Error.couldNotRetrieveAccountInfo) {
+                            return .just(false)
+                        }
+                        throw error
+                    }
             }
     }
 }
