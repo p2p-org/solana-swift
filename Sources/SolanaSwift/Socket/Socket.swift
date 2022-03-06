@@ -61,6 +61,10 @@ extension SolanaSDK {
             socket.disconnect()
         }
         
+        public var isConnected: Bool {
+            status.value == .connected
+        }
+        
         // MARK: - Account notifications
         public func subscribeAccountNotification(account: String, isNative: Bool) {
             let subscriber = Subscriber(pubkey: account, isNative: isNative)
