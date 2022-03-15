@@ -16,7 +16,6 @@ public extension SolanaSDK {
             case error(String?)
             
             public func getError() -> Error? {
-                var error: Error?
                 switch self {
                 case .error(let err) where err != nil:
                     return Error.other(err!)
@@ -40,7 +39,7 @@ public extension SolanaSDK {
             }
         }
         
-        public init(status: Status, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: UInt64?, blockhash: String?) {
+        public init(status: Status, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: FeeAmount?, blockhash: String?) {
             self.status = status
             self.signature = signature
             self.value = value
@@ -57,7 +56,7 @@ public extension SolanaSDK {
         public var amountInFiat: Double?
         public let slot: UInt64?
         public var blockTime: Date?
-        public let fee: UInt64?
+        public let fee: FeeAmount?
         public let blockhash: String?
         
         public var amount: Double {

@@ -1,8 +1,8 @@
 import Foundation
 
 extension SolanaSDK {
-    public struct FeeAmount: Equatable {
-        public struct OtherFee: Equatable {
+    public struct FeeAmount: Equatable, Hashable {
+        public struct OtherFee: Equatable, Hashable {
             public init(amount: Double, unit: String) {
                 self.amount = amount
                 self.unit = unit
