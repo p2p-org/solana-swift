@@ -10,6 +10,14 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
+    public func getAccount() -> SolanaSDK.Account? {
+        accountStorage.account
+    }
+    
+    public func getNativeWalletAddress() -> PublicKey? {
+        accountStorage.account?.publicKey
+    }
+    
     func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
         let configs = RequestConfiguration(encoding: "base64")
         return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
@@ -122,6 +130,9 @@ public extension SolanaSDK {
     }
     func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") -> Single<UInt64> {
         request(parameters: [dataLength, RequestConfiguration(commitment: commitment)])
+    }
+    func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64> {
+        getMinimumBalanceForRentExemption(dataLength: span)
     }
     func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String], decodedTo: T.Type, log: Bool = true) -> Single<[BufferInfo<T>]?> {
         let configs = RequestConfiguration(encoding: "base64")
