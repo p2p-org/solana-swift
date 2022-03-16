@@ -89,8 +89,9 @@ public extension SolanaSDK {
             
             return Single.zip(
                 single,
-                calculateFee(confirmedTransaction: transactionInfo.transaction)
-            ).map {
+                calculateFee(transactionInfo: transactionInfo, feePayerPubkeys: p2pFeePayerPubkeys)
+            )
+            .map {
                 ParsedTransaction(
                         status: status,
                         signature: nil,
@@ -480,7 +481,9 @@ public extension SolanaSDK {
         }
         
         // MARK: - Fee
-        private func calculateFee(confirmedTransaction: ConfirmedTransaction) -> Single<FeeAmount> {
+        private func calculateFee(transactionInfo: TransactionInfo, feePayerPubkeys: [String]) -> Single<FeeAmount> {
+            let confirmedTransaction = transactionInfo.transaction
+            
             // get lamportsPerSignature
             let getLamportsPerSignatureRequest: Single<Lamports>
             if let lamportsPerSignature = lamportsPerSignature {
@@ -510,7 +513,9 @@ public extension SolanaSDK {
                 getLamportsPerSignatureRequest,
                 getMinRentExemption
             )
-                .map { lamportsPerSignature, minRentExemption in
+                .map { [weak self] lamportsPerSignature, minRentExemption in
+                    guard let self = self else {throw Error.unknown}
+                    
                     // get creating and closing account instruction
                     let createTokenAccountInstructions = confirmedTransaction.message.instructions.filter {$0.programId == SolanaSDK.PublicKey.tokenProgramId.base58EncodedString && $0.parsed?.type == "create"}
                     let createWSOLAccountInstructions = confirmedTransaction.message.instructions.filter {$0.programId == SolanaSDK.PublicKey.programId.base58EncodedString && $0.parsed?.type == "createAccount"}
@@ -524,11 +529,40 @@ public extension SolanaSDK {
                     let numberOfCreatedAccounts = createTokenAccountInstructions.count + createWSOLAccountInstructions.count - depositAccountsInstructions.count
                     let numberOfDepositAccounts = depositAccountsInstructions.count
                     
-                    let transactionFee = lamportsPerSignature * UInt64(confirmedTransaction.signatures.count)
+                    var transactionFee = lamportsPerSignature * UInt64(confirmedTransaction.signatures.count)
                     let accountCreationFee = minRentExemption * UInt64(numberOfCreatedAccounts)
                     let depositFee = minRentExemption * UInt64(numberOfDepositAccounts)
+                    
+                    // check last compensation transaction
+                    if let firstPubkey = confirmedTransaction.message.accountKeys.first?.publicKey.base58EncodedString,
+                       feePayerPubkeys.contains(firstPubkey)
+                    {
+                        if let lastTransaction = confirmedTransaction.message.instructions.last,
+                           lastTransaction.programId == self.relayProgramId(network: self.solanaSDK.endpoint.network).base58EncodedString,
+                           let innerInstruction = transactionInfo.meta?.innerInstructions?.first(where: {$0.index == UInt32(confirmedTransaction.message.instructions.count - 1)}),
+                           let innerInstructionAmount = innerInstruction.instructions.first?.parsed?.info.lamports,
+                           innerInstructionAmount > accountCreationFee
+                        {
+                            // do nothing
+                        } else {
+                            // mark transaction as paid by P2p org
+                            transactionFee = 0
+                        }
+                    }
+                    
                     return .init(transaction: transactionFee, accountBalances: accountCreationFee, deposit: depositFee)
                 }
+        }
+        
+        private func relayProgramId(network: SolanaSDK.Network) -> SolanaSDK.PublicKey {
+            switch network {
+            case .mainnetBeta:
+                return "12YKFL4mnZz6CBEGePrf293mEzueQM3h8VLPUJsKpGs9"
+            case .devnet:
+                return "6xKJFyuM6UHCT8F5SBxnjGt6ZrZYjsVfnAnAeHPU775k"
+            case .testnet:
+                return "6xKJFyuM6UHCT8F5SBxnjGt6ZrZYjsVfnAnAeHPU775k" // unknown
+            }
         }
     }
 }
