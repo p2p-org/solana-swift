@@ -238,14 +238,6 @@ public extension SolanaSDK {
             
             // define if transaction was paid by p2p.org
             return request
-                    .map { transaction in
-                var transaction = transaction
-                if let payer = accountKeys.map({ $0.publicKey }).first?.base58EncodedString,
-                   p2pFeePayerPubkeys.contains(payer) {
-                    transaction.wasPaidByP2POrg = true
-                }
-                return transaction
-            }
         }
         
         private func parseTransferSPLToSPLTokenTransaction(
