@@ -13,10 +13,12 @@ public protocol SolanaSDKTransactionParserType {
 }
 
 public extension SolanaSDK {
-    struct TransactionParser: SolanaSDKTransactionParserType {
+    class TransactionParser: SolanaSDKTransactionParserType {
         // MARK: - Properties
         private let solanaSDK: SolanaSDK
         private let orcaSwapParser: OrcaSwapParser
+        private var lamportsPerSignature: Lamports?
+        private var minRentExemption: Lamports?
         
         // MARK: - Initializers
         public init(solanaSDK: SolanaSDK, orcaSwapParser: OrcaSwapParser? = nil) {
@@ -85,17 +87,21 @@ public extension SolanaSDK {
                 status = .error(errorMessage)
             }
             
-            return single.map({
+            return Single.zip(
+                single,
+                calculateFee(transactionInfo: transactionInfo, feePayerPubkeys: p2pFeePayerPubkeys)
+            )
+            .map {
                 ParsedTransaction(
                         status: status,
                         signature: nil,
                         value: $0,
                         slot: nil,
                         blockTime: nil,
-                        fee: transactionInfo.meta?.fee,
+                        fee: $1,
                         blockhash: transactionInfo.transaction.message.recentBlockhash
                 )
-            })
+            }
         }
         
         // MARK: - Create account
@@ -233,14 +239,6 @@ public extension SolanaSDK {
             
             // define if transaction was paid by p2p.org
             return request
-                    .map { transaction in
-                var transaction = transaction
-                if let payer = accountKeys.map({ $0.publicKey }).first?.base58EncodedString,
-                   p2pFeePayerPubkeys.contains(payer) {
-                    transaction.wasPaidByP2POrg = true
-                }
-                return transaction
-            }
         }
         
         private func parseTransferSPLToSPLTokenTransaction(
@@ -298,8 +296,9 @@ public extension SolanaSDK {
             // Mint not found, retrieve mint
             else {
                 request = solanaSDK.getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
-                        .flatMap { info in
-                            solanaSDK.getTokenWithMint(info?.mint.base58EncodedString)
+                        .flatMap { [weak self] info in
+                            guard let self = self else {throw Error.unknown}
+                            return self.solanaSDK.getTokenWithMint(info?.mint.base58EncodedString)
                                     .map { token in
                                         let source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
                                         let destination = Wallet(pubkey: destinationPubkey, lamports: nil, token: token)
@@ -317,28 +316,29 @@ public extension SolanaSDK {
             }
             
             return request
-                    .flatMap { transaction -> Single<TransferTransaction> in
-                if transaction.destinationAuthority != nil {
-                    return .just(transaction)
-                }
-                guard let account = transaction.destination?.pubkey else {
-                    return .just(transaction)
-                }
-                return solanaSDK.getAccountInfo(account: account)
-                        .map {
-                            $0?.owner.base58EncodedString
-                        }
-                        .catchAndReturn(nil)
-                        .map {
-                            TransferTransaction(
-                                    source: transaction.source,
-                                    destination: transaction.destination,
-                                    authority: transaction.authority,
-                                    destinationAuthority: $0,
-                                    amount: transaction.amount,
-                                    myAccount: myAccount
-                            )
-                        }
+                .flatMap { [weak self] transaction -> Single<TransferTransaction> in
+                    guard let self = self else {throw Error.unknown}
+                    if transaction.destinationAuthority != nil {
+                        return .just(transaction)
+                    }
+                    guard let account = transaction.destination?.pubkey else {
+                        return .just(transaction)
+                    }
+                    return self.solanaSDK.getAccountInfo(account: account)
+                            .map {
+                                $0?.owner.base58EncodedString
+                            }
+                            .catchAndReturn(nil)
+                            .map {
+                                TransferTransaction(
+                                        source: transaction.source,
+                                        destination: transaction.destination,
+                                        authority: transaction.authority,
+                                        destinationAuthority: $0,
+                                        amount: transaction.amount,
+                                        myAccount: myAccount
+                                )
+                            }
             }
         }
         
@@ -478,6 +478,91 @@ public extension SolanaSDK {
                                 myAccountSymbol: myAccountSymbol
                         )
                     }
+        }
+        
+        // MARK: - Fee
+        private func calculateFee(transactionInfo: TransactionInfo, feePayerPubkeys: [String]) -> Single<FeeAmount> {
+            let confirmedTransaction = transactionInfo.transaction
+            
+            // get lamportsPerSignature
+            let getLamportsPerSignatureRequest: Single<Lamports>
+            if let lamportsPerSignature = lamportsPerSignature {
+                getLamportsPerSignatureRequest = .just(lamportsPerSignature)
+            } else {
+                getLamportsPerSignatureRequest = solanaSDK.getFees(commitment: nil).map {$0.feeCalculator?.lamportsPerSignature ?? 5000}
+                    .do(onSuccess: { [weak self] in
+                        self?.lamportsPerSignature = $0
+                    })
+                    .catchAndReturn(5000)
+            }
+            
+            // get minRenExemption
+            let getMinRentExemption: Single<Lamports>
+            if let minRentExemption = minRentExemption {
+                getMinRentExemption = .just(minRentExemption)
+            } else {
+                getMinRentExemption = solanaSDK.getMinimumBalanceForRentExemption(span: 165)
+                    .do(onSuccess: { [weak self] in
+                        self?.minRentExemption = $0
+                    })
+                    .catchAndReturn(2039280)
+            }
+            
+            // calculating
+            return Single.zip(
+                getLamportsPerSignatureRequest,
+                getMinRentExemption
+            )
+                .map { [weak self] lamportsPerSignature, minRentExemption in
+                    guard let self = self else {throw Error.unknown}
+                    
+                    // get creating and closing account instruction
+                    let createTokenAccountInstructions = confirmedTransaction.message.instructions.filter {$0.programId == SolanaSDK.PublicKey.tokenProgramId.base58EncodedString && $0.parsed?.type == "create"}
+                    let createWSOLAccountInstructions = confirmedTransaction.message.instructions.filter {$0.programId == SolanaSDK.PublicKey.programId.base58EncodedString && $0.parsed?.type == "createAccount"}
+                    let closeAccountInstructions = confirmedTransaction.message.instructions.filter {$0.programId == SolanaSDK.PublicKey.tokenProgramId.base58EncodedString && $0.parsed?.type == "closeAccount"}
+                    let depositAccountsInstructions = closeAccountInstructions.filter { closeInstruction in
+                        createWSOLAccountInstructions.contains {$0.parsed?.info.newAccount == closeInstruction.parsed?.info.account} ||
+                        createTokenAccountInstructions.contains {$0.parsed?.info.account == closeInstruction.parsed?.info.account}
+                    }
+                    
+                    // get fee
+                    let numberOfCreatedAccounts = createTokenAccountInstructions.count + createWSOLAccountInstructions.count - depositAccountsInstructions.count
+                    let numberOfDepositAccounts = depositAccountsInstructions.count
+                    
+                    var transactionFee = lamportsPerSignature * UInt64(confirmedTransaction.signatures.count)
+                    let accountCreationFee = minRentExemption * UInt64(numberOfCreatedAccounts)
+                    let depositFee = minRentExemption * UInt64(numberOfDepositAccounts)
+                    
+                    // check last compensation transaction
+                    if let firstPubkey = confirmedTransaction.message.accountKeys.first?.publicKey.base58EncodedString,
+                       feePayerPubkeys.contains(firstPubkey)
+                    {
+                        if let lastTransaction = confirmedTransaction.message.instructions.last,
+                           lastTransaction.programId == self.relayProgramId(network: self.solanaSDK.endpoint.network).base58EncodedString,
+                           let innerInstruction = transactionInfo.meta?.innerInstructions?.first(where: {$0.index == UInt32(confirmedTransaction.message.instructions.count - 1)}),
+                           let innerInstructionAmount = innerInstruction.instructions.first?.parsed?.info.lamports,
+                           innerInstructionAmount > accountCreationFee
+                        {
+                            // do nothing
+                        } else {
+                            // mark transaction as paid by P2p org
+                            transactionFee = 0
+                        }
+                    }
+                    
+                    return .init(transaction: transactionFee, accountBalances: accountCreationFee, deposit: depositFee)
+                }
+        }
+        
+        private func relayProgramId(network: SolanaSDK.Network) -> SolanaSDK.PublicKey {
+            switch network {
+            case .mainnetBeta:
+                return "12YKFL4mnZz6CBEGePrf293mEzueQM3h8VLPUJsKpGs9"
+            case .devnet:
+                return "6xKJFyuM6UHCT8F5SBxnjGt6ZrZYjsVfnAnAeHPU775k"
+            case .testnet:
+                return "6xKJFyuM6UHCT8F5SBxnjGt6ZrZYjsVfnAnAeHPU775k" // unknown
+            }
         }
     }
 }

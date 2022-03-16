@@ -82,12 +82,12 @@ public extension SolanaSDK {
 		public let firstNormalSlot: UInt64
 	}
 	struct Fee: Decodable {
-		public let feeCalculator: FeeCalculator?
+		public let feeCalculator: FeeCalculatorResponse?
 		public let feeRateGovernor: FeeRateGovernor?
 		public let blockhash: String?
 		public let lastValidSlot: UInt64?
 	}
-	struct FeeCalculator: Decodable {
+	struct FeeCalculatorResponse: Decodable {
 		public let lamportsPerSignature: Lamports
 	}
 	struct FeeRateGovernor: Decodable {

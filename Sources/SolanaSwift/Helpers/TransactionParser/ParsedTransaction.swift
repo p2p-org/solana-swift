@@ -16,7 +16,6 @@ public extension SolanaSDK {
             case error(String?)
             
             public func getError() -> Error? {
-                var error: Error?
                 switch self {
                 case .error(let err) where err != nil:
                     return Error.other(err!)
@@ -40,7 +39,7 @@ public extension SolanaSDK {
             }
         }
         
-        public init(status: Status, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: UInt64?, blockhash: String?) {
+        public init(status: Status, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: FeeAmount?, blockhash: String?, paidByP2POrg: Bool = false) {
             self.status = status
             self.signature = signature
             self.value = value
@@ -49,6 +48,7 @@ public extension SolanaSDK {
             self.blockTime = blockTime
             self.fee = fee
             self.blockhash = blockhash
+            self.paidByP2POrg = paidByP2POrg
         }
         
         public var status: Status
@@ -57,8 +57,9 @@ public extension SolanaSDK {
         public var amountInFiat: Double?
         public let slot: UInt64?
         public var blockTime: Date?
-        public let fee: UInt64?
+        public let fee: FeeAmount?
         public let blockhash: String?
+        public var paidByP2POrg: Bool = false
         
         public var amount: Double {
             switch value {
@@ -147,13 +148,12 @@ public extension SolanaSDK {
     }
     
     struct TransferTransaction: Hashable {
-        public init(source: SolanaSDK.Wallet?, destination: SolanaSDK.Wallet?, authority: String?, destinationAuthority: String?, amount: Double?, wasPaidByP2POrg: Bool = false, myAccount: String?) {
+        public init(source: SolanaSDK.Wallet?, destination: SolanaSDK.Wallet?, authority: String?, destinationAuthority: String?, amount: Double?, myAccount: String?) {
             self.source = source
             self.destination = destination
             self.authority = authority
             self.destinationAuthority = destinationAuthority
             self.amount = amount
-            self.wasPaidByP2POrg = wasPaidByP2POrg
             self.myAccount = myAccount
         }
         
@@ -166,7 +166,6 @@ public extension SolanaSDK {
         public let authority: String?
         public let destinationAuthority: String?
         public let amount: Double?
-        public var wasPaidByP2POrg: Bool = false
         
         let myAccount: String?
         
