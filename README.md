@@ -142,27 +142,8 @@ OrcaSwap has been moved to new library [OrcaSwapSwift](https://github.com/p2p-or
 ## How to use RenVM
 RenVM has been moved to new library [RenVMSwift](https://github.com/p2p-org/RenVMSwift)
 
-
 ## How to use Serum swap (DEX) (NOT STABLE)
-* Create an instance of SerumSwap
-```swift
-let serumSwap = SerumSwap(client: solanaSDK, accountProvider: solanaSDK)
-```
-* swap
-```swift
-serumSwap.swap(
-    fromMint: <PublicKey>,
-    toMint: <PublicKey>,
-    amount: <Lamports>,
-    minExpectedSwapAmount: <Lamports?>,
-    referral: <PublicKey?>,
-    quoteWallet: <PublicKey?>,
-    fromWallet: <PublicKey>,
-    toWallet: <PublicKey?>,
-    feePayer: <PublicKey?>,
-    configs: <SolanaSDK.RequestConfiguration? = nil>
-)
-```
+SerumSwap has been moved to new library [SerumSwapSwift](https://github.com/p2p-org/SerumSwapSwift)
 
 ## Contribution
 - For supporting new methods, data types, edit `SolanaSDK+Methods` or `SolanaSDK+Models`
