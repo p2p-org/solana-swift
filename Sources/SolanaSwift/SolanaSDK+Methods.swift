@@ -270,6 +270,9 @@ public extension SolanaSDK {
             }
             .retry(maxAttempts: .max, delay: .seconds(1))
             .timeout(.seconds(60), scheduler: MainScheduler.instance)
+            .catch { _ in
+                .empty()
+            }
     }
     
     func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) -> Single<TransactionStatus> {
