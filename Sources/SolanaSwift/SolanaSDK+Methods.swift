@@ -254,12 +254,20 @@ public extension SolanaSDK {
     }
     
     func waitForConfirmation(signature: String) -> Completable {
+        var partiallyConfirmed = false
         // Due to a bug (https://github.com/solana-labs/solana/issues/15461)
         // the `confirmationStatus` field could be unpopulated.
         // To handle this case, also check the `confirmations` field.
         // Note that a `null` value for `confirmations` signals that the
         // transaction was finalized.
-        getSignatureStatus(signature: signature)
+        return getSignatureStatus(signature: signature)
+            .do(onSuccess: {status in
+                if let confirmations = status.confirmations,
+                   confirmations > 0
+                {
+                    partiallyConfirmed = true
+                }
+            })
             .map { status -> Bool in
                     status.confirmations == nil ||
                     status.confirmationStatus == "finalized"
@@ -270,8 +278,12 @@ public extension SolanaSDK {
             }
             .retry(maxAttempts: .max, delay: .seconds(1))
             .timeout(.seconds(60), scheduler: MainScheduler.instance)
-            .catch { _ in
-                .empty()
+            .catch { error in
+                if partiallyConfirmed {
+                    return .empty()
+                }
+                
+                throw error
             }
     }
     
