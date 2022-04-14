@@ -17,6 +17,9 @@ extension SolanaSDK {
             case invalidRequest(reason: String? = nil)
             case invalidResponse(ResponseError)
             case couldNotRetrieveAccountInfo
+            case blockhashNotFound
+            case invalidSignatureStatus
+            case transactionError(TransactionError, logs: [String])
         }
         
         // MARK: - Properties

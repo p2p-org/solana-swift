@@ -192,7 +192,11 @@ public extension SolanaSDK {
         public let preTokenBalances: [TokenBalance]?
     }
     typealias TransactionError = [String: [ErrorDetail]]
-    struct ErrorDetail: Codable {
+    struct ErrorDetail: Codable, Equatable {
+        public static func == (lhs: SolanaSDK.ErrorDetail, rhs: SolanaSDK.ErrorDetail) -> Bool {
+            true // TODO
+        }
+        
         let wrapped: Any
         
         public init(from decoder: Decoder) throws {

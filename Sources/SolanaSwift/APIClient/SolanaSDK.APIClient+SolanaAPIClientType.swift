@@ -17,7 +17,7 @@ extension SolanaSDK.APIClient: SolanaAPIClientType {
         return value
     }
     
-    public func getBalance(account: String?, commitment: SolanaSDK.Commitment?) async throws -> UInt64 {
+    public func getBalance(account: String, commitment: SolanaSDK.Commitment?) async throws -> UInt64 {
         (try await request(parameters: [account, SolanaSDK.RequestConfiguration(commitment: commitment)]) as SolanaSDK.Rpc<UInt64>)
             .value
     }
@@ -122,122 +122,181 @@ extension SolanaSDK.APIClient: SolanaAPIClientType {
     }
     
     public func getInflationRate() async throws -> SolanaSDK.InflationRate {
-        <#code#>
+        try await request()
     }
     
     public func getLargestAccounts() async throws -> [SolanaSDK.LargestAccount] {
-        <#code#>
+        (try await request() as SolanaSDK.Rpc<[SolanaSDK.LargestAccount]>)
+            .value
     }
     
     public func getLeaderSchedule(epoch: UInt64?, commitment: SolanaSDK.Commitment?) async throws -> [String : [Int]]? {
-        <#code#>
+        try await request(parameters: [epoch, SolanaSDK.RequestConfiguration(commitment: commitment)])
     }
     
     public func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: SolanaSDK.Commitment?) async throws -> UInt64 {
-        <#code#>
-    }
-    
-    public func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {
-        <#code#>
+        try await request(parameters: [dataLength, SolanaSDK.RequestConfiguration(commitment: commitment)])
     }
     
     public func getMultipleAccounts<T>(pubkeys: [String], decodedTo: T.Type, log: Bool) async throws -> [SolanaSDK.BufferInfo<T>]? where T : DecodableBufferLayout {
-        <#code#>
+        let configs = SolanaSDK.RequestConfiguration(encoding: "base64")
+        guard !pubkeys.isEmpty else {return []}
+        
+        return (try await request(parameters: [pubkeys, configs], log: log) as SolanaSDK.Rpc<[SolanaSDK.BufferInfo<T>]?>)
+            .value
     }
     
     public func getProgramAccounts<T>(publicKey: String, configs: SolanaSDK.RequestConfiguration?, decodedTo: T.Type, log: Bool) async throws -> SolanaSDK.ProgramAccounts<T> where T : DecodableBufferLayout {
-        <#code#>
+        try await request(parameters: [publicKey, configs], log: log)
     }
     
     public func getRecentBlockhash(commitment: SolanaSDK.Commitment?) async throws -> String {
-        <#code#>
+        let blockhash = (try await request(parameters: [SolanaSDK.RequestConfiguration(commitment: commitment)]) as SolanaSDK.Rpc<SolanaSDK.Fee>)
+            .value
+            .blockhash
+        guard let blockhash = blockhash else {
+            throw Error.blockhashNotFound
+        }
+        return blockhash
     }
     
     public func getRecentPerformanceSamples(limit: UInt64) async throws -> [SolanaSDK.PerformanceSample] {
-        <#code#>
+        try await request(parameters: [limit])
     }
     
     public func getSignatureStatuses(signatures: [String], configs: SolanaSDK.RequestConfiguration?) async throws -> [SolanaSDK.SignatureStatus?] {
-        <#code#>
+        (try await request(parameters: [signatures, configs]) as SolanaSDK.Rpc<[SolanaSDK.SignatureStatus?]>)
+            .value
     }
     
     public func getSignatureStatus(signature: String, configs: SolanaSDK.RequestConfiguration?) async throws -> SolanaSDK.SignatureStatus {
-        <#code#>
+        let values = try await getSignatureStatuses(signatures: [signature], configs: configs)
+        guard let status = values.compactMap({$0}).first else {throw Error.invalidSignatureStatus}
+        return status
     }
     
     public func getSlot(commitment: SolanaSDK.Commitment?) async throws -> UInt64 {
-        <#code#>
+        try await request(parameters: [SolanaSDK.RequestConfiguration(commitment: commitment)])
     }
     
     public func getSlotLeader(commitment: SolanaSDK.Commitment?) async throws -> String {
-        <#code#>
+        try await request(parameters: [SolanaSDK.RequestConfiguration(commitment: commitment)])
     }
     
     public func getStakeActivation(stakeAccount: String, configs: SolanaSDK.RequestConfiguration?) async throws -> SolanaSDK.StakeActivation {
-        <#code#>
+        try await request(parameters: [stakeAccount, configs])
     }
     
     public func getSupply(commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.Supply {
-        <#code#>
+        (try await request(parameters: [SolanaSDK.RequestConfiguration(commitment: commitment)]) as SolanaSDK.Rpc<SolanaSDK.Supply>)
+            .value
     }
     
     public func getTransactionCount(commitment: SolanaSDK.Commitment?) async throws -> UInt64 {
-        <#code#>
+        try await request(parameters: [SolanaSDK.RequestConfiguration(commitment: commitment)])
     }
     
     public func getTokenAccountBalance(pubkey: String, commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.TokenAccountBalance {
-        <#code#>
+        let value = (try await request(parameters: [pubkey, SolanaSDK.RequestConfiguration(commitment: commitment)]) as SolanaSDK.Rpc<SolanaSDK.TokenAccountBalance>)
+            .value
+        
+        if UInt64(value.amount) == nil {
+            throw Error.couldNotRetrieveAccountInfo
+        }
+        return value
     }
     
     public func getTokenAccountsByDelegate(pubkey: String, mint: String?, programId: String?, configs: SolanaSDK.RequestConfiguration?) async throws -> [SolanaSDK.TokenAccount<SolanaSDK.AccountInfo>] {
-        <#code#>
+        (try await request(parameters: [pubkey, mint, programId, configs]) as SolanaSDK.Rpc<[SolanaSDK.TokenAccount<SolanaSDK.AccountInfo>]>)
+            .value
     }
     
     public func getTokenAccountsByOwner(pubkey: String, params: SolanaSDK.OwnerInfoParams?, configs: SolanaSDK.RequestConfiguration?, log: Bool) async throws -> [SolanaSDK.TokenAccount<SolanaSDK.AccountInfo>] {
-        <#code#>
+        (try await request(parameters: [pubkey, params, configs], log: log) as SolanaSDK.Rpc<[SolanaSDK.TokenAccount<SolanaSDK.AccountInfo>]>)
+            .value
     }
     
     public func getTokenLargestAccounts(pubkey: String, commitment: SolanaSDK.Commitment?) async throws -> [SolanaSDK.TokenAmount] {
-        <#code#>
+        (try await request(parameters: [pubkey, SolanaSDK.RequestConfiguration(commitment: commitment)]) as SolanaSDK.Rpc<[SolanaSDK.TokenAmount]>)
+            .value
     }
     
     public func getTokenSupply(pubkey: String, commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.TokenAmount {
-        <#code#>
+        (try await request(parameters: [pubkey, SolanaSDK.RequestConfiguration(commitment: commitment)]) as SolanaSDK.Rpc<SolanaSDK.TokenAmount>)
+            .value
     }
     
     public func getVersion() async throws -> SolanaSDK.Version {
-        <#code#>
+        try await request()
     }
     
     public func getVoteAccounts(commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.VoteAccounts {
-        <#code#>
+        try await request(parameters: [SolanaSDK.RequestConfiguration(commitment: commitment)])
     }
     
     public func minimumLedgerSlot() async throws -> UInt64 {
-        <#code#>
+        try await request()
     }
     
     public func requestAirdrop(account: String, lamports: UInt64, commitment: SolanaSDK.Commitment?) async throws -> String {
-        <#code#>
+        try await request(parameters: [account, lamports, SolanaSDK.RequestConfiguration(commitment: commitment)])
     }
     
     public func sendTransaction(serializedTransaction: String, configs: SolanaSDK.RequestConfiguration) async throws -> SolanaSDK.TransactionID {
-        <#code#>
+        try await request(parameters: [serializedTransaction, configs])
+        
     }
     
     public func simulateTransaction(transaction: String, configs: SolanaSDK.RequestConfiguration) async throws -> SolanaSDK.TransactionStatus {
-        <#code#>
+        let status = (try await request(parameters: [transaction, configs]) as SolanaSDK.Rpc<SolanaSDK.TransactionStatus>)
+            .value
+        if let err = status.err {
+            throw Error.transactionError(err, logs: status.logs)
+        }
+        return status
     }
     
     public func setLogFilter(filter: String) async throws -> String? {
-        <#code#>
+        try await request(parameters: [filter])
     }
     
     public func validatorExit() async throws -> Bool {
-        <#code#>
+        try await request()
     }
     
     public func waitForConfirmation(signature: String) async throws {
-        <#code#>
+        var partiallyConfirmed = false
+        // Due to a bug (https://github.com/solana-labs/solana/issues/15461)
+        // the `confirmationStatus` field could be unpopulated.
+        // To handle this case, also check the `confirmations` field.
+        // Note that a `null` value for `confirmations` signals that the
+        // transaction was finalized.
+        let status = try await getSignatureStatus(signature: signature)
+        
+        return getSignatureStatus(signature: signature)
+            .do(onSuccess: {status in
+                if let confirmations = status.confirmations,
+                   confirmations > 0
+                {
+                    partiallyConfirmed = true
+                }
+            })
+            .map { status -> Bool in
+                    status.confirmations == nil ||
+                    status.confirmationStatus == "finalized"
+            }
+            .flatMapCompletable { confirmed in
+                if confirmed {return .empty()}
+                throw Error.other("Status has not been confirmed")
+            }
+            .retry(maxAttempts: .max, delay: .seconds(1))
+            .timeout(.seconds(60), scheduler: MainScheduler.instance)
+            .catch { error in
+                if partiallyConfirmed {
+                    return .empty()
+                }
+                
+                throw error
+            }
     }
 }

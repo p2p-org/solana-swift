@@ -13,7 +13,7 @@ public protocol SolanaAPIClientType: AnyObject {
     
     func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) async throws -> SolanaSDK.BufferInfo<T>
     
-    func getBalance(account: String?, commitment: SolanaSDK.Commitment?) async throws -> UInt64
+    func getBalance(account: String, commitment: SolanaSDK.Commitment?) async throws -> UInt64
     
     func getBlockCommitment(block: String) async throws -> SolanaSDK.BlockCommitment
     
@@ -63,8 +63,6 @@ public protocol SolanaAPIClientType: AnyObject {
     func getLeaderSchedule(epoch: UInt64?, commitment: SolanaSDK.Commitment?) async throws -> [String: [Int]]?
     
     func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: SolanaSDK.Commitment?) async throws -> UInt64
-    
-    func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64
     
     func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String], decodedTo: T.Type, log: Bool) async throws -> [SolanaSDK.BufferInfo<T>]?
     
@@ -118,7 +116,7 @@ public protocol SolanaAPIClientType: AnyObject {
 }
 
 public extension SolanaAPIClientType {
-    func getBalance(account: String?) async throws -> UInt64 {
+    func getBalance(account: String) async throws -> UInt64 {
         try await getBalance(account: account, commitment: nil)
     }
     func getConfirmedSignaturesForAddress2(account: String) async throws -> [SolanaSDK.SignatureInfo] {
@@ -132,5 +130,26 @@ public extension SolanaAPIClientType {
     }
     func getInflationGovernor() async throws -> SolanaSDK.InflationGovernor {
         try await getInflationGovernor(commitment: nil)
+    }
+    func getMinimumBalanceForRentExemption(dataLength: UInt64) async throws -> UInt64 {
+        try await getMinimumBalanceForRentExemption(dataLength: dataLength, commitment: "recent")
+    }
+    func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {
+        try await getMinimumBalanceForRentExemption(dataLength: span)
+    }
+    func getMultipleAccounts<T>(pubkeys: [String], decodedTo: T.Type) async throws -> [SolanaSDK.BufferInfo<T>]? where T : DecodableBufferLayout {
+        try await getMultipleAccounts(pubkeys: pubkeys, decodedTo: decodedTo, log: true)
+    }
+    func getProgramAccounts<T>(publicKey: String, decodedTo: T.Type) async throws -> SolanaSDK.ProgramAccounts<T> where T : DecodableBufferLayout {
+        try await getProgramAccounts(publicKey: publicKey, configs: .init(encoding: "base64"), decodedTo: decodedTo, log: true)
+    }
+    func getRecentBlockhash() async throws -> String {
+        try await getRecentBlockhash(commitment: nil)
+    }
+    func getTransactionCount() async throws -> UInt64  {
+        try await getTransactionCount(commitment: nil)
+    }
+    public func getSignatureStatus(signature: String) async throws -> SolanaSDK.SignatureStatus {
+        try await getSignatureStatus(signature: signature, configs: nil)
     }
 }
