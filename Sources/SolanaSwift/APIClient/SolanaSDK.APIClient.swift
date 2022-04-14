@@ -8,14 +8,15 @@
 import Foundation
 
 extension SolanaSDK {
-    public class APIClient: SolanaAPIClientType {
+    public class APIClient {
         // MARK: - Nested type
         public enum HTTPMethod: String {
             case get, post
         }
-        public enum Error: Swift.Error {
+        public enum Error: Swift.Error, Equatable {
             case invalidRequest(reason: String? = nil)
             case invalidResponse(ResponseError)
+            case couldNotRetrieveAccountInfo
         }
         
         // MARK: - Properties

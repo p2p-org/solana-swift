@@ -10,4 +10,127 @@ import Foundation
 public protocol SolanaAPIClientType: AnyObject {
     associatedtype HTTPMethod
     associatedtype Error: Swift.Error
+    
+    func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) async throws -> SolanaSDK.BufferInfo<T>
+    
+    func getBalance(account: String?, commitment: SolanaSDK.Commitment?) async throws -> UInt64
+    
+    func getBlockCommitment(block: String) async throws -> SolanaSDK.BlockCommitment
+    
+    func getBlockTime(block: UInt64) async throws -> Date?
+    
+    func getClusterNodes() async throws -> SolanaSDK.ClusterNodes
+    
+    func getConfirmedBlock(slot: UInt64, encoding: String) async throws -> SolanaSDK.ConfirmedBlock?
+    
+    func getConfirmedBlocks(startSlot: UInt64, endSlot: UInt64) async throws -> [UInt64]
+    
+    func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64]
+    
+    func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) async throws -> [String]
+    
+    @available(*, deprecated, renamed: "getSignaturesForAddress(address:configs:)", message: "use getSignaturesForAddress instead.This method is expected to be removed in solana-core v1.8.")
+    func getConfirmedSignaturesForAddress2(account: String, configs: SolanaSDK.RequestConfiguration?) async throws -> [SolanaSDK.SignatureInfo]
+    
+    func getSignaturesForAddress(address: String, configs: SolanaSDK.RequestConfiguration?) async throws -> [SolanaSDK.SignatureInfo]
+    
+    @available(*, deprecated, renamed: "getTransaction(transactionSignature:)", message: "use getTransaction instead This method is expected to be removed in solana-core v1.8.")
+    func getConfirmedTransaction(transactionSignature: String) async throws -> SolanaSDK.TransactionInfo
+    
+    func getTransaction(transactionSignature: String) async throws -> SolanaSDK.TransactionInfo
+    
+    func getEpochInfo(commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.EpochInfo
+    func getEpochSchedule() async throws -> SolanaSDK.EpochSchedule
+    
+    func getFeeCalculatorForBlockhash(blockhash: String, commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.Fee
+    
+    func getFeeRateGovernor() async throws -> SolanaSDK.Fee
+    
+    func getFees(commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.Fee
+    
+    func getFirstAvailableBlock() async throws -> UInt64
+    
+    func getGenesisHash() async throws -> String
+    
+    func getIdentity() async throws -> String
+    
+    func getInflationGovernor(commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.InflationGovernor
+    
+    func getInflationRate() async throws -> SolanaSDK.InflationRate
+    
+    func getLargestAccounts() async throws -> [SolanaSDK.LargestAccount]
+    
+    func getLeaderSchedule(epoch: UInt64?, commitment: SolanaSDK.Commitment?) async throws -> [String: [Int]]?
+    
+    func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: SolanaSDK.Commitment?) async throws -> UInt64
+    
+    func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64
+    
+    func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String], decodedTo: T.Type, log: Bool) async throws -> [SolanaSDK.BufferInfo<T>]?
+    
+    func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: SolanaSDK.RequestConfiguration?, decodedTo: T.Type, log: Bool) async throws -> SolanaSDK.ProgramAccounts<T>
+    
+    func getRecentBlockhash(commitment: SolanaSDK.Commitment?) async throws -> String
+    
+    func getRecentPerformanceSamples(limit: UInt64) async throws -> [SolanaSDK.PerformanceSample]
+    
+    func getSignatureStatuses(signatures: [String], configs: SolanaSDK.RequestConfiguration?) async throws -> [SolanaSDK.SignatureStatus?]
+    
+    func getSignatureStatus(signature: String, configs: SolanaSDK.RequestConfiguration?) async throws -> SolanaSDK.SignatureStatus
+    
+    func getSlot(commitment: SolanaSDK.Commitment?) async throws -> UInt64
+    
+    func getSlotLeader(commitment: SolanaSDK.Commitment?) async throws -> String
+    
+    func getStakeActivation(stakeAccount: String, configs: SolanaSDK.RequestConfiguration?) async throws -> SolanaSDK.StakeActivation
+    
+    func getSupply(commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.Supply
+    
+    func getTransactionCount(commitment: SolanaSDK.Commitment?) async throws -> UInt64
+    
+    func getTokenAccountBalance(pubkey: String, commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.TokenAccountBalance
+    
+    func getTokenAccountsByDelegate(pubkey: String, mint: String?, programId: String?, configs: SolanaSDK.RequestConfiguration?) async throws -> [SolanaSDK.TokenAccount<SolanaSDK.AccountInfo>]
+    
+    func getTokenAccountsByOwner(pubkey: String, params: SolanaSDK.OwnerInfoParams?, configs: SolanaSDK.RequestConfiguration?, log: Bool) async throws -> [SolanaSDK.TokenAccount<SolanaSDK.AccountInfo>]
+    
+    func getTokenLargestAccounts(pubkey: String, commitment: SolanaSDK.Commitment?) async throws -> [SolanaSDK.TokenAmount]
+    
+    func getTokenSupply(pubkey: String, commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.TokenAmount
+    
+    func getVersion() async throws -> SolanaSDK.Version
+    
+    func getVoteAccounts(commitment: SolanaSDK.Commitment?) async throws -> SolanaSDK.VoteAccounts
+    
+    func minimumLedgerSlot() async throws -> UInt64
+    
+    func requestAirdrop(account: String, lamports: UInt64, commitment: SolanaSDK.Commitment?) async throws -> String
+    
+    func sendTransaction(serializedTransaction: String, configs: SolanaSDK.RequestConfiguration) async throws -> SolanaSDK.TransactionID
+    
+    func simulateTransaction(transaction: String, configs: SolanaSDK.RequestConfiguration) async throws -> SolanaSDK.TransactionStatus
+    
+    func setLogFilter(filter: String) async throws -> String?
+    
+    func validatorExit() async throws -> Bool
+    
+    func waitForConfirmation(signature: String) async throws
+}
+
+public extension SolanaAPIClientType {
+    func getBalance(account: String?) async throws -> UInt64 {
+        try await getBalance(account: account, commitment: nil)
+    }
+    func getConfirmedSignaturesForAddress2(account: String) async throws -> [SolanaSDK.SignatureInfo] {
+        try await getConfirmedSignaturesForAddress2(account: account, configs: nil)
+    }
+    func getEpochInfo() async throws -> SolanaSDK.EpochInfo {
+        try await getEpochInfo(commitment: nil)
+    }
+    func getFeeCalculatorForBlockhash(blockhash: String) async throws -> SolanaSDK.Fee {
+        try await getFeeCalculatorForBlockhash(blockhash: blockhash, commitment: nil)
+    }
+    func getInflationGovernor() async throws -> SolanaSDK.InflationGovernor {
+        try await getInflationGovernor(commitment: nil)
+    }
 }

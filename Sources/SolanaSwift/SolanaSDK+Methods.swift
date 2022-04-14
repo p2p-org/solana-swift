@@ -10,11 +10,11 @@ import Foundation
 import RxSwift
 
 public extension SolanaSDK {
-    public func getAccount() -> SolanaSDK.Account? {
+    func getAccount() -> SolanaSDK.Account? {
         accountStorage.account
     }
     
-    public func getNativeWalletAddress() -> PublicKey? {
+    func getNativeWalletAddress() -> PublicKey? {
         accountStorage.account?.publicKey
     }
     

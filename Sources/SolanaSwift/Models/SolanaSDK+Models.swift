@@ -19,7 +19,7 @@ public extension SolanaSDK {
 		public let error: ResponseError?
         public let method: String?
 	}
-    struct ResponseError: Decodable {
+    struct ResponseError: Decodable, Equatable {
         public init(code: Int?, message: String?, data: SolanaSDK.ResponseErrorData?) {
             self.code = code
             self.message = message
@@ -30,7 +30,7 @@ public extension SolanaSDK {
 		public let message: String?
         public let data: ResponseErrorData?
 	}
-    struct ResponseErrorData: Decodable {
+    struct ResponseErrorData: Decodable, Equatable {
         // public let err: ResponseErrorDataError
         public let logs: [String]?
         public let numSlotsBehind: Int?
