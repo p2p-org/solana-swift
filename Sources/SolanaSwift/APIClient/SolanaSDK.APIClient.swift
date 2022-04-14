@@ -20,6 +20,8 @@ extension SolanaSDK {
             case blockhashNotFound
             case invalidSignatureStatus
             case transactionError(TransactionError, logs: [String])
+            case transactionHasNotBeenConfirmed
+            case unknown
         }
         
         // MARK: - Properties

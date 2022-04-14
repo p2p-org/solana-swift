@@ -243,8 +243,8 @@ extension SolanaSDK.APIClient: SolanaAPIClientType {
     }
     
     public func sendTransaction(serializedTransaction: String, configs: SolanaSDK.RequestConfiguration) async throws -> SolanaSDK.TransactionID {
-        try await request(parameters: [serializedTransaction, configs])
-        
+        fatalError("catching error needed")
+        return try await request(parameters: [serializedTransaction, configs])
     }
     
     public func simulateTransaction(transaction: String, configs: SolanaSDK.RequestConfiguration) async throws -> SolanaSDK.TransactionStatus {
@@ -271,32 +271,23 @@ extension SolanaSDK.APIClient: SolanaAPIClientType {
         // To handle this case, also check the `confirmations` field.
         // Note that a `null` value for `confirmations` signals that the
         // transaction was finalized.
-        let status = try await getSignatureStatus(signature: signature)
-        
-        return getSignatureStatus(signature: signature)
-            .do(onSuccess: {status in
-                if let confirmations = status.confirmations,
-                   confirmations > 0
-                {
-                    partiallyConfirmed = true
-                }
-            })
-            .map { status -> Bool in
-                    status.confirmations == nil ||
-                    status.confirmationStatus == "finalized"
+        try await Task.retrying(
+            where: {($0 as? Error) == .transactionHasNotBeenConfirmed},
+            maxRetryCount: .max,
+            retryDelay: 1
+        ) { [weak self] in
+            guard let self = self else {throw Error.unknown}
+            let status = try await self.getSignatureStatus(signature: signature)
+            if let confirmations = status.confirmations,
+               confirmations > 0
+            {
+                partiallyConfirmed = true
             }
-            .flatMapCompletable { confirmed in
-                if confirmed {return .empty()}
-                throw Error.other("Status has not been confirmed")
-            }
-            .retry(maxAttempts: .max, delay: .seconds(1))
-            .timeout(.seconds(60), scheduler: MainScheduler.instance)
-            .catch { error in
-                if partiallyConfirmed {
-                    return .empty()
-                }
-                
-                throw error
-            }
+            let finalized = status.confirmations == nil ||
+                status.confirmationStatus == "finalized"
+            if finalized {return}
+            throw Error.transactionHasNotBeenConfirmed
+        }
+            .value
     }
 }
