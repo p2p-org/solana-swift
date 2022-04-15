@@ -45,7 +45,7 @@ public extension SolanaSDK {
                 return Date(timeIntervalSince1970: TimeInterval(timestamp))
             }
     }
-    func getClusterNodes() -> Single<ClusterNodes> {
+    func getClusterNodes() -> Single<[ClusterNode]> {
         request()
     }
     func getConfirmedBlock(slot: UInt64, encoding: String = "json") -> Single<ConfirmedBlock?> {
