@@ -119,6 +119,7 @@ public extension SolanaAPIClientType {
     func getBalance(account: String) async throws -> UInt64 {
         try await getBalance(account: account, commitment: nil)
     }
+    @available(*, deprecated, renamed: "getSignaturesForAddress(address:configs:)", message: "use getSignaturesForAddress instead.This method is expected to be removed in solana-core v1.8.")
     func getConfirmedSignaturesForAddress2(account: String) async throws -> [SolanaSDK.SignatureInfo] {
         try await getConfirmedSignaturesForAddress2(account: account, configs: nil)
     }
@@ -149,7 +150,7 @@ public extension SolanaAPIClientType {
     func getTransactionCount() async throws -> UInt64  {
         try await getTransactionCount(commitment: nil)
     }
-    public func getSignatureStatus(signature: String) async throws -> SolanaSDK.SignatureStatus {
+    func getSignatureStatus(signature: String) async throws -> SolanaSDK.SignatureStatus {
         try await getSignatureStatus(signature: signature, configs: nil)
     }
 }
