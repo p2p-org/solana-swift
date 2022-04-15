@@ -19,7 +19,7 @@ public protocol SolanaAPIClientType: AnyObject {
     
     func getBlockTime(block: UInt64) async throws -> Date?
     
-    func getClusterNodes() async throws -> SolanaSDK.ClusterNodes
+    func getClusterNodes() async throws -> [SolanaSDK.ClusterNode]
     
     func getConfirmedBlock(slot: UInt64, encoding: String) async throws -> SolanaSDK.ConfirmedBlock?
     

@@ -32,7 +32,7 @@ extension SolanaSDK.APIClient: SolanaAPIClientType {
         return Date(timeIntervalSince1970: TimeInterval(timestamp))
     }
     
-    public func getClusterNodes() async throws -> SolanaSDK.ClusterNodes {
+    public func getClusterNodes() async throws -> [SolanaSDK.ClusterNode] {
         try await request()
     }
     
