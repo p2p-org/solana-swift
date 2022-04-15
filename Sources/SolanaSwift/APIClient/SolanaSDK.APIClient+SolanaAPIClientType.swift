@@ -243,8 +243,35 @@ extension SolanaSDK.APIClient: SolanaAPIClientType {
     }
     
     public func sendTransaction(serializedTransaction: String, configs: SolanaSDK.RequestConfiguration) async throws -> SolanaSDK.TransactionID {
-        fatalError("catching error needed")
-        return try await request(parameters: [serializedTransaction, configs])
+        do {
+            return try await request(parameters: [serializedTransaction, configs])
+        } catch {
+            // Modify error message
+            if let error = error as? Error {
+                switch error {
+                case .invalidResponse(let response) where response.message != nil:
+                    var message = response.message
+                    if let readableMessage = response.data?.logs?
+                        .first(where: {$0.contains("Error:")})?
+                        .components(separatedBy: "Error: ")
+                        .last
+                    {
+                        message = readableMessage
+                    } else if let readableMessage = response.message?
+                                .components(separatedBy: "Transaction simulation failed: ")
+                                .last
+                    {
+                        message = readableMessage
+                    }
+                    
+                    throw Error.invalidResponse(SolanaSDK.ResponseError(code: response.code, message: message, data: response.data))
+                default:
+                    break
+                }
+            }
+            throw error
+        }
+        
     }
     
     public func simulateTransaction(transaction: String, configs: SolanaSDK.RequestConfiguration) async throws -> SolanaSDK.TransactionStatus {
@@ -265,7 +292,6 @@ extension SolanaSDK.APIClient: SolanaAPIClientType {
     }
     
     public func waitForConfirmation(signature: String) async throws {
-        var partiallyConfirmed = false
         // Due to a bug (https://github.com/solana-labs/solana/issues/15461)
         // the `confirmationStatus` field could be unpopulated.
         // To handle this case, also check the `confirmations` field.
@@ -278,11 +304,11 @@ extension SolanaSDK.APIClient: SolanaAPIClientType {
         ) { [weak self] in
             guard let self = self else {throw Error.unknown}
             let status = try await self.getSignatureStatus(signature: signature)
-            if let confirmations = status.confirmations,
-               confirmations > 0
-            {
-                partiallyConfirmed = true
-            }
+//            if let confirmations = status.confirmations,
+//               confirmations > 0
+//            {
+//                partiallyConfirmed = true
+//            }
             let finalized = status.confirmations == nil ||
                 status.confirmationStatus == "finalized"
             if finalized {return}
