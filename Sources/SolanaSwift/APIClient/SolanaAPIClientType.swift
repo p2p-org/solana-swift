@@ -11,6 +11,8 @@ public protocol SolanaAPIClientType: AnyObject {
     associatedtype HTTPMethod
     associatedtype Error: Swift.Error
     
+    func changeEndpoint(to: SolanaSDK.APIEndPoint) async
+    
     func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) async throws -> SolanaSDK.BufferInfo<T>
     
     func getBalance(account: String, commitment: SolanaSDK.Commitment?) async throws -> UInt64

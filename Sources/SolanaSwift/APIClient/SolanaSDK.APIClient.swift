@@ -8,7 +8,7 @@
 import Foundation
 
 extension SolanaSDK {
-    public class APIClient {
+    public actor APIClient {
         // MARK: - Nested type
         public enum HTTPMethod: String {
             case get, post
@@ -25,7 +25,7 @@ extension SolanaSDK {
         }
         
         // MARK: - Properties
-        public private(set) var endpoint: APIEndPoint
+        public internal(set) var endpoint: APIEndPoint
         
         // MARK: - Initializer
         init(endpoint: APIEndPoint) {

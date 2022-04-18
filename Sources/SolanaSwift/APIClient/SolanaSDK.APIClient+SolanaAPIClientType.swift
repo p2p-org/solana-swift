@@ -8,6 +8,10 @@
 import Foundation
 
 extension SolanaSDK.APIClient: SolanaAPIClientType {
+    public func changeEndpoint(to endpoint: SolanaSDK.APIEndPoint) async {
+        self.endpoint = endpoint
+    }
+    
     public func getAccountInfo<T>(account: String, decodedTo: T.Type) async throws -> SolanaSDK.BufferInfo<T> where T : DecodableBufferLayout {
         let configs = SolanaSDK.RequestConfiguration(encoding: "base64")
         let result = try await request(parameters: [account, configs]) as SolanaSDK.Rpc<SolanaSDK.BufferInfo<T>?>
