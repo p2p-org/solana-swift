@@ -29,7 +29,7 @@ class RestAPITransactionTests: RestAPITests {
         _ = try solanaSDK.createAssociatedTokenAccount(
             for: account.publicKey,
             tokenMint: try SolanaSDK.PublicKey(string: mintAddress),
-            isSimulation: false
+            isSimulation: true
         ).toBlocking().first()
     }
     
