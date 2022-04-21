@@ -22,6 +22,17 @@ class RestAPITransactionTests: RestAPITests {
         ).toBlocking().first()
     }
     
+    func testCreateAToken() throws {
+        // USDC
+        let mintAddress = "xxxxa1sKNGwFtw2kFn8XauW9xq8hBZ5kVtcSesTT9fW"
+        
+        _ = try solanaSDK.createAssociatedTokenAccount(
+            for: account.publicKey,
+            tokenMint: try SolanaSDK.PublicKey(string: mintAddress),
+            isSimulation: false
+        ).toBlocking().first()
+    }
+    
     func testCloseAccount() throws {
         let token = "AWgmNoaiXh2GuKQa89dpqE6k23ae4uTmF9ym6USRhVWB"
         
