@@ -170,7 +170,7 @@ public struct SignatureStatus: Decodable {
 public struct TransactionInfo: Decodable {
     public let blockTime: UInt64?
     public let meta: TransactionMeta?
-    public let transaction: SolanaSDK_Deprecated.ConfirmedTransaction
+    public let transaction: ConfirmedTransaction
     public let slot: UInt64?
 }
 public struct TransactionMeta: Decodable {

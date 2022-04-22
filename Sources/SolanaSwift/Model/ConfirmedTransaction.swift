@@ -1,10 +1,3 @@
-//
-//  ConfirmedTransaction.swift
-//  SolanaSwift
-//
-//  Created by Alexey Sidorov on 21.04.2022.
-//
-
 import Foundation
 
 

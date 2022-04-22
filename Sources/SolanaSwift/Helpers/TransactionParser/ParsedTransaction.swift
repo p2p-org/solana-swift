@@ -9,6 +9,10 @@ import Foundation
 
 public extension SolanaSDK_Deprecated {
     typealias ParsedTransaction = SolanaSwift.ParsedTransaction
+    typealias TransferTransaction = SolanaSwift.TransferTransaction
+    typealias CreateAccountTransaction = SolanaSwift.CreateAccountTransaction
+    typealias CloseAccountTransaction = SolanaSwift.CloseAccountTransaction
+    typealias SwapTransaction = SolanaSwift.SwapTransaction
 }
 
 public struct ParsedTransaction: Hashable {
@@ -141,7 +145,7 @@ public struct CreateAccountTransaction: Hashable {
 }
 
 public struct CloseAccountTransaction: Hashable {
-    public init(reimbursedAmount: Double?, closedWallet: SolanaSDK_Deprecated.Wallet?) {
+    public init(reimbursedAmount: Double?, closedWallet: Wallet?) {
         self.reimbursedAmount = reimbursedAmount
         self.closedWallet = closedWallet
     }
@@ -151,7 +155,7 @@ public struct CloseAccountTransaction: Hashable {
 }
 
 public struct TransferTransaction: Hashable {
-    public init(source: SolanaSDK_Deprecated.Wallet?, destination: SolanaSDK_Deprecated.Wallet?, authority: String?, destinationAuthority: String?, amount: Double?, myAccount: String?) {
+    public init(source: Wallet?, destination: Wallet?, authority: String?, destinationAuthority: String?, amount: Double?, myAccount: String?) {
         self.source = source
         self.destination = destination
         self.authority = authority
@@ -181,7 +185,7 @@ public struct TransferTransaction: Hashable {
 }
 
 public struct SwapTransaction: Hashable {
-    public init(source: SolanaSDK_Deprecated.Wallet?, sourceAmount: Double?, destination: Wallet?, destinationAmount: Double?, myAccountSymbol: String?) {
+    public init(source: Wallet?, sourceAmount: Double?, destination: Wallet?, destinationAmount: Double?, myAccountSymbol: String?) {
         self.source = source
         self.sourceAmount = sourceAmount
         self.destination = destination

@@ -7,13 +7,15 @@
 
 import Foundation
 
-extension SolanaSDK_Deprecated {
-    public typealias EncodableWrapper = SolanaSwift.EncodableWrapper
-    public typealias RequestAPI = SolanaSwift.RequestAPI
-    public typealias Transfer = SolanaSwift.Transfer
-    public typealias OwnerInfoParams = SolanaSwift.OwnerInfoParams
-    public typealias RequestConfiguration = SolanaSwift.RequestConfiguration
-    public typealias DataSlice = SolanaSwift.DataSlice
+public extension SolanaSDK_Deprecated {
+    typealias EncodableWrapper = SolanaSwift.EncodableWrapper
+    typealias RequestAPI = SolanaSwift.RequestAPI
+    typealias Transfer = SolanaSwift.Transfer
+    typealias OwnerInfoParams = SolanaSwift.OwnerInfoParams
+    typealias RequestConfiguration = SolanaSwift.RequestConfiguration
+    typealias DataSlice = SolanaSwift.DataSlice
+    
+    typealias Commitment = SolanaSwift.Commitment
 }
 
 public struct EncodableWrapper: Encodable {
