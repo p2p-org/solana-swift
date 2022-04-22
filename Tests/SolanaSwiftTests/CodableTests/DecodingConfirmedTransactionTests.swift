@@ -33,7 +33,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testDecodingCreateAccountTransaction() throws {
-        let transaction = try parse(fileName: "CreateAccountTransaction").value as! SolanaSDK.CreateAccountTransaction
+        let transaction = try parse(fileName: "CreateAccountTransaction").value as! CreateAccountTransaction
         
         XCTAssertEqual(transaction.fee, 0.00203928)
         XCTAssertEqual(transaction.newWallet?.token.symbol, "ETH")
@@ -41,14 +41,14 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
 
     func testDecodingCreateBOPAccountTransaction() throws {
-        let transaction = try parse(fileName: "CreateBOPAccountTransaction").value as! SolanaSDK.CreateAccountTransaction
+        let transaction = try parse(fileName: "CreateBOPAccountTransaction").value as! CreateAccountTransaction
         
         XCTAssertEqual(transaction.newWallet?.token.symbol, "BOP")
         XCTAssertEqual(transaction.newWallet?.pubkey, "3qjHF2CHQbPEkuq3cTbS9iwfWfSsHsqmgyMj7M2ZuVSx")
     }
     
     func testDecodingCloseAccountTransaction() throws {
-        let transaction = try parse(fileName: "CloseAccountTransaction").value as! SolanaSDK.CloseAccountTransaction
+        let transaction = try parse(fileName: "CloseAccountTransaction").value as! CloseAccountTransaction
         
         XCTAssertEqual(transaction.reimbursedAmount, 0.00203928)
         XCTAssertEqual(transaction.closedWallet?.token.symbol, "ETH")
@@ -56,7 +56,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSendSOLTransaction() throws {
         let myAccount = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
-        let transaction = try parse(fileName: "SendSOLTransaction", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSOLTransaction", myAccount: myAccount).value as! TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SOL")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
@@ -69,7 +69,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSendSOLTransactionPaidByP2PORG() throws {
         let myAccount = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
-        let transaction = try parse(fileName: "SendSOLTransactionPaidByP2PORG", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSOLTransactionPaidByP2PORG", myAccount: myAccount).value as! TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SOL")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
@@ -82,7 +82,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSendSPLToSOLTransaction() throws {
         let myAccount = "22hXC9c4SGccwCkjtJwZ2VGRfhDYh9KSRCviD8bs4Xbg"
-        let transaction = try parse(fileName: "SendSPLToSOLTransaction", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSPLToSOLTransaction", myAccount: myAccount).value as! TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "wUSDT")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
@@ -94,7 +94,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSendSPLToSPLTransaction() throws {
         let myAccount = "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua"
-        let transaction = try parse(fileName: "SendSPLToSPLTransaction", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSPLToSPLTransaction", myAccount: myAccount).value as! TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SRM")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
@@ -105,7 +105,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSendTokenToNewAssociatedTokenAddress() throws {
         let myAccount = "H1yu3R247X5jQN9bbDU8KB7RY4JSeEaCv45p5CMziefd"
-        let transaction = try parse(fileName: "SendTokenToNewAssociatedTokenAddress", myAccount: myAccount, myAccountSymbol: "MAPS").value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendTokenToNewAssociatedTokenAddress", myAccount: myAccount, myAccountSymbol: "MAPS").value as! TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "MAPS")
         XCTAssertEqual(transaction.source?.pubkey, myAccount)
@@ -114,7 +114,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
         XCTAssertEqual(transaction.destinationAuthority, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
         
         // transfer checked type
-        let transaction2 = try parse(fileName: "SendTokenToNewAssociatedTokenAddressTransferChecked", myAccount: myAccount, myAccountSymbol: "MAPS").value as! SolanaSDK.TransferTransaction
+        let transaction2 = try parse(fileName: "SendTokenToNewAssociatedTokenAddressTransferChecked", myAccount: myAccount, myAccountSymbol: "MAPS").value as! TransferTransaction
         
         XCTAssertEqual(transaction2.source?.token.symbol, "MAPS")
         XCTAssertEqual(transaction2.source?.pubkey, myAccount)
@@ -125,7 +125,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSendSPLTokenParsedInNativeSOLWallet() throws {
         let myAccount = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-        let transaction = try parse(fileName: "SendSPLTokenParsedInNativeSOLWallet", myAccount: myAccount).value as! SolanaSDK.TransferTransaction
+        let transaction = try parse(fileName: "SendSPLTokenParsedInNativeSOLWallet", myAccount: myAccount).value as! TransferTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "RAY")
         XCTAssertEqual(transaction.authority, myAccount)
@@ -153,7 +153,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSwapTransaction() throws {
         let myAccountSymbol = "SOL"
-        let transaction = try parse(fileName: "SwapTransaction", myAccountSymbol: myAccountSymbol).value as! SolanaSDK.SwapTransaction
+        let transaction = try parse(fileName: "SwapTransaction", myAccountSymbol: myAccountSymbol).value as! SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SRM")
         XCTAssertEqual(transaction.source?.pubkey, "BjUEdE292SLEq9mMeKtY3GXL6wirn7DqJPhrukCqAUua")
@@ -166,7 +166,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     func testDecodingSwapErrorTransaction() throws {
         let myAccount = "G8PrkEwmVx3kt3rXBin5o1bdDC1cvz7oBnXbHksNg7R4"
         let parsedTransaction = try parse(fileName: "SwapErrorTransaction", myAccount: myAccount)
-        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        let transaction = parsedTransaction.value as! SwapTransaction
         
         XCTAssertEqual(parsedTransaction.status, .error("Swap instruction exceeds desired slippage limit"))
         XCTAssertEqual(transaction.source?.token.symbol, "KIN")
@@ -179,7 +179,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSerumSwapTransaction() throws {
         let parsedTransaction = try parse(fileName: "SerumSwapTransaction")
-        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        let transaction = parsedTransaction.value as! SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "SOL")
         XCTAssertEqual(transaction.source?.pubkey, "D7XYERWodEGaoN2X855T2qLvse28BSjfkvfCyW2EDBWy")
@@ -192,7 +192,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSerumSwapTransaction2() throws {
         let parsedTransaction = try parse(fileName: "SerumSwapTransaction2")
-        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        let transaction = parsedTransaction.value as! SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "BTC")
         XCTAssertEqual(transaction.source?.pubkey, "FfH77kuL45qgqALsxtz6ktfSgbLSPfrB23AsoDnBxqUj")
@@ -205,7 +205,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     
     func testDecodingSerumSwapTransaction3() throws {
         let parsedTransaction = try parse(fileName: "SerumSwapTransaction3")
-        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        let transaction = parsedTransaction.value as! SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "USDC")
         XCTAssertEqual(transaction.source?.pubkey, "375DTPnEBUjCnvQpGQtg5nRQudwa6oXWEYB15X6MmJs6")
@@ -219,7 +219,7 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     func testDecodingSerumSwapTransaction4() throws {
         // USDT -> USDC
         let parsedTransaction = try parse(fileName: "SerumSwapTransaction4")
-        let transaction = parsedTransaction.value as! SolanaSDK.SwapTransaction
+        let transaction = parsedTransaction.value as! SwapTransaction
         
         XCTAssertEqual(transaction.source?.token.symbol, "USDT")
         XCTAssertEqual(transaction.source?.pubkey, "GYYHwdXW7v8RaXv7zXvhQSJYKU9b9RMtRB2dufu9fnpR")
@@ -231,8 +231,8 @@ class DecodingConfirmedTransactionTests: XCTestCase {
     }
     
     func testSwap01() throws {
-        let trx1 = try parse(fileName: "Swap1").value as! SolanaSDK.SwapTransaction
-        let trx2 = try parse(fileName: "Swap1", parser: oldParser).value as! SolanaSDK.SwapTransaction
+        let trx1 = try parse(fileName: "Swap1").value as! SwapTransaction
+        let trx2 = try parse(fileName: "Swap1", parser: oldParser).value as! SwapTransaction
         
         XCTAssertEqual(trx1.source?.token.symbol, trx2.source?.token.symbol)
         XCTAssertEqual(trx1.source?.pubkey, trx2.source?.pubkey)
@@ -256,13 +256,13 @@ class DecodingConfirmedTransactionTests: XCTestCase {
             .toBlocking().first()!
     }
     
-    private func transactionInfoFromJSONFileName(_ name: String) throws -> SolanaSDK.TransactionInfo
+    private func transactionInfoFromJSONFileName(_ name: String) throws -> TransactionInfo
     {
         let thisSourceFile = URL(fileURLWithPath: #file)
         let thisDirectory = thisSourceFile.deletingLastPathComponent()
         let resourceURL = thisDirectory.appendingPathComponent("../Resources/\(name).json")
         let data = try! Data(contentsOf: resourceURL)
-        let transactionInfo = try JSONDecoder().decode(SolanaSDK.TransactionInfo.self, from: data)
+        let transactionInfo = try JSONDecoder().decode(TransactionInfo.self, from: data)
         return transactionInfo
     }
 }

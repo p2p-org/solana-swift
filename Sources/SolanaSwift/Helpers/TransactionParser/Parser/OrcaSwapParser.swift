@@ -6,14 +6,14 @@ import Foundation
 import RxSwift
 
 public protocol OrcaSwapParser {
-    func can(instructions: [SolanaSDK.ParsedInstruction]) -> Bool
-    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccountSymbol: String?) -> Single<SolanaSDK.SwapTransaction?>
+    func can(instructions: [ParsedInstruction]) -> Bool
+    func parse(transactionInfo: TransactionInfo, myAccountSymbol: String?) -> Single<SwapTransaction?>
 }
 
-public extension SolanaSDK {
+public extension SolanaSDK_Deprecated {
     
     struct OrcaSwapParserImpl: OrcaSwapParser {
-        private let solanaSDK: SolanaSDK
+        private let solanaSDK: SolanaSDK_Deprecated
         
         private let supportedProgramId = [
             PublicKey.orcaSwapId(version: 1).base58EncodedString,
@@ -22,7 +22,7 @@ public extension SolanaSDK {
             "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8" /*main deprecated*/
         ]
         
-        init(solanaSDK: SolanaSDK) {
+        init(solanaSDK: SolanaSDK_Deprecated) {
             self.solanaSDK = solanaSDK
         }
         

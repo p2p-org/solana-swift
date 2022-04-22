@@ -5,13 +5,13 @@
 import Foundation
 import RxSwift
 
-public extension SolanaSDK {
+public extension SolanaSDK_Deprecated {
     
     /**
      Use this class only for testing purpose.
      */
     struct OldOrcaSwapParserImpl: OrcaSwapParser {
-        private let solanaSDK: SolanaSDK
+        private let solanaSDK: SolanaSDK_Deprecated
         
         private let supportedProgramId = [
             PublicKey.orcaSwapId(version: 1).base58EncodedString,
@@ -20,7 +20,7 @@ public extension SolanaSDK {
             "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8" /*main deprecated*/
         ]
         
-        init(solanaSDK: SolanaSDK) {
+        init(solanaSDK: SolanaSDK_Deprecated) {
             self.solanaSDK = solanaSDK
         }
         
