@@ -161,12 +161,14 @@ public extension SolanaSDK {
         public let slot: UInt64?
         public let err: TransactionError?
         public let memo: String?
+		public let blockTime: UInt64?
         
         public init(signature: String) {
             self.signature = signature
             self.slot = nil
             self.err = nil
             self.memo = nil
+			self.blockTime = nil
         }
     }
 	struct SignatureStatus: Decodable {
