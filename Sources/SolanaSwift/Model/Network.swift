@@ -1,9 +1,5 @@
 import Foundation
 
-public extension SolanaSDK_Deprecated {
-    public typealias Network = SolanaSwift.Network
-}
-
 public enum Network: String, CaseIterable, Codable {
     case mainnetBeta = "mainnet-beta"
     case devnet = "devnet"

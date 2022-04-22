@@ -1,16 +1,9 @@
-//
-//  Message2.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 02/04/2021.
-//
-
 import Foundation
 
 /// Blockhash as Base58 string.
 typealias BlockHash = String
 
-extension SolanaSDK_Deprecated.Transaction {
+public extension Transaction {
     public struct Message {
         // MARK: - Constants
         private static let RECENT_BLOCK_HASH_LENGTH = 32
@@ -42,13 +35,13 @@ extension SolanaSDK_Deprecated.Transaction {
             let compiledInstruction = try encodeInstructions()
             
             // Construct data
-//            let bufferSize: Int =
-//                Header.LENGTH // header
-//                + keyCount.count // number of account keys
-//                + Int(accountKeys.count) * PublicKey.LENGTH // account keys
-//                + RECENT_BLOCK_HASH_LENGTH // recent block hash
-//                + instructionsLength.count
-//                + compiledInstructionsLength
+    //            let bufferSize: Int =
+    //                Header.LENGTH // header
+    //                + keyCount.count // number of account keys
+    //                + Int(accountKeys.count) * PublicKey.LENGTH // account keys
+    //                + RECENT_BLOCK_HASH_LENGTH // recent block hash
+    //                + instructionsLength.count
+    //                + compiledInstructionsLength
             
             var data = Data(/*capacity: bufferSize*/)
             
@@ -156,9 +149,9 @@ extension SolanaSDK_Deprecated.Transaction {
     }
 }
 
-extension SolanaSDK_Deprecated.Transaction.Message {
+public extension Transaction.Message {
     // MARK: - Nested type
-    public struct Header: Decodable {
+    struct Header: Decodable {
         static let LENGTH = 3
         
         var numRequiredSignatures: Int = 0
@@ -171,7 +164,7 @@ extension SolanaSDK_Deprecated.Transaction.Message {
     }
     
     // TODO: follow code from solana!
-    public struct CompiledInstruction {
+    struct CompiledInstruction {
         public let programIdIndex: UInt8
         let keyIndicesCount: [UInt8]
         let keyIndices: [UInt8]
@@ -199,9 +192,9 @@ extension SolanaSDK_Deprecated.Transaction.Message {
     }
 }
 
-extension Sequence where Iterator.Element == SolanaSDK_Deprecated.TransactionInstruction {
-    func compile(accountKeys: [PublicKey]) -> [SolanaSDK_Deprecated.Transaction.Message.CompiledInstruction] {
-        var compiledInstructions = [SolanaSDK_Deprecated.Transaction.Message.CompiledInstruction]()
+extension Sequence where Iterator.Element == TransactionInstruction {
+    func compile(accountKeys: [PublicKey]) -> [Transaction.Message.CompiledInstruction] {
+        var compiledInstructions = [Transaction.Message.CompiledInstruction]()
         
         for instruction in self {
             
@@ -213,7 +206,7 @@ extension Sequence where Iterator.Element == SolanaSDK_Deprecated.TransactionIns
                 keyIndices.append(UInt8(index))
             }
             
-            let compiledInstruction = SolanaSDK_Deprecated.Transaction.Message.CompiledInstruction(
+            let compiledInstruction = Transaction.Message.CompiledInstruction(
                 programIdIndex: UInt8(try accountKeys.index(of: instruction.programId)!),
                 keyIndicesCount: [UInt8](Data.encodeLength(keysSize)),
                 keyIndices: [UInt8](keyIndices),

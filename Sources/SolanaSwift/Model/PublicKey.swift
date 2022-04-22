@@ -1,9 +1,5 @@
 import Foundation
 
-public extension SolanaSDK_Deprecated {
-    public typealias PublicKey = SolanaSwift.PublicKey
-}
-
 public struct PublicKey: Codable, Equatable, CustomStringConvertible, Hashable {
     public static let numberOfBytes = 32
     public let bytes: [UInt8]

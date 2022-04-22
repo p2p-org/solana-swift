@@ -7,6 +7,6 @@
 
 import Foundation
 
-extension SolanaSDK_Deprecated {
-    public struct EmptyInfo: DecodableBufferLayout {}
+public extension SolanaSDK_Deprecated {
+    typealias EmptyInfo = SolanaSwift.EmptyInfo
 }

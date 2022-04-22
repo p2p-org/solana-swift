@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import TweetNacl
 
 public extension SolanaSDK_Deprecated {
     typealias ConfirmedTransaction = SolanaSwift.ConfirmedTransaction
