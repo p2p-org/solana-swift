@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension SolanaSDK.PublicKey: ExpressibleByStringLiteral,
+extension PublicKey: ExpressibleByStringLiteral,
                     ExpressibleByUnicodeScalarLiteral,
                     ExpressibleByExtendedGraphemeClusterLiteral {
     public init(stringLiteral value: String) {
@@ -24,7 +24,7 @@ extension SolanaSDK.PublicKey: ExpressibleByStringLiteral,
 }
 
 extension String {
-    func toPublicKey() throws -> SolanaSDK.PublicKey {
-        try SolanaSDK.PublicKey(string: self)
+    func toPublicKey() throws -> PublicKey {
+        try PublicKey(string: self)
     }
 }

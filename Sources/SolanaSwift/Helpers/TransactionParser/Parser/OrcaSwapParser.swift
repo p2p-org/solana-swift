@@ -6,8 +6,8 @@ import Foundation
 import RxSwift
 
 public protocol OrcaSwapParser {
-    func can(instructions: [SolanaSDK.ParsedInstruction]) -> Bool
-    func parse(transactionInfo: SolanaSDK.TransactionInfo, myAccountSymbol: String?) -> Single<SolanaSDK.SwapTransaction?>
+    func can(instructions: [ParsedInstruction]) -> Bool
+    func parse(transactionInfo: TransactionInfo, myAccountSymbol: String?) -> Single<SwapTransaction?>
 }
 
 public extension SolanaSDK {

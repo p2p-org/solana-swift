@@ -19,7 +19,7 @@ let BTCKeychainPathSeparator = "/"
 
 public class Keychain: NSObject {
 
-    enum KeyDerivationError: Error {
+    public enum KeyDerivationError: Error {
         case indexInvalid
         case pathInvalid
         case privateKeyNil

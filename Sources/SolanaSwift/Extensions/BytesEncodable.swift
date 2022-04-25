@@ -19,7 +19,7 @@ extension UInt64: BytesEncodable {}
 
 extension UInt32: BytesEncodable {}
 
-extension SolanaSDK.PublicKey: BytesEncodable {}
+//extension SolanaSDK.PublicKey: BytesEncodable {}
 
 extension Data: BytesEncodable {}
 

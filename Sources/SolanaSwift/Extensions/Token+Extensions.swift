@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Array where Element == SolanaSDK.Token {
+extension Array where Element == Token {
     public func excludingSpecialTokens() -> Self {
         var currentAddresses: Set<String> = []
 
