@@ -69,7 +69,6 @@ public extension SolanaSDK {
     }
     func getSignaturesForAddress(address: String, configs: RequestConfiguration? = nil) -> Single<[SignatureInfo]> {
         request(
-            overridingEndpoint: "https://api.mainnet-beta.solana.com",
             parameters: [address, configs],
             onMethodNotFoundReplaceWith: "getConfirmedSignaturesForAddress2"
         )
@@ -83,7 +82,6 @@ public extension SolanaSDK {
     }
     func getTransaction(transactionSignature: String) -> Single<TransactionInfo> {
         request(
-            overridingEndpoint: "https://api.mainnet-beta.solana.com",
             parameters: [transactionSignature, "jsonParsed"],
             onMethodNotFoundReplaceWith: "getConfirmedTransaction"
         )
