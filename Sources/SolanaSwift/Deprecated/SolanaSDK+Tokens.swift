@@ -8,7 +8,7 @@
 import Foundation
 import RxSwift
 
-extension SolanaSDK_Deprecated{
+extension SolanaSDK{
     public func getTokensList() -> Single<[Token]> {
         let getCacheTokensRequest = Single<[Token]?>
             .create { [weak self] observer in

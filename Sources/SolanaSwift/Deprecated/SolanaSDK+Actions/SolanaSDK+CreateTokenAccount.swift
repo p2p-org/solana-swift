@@ -8,7 +8,7 @@
 import Foundation
 import RxSwift
 
-extension SolanaSDK_Deprecated {
+extension SolanaSDK {
     public func getCreatingTokenAccountFee() -> Single<UInt64> {
         getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
     }

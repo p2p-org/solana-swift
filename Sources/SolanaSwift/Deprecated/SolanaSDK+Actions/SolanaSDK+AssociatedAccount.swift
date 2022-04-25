@@ -8,7 +8,7 @@
 import Foundation
 import RxSwift
 
-extension SolanaSDK_Deprecated {
+extension SolanaSDK {
     public func getOrCreateAssociatedTokenAccount(
         owner: PublicKey,
         tokenMint: PublicKey,

@@ -33,7 +33,7 @@ public struct AccountInfo: DecodableBufferLayout {
         isNativeOption == 1
     }
     
-    public static func injectOtherProperties(typeInfo: TypeInfo, currentInstance: inout SolanaSDK_Deprecated.AccountInfo) throws {
+    public static func injectOtherProperties(typeInfo: TypeInfo, currentInstance: inout SolanaSDK.AccountInfo) throws {
         if currentInstance.delegateOption == 0 {
             currentInstance.delegate = nil
             currentInstance.delegatedAmount = 0

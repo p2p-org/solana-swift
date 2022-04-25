@@ -8,7 +8,7 @@
 import Foundation
 import RxSwift
 
-extension SolanaSDK_Deprecated {
+extension SolanaSDK {
     public typealias SPLTokenDestinationAddress = (destination: PublicKey, isUnregisteredAsocciatedToken: Bool)
     
     /// Create prepared transaction for sending SOL
@@ -267,7 +267,7 @@ extension SolanaSDK_Deprecated {
     ) -> Single<SPLTokenDestinationAddress> {
         getAccountInfo(
             account: destinationAddress,
-            decodedTo: SolanaSDK_Deprecated.AccountInfo.self
+            decodedTo: SolanaSDK.AccountInfo.self
         )
             .map {info -> String in
                 let toTokenMint = info.data.mint.base58EncodedString

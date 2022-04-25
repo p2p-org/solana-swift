@@ -12,21 +12,21 @@ public protocol SolanaSDKTransactionParserType {
     func parse(transactionInfo: TransactionInfo, myAccount: String?, myAccountSymbol: String?, p2pFeePayerPubkeys: [String]) -> Single<ParsedTransaction>
 }
 
-public extension SolanaSDK_Deprecated {
+public extension SolanaSDK {
     typealias TransactionParser = SolanaSwift.TransactionParser
 }
 
 public class TransactionParser: SolanaSDKTransactionParserType {
     // MARK: - Properties
-    private let solanaSDK: SolanaSDK_Deprecated
+    private let solanaSDK: SolanaSDK
     private let orcaSwapParser: OrcaSwapParser
     private var lamportsPerSignature: Lamports?
     private var minRentExemption: Lamports?
     
     // MARK: - Initializers
-    public init(solanaSDK: SolanaSDK_Deprecated, orcaSwapParser: OrcaSwapParser? = nil) {
+    public init(solanaSDK: SolanaSDK, orcaSwapParser: OrcaSwapParser? = nil) {
         self.solanaSDK = solanaSDK
-        self.orcaSwapParser = orcaSwapParser ?? SolanaSDK_Deprecated.OrcaSwapParserImpl(solanaSDK: solanaSDK)
+        self.orcaSwapParser = orcaSwapParser ?? SolanaSDK.OrcaSwapParserImpl(solanaSDK: solanaSDK)
     }
     
     // MARK: - Methods
@@ -82,7 +82,7 @@ public class TransactionParser: SolanaSDKTransactionParserType {
         }
         
         // parse error
-        var status = SolanaSDK_Deprecated.ParsedTransaction.Status.confirmed
+        var status = SolanaSDK.ParsedTransaction.Status.confirmed
         if transactionInfo.meta?.err != nil {
             let errorMessage = transactionInfo.meta?.logMessages?
                     .first(where: { $0.contains("Program log: Error:") })?
@@ -557,7 +557,7 @@ public class TransactionParser: SolanaSDKTransactionParserType {
             }
     }
     
-    private func relayProgramId(network: SolanaSDK_Deprecated.Network) -> PublicKey {
+    private func relayProgramId(network: SolanaSDK.Network) -> PublicKey {
         switch network {
         case .mainnetBeta:
             return "12YKFL4mnZz6CBEGePrf293mEzueQM3h8VLPUJsKpGs9"
@@ -576,7 +576,7 @@ private extension String {
     }
 }
 
-extension SolanaSDK_Deprecated {
+extension SolanaSDK {
     func getAccountInfo(account: String?, retryWithAccount retryAccount: String? = nil) -> Single<AccountInfo?> {
         guard let account = account else {
             return .just(nil)

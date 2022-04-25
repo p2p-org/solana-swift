@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension SolanaSDK_Deprecated.Socket {
+extension SolanaSDK.Socket {
     public enum Entity: String {
         case account
         case signature

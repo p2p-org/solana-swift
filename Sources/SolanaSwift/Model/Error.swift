@@ -1,6 +1,6 @@
 import Foundation
 
-extension SolanaSDK_Deprecated {
+extension SolanaSDK {
     public enum Error: Swift.Error, Equatable {
         public static func == (lhs: Error, rhs: Error) -> Bool {
             switch (lhs, rhs) {

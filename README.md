@@ -40,37 +40,37 @@ pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
 ```
 
 ## How to use
-* Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK_Depricated.Account`, `SolanaSDK_Depricated.Error`.
+* Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
 
 * Import
 ```swift
 import SolanaSwift
 ```
 
-* Create an `AccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The `AccountStorage` must conform to protocol `SolanaSDKAccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK_Depricated.Account?` for retrieving user's account.
+* Create an `AccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The `AccountStorage` must conform to protocol `SolanaSDKAccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK.Account?` for retrieving user's account.
 
 Example:
 ```swift
 import KeychainSwift
 struct KeychainAccountStorage: SolanaSDKAccountStorage {
     let tokenKey = <YOUR_KEY_TO_STORE_IN_KEYCHAIN>
-    func save(_ account: SolanaSDK_Depricated.Account) throws {
+    func save(_ account: SolanaSDK.Account) throws {
         let data = try JSONEncoder().encode(account)
         keychain.set(data, forKey: tokenKey)
     }
     
-    var account: SolanaSDK_Depricated.Account? {
+    var account: SolanaSDK.Account? {
         guard let data = keychain.getData(tokenKey) else {return nil}
-        return try? JSONDecoder().decode(SolanaSDK_Depricated.Account.self, from: data)
+        return try? JSONDecoder().decode(SolanaSDK.Account.self, from: data)
     }
 }
 
 struct InMemoryAccountStorage: SolanaSDKAccountStorage {
-    private var _account: SolanaSDK_Depricated.Account?
-    func save(_ account: SolanaSDK_Depricated.Account) throws {
+    private var _account: SolanaSDK.Account?
+    func save(_ account: SolanaSDK.Account) throws {
         _account = account
     }
-    var account: SolanaSDK_Depricated.Account? {
+    var account: SolanaSDK.Account? {
         _account
     }
 }
@@ -82,7 +82,7 @@ let solanaSDK = SolanaSDK(endpoint: <YOUR_API_ENDPOINT>, accountStorage: Keychai
 * Creating an account:
 ```swift
 let mnemonic = Mnemonic()
-let account = try SolanaSDK_Depricated.Account(phrase: mnemonic.phrase, network: .mainnetBeta, derivablePath: .default)
+let account = try SolanaSDK.Account(phrase: mnemonic.phrase, network: .mainnetBeta, derivablePath: .default)
 try solanaSDK.accountStorage.save(account)
 ```
 * Send pre-defined POST methods, which return a `RxSwift.Single`. [List of predefined methods](https://github.com/p2p-org/solana-swift/blob/main/SolanaSwift/Classes/Generated/SolanaSDK%2BGeneratedMethods.swift):

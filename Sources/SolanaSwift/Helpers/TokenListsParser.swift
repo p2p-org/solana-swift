@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 import RxAlamofire
 
-public extension SolanaSDK_Deprecated{
+public extension SolanaSDK{
     class TokensListParser {
         public init() {}
         public func parse(network: String) -> Single<[Token]> {

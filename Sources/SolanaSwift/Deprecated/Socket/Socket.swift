@@ -10,7 +10,7 @@ import RxSwift
 import Starscream
 import RxCocoa
 
-extension SolanaSDK_Deprecated {
+extension SolanaSDK {
     public class Socket {
         // MARK: - Properties
         private let disposeBag = DisposeBag()

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension SolanaSDK_Deprecated {
+public extension SolanaSDK {
     struct TokenProgram {
         // MARK: - Nested type
         private struct Index {

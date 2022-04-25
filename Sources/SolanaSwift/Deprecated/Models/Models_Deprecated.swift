@@ -1,6 +1,6 @@
 import Foundation
 
-public extension SolanaSDK_Deprecated {
+public extension SolanaSDK {
     typealias Lamports = SolanaSwift.Lamports
     typealias Decimals = SolanaSwift.Decimals
     typealias TokenAccountBalance = SolanaSwift.TokenAccountBalance

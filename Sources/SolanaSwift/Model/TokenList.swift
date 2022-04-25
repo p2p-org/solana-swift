@@ -19,7 +19,7 @@ public enum WrappingToken: String {
 }
 
 public struct Token: Hashable, Decodable {
-    public init(_tags: [String]?, chainId: Int, address: String, symbol: String, name: String, decimals: Decimals, logoURI: String?, tags: [SolanaSDK_Deprecated.TokenTag] = [], extensions: SolanaSDK_Deprecated.TokenExtensions?, isNative: Bool = false) {
+    public init(_tags: [String]?, chainId: Int, address: String, symbol: String, name: String, decimals: Decimals, logoURI: String?, tags: [SolanaSDK.TokenTag] = [], extensions: SolanaSDK.TokenExtensions?, isNative: Bool = false) {
         self._tags = _tags
         self.chainId = chainId
         self.address = address

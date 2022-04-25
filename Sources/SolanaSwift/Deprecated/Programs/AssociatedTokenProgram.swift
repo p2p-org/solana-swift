@@ -8,7 +8,7 @@
 import Foundation
 import TweetNacl
 
-extension SolanaSDK_Deprecated {
+extension SolanaSDK {
     public struct AssociatedTokenProgram {
         // MARK: - Interface
         public static func createAssociatedTokenAccountInstruction(

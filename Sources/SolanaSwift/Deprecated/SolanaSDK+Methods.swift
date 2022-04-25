@@ -9,7 +9,7 @@
 import Foundation
 import RxSwift
 
-public extension SolanaSDK_Deprecated {
+public extension SolanaSDK {
     public func getAccount() -> Account? {
         accountStorage.account
     }

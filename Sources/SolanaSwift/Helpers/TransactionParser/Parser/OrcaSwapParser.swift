@@ -10,10 +10,10 @@ public protocol OrcaSwapParser {
     func parse(transactionInfo: TransactionInfo, myAccountSymbol: String?) -> Single<SwapTransaction?>
 }
 
-public extension SolanaSDK_Deprecated {
+public extension SolanaSDK {
     
     struct OrcaSwapParserImpl: OrcaSwapParser {
-        private let solanaSDK: SolanaSDK_Deprecated
+        private let solanaSDK: SolanaSDK
         
         private let supportedProgramId = [
             PublicKey.orcaSwapId(version: 1).base58EncodedString,
@@ -22,7 +22,7 @@ public extension SolanaSDK_Deprecated {
             "SwaPpA9LAaLfeLi3a68M4DjnLqgtticKg6CnyNwgAC8" /*main deprecated*/
         ]
         
-        init(solanaSDK: SolanaSDK_Deprecated) {
+        init(solanaSDK: SolanaSDK) {
             self.solanaSDK = solanaSDK
         }
         

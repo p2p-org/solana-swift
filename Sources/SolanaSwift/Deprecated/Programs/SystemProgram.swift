@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension SolanaSDK_Deprecated {
+public extension SolanaSDK {
     struct SystemProgram {
         private struct Index {
             static let create: UInt32 = 0

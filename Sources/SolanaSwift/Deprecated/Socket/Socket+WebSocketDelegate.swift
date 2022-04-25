@@ -8,7 +8,7 @@
 import Foundation
 import Starscream
 
-extension SolanaSDK_Deprecated.Socket: WebSocketDelegate {
+extension SolanaSDK.Socket: WebSocketDelegate {
     public func didReceive(event: WebSocketEvent, client: WebSocket) {
         switch event {
         case .connected(let headers):

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension SolanaSDK_Deprecated {
+public extension SolanaSDK {
     typealias EncodableWrapper = SolanaSwift.EncodableWrapper
     typealias RequestAPI = SolanaSwift.RequestAPI
     typealias Transfer = SolanaSwift.Transfer

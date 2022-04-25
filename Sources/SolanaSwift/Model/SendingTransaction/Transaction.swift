@@ -291,7 +291,7 @@ public struct Transaction: Encodable {
             if let signature = signature.signature {
                 data.append(signature)
             } else {
-                data.append(SolanaSDK_Deprecated.Transaction.DEFAULT_SIGNATURE)
+                data.append(SolanaSDK.Transaction.DEFAULT_SIGNATURE)
             }
             return data
         })
@@ -329,8 +329,8 @@ public struct Transaction: Encodable {
             transaction.feePayer = message.accountKeys[0]
         }
         signatures.enumerated().forEach { (index, signature) in
-            let sigPubkeyPair = SolanaSDK_Deprecated.Transaction.Signature(
-                signature: signature == Base58.encode(SolanaSDK_Deprecated.Transaction.DEFAULT_SIGNATURE) ? nil : Data(bytes: Base58.decode(signature)),
+            let sigPubkeyPair = SolanaSDK.Transaction.Signature(
+                signature: signature == Base58.encode(SolanaSDK.Transaction.DEFAULT_SIGNATURE) ? nil : Data(bytes: Base58.decode(signature)),
                 publicKey: message.accountKeys[index]
             )
             transaction.signatures.append(sigPubkeyPair)

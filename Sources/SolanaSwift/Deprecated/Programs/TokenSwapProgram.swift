@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension SolanaSDK_Deprecated {
+public extension SolanaSDK {
     struct TokenSwapProgram {
         // MARK: - Nested type
         private enum Index: UInt8, BytesEncodable {
@@ -172,7 +172,7 @@ public extension SolanaSDK_Deprecated {
         //                curveType,
         //                Data(capacity: 32)
         //            ])
-        //            return TransactionInstruction(keys: keys, programId: <#T##SolanaSDK_Depricated.PublicKey#>, data: data.bytes)
+        //            return TransactionInstruction(keys: keys, programId: , data: data.bytes)
         //        }
     }
 }

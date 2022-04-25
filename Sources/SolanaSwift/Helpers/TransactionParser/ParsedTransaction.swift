@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension SolanaSDK_Deprecated {
+public extension SolanaSDK {
     typealias ParsedTransaction = SolanaSwift.ParsedTransaction
     typealias TransferTransaction = SolanaSwift.TransferTransaction
     typealias CreateAccountTransaction = SolanaSwift.CreateAccountTransaction

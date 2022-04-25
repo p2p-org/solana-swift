@@ -8,9 +8,9 @@
 import Foundation
 import RxSwift
 
-private var mintDatasCache = [SolanaSDK_Deprecated.Mint]()
+private var mintDatasCache = [SolanaSDK.Mint]()
 
-extension SolanaSDK_Deprecated {
+extension SolanaSDK {
     struct ParsedSwapInfo: Codable {
         let address: String
         let info: TokenSwapInfo

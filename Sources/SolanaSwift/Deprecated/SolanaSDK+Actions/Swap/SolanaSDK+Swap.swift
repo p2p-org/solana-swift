@@ -8,7 +8,7 @@
 import Foundation
 import RxSwift
 
-extension SolanaSDK_Deprecated {
+extension SolanaSDK {
     public struct SwapResponse {
         public let transactionId: String
         public let newWalletPubkey: String?
@@ -22,8 +22,8 @@ extension SolanaSDK_Deprecated {
     public struct AccountInstructions {
         public init(
             account: PublicKey,
-            instructions: [SolanaSDK_Deprecated.TransactionInstruction] = [],
-            cleanupInstructions: [SolanaSDK_Deprecated.TransactionInstruction] = [],
+            instructions: [SolanaSDK.TransactionInstruction] = [],
+            cleanupInstructions: [SolanaSDK.TransactionInstruction] = [],
             signers: [Account] = [],
             newWalletPubkey: String? = nil,
             secretKey: Data? = nil
