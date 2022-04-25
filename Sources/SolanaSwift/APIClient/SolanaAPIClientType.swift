@@ -7,6 +7,66 @@
 
 import Foundation
 
+public enum RequestType {
+    case getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: Decodable.Type)
+    case getBalance(account: String, commitment: SolanaSDK.Commitment?)
+    case getBlockCommitment(block: String)
+    case getBlockTime(block: UInt64)
+    case getClusterNodes
+    case getConfirmedBlock(slot: UInt64, encoding: String)
+    case getConfirmedBlocks(startSlot: UInt64, endSlot: UInt64)
+    case getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64)
+    case getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64)
+    @available(*, deprecated, renamed: "getSignaturesForAddress(address:configs:)", message: "use getSignaturesForAddress instead.This method is expected to be removed in solana-core v1.8.")
+    case getConfirmedSignaturesForAddress2(account: String, configs: SolanaSDK.RequestConfiguration?)
+    case getSignaturesForAddress(address: String, configs: SolanaSDK.RequestConfiguration?)
+    @available(*, deprecated, renamed: "getTransaction(transactionSignature:)", message: "use getTransaction instead This method is expected to be removed in solana-core v1.8.")
+    case getConfirmedTransaction(transactionSignature: String)
+    case getTransaction(transactionSignature: String)
+    case getEpochInfo(commitment: SolanaSDK.Commitment?)
+    case getEpochSchedule
+    case getFeeCalculatorForBlockhash(blockhash: String, commitment: SolanaSDK.Commitment?)
+    case getFeeRateGovernor
+    case getFees(commitment: SolanaSDK.Commitment?)
+    case getFirstAvailableBlock
+    case getGenesisHash
+    case getIdentity
+    case getInflationGovernor(commitment: SolanaSDK.Commitment?)
+    case getInflationRate
+    case getLargestAccounts
+    case getLeaderSchedule(epoch: UInt64?, commitment: SolanaSDK.Commitment?)
+    case getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: SolanaSDK.Commitment?)
+    case getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String], decodedTo: T.Type, log: Bool)
+    case getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: SolanaSDK.RequestConfiguration?, decodedTo: T.Type, log: Bool)
+    case getRecentBlockhash(commitment: SolanaSDK.Commitment?)
+    case getRecentPerformanceSamples(limit: UInt64)
+    case getSignatureStatuses(signatures: [String], configs: SolanaSDK.RequestConfiguration?)
+    case getSignatureStatus(signature: String, configs: SolanaSDK.RequestConfiguration?)
+    case getSlot(commitment: SolanaSDK.Commitment?)
+    case getSlotLeader(commitment: SolanaSDK.Commitment?)
+    case getStakeActivation(stakeAccount: String, configs: SolanaSDK.RequestConfiguration?)
+    case getSupply(commitment: SolanaSDK.Commitment?)
+    case getTransactionCount(commitment: SolanaSDK.Commitment?)
+    case getTokenAccountBalance(pubkey: String, commitment: SolanaSDK.Commitment?)
+    case getTokenAccountsByDelegate(pubkey: String, mint: String?, programId: String?, configs: SolanaSDK.RequestConfiguration?)
+    case getTokenAccountsByOwner(pubkey: String, params: SolanaSDK.OwnerInfoParams?, configs: SolanaSDK.RequestConfiguration?, log: Bool)
+    case getTokenLargestAccounts(pubkey: String, commitment: SolanaSDK.Commitment?)
+    case getTokenSupply(pubkey: String, commitment: SolanaSDK.Commitment?)
+    case getVersion
+    case getVoteAccounts(commitment: SolanaSDK.Commitment?)
+    case minimumLedgerSlot
+    case requestAirdrop(account: String, lamports: UInt64, commitment: SolanaSDK.Commitment?)
+    case sendTransaction(serializedTransaction: String, configs: SolanaSDK.RequestConfiguration)
+    case simulateTransaction(transaction: String, configs: SolanaSDK.RequestConfiguration)
+    case setLogFilter(filter: String)
+    case validatorExit
+    case waitForConfirmation(signature: String)
+    
+    var responseType: Decodable.Type {
+        return UInt64.self
+    }
+}
+
 public protocol SolanaAPIClientType: AnyObject {
     associatedtype HTTPMethod
     associatedtype Error: Swift.Error
