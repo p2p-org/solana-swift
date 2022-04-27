@@ -27,9 +27,19 @@ public struct ResponseErrorData: Decodable {
     public let logs: [String]?
     public let numSlotsBehind: Int?
 }
+
+protocol AnyDecodableInitializable {
+    init(from: AnyDecodable)
+}
+
 public struct Rpc<T: Decodable>: Decodable {
     public let context: Context
     public let value: T
+    
+    init(_ v: AnyDecodable) {
+        self.context = Context(slot: 1)
+        fatalError()
+    }
 }
 public struct Context: Decodable {
     public let slot: UInt64
