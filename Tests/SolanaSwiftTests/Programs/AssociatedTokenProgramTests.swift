@@ -25,6 +25,7 @@ class AssociatedTokenProgramTests: XCTestCase {
                 payer: owner
             )
         
+        XCTAssertEqual(instruction.keys.count, 7)
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", isSigner: true))
         XCTAssertEqual(instruction.keys[1], .writable(publicKey: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3", isSigner: false))
         XCTAssertEqual(instruction.keys[2], .readonly(publicKey: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", isSigner: false))

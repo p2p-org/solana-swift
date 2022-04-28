@@ -9,7 +9,7 @@
 import XCTest
 import SolanaSwift
 
-class SystemProgramTests: XCTestCase {
+class SystemProgramTests_Deprecated: XCTestCase {
     func testTransferInstruction() throws {
         let fromPublicKey = try SolanaSDK.PublicKey(string: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")
         let toPublicKey = try SolanaSDK.PublicKey(string: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5")
