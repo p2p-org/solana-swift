@@ -9,7 +9,7 @@
 import XCTest
 import SolanaSwift
 
-class TokenProgramTests: XCTestCase {
+class TokenProgramTests_Deprecated: XCTestCase {
     let publicKey: PublicKey = "11111111111111111111111111111111"
     
 //    func testInitializeMintInstruction() throws {

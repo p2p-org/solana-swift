@@ -2,7 +2,6 @@ import Foundation
 
 public protocol TokenProgramType {
     func initializeMintInstruction(
-        tokenProgramId: PublicKey,
         mint: PublicKey,
         decimals: UInt8,
         authority: PublicKey,
@@ -20,6 +19,24 @@ public protocol TokenProgramType {
         destination: PublicKey,
         owner: PublicKey,
         amount: UInt64
+    ) -> TransactionInstruction
+    
+    func transferCheckedInstruction(
+        source: PublicKey,
+        mint: PublicKey,
+        destination: PublicKey,
+        owner: PublicKey,
+        multiSigners: [Account],
+        amount: Lamports,
+        decimals: Decimals
+    ) -> TransactionInstruction
+    
+    func burnCheckedInstruction(
+        mint: PublicKey,
+        account: PublicKey,
+        owner: PublicKey,
+        amount: UInt64,
+        decimals: UInt8
     ) -> TransactionInstruction
     
     func approveInstruction(
@@ -49,25 +66,6 @@ public protocol TokenProgramType {
         owner: PublicKey,
         signers: [PublicKey]
     ) -> TransactionInstruction
-    
-    func transferCheckedInstruction(
-        source: PublicKey,
-        mint: PublicKey,
-        destination: PublicKey,
-        owner: PublicKey,
-        multiSigners: [Account],
-        amount: Lamports,
-        decimals: Decimals
-    ) -> TransactionInstruction
-    
-    func burnCheckedInstruction(
-        tokenProgramId: PublicKey,
-        mint: PublicKey,
-        account: PublicKey,
-        owner: PublicKey,
-        amount: UInt64,
-        decimals: UInt8
-    ) -> TransactionInstruction
 }
 
 public struct TokenProgram: SolanaBasicProgramType {
@@ -93,7 +91,6 @@ public struct TokenProgram: SolanaBasicProgramType {
     
     // MARK: - Instruction builders
     public func initializeMintInstruction(
-        tokenProgramId: PublicKey,
         mint: PublicKey,
         decimals: UInt8,
         authority: PublicKey,
@@ -105,7 +102,7 @@ public struct TokenProgram: SolanaBasicProgramType {
                 Account.Meta(publicKey: mint, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false)
             ],
-            programId: tokenProgramId,
+            programId: id,
             data: [
                 Index.initalizeMint,
                 decimals,
@@ -148,6 +145,59 @@ public struct TokenProgram: SolanaBasicProgramType {
             ],
             programId: id,
             data: [Index.transfer, amount]
+        )
+    }
+    
+    public func transferCheckedInstruction(
+        source: PublicKey,
+        mint: PublicKey,
+        destination: PublicKey,
+        owner: PublicKey,
+        multiSigners: [Account],
+        amount: Lamports,
+        decimals: Decimals
+    ) -> TransactionInstruction {
+        var keys = [
+            Account.Meta(publicKey: source, isSigner: false, isWritable: true),
+            Account.Meta(publicKey: mint, isSigner: false, isWritable: false),
+            Account.Meta(publicKey: destination, isSigner: false, isWritable: true)
+        ]
+        
+        if multiSigners.count == 0 {
+            keys.append(.init(publicKey: owner, isSigner: true, isWritable: false))
+        } else {
+            keys.append(.init(publicKey: owner, isSigner: false, isWritable: false))
+            multiSigners.forEach { signer in
+                keys.append(.init(publicKey: signer.publicKey, isSigner: true, isWritable: false))
+            }
+        }
+        
+        return .init(
+            keys: keys,
+            programId: id,
+            data: [Index.transferChecked, amount, decimals]
+        )
+    }
+    
+    public func burnCheckedInstruction(
+        mint: PublicKey,
+        account: PublicKey,
+        owner: PublicKey,
+        amount: UInt64,
+        decimals: UInt8
+    ) -> TransactionInstruction {
+        .init(
+            keys: [
+                .init(publicKey: account, isSigner: false, isWritable: true),
+                .init(publicKey: mint, isSigner: false, isWritable: true),
+                .init(publicKey: owner, isSigner: true, isWritable: false),
+            ],
+            programId: id,
+            data: [
+                Index.burnChecked,
+                amount,
+                decimals
+            ]
         )
     }
     
@@ -234,59 +284,5 @@ public struct TokenProgram: SolanaBasicProgramType {
             ] + signers.map {.readonly(publicKey: $0, isSigner: true)},
             programId: id,
             data: [Index.closeAccount])
-    }
-    
-    public func transferCheckedInstruction(
-        source: PublicKey,
-        mint: PublicKey,
-        destination: PublicKey,
-        owner: PublicKey,
-        multiSigners: [Account],
-        amount: Lamports,
-        decimals: Decimals
-    ) -> TransactionInstruction {
-        var keys = [
-            Account.Meta(publicKey: source, isSigner: false, isWritable: true),
-            Account.Meta(publicKey: mint, isSigner: false, isWritable: false),
-            Account.Meta(publicKey: destination, isSigner: false, isWritable: true)
-        ]
-        
-        if multiSigners.count == 0 {
-            keys.append(.init(publicKey: owner, isSigner: true, isWritable: false))
-        } else {
-            keys.append(.init(publicKey: owner, isSigner: false, isWritable: false))
-            multiSigners.forEach { signer in
-                keys.append(.init(publicKey: signer.publicKey, isSigner: true, isWritable: false))
-            }
-        }
-        
-        return .init(
-            keys: keys,
-            programId: id,
-            data: [Index.transferChecked, amount, decimals]
-        )
-    }
-    
-    public func burnCheckedInstruction(
-        tokenProgramId: PublicKey,
-        mint: PublicKey,
-        account: PublicKey,
-        owner: PublicKey,
-        amount: UInt64,
-        decimals: UInt8
-    ) -> TransactionInstruction {
-        .init(
-            keys: [
-                .init(publicKey: account, isSigner: false, isWritable: true),
-                .init(publicKey: mint, isSigner: false, isWritable: true),
-                .init(publicKey: owner, isSigner: true, isWritable: false),
-            ],
-            programId: id,
-            data: [
-                Index.burnChecked,
-                amount,
-                decimals
-            ]
-        )
     }
 }
