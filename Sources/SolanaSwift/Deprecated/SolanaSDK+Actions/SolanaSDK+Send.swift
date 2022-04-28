@@ -159,9 +159,8 @@ extension SolanaSDK {
                     let mint = try PublicKey(string: mintAddress)
                     let owner = try PublicKey(string: destinationAddress)
                     
-                    let createATokenInstruction = AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+                    let createATokenInstruction = try AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
                         mint: mint,
-                        associatedAccount: toPublicKey,
                         owner: owner,
                         payer: feePayer
                     )

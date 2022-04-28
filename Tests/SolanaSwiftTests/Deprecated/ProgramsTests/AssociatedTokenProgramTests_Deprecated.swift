@@ -10,7 +10,7 @@ import Foundation
 import XCTest
 @testable import SolanaSwift
 
-class AssociatedTokenProgramTests: RestAPITests {
+class AssociatedTokenProgramTests_Deprecated: RestAPITests {
     override var overridingAccount: String? {
         "miracle pizza supply useful steak border same again youth silver access hundred"
     }
@@ -18,7 +18,7 @@ class AssociatedTokenProgramTests: RestAPITests {
     func testFindAssociatedTokenAddress() throws {
         let associatedTokenAddress = try SolanaSDK.PublicKey.associatedTokenAddress(
             walletAddress: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
-            tokenMintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            tokenMintAddress: "CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5"
         )
         
         XCTAssertEqual(associatedTokenAddress.base58EncodedString, "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3")
@@ -27,7 +27,7 @@ class AssociatedTokenProgramTests: RestAPITests {
     func testCreateAssociatedTokenAddress() throws {
         let associatedTokenAddress = try solanaSDK.createAssociatedTokenAccount(
             for: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
-            tokenMint: "FqqVanFZosh4M4zqxzWUmEnky6nVANjghiSLaGqUAYGi",
+            tokenMint: "CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5",
             isSimulation: true
         ).toBlocking().first()
     }

@@ -198,10 +198,9 @@ extension SolanaSDK {
                     return .init(
                         account: associatedAddress,
                         instructions: [
-                            AssociatedTokenProgram
+                            try AssociatedTokenProgram
                                 .createAssociatedTokenAccountInstruction(
                                     mint: mint,
-                                    associatedAccount: associatedAddress,
                                     owner: owner,
                                     payer: feePayer
                                 )
