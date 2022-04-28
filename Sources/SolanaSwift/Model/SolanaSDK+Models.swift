@@ -42,7 +42,7 @@ public struct BlockCommitment: Decodable {
 public struct ClusterNodes: Decodable {
     public let pubkey: String
     public let gossip: String
-    public let tpu: String
+    public let tpu: String?
     public let rpc: String?
     public let version: String?
 }

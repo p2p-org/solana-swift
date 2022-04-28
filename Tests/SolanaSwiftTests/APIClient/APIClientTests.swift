@@ -86,6 +86,17 @@ class APIClientTests: XCTestCase {
         XCTAssert(result == Date(timeIntervalSince1970: TimeInterval(1644034719)))
     }
     
+    func testGetClusterNodes() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getClusterNodes"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result: [ClusterNodes] = try! await apiClient.getClusterNodes()
+        XCTAssert(result.count == 1)
+        XCTAssert(result[0].pubkey == "57UtuDwoCurTTWySMeV5MiopvDWvK2QeLWu47biQjjLJ")
+    }
+    
+    // MARK: - Mocks
+    
+    
     class NetworkManagerMock: NetworkManager {
         private let json: String
         init(_ json: String) {
@@ -106,6 +117,10 @@ class APIClientTests: XCTestCase {
         , "getBalance": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":123456},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}]\n"
         , "getBlockCommitment": "[{\"jsonrpc\":\"2.0\",\"result\":{\"commitment\":null,\"totalStake\":394545529101613343},\"id\":\"BB79B171-937B-4EB1-9D13-EC961F186D75\"}]\n"
         , "getBlockTime": "[{\"jsonrpc\":\"2.0\",\"result\":1644034719,\"id\":\"F944107E-4105-4B0A-8049-3BA73C1E4067\"}]\n"
+//        , "getClusterNodes": "[{\"jsonrpc\":\"2.0\",\"result\":[{\"featureSet\":1070292356,\"gossip\":\"145.40.114.77:8001\",\"pubkey\":\"FFquSZqsRZFNwkxJjTC9DLgKPuevjAoantr4RQNFB6xw\",\"rpc\":null,\"shredVersion\":8573,\"tpu\":\"145.40.114.77:8004\",\"version\":\"1.9.14\"},{\"featureSet\":1070292356,\"gossip\":\"141.94.74.210:8001\",\"pubkey\":\"CsKpHvEjoSkdNduEjb7mfuJbzRKqc5ypde4yUW4iGMS1\",\"rpc\":null,\"shredVersion\":8573,\"tpu\":\"141.94.74.210:8004\",\"version\":\"1.9.18\"}GL99RftYiTY\",\"rpc\":null,\"shredVersion\":8573,\"tpu\":null,\"version\":null}],\"id\":\"4C13BD18-58D2-466B-994D-3BE27EBF3CE4\"}]\n"
+        , "getClusterNodes": "[{\"jsonrpc\":\"2.0\",\"result\":[{\"featureSet\":1070292356,\"gossip\":\"145.40.93.113:8001\",\"pubkey\":\"57UtuDwoCurTTWySMeV5MiopvDWvK2QeLWu47biQjjLJ\",\"rpc\":null,\"shredVersion\":8573,\"tpu\":\"145.40.93.113:8004\",\"version\":\"1.9.14\"}],\"id\":\"356C6D54-84EA-48D0-B13F-D5667A5DC750\"}]\n"
+        
+        
     ]
 
 }

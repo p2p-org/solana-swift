@@ -9,6 +9,7 @@ public protocol SolanaAPIClient {
     func getBalance(account: String, commitment: Commitment?) async throws -> UInt64
     func getBlockCommitment(block: UInt64) async throws -> BlockCommitment
     func getBlockTime(block: UInt64) async throws -> Date
+    func getClusterNodes() async throws -> [ClusterNodes]
     func getBlockHeight() async throws -> UInt64
     func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64]
     
@@ -78,6 +79,15 @@ extension SolanaAPIClient {
         let response: AnyResponse<Double> = try await request(with: req)
         guard let resp = response.result else { throw APIClientError.cantDecodeResponse }
         return Date(timeIntervalSince1970: TimeInterval(resp))
+    }
+    
+    public func getClusterNodes() async throws -> [ClusterNodes] {
+        let req = RequestEncoder.RequestType(method: "getClusterNodes", params: [])
+        let response: AnyResponse<[ClusterNodes]> = try await request(with: req)
+        guard let result = response.result else {
+            throw APIClientError.cantDecodeResponse
+        }
+        return result
     }
 
 }
