@@ -12,7 +12,9 @@ public protocol SolanaAPIClient {
     func getClusterNodes() async throws -> [ClusterNodes]
     func getBlockHeight() async throws -> UInt64
     func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64]
-    
+    func getConfirmedBlock(slot: UInt64, encoding: String) async throws -> ConfirmedBlock
+    func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) async throws -> [String]
+    func getEpochInfo(commitment: Commitment?) async throws -> EpochInfo
 
     // Requests
     func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
@@ -84,6 +86,42 @@ extension SolanaAPIClient {
     public func getClusterNodes() async throws -> [ClusterNodes] {
         let req = RequestEncoder.RequestType(method: "getClusterNodes", params: [])
         let response: AnyResponse<[ClusterNodes]> = try await request(with: req)
+        guard let result = response.result else {
+            throw APIClientError.cantDecodeResponse
+        }
+        return result
+    }
+    
+    public func getConfirmedBlock(slot: UInt64, encoding: String) async throws -> ConfirmedBlock {
+        let req = RequestEncoder.RequestType(method: "getConfirmedBlock", params: [slot, encoding])
+        let response: AnyResponse<ConfirmedBlock> = try await request(with: req)
+        guard let result = response.result else {
+            throw APIClientError.cantDecodeResponse
+        }
+        return result
+    }
+    
+    public func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) async throws -> [String] {
+        let req = RequestEncoder.RequestType(method: "getConfirmedSignaturesForAddress", params: [account, startSlot, endSlot])
+        let response: AnyResponse<[String]> = try await request(with: req)
+        guard let result = response.result else {
+            throw APIClientError.cantDecodeResponse
+        }
+        return result
+    }
+    
+    public func getTransaction(transactionSignature: String) async throws -> TransactionInfo {
+        let req = RequestEncoder.RequestType(method: "getTransaction", params: [transactionSignature, "jsonParsed"])
+        let response: AnyResponse<TransactionInfo> = try await request(with: req)
+        guard let result = response.result else {
+            throw APIClientError.cantDecodeResponse
+        }
+        return result
+    }
+    
+    public func getEpochInfo(commitment: Commitment? = nil) async throws -> EpochInfo {
+        let req = RequestEncoder.RequestType(method: "getEpochInfo", params: [RequestConfiguration(commitment: commitment)])
+        let response: AnyResponse<EpochInfo> = try await request(with: req)
         guard let result = response.result else {
             throw APIClientError.cantDecodeResponse
         }
