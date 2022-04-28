@@ -5,10 +5,11 @@ public protocol SolanaAPIClient {
     associatedtype RequestEncoder: APIClientRequestEncoder
 
     func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>
+    func getBlockHeight() async throws -> UInt64
 
     // TODO: rename to request
-    func perform<Entity: Decodable>(request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
-    func perform(requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>]
+    func request<Entity: Decodable>(request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
+    func request(requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>]
 }
 
 public enum APIClientError: Error {
@@ -22,25 +23,23 @@ extension SolanaAPIClient {
     
     public func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T> {
         let requestConfig = RequestConfiguration(encoding: "base64")
-        let request = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
+        let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
         
-        let response: AnyResponse<Rpc<T>> = try await perform(request: request)
-        
-        fatalError()
-//        guard let ret = response.result else {
-//            throw APIClientError.cantDecodeResponse
-//        }
-//        return ret
+        let response: AnyResponse<Rpc<BufferInfo<T>>> = try await request(request: req)
+        guard let ret = response.result?.value else {
+            throw APIClientError.cantDecodeResponse
+        }
+        return ret
     }
     
-//    public func getBlockHeight() async throws -> [UInt64] {
-//        let request = RequestEncoder.RequestType(method: "getBlockHeight", params: [])
-//        let response: AnyRespons<UInt64> = try await perform(request: request)
-//        guard let result = response.result else {
-//            throw APIClientError.cantDecodeResponse
-//        }
-//        return [result]
-//    }
+    public func getBlockHeight() async throws -> UInt64 {
+        let req = RequestEncoder.RequestType(method: "getBlockHeight", params: [])
+        let response: AnyResponse<UInt64> = try await request(request: req)
+        guard let result = response.result else {
+            throw APIClientError.cantDecodeResponse
+        }
+        return result
+    }
     
 //    func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) -> [UInt64] {
 //        let request = RequestEncoder.RequestType(method: "getConfirmedBlocksWithLimit", params: [startSlot, limit])
@@ -56,31 +55,18 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     // MARK: -
     
     private let endpoint: APIEndPoint
+    private let networkManager: NetworkManager
     
-    public init(endpoint: APIEndPoint) {
+    public init(endpoint: APIEndPoint, networkManager: NetworkManager = APIClientNetworkManager()) {
         self.endpoint = endpoint
+        self.networkManager = networkManager
     }
     
     @available(iOS 13.0.0, *)
     @available(macOS 10.15.0, *)
-    public func perform(requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>] {
-        var encodedParams: Data = Data()
-        do {
-            encodedParams += try RequestEncoder(requests: requests).encoded()
-        } catch {
-            throw APIClientError.cantEncodeParams
-        }
-        let urlRequest = try self.urlRequest(data: encodedParams)
+    public func request(requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>] {
+        let data = try await self.makeRequest(requests: requests)
         
-        let urlSessionConfiguration = URLSessionConfiguration.default
-        
-        let urlSession = URLSession(configuration: urlSessionConfiguration)
-        let (data, _): (Data, URLResponse)
-        if #available(iOS 15.0, *) {
-            (data, _) = try await urlSession.data(for: urlRequest)
-        } else {
-            (data, _) = try await urlSession.data(from: urlRequest)
-        }
         let response = try ResponseDecoder<[AnyResponse<AnyDecodable>]>().decode(with: data)
         let ret = response.map({ resp in
             return AnyResponse<RequestEncoder.RequestType.Entity>(resp)
@@ -90,17 +76,29 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     @available(iOS 13.0.0, *)
     @available(macOS 10.15.0, *)
-    public func perform<Entity: Decodable>(request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity> {
-        let response = try await perform(requests: [request])
-        // Need to cast AnyCodable to Entity
-        guard let first = response.first, var newResponse = AnyResponse<Entity>(with: first) else {
+    public func request<Entity: Decodable>(request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity> {
+        let data = try await self.makeRequest(requests: [request])
+        let response = try ResponseDecoder<[AnyResponse<Entity>]>().decode(with: data)
+        guard let ret = response.first else {
             throw APIClientError.cantDecodeResponse
         }
-        newResponse.error = first.error
-        return newResponse
+        return ret
     }
     
     // MARK: - Private
+    
+    
+    private func makeRequest(requests: [RequestEncoder.RequestType]) async throws -> Data {
+        var encodedParams: Data = Data()
+        do {
+            encodedParams += try RequestEncoder(requests: requests).encoded()
+        } catch {
+            throw APIClientError.cantEncodeParams
+        }
+        let urlRequest = try self.urlRequest(data: encodedParams)
+        
+        return try await networkManager.requestData(request: urlRequest)
+    }
     
     private func urlRequest(data: Data) throws -> URLRequest {
         guard let url = URL(string: self.endpoint.getURL()) else { throw APIClientError.invalidAPIURL }

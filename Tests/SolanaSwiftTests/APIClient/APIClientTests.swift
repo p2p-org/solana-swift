@@ -26,67 +26,38 @@ class APIClientTests: XCTestCase {
     override func tearDownWithError() throws {
         
     }
+    
+    func testGetBlock() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getBlockHeight"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result = try! await apiClient.getBlockHeight()
+        XCTAssert(result == 119396901)
+    }
 
-    func testGetAccount() async throws {
-        let mock = JSONRPCAPIClient(endpoint: endpoint)
-        let requestConfig = RequestConfiguration(encoding: "base64")
-//        let request = RequestAPI(method: "getAccountInfo", params: ["HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk", requestConfig])
-//        let request2 = RequestAPI(method: "getAccountInfo", params: ["HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk", requestConfig])
-//        let request3 = RequestAPI(method: "getBlockHeight", params: [])
-        
-//        let req1 = JSONRPCAPIClient.RequestEncoder.RequestType(method: "getAccountInfo", params: ["HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk", requestConfig])
-//        let res: AnyResponse<Rpc<BufferInfo<AccountInfo>>> = try await mock.perform(request: req1)
-//        let res1: AnyResponse<Int> = try await mock.perform(request: req1)
-//        print("**** \(res)")
-        
-        
-        let result1: BufferInfo<AccountInfo> = try! await mock.getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
-        print(result1)
-        
-        
-//        let result: AnyResponse<[Rpc<BufferInfo<EmptyInfo>?>]> = try await mock.perform(requests: [request, request3])
-//        XCTAssert(result.result != nil)
-//        print(result.result)
-//        print(result.error)
-//        print(result.result?.value?.data.owner)
-        
-//        let data: BufferInfo<AccountInfo> = try await mock.getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
-//        XCTAssert(result.result?.value?.data.owner == data.data.owner)
+    func testGetAccountInfo() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getAccountInfo"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result: BufferInfo<AccountInfo> = try! await apiClient.getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
+        XCTAssert(result.owner == "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+        XCTAssert(result.lamports == 2039280)
+        XCTAssert(result.rentEpoch == 304)
     }
     
-//    func testWithMock() async throws {
-//        let mock = MockAPIClient()
-////        let requestConfig = RequestConfiguration(encoding: "base64")
-////        let request = RequestAPI(method: "getAccountInfo", params: ["HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk", requestConfig])
-////        let result: AnyResponse<Rpc<BufferInfo<AccountInfo>?>> = try await mock.perform(request: request)
-////        XCTAssert(result.result != nil)
-////        print(result.result?.value?.data.owner)
-//
-////        let data: BufferInfo<AccountInfo> = try await mock.getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
-////        XCTAssert(result.result?.value?.data.owner == data.data.owner)
-//        let data: BufferInfo<AccountInfo> = try await mock.getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
-//        XCTAssert(data.data.owner == "")
-//
-//    }
-//
-//    class MockAPIClient: SolanaAPIClient {
-//
-//        func getAccountInfo<T>(account: String) async throws -> BufferInfo<T> where T : DecodableBufferLayout {
-//            ...
-//        }
-//
-//        func perform<Entity>(request: RequestAPI) async throws -> AnyResponse<Entity> where Entity : Decodable {
-//            let str = "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131421172},\"value\":{\"data\":[\"xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWF9P8kKbTPTsQZqMMzOan8jwyOl0jQaxrCPh8bU1ysTa96DDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":304}},\"id\":\"6B1C0860-44BE-4FA9-9F57-CB14BC7636BB\"}\n".data(using: .utf8)!
-//            let json = try! JSONSerialization.jsonObject(with: str, options: [])
-//            let data = try! JSONEncoder().encode(json)
-//            return try JSONRPCResponse<BufferInfo<T>>(data: data)!.result!
-//        }
-//
-//        func perform<Entity>(requests: [RequestAPI]) async throws -> AnyResponse<Entity> where Entity : Decodable {
-//            fatalError()
-//        }
-//
-//        typealias RequestEncoder = JSONRPCRequestEncoder
-//    }
+    class NetworkManagerMock: NetworkManager {
+        private let json: String
+        init(_ json: String) {
+            self.json = json
+        }
+
+        func requestData(request: URLRequest) async throws -> Data {
+            let str = json.data(using: .utf8)!
+            return str
+        }
+    }
+
+    var NetworkManagerMockJSON = [
+        "getBlockHeight": "[{\"jsonrpc\":\"2.0\",\"result\":119396901,\"id\":\"45ECD42F-D53C-4A02-8621-52D88840FFC1\"}]\n"
+        , "getAccountInfo": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131421172},\"value\":{\"data\":[\"xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWF9P8kKbTPTsQZqMMzOan8jwyOl0jQaxrCPh8bU1ysTa96DDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":304}},\"id\":\"6B1C0860-44BE-4FA9-9F57-CB14BC7636BB\"}]\n"
+    ]
 
 }
