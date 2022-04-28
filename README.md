@@ -40,7 +40,7 @@ pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
 ```
 
 ## How to use
-* Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
+* [Deprecated] Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
 
 * Import
 ```swift
@@ -51,26 +51,28 @@ import SolanaSwift
 
 Example:
 ```swift
+import SolanaSwift
 import KeychainSwift
-struct KeychainAccountStorage: SolanaSDKAccountStorage {
+struct KeychainAccountStorage: AccountStorageType {
     let tokenKey = <YOUR_KEY_TO_STORE_IN_KEYCHAIN>
-    func save(_ account: SolanaSDK.Account) throws {
+    func save(_ account: Account) throws {
         let data = try JSONEncoder().encode(account)
         keychain.set(data, forKey: tokenKey)
     }
     
-    var account: SolanaSDK.Account? {
+    func getAccount() -> Account? {
         guard let data = keychain.getData(tokenKey) else {return nil}
         return try? JSONDecoder().decode(SolanaSDK.Account.self, from: data)
     }
 }
 
-struct InMemoryAccountStorage: SolanaSDKAccountStorage {
+struct InMemoryAccountStorage: AccountStorageType {
     private var _account: SolanaSDK.Account?
-    func save(_ account: SolanaSDK.Account) throws {
+    func save(_ account: Account) throws {
         _account = account
     }
-    var account: SolanaSDK.Account? {
+    
+    func getAccount() -> Account? {
         _account
     }
 }
