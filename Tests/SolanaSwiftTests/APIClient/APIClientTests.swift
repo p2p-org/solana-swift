@@ -68,8 +68,8 @@ class APIClientTests: XCTestCase {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getBalance"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         let account = try SolanaSDK.Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network).publicKey.base58EncodedString
-        let result = try! await apiClient.getBalance(account: account, commitment: "recent")
-        XCTAssert(result == 131647712)
+        let result: UInt64 = try! await apiClient.getBalance(account: account, commitment: "recent")
+        XCTAssert(result == 123456)
     }
     
     class NetworkManagerMock: NetworkManager {
@@ -89,7 +89,7 @@ class APIClientTests: XCTestCase {
         , "getAccountInfo": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131421172},\"value\":{\"data\":[\"xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWF9P8kKbTPTsQZqMMzOan8jwyOl0jQaxrCPh8bU1ysTa96DDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":304}},\"id\":\"6B1C0860-44BE-4FA9-9F57-CB14BC7636BB\"}]\n"
         , "getConfirmedBlocksWithLimit": "[{\"jsonrpc\":\"2.0\",\"result\":[131421172,131421173,131421174,131421175,131421176,131421177,131421178,131421179,131421180,131421181],\"id\":\"A5A1EB9D-CC05-496F-8582-2B8D610859DB\"}]\n"
         , "batch1": "[{\"jsonrpc\":\"2.0\",\"result\":119396901,\"id\":\"45ECD42F-D53C-4A02-8621-52D88840FFC1\"},{\"jsonrpc\":\"2.0\",\"result\":[131421172,131421173,131421174,131421175,131421176,131421177,131421178,131421179,131421180,131421181],\"id\":\"A5A1EB9D-CC05-496F-8582-2B8D610859DB\"}]"
-        , "getBalance": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":0},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}]\n"
+        , "getBalance": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":123456},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}]\n"
     ]
 
 }
