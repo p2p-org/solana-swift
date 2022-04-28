@@ -11,4 +11,5 @@ public extension SolanaSDK {
     typealias SystemProgram = SolanaSwift.SystemProgram
     typealias TokenProgram = SolanaSwift.TokenProgram
     typealias AssociatedTokenProgram = SolanaSwift.AssociatedTokenProgram
+    typealias TokenSwapProgram = SolanaSwift.TokenSwapProgram
 }

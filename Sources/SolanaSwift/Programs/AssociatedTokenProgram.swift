@@ -1,6 +1,15 @@
 import Foundation
 
-public struct AssociatedTokenProgram: SolanaBasicProgramType {
+public protocol AssociatedTokenProgramType {
+    static func createAssociatedTokenAccountInstruction(
+        mint: PublicKey,
+        associatedAccount: PublicKey,
+        owner: PublicKey,
+        payer: PublicKey
+    ) -> TransactionInstruction
+}
+
+public struct AssociatedTokenProgram: SolanaBasicProgramType, AssociatedTokenProgramType {
     // MARK: - Properties
     public static var id: PublicKey {
         "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"

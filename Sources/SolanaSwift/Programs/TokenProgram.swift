@@ -1,5 +1,75 @@
 import Foundation
 
+public protocol TokenProgramType {
+    static func initializeMintInstruction(
+        tokenProgramId: PublicKey,
+        mint: PublicKey,
+        decimals: UInt8,
+        authority: PublicKey,
+        freezeAuthority: PublicKey?
+    ) -> TransactionInstruction
+    
+    static func initializeAccountInstruction(
+        account: PublicKey,
+        mint: PublicKey,
+        owner: PublicKey
+    ) -> TransactionInstruction
+    
+    static func transferInstruction(
+        source: PublicKey,
+        destination: PublicKey,
+        owner: PublicKey,
+        amount: UInt64
+    ) -> TransactionInstruction
+    
+    static func approveInstruction(
+        account: PublicKey,
+        delegate: PublicKey,
+        owner: PublicKey,
+        multiSigners: [Account],
+        amount: UInt64
+    ) -> TransactionInstruction
+    
+    static func mintToInstruction(
+        mint: PublicKey,
+        destination: PublicKey,
+        authority: PublicKey,
+        amount: UInt64
+    ) -> TransactionInstruction
+    
+    static func closeAccountInstruction(
+        account: PublicKey,
+        destination: PublicKey,
+        owner: PublicKey
+    ) -> TransactionInstruction
+    
+    static func closeAccountInstruction(
+        account: PublicKey,
+        destination: PublicKey,
+        owner: PublicKey,
+        signers: [PublicKey]
+    ) -> TransactionInstruction
+    
+    static func transferCheckedInstruction(
+        source: PublicKey,
+        mint: PublicKey,
+        destination: PublicKey,
+        owner: PublicKey,
+        multiSigners: [Account],
+        amount: Lamports,
+        decimals: Decimals
+    ) -> TransactionInstruction
+    
+    static func burnCheckedInstruction(
+        tokenProgramId: PublicKey,
+        mint: PublicKey,
+        account: PublicKey,
+        owner: PublicKey,
+        amount: UInt64,
+        decimals: UInt8
+    ) -> TransactionInstruction
+}
+
 public struct TokenProgram: SolanaBasicProgramType {
     // MARK: - Nested type
     private struct Index {
@@ -82,7 +152,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         account: PublicKey,
         delegate: PublicKey,
         owner: PublicKey,
-        multiSigners: [Account] = [],
+        multiSigners: [Account],
         amount: UInt64
     ) -> TransactionInstruction {
         var keys = [

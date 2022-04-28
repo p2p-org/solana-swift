@@ -28,7 +28,7 @@ class TokenProgramTests: XCTestCase {
     }
     
     func testApproveInstruction() throws {
-        let instruction = SolanaSDK.TokenProgram.approveInstruction(account: publicKey, delegate: publicKey, owner: publicKey, amount: 1000)
+        let instruction = SolanaSDK.TokenProgram.approveInstruction(account: publicKey, delegate: publicKey, owner: publicKey, multiSigners: [], amount: 1000)
         XCTAssertEqual("4d5tSvUuzUVM", Base58.encode(instruction.data))
     }
     

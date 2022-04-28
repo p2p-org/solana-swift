@@ -1,6 +1,25 @@
 import Foundation
 
-public struct SystemProgram: SolanaBasicProgramType {
+public protocol SystemProgramType {
+    static func createAccountInstruction(
+        from fromPublicKey: PublicKey,
+        toNewPubkey newPubkey: PublicKey,
+        lamports: UInt64,
+        space: UInt64
+    ) -> TransactionInstruction
+    
+    static func transferInstruction(
+        from fromPublicKey: PublicKey,
+        to toPublicKey: PublicKey,
+        lamports: UInt64
+    ) -> TransactionInstruction
+    
+    static func assertOwnerInstruction(
+        destinationAccount: PublicKey
+    ) -> TransactionInstruction
+}
+
+public struct SystemProgram: SolanaBasicProgramType, SystemProgramType {
     // MARK: - Nested type
     private struct Index {
         static let create: UInt32 = 0
@@ -17,7 +36,7 @@ public struct SystemProgram: SolanaBasicProgramType {
         from fromPublicKey: PublicKey,
         toNewPubkey newPubkey: PublicKey,
         lamports: UInt64,
-        space: UInt64 = AccountInfo.span
+        space: UInt64
     ) -> TransactionInstruction {
         
         TransactionInstruction(
