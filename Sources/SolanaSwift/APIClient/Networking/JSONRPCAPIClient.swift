@@ -15,8 +15,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         self.networkManager = networkManager
     }
     
-    @available(iOS 13.0.0, *)
-    @available(macOS 10.15.0, *)
     public func request(with requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>] {
         let data = try await self.makeRequest(requests: requests)
         let response = try ResponseDecoder<[AnyResponse<AnyDecodable>]>().decode(with: data)
@@ -26,8 +24,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         return ret
     }
     
-    @available(iOS 13.0.0, *)
-    @available(macOS 10.15.0, *)
     public func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity> {
         let data = try await self.makeRequest(requests: [request])
         let response = try ResponseDecoder<[AnyResponse<Entity>]>().decode(with: data)
