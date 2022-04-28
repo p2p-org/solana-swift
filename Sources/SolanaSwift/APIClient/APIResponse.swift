@@ -17,15 +17,12 @@ public struct AnyResponse<Entity: Decodable>: APIClientResponse {
     }
     
     init?(with response: AnyResponse<AnyDecodable>) {
-        print(Entity.self)
-        
         guard let res = response.result?.value as? Entity else {
             return nil
         }
         self.result = res
     }
 }
-
 
 public struct JSONRPCResponse<Entity: Decodable>: APIClientResponse {
     public let jsonrpc: String
@@ -36,23 +33,6 @@ public struct JSONRPCResponse<Entity: Decodable>: APIClientResponse {
 }
 
 public class JSONRPCResponseDecoder<Entity: Decodable> {
-    public func decode(with data: Data) throws -> Entity {
-        return try JSONDecoder().decode(Entity.self, from: data)
-    }
-    
-//    public func decode(with decodable: AnyDecodable) throws -> Entity {
-//        
-//    }
-}
-
-
-public struct JSONRPCResponses<T: Decodable>: APIClientResponse {
-    public var result: [JSONRPCResponse<T>]?
-    
-    public var error: ResponseError?
-    
-    public typealias Entity = [JSONRPCResponse<T>]
-    
     public func decode(with data: Data) throws -> Entity {
         return try JSONDecoder().decode(Entity.self, from: data)
     }

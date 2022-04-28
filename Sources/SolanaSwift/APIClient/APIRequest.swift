@@ -1,16 +1,13 @@
 import Foundation
 
 public protocol APIClientRequest: Encodable {
+    /// Expected entity with this request. Used to decode response to
+    /// Can use AnyDecodable
     associatedtype Entity: Decodable
     init(method: String, params: [Encodable])
 }
 
-//public struct AnyClientRequest<Entity: Decodable>: APIClientRequest {
-//    init<T: APIClientRequest>init(method: String, params: [Encodable]) where T.Entity == Entity {}
-//}
-
 public struct JSONRPCAPIClientRequest<Entity: Decodable>: APIClientRequest {
-
     public init(method: String, params: [Encodable]) {
         self.method = method
         self.params = params
