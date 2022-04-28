@@ -43,6 +43,16 @@ class APIClientTests: XCTestCase {
         XCTAssert(result.rentEpoch == 304)
     }
     
+    func testGetConfirmedBlocksWithLimit() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getConfirmedBlocksWithLimit"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result: [UInt64] = try! await apiClient.getConfirmedBlocksWithLimit(startSlot: 131421172, limit: 10)
+        XCTAssert(result.count == 10)
+        XCTAssert(result[0] == 131421172)
+        XCTAssert(result[1] == 131421173)
+        XCTAssert(result[9] == 131421181)
+    }
+    
     class NetworkManagerMock: NetworkManager {
         private let json: String
         init(_ json: String) {
@@ -58,6 +68,7 @@ class APIClientTests: XCTestCase {
     var NetworkManagerMockJSON = [
         "getBlockHeight": "[{\"jsonrpc\":\"2.0\",\"result\":119396901,\"id\":\"45ECD42F-D53C-4A02-8621-52D88840FFC1\"}]\n"
         , "getAccountInfo": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131421172},\"value\":{\"data\":[\"xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWF9P8kKbTPTsQZqMMzOan8jwyOl0jQaxrCPh8bU1ysTa96DDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":304}},\"id\":\"6B1C0860-44BE-4FA9-9F57-CB14BC7636BB\"}]\n"
+        , "getConfirmedBlocksWithLimit": "[{\"jsonrpc\":\"2.0\",\"result\":[131421172,131421173,131421174,131421175,131421176,131421177,131421178,131421179,131421180,131421181],\"id\":\"A5A1EB9D-CC05-496F-8582-2B8D610859DB\"}]\n"
     ]
 
 }

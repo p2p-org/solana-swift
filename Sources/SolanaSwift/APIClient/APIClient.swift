@@ -6,10 +6,11 @@ public protocol SolanaAPIClient {
 
     func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>
     func getBlockHeight() async throws -> UInt64
+    func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64]
 
     // TODO: rename to request
-    func request<Entity: Decodable>(request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
-    func request(requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>]
+    func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
+    func request(with requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>]
 }
 
 public enum APIClientError: Error {
@@ -24,8 +25,7 @@ extension SolanaAPIClient {
     public func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T> {
         let requestConfig = RequestConfiguration(encoding: "base64")
         let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
-        
-        let response: AnyResponse<Rpc<BufferInfo<T>>> = try await request(request: req)
+        let response: AnyResponse<Rpc<BufferInfo<T>>> = try await request(with: req)
         guard let ret = response.result?.value else {
             throw APIClientError.cantDecodeResponse
         }
@@ -34,17 +34,21 @@ extension SolanaAPIClient {
     
     public func getBlockHeight() async throws -> UInt64 {
         let req = RequestEncoder.RequestType(method: "getBlockHeight", params: [])
-        let response: AnyResponse<UInt64> = try await request(request: req)
+        let response: AnyResponse<UInt64> = try await request(with: req)
         guard let result = response.result else {
             throw APIClientError.cantDecodeResponse
         }
         return result
     }
     
-//    func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) -> [UInt64] {
-//        let request = RequestEncoder.RequestType(method: "getConfirmedBlocksWithLimit", params: [startSlot, limit])
-//        return try await perform(request: request)
-//    }
+    public func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64] {
+        let req = RequestEncoder.RequestType(method: "getConfirmedBlocksWithLimit", params: [startSlot, limit])
+        let response: AnyResponse<[UInt64]> = try await request(with: req)
+        guard let result = response.result else {
+            throw APIClientError.cantDecodeResponse
+        }
+        return result
+    }
 }
 
 /// JSON RPC
@@ -64,7 +68,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     @available(iOS 13.0.0, *)
     @available(macOS 10.15.0, *)
-    public func request(requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>] {
+    public func request(with requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>] {
         let data = try await self.makeRequest(requests: requests)
         
         let response = try ResponseDecoder<[AnyResponse<AnyDecodable>]>().decode(with: data)
@@ -76,7 +80,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     @available(iOS 13.0.0, *)
     @available(macOS 10.15.0, *)
-    public func request<Entity: Decodable>(request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity> {
+    public func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity> {
         let data = try await self.makeRequest(requests: [request])
         let response = try ResponseDecoder<[AnyResponse<Entity>]>().decode(with: data)
         guard let ret = response.first else {
