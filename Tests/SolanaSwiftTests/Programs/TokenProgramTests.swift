@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Chung Tran on 28/04/2022.
-//
-
 import XCTest
 import SolanaSwift
 
