@@ -4,11 +4,12 @@ import RxSwift
 public protocol SolanaAPIClient {
     associatedtype RequestEncoder: APIClientRequestEncoder
 
+    // API Methods
     func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>
     func getBlockHeight() async throws -> UInt64
     func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64]
 
-    // TODO: rename to request
+    // Requests
     func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
     func request(with requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>]
 }
@@ -90,7 +91,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
     
     // MARK: - Private
-    
     
     private func makeRequest(requests: [RequestEncoder.RequestType]) async throws -> Data {
         var encodedParams: Data = Data()
