@@ -113,20 +113,20 @@ extension SolanaSDK {
                 return .init(
                     account: newAccount.publicKey,
                     instructions: [
-                        SystemProgram.createAccountInstruction(
+                        SystemProgram().createAccountInstruction(
                             from: owner,
                             toNewPubkey: newAccount.publicKey,
                             lamports: amount + minimumBalanceForRentExemption,
                             space: AccountInfo.span
                         ),
-                        TokenProgram.initializeAccountInstruction(
+                        TokenProgram().initializeAccountInstruction(
                             account: newAccount.publicKey,
                             mint: .wrappedSOLMint,
                             owner: payer
                         )
                     ],
                     cleanupInstructions: [
-                        TokenProgram.closeAccountInstruction(
+                        TokenProgram().closeAccountInstruction(
                             account: newAccount.publicKey,
                             destination: payer,
                             owner: payer
@@ -159,7 +159,7 @@ extension SolanaSDK {
                 .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
                 // check if associated address is registered
                 .map { info -> Bool in
-                    if info.owner == PublicKey.tokenProgramId.base58EncodedString,
+                    if info.owner == TokenProgram().id.base58EncodedString,
                        info.data.owner == owner
                     {
                         return true
@@ -178,7 +178,7 @@ extension SolanaSDK {
                     var cleanupInstructions = [TransactionInstruction]()
                     if closeAfterward {
                         cleanupInstructions = [
-                            TokenProgram.closeAccountInstruction(
+                            TokenProgram().closeAccountInstruction(
                                 account: associatedAddress,
                                 destination: owner,
                                 owner: owner
@@ -198,7 +198,7 @@ extension SolanaSDK {
                     return .init(
                         account: associatedAddress,
                         instructions: [
-                            try AssociatedTokenProgram
+                            try AssociatedTokenProgram()
                                 .createAssociatedTokenAccountInstruction(
                                     mint: mint,
                                     owner: owner,

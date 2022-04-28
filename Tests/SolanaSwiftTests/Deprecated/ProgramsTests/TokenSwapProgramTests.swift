@@ -13,7 +13,7 @@ class TokenSwapProgramTests: XCTestCase {
     let publicKey: SolanaSDK.PublicKey = "11111111111111111111111111111111"
     
     func testSwapInstruction() throws {
-        let instruction = SolanaSDK.TokenSwapProgram.swapInstruction(
+        let instruction = TokenSwapProgram().swapInstruction(
             tokenSwap: publicKey,
             authority: publicKey,
             userTransferAuthority: publicKey,
@@ -34,7 +34,7 @@ class TokenSwapProgramTests: XCTestCase {
     }
     
     func testDepositInstruction() throws {
-        let instruction = SolanaSDK.TokenSwapProgram.depositInstruction(
+        let instruction = TokenSwapProgram().depositInstruction(
             tokenSwap: publicKey,
             authority: publicKey,
             sourceA: publicKey,
@@ -54,7 +54,7 @@ class TokenSwapProgramTests: XCTestCase {
     }
     
     func testWithdrawInstruction() throws {
-        let instruction = SolanaSDK.TokenSwapProgram.withdrawInstruction(
+        let instruction = SolanaSDK.TokenSwapProgram().withdrawInstruction(
             tokenSwap: publicKey,
             authority: publicKey,
             poolMint: publicKey,

@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol TokenProgramType {
-    static func initializeMintInstruction(
+    func initializeMintInstruction(
         tokenProgramId: PublicKey,
         mint: PublicKey,
         decimals: UInt8,
@@ -9,20 +9,20 @@ public protocol TokenProgramType {
         freezeAuthority: PublicKey?
     ) -> TransactionInstruction
     
-    static func initializeAccountInstruction(
+    func initializeAccountInstruction(
         account: PublicKey,
         mint: PublicKey,
         owner: PublicKey
     ) -> TransactionInstruction
     
-    static func transferInstruction(
+    func transferInstruction(
         source: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
         amount: UInt64
     ) -> TransactionInstruction
     
-    static func approveInstruction(
+    func approveInstruction(
         account: PublicKey,
         delegate: PublicKey,
         owner: PublicKey,
@@ -30,27 +30,27 @@ public protocol TokenProgramType {
         amount: UInt64
     ) -> TransactionInstruction
     
-    static func mintToInstruction(
+    func mintToInstruction(
         mint: PublicKey,
         destination: PublicKey,
         authority: PublicKey,
         amount: UInt64
     ) -> TransactionInstruction
     
-    static func closeAccountInstruction(
+    func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
         owner: PublicKey
     ) -> TransactionInstruction
     
-    static func closeAccountInstruction(
+    func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
         signers: [PublicKey]
     ) -> TransactionInstruction
     
-    static func transferCheckedInstruction(
+    func transferCheckedInstruction(
         source: PublicKey,
         mint: PublicKey,
         destination: PublicKey,
@@ -60,7 +60,7 @@ public protocol TokenProgramType {
         decimals: Decimals
     ) -> TransactionInstruction
     
-    static func burnCheckedInstruction(
+    func burnCheckedInstruction(
         tokenProgramId: PublicKey,
         mint: PublicKey,
         account: PublicKey,
@@ -84,12 +84,15 @@ public struct TokenProgram: SolanaBasicProgramType {
     }
     
     // MARK: - Properties
-    public static var id: PublicKey {
+    public var id: PublicKey {
         "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
     }
     
+    // MARK: - Initializer
+    public init() {}
+    
     // MARK: - Instruction builders
-    public static func initializeMintInstruction(
+    public func initializeMintInstruction(
         tokenProgramId: PublicKey,
         mint: PublicKey,
         decimals: UInt8,
@@ -113,7 +116,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         )
     }
     
-    public static func initializeAccountInstruction(
+    public func initializeAccountInstruction(
         account: PublicKey,
         mint: PublicKey,
         owner: PublicKey
@@ -131,7 +134,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         )
     }
     
-    public static func transferInstruction(
+    public func transferInstruction(
         source: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
@@ -148,7 +151,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         )
     }
     
-    public static func approveInstruction(
+    public func approveInstruction(
         account: PublicKey,
         delegate: PublicKey,
         owner: PublicKey,
@@ -183,7 +186,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         )
     }
     
-    public static func mintToInstruction(
+    public func mintToInstruction(
         mint: PublicKey,
         destination: PublicKey,
         authority: PublicKey,
@@ -201,7 +204,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         )
     }
     
-    public static func closeAccountInstruction(
+    public func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
         owner: PublicKey
@@ -217,7 +220,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         )
     }
     
-    public static func closeAccountInstruction(
+    public func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
@@ -233,7 +236,7 @@ public struct TokenProgram: SolanaBasicProgramType {
             data: [Index.closeAccount])
     }
     
-    public static func transferCheckedInstruction(
+    public func transferCheckedInstruction(
         source: PublicKey,
         mint: PublicKey,
         destination: PublicKey,
@@ -264,7 +267,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         )
     }
     
-    public static func burnCheckedInstruction(
+    public func burnCheckedInstruction(
         tokenProgramId: PublicKey,
         mint: PublicKey,
         account: PublicKey,

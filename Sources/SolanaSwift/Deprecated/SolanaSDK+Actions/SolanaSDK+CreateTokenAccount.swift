@@ -32,14 +32,14 @@ extension SolanaSDK {
                 newAccount = try Account(network: self.endpoint.network)
                 
                 // instructions
-                let createAccountInstruction = SystemProgram.createAccountInstruction(
+                let createAccountInstruction = SystemProgram().createAccountInstruction(
                     from: payer.publicKey,
                     toNewPubkey: newAccount.publicKey,
                     lamports: minBalance,
                     space: AccountInfo.span
                 )
                 
-                let initializeAccountInstruction = TokenProgram.initializeAccountInstruction(
+                let initializeAccountInstruction = TokenProgram().initializeAccountInstruction(
                     account: newAccount.publicKey,
                     mint: mintAddress,
                     owner: payer.publicKey

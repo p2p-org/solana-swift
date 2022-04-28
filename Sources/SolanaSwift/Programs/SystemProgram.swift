@@ -1,21 +1,17 @@
 import Foundation
 
 public protocol SystemProgramType {
-    static func createAccountInstruction(
+    func createAccountInstruction(
         from fromPublicKey: PublicKey,
         toNewPubkey newPubkey: PublicKey,
         lamports: UInt64,
         space: UInt64
     ) -> TransactionInstruction
     
-    static func transferInstruction(
+    func transferInstruction(
         from fromPublicKey: PublicKey,
         to toPublicKey: PublicKey,
         lamports: UInt64
-    ) -> TransactionInstruction
-    
-    static func assertOwnerInstruction(
-        destinationAccount: PublicKey
     ) -> TransactionInstruction
 }
 
@@ -27,12 +23,15 @@ public struct SystemProgram: SolanaBasicProgramType, SystemProgramType {
     }
     
     // MARK: - Properties
-    public static var id: PublicKey {
+    public var id: PublicKey {
         "11111111111111111111111111111111"
     }
     
+    // MARK: - Initializer
+    public init() {}
+    
     // MARK: - Instruction builders
-    public static func createAccountInstruction(
+    public func createAccountInstruction(
         from fromPublicKey: PublicKey,
         toNewPubkey newPubkey: PublicKey,
         lamports: UInt64,
@@ -49,7 +48,7 @@ public struct SystemProgram: SolanaBasicProgramType, SystemProgramType {
         )
     }
     
-    public static func transferInstruction(
+    public func transferInstruction(
         from fromPublicKey: PublicKey,
         to toPublicKey: PublicKey,
         lamports: UInt64
@@ -62,18 +61,6 @@ public struct SystemProgram: SolanaBasicProgramType, SystemProgramType {
             ],
             programId: id,
             data: [Index.transfer, lamports]
-        )
-    }
-    
-    public static func assertOwnerInstruction(
-        destinationAccount: PublicKey
-    ) -> TransactionInstruction {
-        TransactionInstruction(
-            keys: [
-                Account.Meta(publicKey: destinationAccount, isSigner: false, isWritable: false)
-            ],
-            programId: .ownerValidationProgramId,
-            data: [id]
         )
     }
 }

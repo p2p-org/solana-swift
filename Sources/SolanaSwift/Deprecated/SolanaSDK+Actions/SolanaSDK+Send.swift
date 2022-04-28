@@ -52,7 +52,7 @@ extension SolanaSDK {
                 .flatMap { [weak self] in
                     guard let self = self else {return .error(SolanaSDK.Error.unknown)}
                     // form instruction
-                    let instruction = SystemProgram.transferInstruction(
+                    let instruction = SystemProgram().transferInstruction(
                         from: fromPublicKey,
                         to: try PublicKey(string: destination),
                         lamports: amount
@@ -159,7 +159,7 @@ extension SolanaSDK {
                     let mint = try PublicKey(string: mintAddress)
                     let owner = try PublicKey(string: destinationAddress)
                     
-                    let createATokenInstruction = try AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+                    let createATokenInstruction = try AssociatedTokenProgram().createAssociatedTokenAccountInstruction(
                         mint: mint,
                         owner: owner,
                         payer: feePayer
@@ -174,7 +174,7 @@ extension SolanaSDK {
                 // use transfer checked transaction for proxy, otherwise use normal transfer transaction
                 if transferChecked {
                     // transfer checked transaction
-                    sendInstruction = TokenProgram.transferCheckedInstruction(
+                    sendInstruction = TokenProgram().transferCheckedInstruction(
                         source: fromPublicKey,
                         mint: try PublicKey(string: mintAddress),
                         destination: splDestinationAddress.destination,
@@ -185,7 +185,7 @@ extension SolanaSDK {
                     )
                 } else {
                     // transfer transaction
-                    sendInstruction = TokenProgram.transferInstruction(
+                    sendInstruction = TokenProgram().transferInstruction(
                         source: fromPublicKey,
                         destination: toPublicKey,
                         owner: account.publicKey,

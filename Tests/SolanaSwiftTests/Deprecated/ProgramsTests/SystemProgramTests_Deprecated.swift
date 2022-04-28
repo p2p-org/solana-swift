@@ -14,7 +14,7 @@ class SystemProgramTests_Deprecated: XCTestCase {
         let fromPublicKey = try SolanaSDK.PublicKey(string: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")
         let toPublicKey = try SolanaSDK.PublicKey(string: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5")
         
-        let instruction = SolanaSDK.SystemProgram.transferInstruction(from: fromPublicKey, to: toPublicKey, lamports: 3000)
+        let instruction = SystemProgram().transferInstruction(from: fromPublicKey, to: toPublicKey, lamports: 3000)
         
         XCTAssertEqual(SolanaSDK.PublicKey.programId, instruction.programId)
         XCTAssertEqual(2, instruction.keys.count)
@@ -23,7 +23,7 @@ class SystemProgramTests_Deprecated: XCTestCase {
     }
     
     func testCreateAccountInstruction() throws {
-        let instruction = SolanaSDK.SystemProgram.createAccountInstruction(from: SystemProgram.id, toNewPubkey: SystemProgram.id, lamports: 2039280, space: 165)
+        let instruction = SystemProgram().createAccountInstruction(from: SystemProgram().id, toNewPubkey: SystemProgram().id, lamports: 2039280, space: 165)
         
         XCTAssertEqual("11119os1e9qSs2u7TsThXqkBSRUo9x7kpbdqtNNbTeaxHGPdWbvoHsks9hpp6mb2ed1NeB", Base58.encode(instruction.data))
     }

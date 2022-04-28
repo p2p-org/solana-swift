@@ -83,7 +83,7 @@ extension SolanaSDK {
         
         do {
             // create instruction
-            let instruction = try AssociatedTokenProgram
+            let instruction = try AssociatedTokenProgram()
                 .createAssociatedTokenAccountInstruction(
                     mint: tokenMint,
                     owner: owner,

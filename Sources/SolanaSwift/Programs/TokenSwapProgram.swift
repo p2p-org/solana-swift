@@ -1,7 +1,7 @@
 import Foundation
 
 protocol TokenSwapProgramType {
-    static func swapInstruction(
+    func swapInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
         userTransferAuthority: PublicKey,
@@ -18,7 +18,7 @@ protocol TokenSwapProgramType {
         minimumAmountOut: UInt64
     ) -> TransactionInstruction
     
-    static func depositInstruction(
+    func depositInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
         sourceA: PublicKey,
@@ -34,7 +34,7 @@ protocol TokenSwapProgramType {
         maximumTokenB: UInt64
     ) -> TransactionInstruction
     
-    static func withdrawInstruction(
+    func withdrawInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
         poolMint: PublicKey,
@@ -61,8 +61,11 @@ public struct TokenSwapProgram: TokenSwapProgramType {
         case withdraw = 3
     }
     
-    // MARK: - Swap
-    public static func swapInstruction(
+    // MARK: - Initializer
+    public init() {}
+    
+    // MARK: - Instruction builder
+    public func swapInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
         userTransferAuthority: PublicKey,
@@ -103,7 +106,7 @@ public struct TokenSwapProgram: TokenSwapProgramType {
     }
     
     // MARK: - Deposit
-    public static func depositInstruction(
+    public func depositInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
         sourceA: PublicKey,
@@ -137,7 +140,7 @@ public struct TokenSwapProgram: TokenSwapProgramType {
     }
     
     // MARK: - Withdraw
-    public static func withdrawInstruction(
+    public func withdrawInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
         poolMint: PublicKey,
@@ -171,7 +174,7 @@ public struct TokenSwapProgram: TokenSwapProgramType {
             data: [Index.withdraw, poolTokenAmount, minimumTokenA, minimumTokenB])
     }
     
-    //        public static func initialize(
+    //        public func initialize(
     //            tokenSwapAccount: PublicKey,
     //            authority: PublicKey,
     //            tokenAccountA: PublicKey,
