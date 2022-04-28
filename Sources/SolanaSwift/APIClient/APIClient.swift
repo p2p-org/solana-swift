@@ -8,6 +8,7 @@ public protocol SolanaAPIClient {
     func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>
     func getBalance(account: String, commitment: Commitment?) async throws -> UInt64
     func getBlockCommitment(block: UInt64) async throws -> BlockCommitment
+    func getBlockTime(block: UInt64) async throws -> Date
     func getBlockHeight() async throws -> UInt64
     func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64]
     
@@ -70,6 +71,13 @@ extension SolanaAPIClient {
             throw APIClientError.cantDecodeResponse
         }
         return result
+    }
+    
+    public func getBlockTime(block: UInt64) async throws -> Date {
+        let req = RequestEncoder.RequestType(method: "getBlockTime", params: [block])
+        let response: AnyResponse<Double> = try await request(with: req)
+        guard let resp = response.result else { throw APIClientError.cantDecodeResponse }
+        return Date(timeIntervalSince1970: TimeInterval(resp))
     }
 
 }

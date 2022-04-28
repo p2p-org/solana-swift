@@ -28,10 +28,6 @@ public struct ResponseErrorData: Decodable {
     public let numSlotsBehind: Int?
 }
 
-protocol AnyDecodableInitializable {
-    init(from: AnyDecodable)
-}
-
 public struct Rpc<T: Decodable>: Decodable {
     public let context: Context
     public let value: T
