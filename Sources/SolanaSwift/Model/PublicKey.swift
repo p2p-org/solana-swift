@@ -202,14 +202,22 @@ public extension PublicKey {
 }
 
 public extension PublicKey {
-    static var tokenProgramId: PublicKey { "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" }
+    @available(*, deprecated, renamed: "TokenProgram.id")
+    static var tokenProgramId: PublicKey { TokenProgram.id }
+    
     static var sysvarRent: PublicKey { "SysvarRent111111111111111111111111111111111" }
-    static var programId: PublicKey { "11111111111111111111111111111111" }
+    
+    @available(*, deprecated, renamed: "SystemProgram.id")
+    static var programId: PublicKey { SystemProgram.id }
+    
     static var wrappedSOLMint: PublicKey { "So11111111111111111111111111111111111111112" }
     static var solMint: PublicKey { "Ejmc1UB4EsES5oAaRN63SpoxMJidt3ZGBrqrZk49vjTZ" } // Arbitrary mint to represent SOL (not wrapped SOL).
     static var ownerValidationProgramId: PublicKey { "4MNPdKu9wFMvEeZBMt3Eipfs5ovVWTJb31pEXDJAAxX5" }
     static var swapHostFeeAddress: PublicKey { "AHLwq66Cg3CuDJTFtwjPfwjJhifiv6rFwApQNKgX57Yg" }
-    static var splAssociatedTokenAccountProgramId: PublicKey { "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL" }
+    
+    @available(*, deprecated, renamed: "AssociatedTokenProgram.id")
+    static var splAssociatedTokenAccountProgramId: PublicKey { AssociatedTokenProgram.id }
+    
     static var renBTCMint: PublicKey { "CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5" }
     static var renBTCMintDevnet: PublicKey { "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD" }
     static var fake: PublicKey { "BGcmLttQoYIw4Yfzc7RkZJCKR53IlAybgq8HK0vmovP0\n" }

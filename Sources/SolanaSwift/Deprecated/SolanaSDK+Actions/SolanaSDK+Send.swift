@@ -176,7 +176,6 @@ extension SolanaSDK {
                 if transferChecked {
                     // transfer checked transaction
                     sendInstruction = TokenProgram.transferCheckedInstruction(
-                        programId: .tokenProgramId,
                         source: fromPublicKey,
                         mint: try PublicKey(string: mintAddress),
                         destination: splDestinationAddress.destination,
@@ -188,7 +187,6 @@ extension SolanaSDK {
                 } else {
                     // transfer transaction
                     sendInstruction = TokenProgram.transferInstruction(
-                        tokenProgramId: .tokenProgramId,
                         source: fromPublicKey,
                         destination: toPublicKey,
                         owner: account.publicKey,
