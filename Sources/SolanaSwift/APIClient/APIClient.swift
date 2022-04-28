@@ -7,8 +7,10 @@ public protocol SolanaAPIClient {
     // API Methods
     func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>
     func getBalance(account: String, commitment: Commitment?) async throws -> UInt64
+    func getBlockCommitment(block: UInt64) async throws -> BlockCommitment
     func getBlockHeight() async throws -> UInt64
     func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64]
+    
 
     // Requests
     func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
@@ -59,6 +61,15 @@ extension SolanaAPIClient {
             throw APIClientError.cantDecodeResponse
         }
         return result.value
+    }
+    
+    public func getBlockCommitment(block: UInt64) async throws -> BlockCommitment {
+        let req = RequestEncoder.RequestType(method: "getBlockCommitment", params: [block])
+        let response: AnyResponse<BlockCommitment> = try await request(with: req)
+        guard let result = response.result else {
+            throw APIClientError.cantDecodeResponse
+        }
+        return result
     }
 
 }
