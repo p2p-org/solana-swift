@@ -18,43 +18,43 @@ public extension ConfirmedTransaction {
 public struct ParsedInstruction: Decodable {
     struct Parsed: Decodable {
         struct Info: Decodable {
-            let owner: String?
-            let account: String?
-            let source: String?
-            let destination: String?
+            public let owner: String?
+            public let account: String?
+            public let source: String?
+            public let destination: String?
             
             // create account
-            let lamports: UInt64?
-            let newAccount: String?
-            let space: UInt64?
+            public let lamports: UInt64?
+            public let newAccount: String?
+            public let space: UInt64?
             
             // initialize account
-            let mint: String?
-            let rentSysvar: String?
+            public let mint: String?
+            public let rentSysvar: String?
             
             // approve
-            let amount: String?
-            let delegate: String?
+            public let amount: String?
+            public let delegate: String?
             
             // transfer
-            let authority: String?
-            let wallet: String? // spl-associated-token-account
+            public let authority: String?
+            public let wallet: String? // spl-associated-token-account
             
             // transferChecked
-            let tokenAmount: TokenAccountBalance?
+            public let tokenAmount: TokenAccountBalance?
         }
         
-        let info: Info
-        let type: String?
+        public let info: Info
+        public let type: String?
     }
     
-    let program: String?
+    public let program: String?
     public let programId: String
-    let parsed: Parsed?
+    public let parsed: Parsed?
     
     // swap
     public let data: String?
-    let accounts: [String]?
+    public let accounts: [String]?
 }
 
 extension Sequence where Iterator.Element == ParsedInstruction {
