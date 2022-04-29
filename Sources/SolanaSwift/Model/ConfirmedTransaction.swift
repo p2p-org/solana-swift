@@ -16,8 +16,8 @@ public extension ConfirmedTransaction {
 
 
 public struct ParsedInstruction: Decodable {
-    struct Parsed: Decodable {
-        struct Info: Decodable {
+    public struct Parsed: Decodable {
+        public struct Info: Decodable {
             public let owner: String?
             public let account: String?
             public let source: String?
