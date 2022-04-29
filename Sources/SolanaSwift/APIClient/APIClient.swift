@@ -20,6 +20,18 @@ public protocol SolanaAPIClient {
     func getSignatureStatuses(signatures: [String], configs: RequestConfiguration?) async throws -> [SignatureStatus?]
     func getSignatureStatus(signature: String, configs: RequestConfiguration?) async throws -> SignatureStatus
     func getTokenAccountBalance(pubkey: String, commitment: Commitment?) async throws -> TokenAccountBalance
+    func getTokenAccountsByDelegate(pubkey: String, mint: String?, programId: String?, configs: RequestConfiguration?) async throws -> [TokenAccount<AccountInfo>]
+    func getTokenAccountsByOwner(pubkey: String, params: OwnerInfoParams?, configs: RequestConfiguration?) async throws -> [TokenAccount<AccountInfo>]
+    func getTokenLargestAccounts(pubkey: String, commitment: Commitment?)  async throws -> [TokenAmount]
+    func getTokenSupply(pubkey: String, commitment: Commitment?) async throws -> TokenAmount
+    func getVersion() async throws -> Version
+    func getVoteAccounts(commitment: Commitment?) async throws -> VoteAccounts
+    func minimumLedgerSlot() async throws -> UInt64
+    func requestAirdrop(account: String, lamports: UInt64, commitment: Commitment?) async throws -> String
+    func sendTransaction(serializedTransaction: String, configs: RequestConfiguration) async throws -> TransactionID
+    func simulateTransaction(transaction: String, configs: RequestConfiguration) async throws -> TransactionStatus
+    func setLogFilter(filter: String) async throws -> String?
+    func validatorExit() async throws -> Bool
 
     // Requests
     func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
@@ -132,7 +144,68 @@ extension SolanaAPIClient {
         }
         return result.value
     }
-
+    
+    public func getTokenAccountsByDelegate(pubkey: String, mint: String? = nil, programId: String? = nil, configs: RequestConfiguration? = nil) async throws -> [TokenAccount<AccountInfo>] {
+        let result: Rpc<[TokenAccount<AccountInfo>]> = try await self.get(method: "getTokenAccountsByDelegate", params: [pubkey, mint, programId, configs])
+        return result.value
+    }
+    
+    public func getTokenAccountsByOwner(pubkey: String, params: OwnerInfoParams? = nil, configs: RequestConfiguration? = nil) async throws -> [TokenAccount<AccountInfo>] {
+        let result: Rpc<[TokenAccount<AccountInfo>]> = try await self.get(method: "getTokenAccountsByOwner", params: [pubkey, params, configs])
+        return result.value
+    }
+    
+    public func getTokenLargestAccounts(pubkey: String, commitment: Commitment? = nil)  async throws -> [TokenAmount] {
+        let result: [TokenAmount] = try await self.get(method: "getTokenLargestAccounts", params: [pubkey, RequestConfiguration(commitment: commitment)])
+        return result
+    }
+    
+    public func getTokenSupply(pubkey: String, commitment: Commitment? = nil) async throws -> TokenAmount {
+        let result: Rpc<TokenAmount> = try await self.get(method: "getTokenSupply", params: [pubkey, RequestConfiguration(commitment: commitment)])
+        return result.value
+    }
+    
+    public func getVersion() async throws -> Version {
+        let result: Version = try await self.get(method: "getVersion", params: [])
+        return result
+    }
+    
+    public func getVoteAccounts(commitment: Commitment? = nil) async throws -> VoteAccounts {
+        let result: VoteAccounts = try await self.get(method: "getVoteAccounts", params: [RequestConfiguration(commitment: commitment)])
+        return result
+    }
+    
+    public func minimumLedgerSlot() async throws -> UInt64 {
+        let result: UInt64 = try await self.get(method: "minimumLedgerSlot", params: [])
+        return result
+    }
+    
+    public func requestAirdrop(account: String, lamports: UInt64, commitment: Commitment? = nil) async throws -> String {
+        let result: String = try await self.get(method: "requestAirdrop", params: [account, lamports, RequestConfiguration(commitment: commitment)])
+        return result
+    }
+    
+    public func sendTransaction(serializedTransaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> TransactionID {
+        let result: TransactionID = try await self.get(method: "sendTransaction", params: [serializedTransaction, configs])
+        return result
+    }
+    
+    public func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> TransactionStatus {
+        let result: Rpc<TransactionStatus> = try await self.get(method: "simulateTransaction", params: [transaction, configs])
+        return result.value
+    }
+    
+    public func setLogFilter(filter: String) async throws -> String? {
+        let result: String? = try await self.get(method: "setLogFilter", params: [filter])
+        return result
+    }
+    
+    public func validatorExit() async throws -> Bool {
+        let result: Bool = try await self.get(method: "validatorExit", params: [])
+        return result
+    }
+    
+    // MARK: - Private
     
     private func get<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity {
         let req = RequestEncoder.RequestType(method: method, params: params)
