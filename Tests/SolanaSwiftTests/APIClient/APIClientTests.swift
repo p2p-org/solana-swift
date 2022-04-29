@@ -156,8 +156,6 @@ class APIClientTests: XCTestCase {
         XCTAssertEqual(result, "63ionHTAM94KaSujUCg23hfg7TLharchq5BYXdLGqia1")
     }
     
-    
-    
     // MARK: - Mocks
     
     

@@ -401,9 +401,3 @@ private extension PrimitiveSequence{
         }
     }
 }
-
-
-
-
-//[{"jsonrpc":"2.0","id":"2BAC562A-33FE-45E4-B49E-9008476A4EA8","result":{"blockHeight":119407643,"blockTime":1651131785,"blockhash":"9iYcQnofTuZwwtuG4bbpoV8MMsihxfVT5eyBjzJRTHDc","parentSlot":131647711,"previousBlockhash":"FkSQpuhgLMVRwGWPzw3zjXq3oXUMcNogfwAkgNC9KWy7","rewards":[{"commission":null,"lamports":-11967,"postBalance":1357161,"pubkey":"DkZzno16JLXYda4eHZzM9J8Vxet9StJJ5mimrtjbK5V3","rewardType":"Rent"}],"transactions":[{"meta":{"err":{"InstructionError":[0,{"Custom":0}]},"fee":5000,"innerInstructions":[],"logMessages":["Program Vote111111111111111111111111111111111111111 invoke [1]","Program Vote111111111111111111111111111111111111111 failed: custom program error: 0x0"],"postBalances":[2055275200,8808836473,143487360,1169280,1],"postTokenBalances":[],"preBalances":[2055280200,8808836473,143487360,1169280,1],"preTokenBalances":[],"rewards":[],"status":{"Err":{"InstructionError":[0,{"Custom":0}]}}},"transaction":{"message":{"accountKeys":["tJ9HBhHM436kZ6udx8nBVEAsGaVCoy2Mw7K1U63bLyM","85F9XWHuJ19iCgARo8P6E7yUT1mucqRHuKK9zu359hqR","SysvarS1otHashes111111111111111111111111111","SysvarC1ock11111111111111111111111111111111","Vote111111111111111111111111111111111111111"],"header":{"numReadonlySignedAccounts":0,"numReadonlyUnsignedAccounts":3,"numRequiredSignatures":1},"instructions":[{"accounts":[1,2,3,0],"data":"rTDbDtm67JPw9WoF6jKWCCCH3zrLe1haxxDLEMTJB5TjB897zfAoiwVXkVq1HowpRBbRLZGfk4e4637rpxEEkzi6a4EWHBS9CqwLxXSP","programIdIndex":4}],"recentBlockhash":"FddpWyVFoazKW4mD8GoghnMx8g18vpQhHGrcLwuRdRUs"},"signatures":["2AqCkYUKCiv1zYEXBESaYCWeLUv2BwzoCXLrovhsXBu7Ss5XC6kqrBCGEguJbXt3BssmBurrwL54ZdYXwB4YYLrX"]}}]}}]
-    
