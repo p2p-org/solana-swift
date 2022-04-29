@@ -135,7 +135,7 @@ class APIClientTests: XCTestCase {
     func testSendTransaction() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["sendTransaction"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result = try! await apiClient.sendTransaction(serializedTransaction: "")
+        let result = try! await apiClient.sendTransaction(transaction: "")
         XCTAssertNotNil(result)
         XCTAssertEqual(result, "123")
     }
