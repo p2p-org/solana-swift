@@ -57,13 +57,13 @@ public extension SolanaSDK {
             let type: String?
         }
         
-        let program: String?
-        let programId: String
-        let parsed: Parsed?
+        public let program: String?
+        public let programId: String
+        public let parsed: Parsed?
         
         // swap
         public let data: String?
-        let accounts: [String]?
+        public let accounts: [String]?
     }
 }
 
