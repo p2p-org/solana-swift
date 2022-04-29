@@ -15,7 +15,7 @@ public struct JSONRPCAPIClientRequest<Entity: Decodable>: APIClientRequest {
     
     public let id = UUID().uuidString
     public let method: String
-    public let jsonrpc: String = "2.0"
+    public let jsonrpc = "2.0"
     public let params: [Encodable]
     
     enum CodingKeys: String, CodingKey {
