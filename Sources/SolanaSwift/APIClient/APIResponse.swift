@@ -15,13 +15,6 @@ public struct AnyResponse<Entity: Decodable>: APIClientResponse {
         self.result = response.result
         self.error = response.error
     }
-    
-    init?(with response: AnyResponse<AnyDecodable>) {
-        guard let res = response.result?.value as? Entity else {
-            return nil
-        }
-        self.result = res
-    }
 }
 
 public struct JSONRPCResponse<Entity: Decodable>: APIClientResponse {
