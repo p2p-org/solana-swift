@@ -248,11 +248,11 @@ extension SolanaAPIClient {
     }
     
     public func getBlockHeight() async throws -> UInt64 {
-        return try await self.get(method: "getBlockHeight", params: [])
+        try await self.get(method: "getBlockHeight", params: [])
     }
     
     public func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64] {
-        return try await self.get(method: "getConfirmedBlocksWithLimit", params: [startSlot, limit])
+        try await self.get(method: "getConfirmedBlocksWithLimit", params: [startSlot, limit])
     }
     
     public func getBalance(account: String, commitment: Commitment? = nil) async throws -> UInt64 {
@@ -265,7 +265,7 @@ extension SolanaAPIClient {
     }
     
     public func getBlockCommitment(block: UInt64) async throws -> BlockCommitment {
-        return try await self.get(method: "getBlockCommitment", params: [block])
+        try await self.get(method: "getBlockCommitment", params: [block])
     }
     
     public func getBlockTime(block: UInt64) async throws -> Date {
@@ -276,23 +276,23 @@ extension SolanaAPIClient {
     }
     
     public func getClusterNodes() async throws -> [ClusterNodes] {
-        return try await self.get(method: "getClusterNodes", params: [])
+        try await self.get(method: "getClusterNodes", params: [])
     }
     
     public func getConfirmedBlock(slot: UInt64, encoding: String) async throws -> ConfirmedBlock {
-        return try await self.get(method: "getConfirmedBlock", params: [slot, encoding])
+        try await self.get(method: "getConfirmedBlock", params: [slot, encoding])
     }
     
     public func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) async throws -> [String] {
-        return try await self.get(method: "getConfirmedSignaturesForAddress", params: [account, startSlot, endSlot])
+        try await self.get(method: "getConfirmedSignaturesForAddress", params: [account, startSlot, endSlot])
     }
     
     public func getTransaction(transactionSignature: String) async throws -> TransactionInfo {
-        return try await self.get(method: "getTransaction", params: [transactionSignature, "jsonParsed"])
+        try await self.get(method: "getTransaction", params: [transactionSignature, "jsonParsed"])
     }
     
     public func getEpochInfo(commitment: Commitment? = nil) async throws -> EpochInfo {
-        return try await self.get(method: "getEpochInfo", params: [RequestConfiguration(commitment: commitment)])
+        try await self.get(method: "getEpochInfo", params: [RequestConfiguration(commitment: commitment)])
     }
     
     public func getFees(commitment: Commitment? = nil) async throws -> Fee {
@@ -301,11 +301,11 @@ extension SolanaAPIClient {
     }
     
     public func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment? = "recent") async throws -> UInt64 {
-        return try await self.get(method: "getMinimumBalanceForRentExemption", params: [dataLength, RequestConfiguration(commitment: commitment)])
+        try await self.get(method: "getMinimumBalanceForRentExemption", params: [dataLength, RequestConfiguration(commitment: commitment)])
     }
     
     public func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {
-        return try await self.getMinimumBalanceForRentExemption(dataLength: span)
+        try await self.getMinimumBalanceForRentExemption(dataLength: span)
     }
     
     public func getRecentBlockhash(commitment: Commitment? = nil) async throws -> String {
@@ -347,8 +347,7 @@ extension SolanaAPIClient {
     }
     
     public func getTokenLargestAccounts(pubkey: String, commitment: Commitment? = nil)  async throws -> [TokenAmount] {
-        let result: [TokenAmount] = try await self.get(method: "getTokenLargestAccounts", params: [pubkey, RequestConfiguration(commitment: commitment)])
-        return result
+        try await self.get(method: "getTokenLargestAccounts", params: [pubkey, RequestConfiguration(commitment: commitment)])
     }
     
     public func getTokenSupply(pubkey: String, commitment: Commitment? = nil) async throws -> TokenAmount {
@@ -357,28 +356,23 @@ extension SolanaAPIClient {
     }
     
     public func getVersion() async throws -> Version {
-        let result: Version = try await self.get(method: "getVersion", params: [])
-        return result
+        try await self.get(method: "getVersion", params: [])
     }
     
     public func getVoteAccounts(commitment: Commitment? = nil) async throws -> VoteAccounts {
-        let result: VoteAccounts = try await self.get(method: "getVoteAccounts", params: [RequestConfiguration(commitment: commitment)])
-        return result
+        try await self.get(method: "getVoteAccounts", params: [RequestConfiguration(commitment: commitment)])
     }
     
     public func minimumLedgerSlot() async throws -> UInt64 {
-        let result: UInt64 = try await self.get(method: "minimumLedgerSlot", params: [])
-        return result
+        try await self.get(method: "minimumLedgerSlot", params: [])
     }
     
     public func requestAirdrop(account: String, lamports: UInt64, commitment: Commitment? = nil) async throws -> String {
-        let result: String = try await self.get(method: "requestAirdrop", params: [account, lamports, RequestConfiguration(commitment: commitment)])
-        return result
+        try await self.get(method: "requestAirdrop", params: [account, lamports, RequestConfiguration(commitment: commitment)])
     }
     
     public func sendTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> TransactionID {
-        let result: TransactionID = try await self.get(method: "sendTransaction", params: [transaction, configs])
-        return result
+        try await self.get(method: "sendTransaction", params: [transaction, configs])
     }
     
     public func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> TransactionStatus {
@@ -392,8 +386,7 @@ extension SolanaAPIClient {
     }
     
     public func validatorExit() async throws -> Bool {
-        let result: Bool = try await self.get(method: "validatorExit", params: [])
-        return result
+        try await self.get(method: "validatorExit", params: [])
     }
     
     // MARK: - Private

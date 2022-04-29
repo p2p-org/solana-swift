@@ -60,6 +60,6 @@ public class JSONRPCRequestEncoder: APIClientRequestEncoder {
     }
     
     public func encoded() throws -> Data {
-        return try JSONEncoder().encode(requests)
+        try JSONEncoder().encode(requests)
     }
 }
