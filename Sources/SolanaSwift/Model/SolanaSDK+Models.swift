@@ -216,8 +216,8 @@ public struct ErrorDetail: Codable {
 }
 
 public struct InnerInstruction: Decodable {
-    let index: UInt32
-    let instructions: [ParsedInstruction]
+    public let index: UInt32
+    public let instructions: [ParsedInstruction]
 }
 public struct TokenBalance: Decodable {
     let accountIndex: UInt64
