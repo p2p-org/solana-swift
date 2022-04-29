@@ -49,7 +49,7 @@ public struct ParsedInstruction: Decodable {
     }
     
     let program: String?
-    let programId: String
+    public let programId: String
     let parsed: Parsed?
     
     // swap
