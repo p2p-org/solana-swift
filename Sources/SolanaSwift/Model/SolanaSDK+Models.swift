@@ -220,9 +220,9 @@ public struct InnerInstruction: Decodable {
     public let instructions: [ParsedInstruction]
 }
 public struct TokenBalance: Decodable {
-    let accountIndex: UInt64
-    let mint: String
-    let uiTokenAmount: TokenAccountBalance
+    public let accountIndex: UInt64
+    public let mint: String
+    public let uiTokenAmount: TokenAccountBalance
 }
 public struct TransactionStatus: Decodable {
     public let err: TransactionError?
