@@ -139,7 +139,7 @@ public extension PublicKey {
         return try PublicKey(data: publicKeyBytes)
     }
 
-    public static func createWithSeed(
+    static func createWithSeed(
         fromPublicKey: PublicKey,
         seed: String,
         programId: PublicKey
