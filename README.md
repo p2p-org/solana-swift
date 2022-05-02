@@ -40,7 +40,7 @@ pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
 ```
 
 ## How to use
-* Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
+* Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaError`.
 
 * Import
 ```swift

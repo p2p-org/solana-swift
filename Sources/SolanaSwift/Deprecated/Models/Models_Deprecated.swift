@@ -42,4 +42,6 @@ public extension SolanaSDK {
     typealias EmptyInfo = SolanaSwift.EmptyInfo
     typealias Mint = SolanaSwift.Mint
     typealias TokenSwapInfo = SolanaSwift.TokenSwapInfo
+    
+    typealias Error = SolanaError
 }

@@ -25,7 +25,7 @@ public struct ParsedTransaction: Hashable {
         public func getError() -> Error? {
             switch self {
             case .error(let err) where err != nil:
-                return SolanaSDK.Error.other(err!)
+                return SolanaError.other(err!)
             default:
                 break
             }

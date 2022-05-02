@@ -34,18 +34,18 @@ public extension DecodableBufferLayout {
         guard let string = stringData,
               let data = Data(base64Encoded: string)
         else {
-            throw SolanaSDK.Error.couldNotRetrieveAccountInfo
+            throw SolanaError.couldNotRetrieveAccountInfo
         }
         
         if string.isEmpty && !(Self.self == EmptyInfo.self) {
-            throw SolanaSDK.Error.couldNotRetrieveAccountInfo
+            throw SolanaError.couldNotRetrieveAccountInfo
         }
         
         do {
             var pointer = 0
             try self.init(buffer: data, pointer: &pointer)
         } catch {
-            throw SolanaSDK.Error.couldNotRetrieveAccountInfo
+            throw SolanaError.couldNotRetrieveAccountInfo
         }
     }
 }

@@ -18,7 +18,7 @@ public struct PublicKey: Codable, Equatable, CustomStringConvertible, Hashable {
     public init(string: String?) throws {
         guard let string = string, string.utf8.count >= PublicKey.numberOfBytes
             else {
-                throw SolanaSDK.Error.other("Invalid public key input")
+                throw SolanaError.other("Invalid public key input")
         }
         let bytes = Base58.decode(string)
         self.bytes = bytes
@@ -26,14 +26,14 @@ public struct PublicKey: Codable, Equatable, CustomStringConvertible, Hashable {
     
     public init(data: Data) throws {
         guard data.count <= PublicKey.numberOfBytes else {
-            throw SolanaSDK.Error.other("Invalid public key input")
+            throw SolanaError.other("Invalid public key input")
         }
         self.bytes = [UInt8](data)
     }
     
     public init(bytes: [UInt8]?) throws {
         guard let bytes = bytes, bytes.count <= PublicKey.numberOfBytes else {
-            throw SolanaSDK.Error.other("Invalid public key input")
+            throw SolanaError.other("Invalid public key input")
         }
         self.bytes = bytes
     }
@@ -110,7 +110,7 @@ public extension PublicKey {
                 continue
             }
         }
-        throw SolanaSDK.Error.notFound
+        throw SolanaError.notFound
     }
 
     static func createProgramAddress(
@@ -121,7 +121,7 @@ public extension PublicKey {
         var data = Data()
         for seed in seeds {
             if seed.bytes.count > maxSeedLength {
-                throw SolanaSDK.Error.other("Max seed length exceeded")
+                throw SolanaError.other("Max seed length exceeded")
             }
             data.append(seed)
         }
@@ -134,7 +134,7 @@ public extension PublicKey {
         
         // check it
         if isOnCurve(publicKeyBytes: publicKeyBytes).toBool() {
-            throw SolanaSDK.Error.other("Invalid seeds, address must fall off the curve")
+            throw SolanaError.other("Invalid seeds, address must fall off the curve")
         }
         return try PublicKey(data: publicKeyBytes)
     }
@@ -147,7 +147,7 @@ public extension PublicKey {
         var data = Data()
         data += fromPublicKey.data
         guard let seedData = seed.data(using: .utf8) else {
-            throw SolanaSDK.Error.other("Invalid seeds")
+            throw SolanaError.other("Invalid seeds")
         }
         data += seedData
         data += programId.data

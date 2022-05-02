@@ -15,7 +15,7 @@ public struct Transaction: Encodable {
     
     // MARK: - Methods
     public mutating func sign(signers: [Account]) throws {
-        guard signers.count > 0 else { throw SolanaSDK.Error.invalidRequest(reason: "No signers") }
+        guard signers.count > 0 else { throw SolanaError.invalidRequest(reason: "No signers") }
         
         // unique signers
         let signers = signers.reduce([Account](), { signers, signer in
@@ -49,7 +49,7 @@ public struct Transaction: Encodable {
         
         // verification
         if verifySignatures && !_verifySignatures(serializedMessage: serializedMessage, requiredAllSignatures: requiredAllSignatures) {
-            throw SolanaSDK.Error.invalidRequest(reason: "Signature verification failed")
+            throw SolanaError.invalidRequest(reason: "Signature verification failed")
         }
         
         return _serialize(serializedMessage: serializedMessage)
@@ -89,7 +89,7 @@ public struct Transaction: Encodable {
               data.count == 64,
               let index = signatures.firstIndex(where: { $0.publicKey == signature.publicKey })
             else {
-                throw SolanaSDK.Error.other("Signer not valid: \(signature.publicKey.base58EncodedString)")
+                throw SolanaError.other("Signer not valid: \(signature.publicKey.base58EncodedString)")
         }
         
         signatures[index] = signature
@@ -120,13 +120,13 @@ public struct Transaction: Encodable {
     public func compileMessage() throws -> Message {
         // verify instructions
         guard instructions.count > 0 else {
-            throw SolanaSDK.Error.other("No instructions provided")
+            throw SolanaError.other("No instructions provided")
         }
         guard let feePayer = feePayer else {
-            throw SolanaSDK.Error.other("Fee payer not found")
+            throw SolanaError.other("Fee payer not found")
         }
         guard let recentBlockhash = recentBlockhash else {
-            throw SolanaSDK.Error.other("Recent blockhash not found")
+            throw SolanaError.other("Recent blockhash not found")
         }
         
         // programIds & accountMetas
@@ -212,7 +212,7 @@ public struct Transaction: Encodable {
 //                        throw Error.invalidRequest(reason: "Transaction references a signature that is unnecessary")
                 }
             } else {
-                throw SolanaSDK.Error.invalidRequest(reason: "Unknown signer: \(signature.publicKey.base58EncodedString)")
+                throw SolanaError.invalidRequest(reason: "Unknown signer: \(signature.publicKey.base58EncodedString)")
             }
         }
         
@@ -247,9 +247,9 @@ public struct Transaction: Encodable {
         let accountKeys = accountMetas.map { $0.publicKey }
         let instructions = instructions.compile(accountKeys: accountKeys)
         try instructions.forEach { instruction in
-            if instruction.programIdIndex < 0 { throw SolanaSDK.Error.assertionFailed }
+            if instruction.programIdIndex < 0 { throw SolanaError.assertionFailed }
             try instruction.accounts.forEach { keyIndex in
-                if (keyIndex < 0) { throw SolanaSDK.Error.assertionFailed }
+                if (keyIndex < 0) { throw SolanaError.assertionFailed }
             }
         }
         
