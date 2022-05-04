@@ -12,7 +12,7 @@ public struct Account: Codable, Hashable {
     ///   - phrase: secret phrase for an account, leave it empty for new account
     ///   - network: network in which account should be created
     /// - Throws: Error if the derivation is not successful
-    public init(phrase: [String] = [], network: SolanaSDK.Network, derivablePath: SolanaSDK.DerivablePath? = nil) throws {
+    public init(phrase: [String] = [], network: Network, derivablePath: DerivablePath? = nil) throws {
         let mnemonic: Mnemonic
         var phrase = phrase.filter {!$0.isEmpty}
         if !phrase.isEmpty {
@@ -37,7 +37,7 @@ public struct Account: Codable, Hashable {
         case .deprecated:
             let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
             guard let seed = try keychain?.derivedKeychain(at: derivablePath!.rawValue).privateKey else {
-                throw SolanaSDK.Error.other("Could not derivate private key")
+                throw SolanaError.other("Could not derivate private key")
             }
             
             let keys = try NaclSign.KeyPair.keyPair(fromSeed: seed)

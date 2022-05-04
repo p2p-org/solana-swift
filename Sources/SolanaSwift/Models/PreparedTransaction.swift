@@ -26,7 +26,7 @@ public struct PreparedTransaction {
     public func findSignature(publicKey: PublicKey) throws -> String {
         guard let signature = transaction.findSignature(pubkey: publicKey)?.signature
         else {
-            throw SolanaSDK.Error.other("Signature not found")
+            throw SolanaError.other("Signature not found")
         }
         return Base58.encode(signature.bytes)
     }

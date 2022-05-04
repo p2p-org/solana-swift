@@ -110,7 +110,7 @@ extension SolanaSDK{
         getAccountInfo(account: account, decodedTo: EmptyInfo.self)
             .map {_ in true}
             .catch {error in
-                if error.isEqualTo(SolanaSDK.Error.couldNotRetrieveAccountInfo) {
+                if error.isEqualTo(SolanaError.couldNotRetrieveAccountInfo) {
                     return .just(false)
                 }
                 throw error
