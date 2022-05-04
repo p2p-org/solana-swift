@@ -112,7 +112,7 @@ let endpoint = SolanaSDK.APIEndPoint(
 let apiClient = JSONRPCAPIClient(endpoint: endpoint)
 let result = try await apiClient.getBlockHeight()
 ```
-/// The full list of supported methods available in `APIClient/APIClient.swift`
+The full list of supported methods available in `APIClient/APIClient.swift`
 
 
 ## How to use SolanaSDK (Deprecated)
