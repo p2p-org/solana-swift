@@ -43,7 +43,7 @@ class TokenRepositoryTests: XCTestCase {
         let mock = MockNetworkManager(withError: true)
         let tokenRepository = TokenRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
         do {
-            let list = try await tokenRepository.getTokensList()
+            let list = try await tokenRepository.getTokensList(useCache: false)
             XCTAssertTrue(list.isEmpty)
         } catch {
             XCTAssertTrue(true)
@@ -51,17 +51,19 @@ class TokenRepositoryTests: XCTestCase {
     }
     
     func testGetTokenWallets() async throws {
-        let tokenRepository = TokenRepository(endpoint: endpoint, tokenListParser: TokensListParser())
+        let mock = MockNetworkManager(withError: false)
+        let tokenRepository = TokenRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
         let datas = try! await tokenRepository.getTokenWallets(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
         XCTAssertNotEqual(datas.count, 0)
     }
-    
+
     func testCheckAccountValidation() async throws {
-        let tokenRepository = TokenRepository(endpoint: endpoint, tokenListParser: TokensListParser())
+        let mock = MockNetworkManager(withError: false)
+        let tokenRepository = TokenRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
         // funding SOL address
         let isValid1 = try await tokenRepository.checkAccountValidation(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
         XCTAssertEqual(isValid1, true)
-        
+
         // no funding SOL address
         let isValid2 = try await tokenRepository.checkAccountValidation(account: "HnXJX1Bvps8piQwDYEYC6oea9GEkvQvahvRj3c97X9xr")
         XCTAssertEqual(isValid2, false)
