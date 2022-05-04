@@ -21,11 +21,11 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 Demo wallet: [p2p-wallet](https://github.com/p2p-org/p2p-wallet-ios)
 
 ## Requirements
-- iOS 11 or later
-- RxSwift
+- iOS 13 or later
+- [Deprecated] RxSwift
 
 ## Dependencies
-- RxAlamofire
+- [Deprecated] RxAlamofire
 - TweetNacl
 - CryptoSwift
 - Starscream
@@ -39,7 +39,7 @@ it, simply add the following line to your Podfile:
 pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
 ```
 
-## How to use
+## How to use 
 * [Deprecated] Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
 
 * Import
@@ -47,37 +47,41 @@ pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
 import SolanaSwift
 ```
 
-* Create an `AccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The `AccountStorage` must conform to protocol `SolanaSDKAccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK.Account?` for retrieving user's account.
+* Create an `AccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The "`CustomAccountStorage`" must conform to protocol `AccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK.Account? { get thrrows }` for retrieving user's account.
 
 Example:
 ```swift
 import SolanaSwift
 import KeychainSwift
-struct KeychainAccountStorage: AccountStorageType {
+struct KeychainAccountStorage: AccountStorage {
     let tokenKey = <YOUR_KEY_TO_STORE_IN_KEYCHAIN>
     func save(_ account: Account) throws {
         let data = try JSONEncoder().encode(account)
         keychain.set(data, forKey: tokenKey)
     }
     
-    func getAccount() -> Account? {
-        guard let data = keychain.getData(tokenKey) else {return nil}
-        return try? JSONDecoder().decode(SolanaSDK.Account.self, from: data)
+    var account: Account? {
+        get throws {
+            guard let data = keychain.getData(tokenKey) else {return nil}
+            return try JSONDecoder().decode(SolanaSDK.Account.self, from: data)
+        }
     }
 }
 
-struct InMemoryAccountStorage: AccountStorageType {
+struct InMemoryAccountStorage: AccountStorage {
     private var _account: SolanaSDK.Account?
     func save(_ account: Account) throws {
         _account = account
     }
     
-    func getAccount() -> Account? {
-        _account
+    var account: Account? {
+        get throws {
+            _account
+        }
     }
 }
 ```
-* Creating an instance of `SolanaSDK`:
+* [Deprecated] Creating an instance of `SolanaSDK`:
 ```swift
 let solanaSDK = SolanaSDK(endpoint: <YOUR_API_ENDPOINT>, accountStorage: KeychainAccountStorage.shared) // endpoint example: https://api.mainnet-beta.solana.com
 ```

@@ -1,6 +1,6 @@
 import Foundation
 
-protocol AccountStorageType: AnyObject {
-    func getAccount() -> Account?
+protocol AccountStorage: AnyObject {
+    var account: Account? {get throws}
     func save(_ account: Account) throws
 }
