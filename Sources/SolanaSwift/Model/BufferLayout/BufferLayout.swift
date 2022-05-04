@@ -37,7 +37,7 @@ public extension DecodableBufferLayout {
             throw SolanaSDK.Error.couldNotRetrieveAccountInfo
         }
         
-        if string.isEmpty && !(Self.self == SolanaSDK.EmptyInfo.self) {
+        if string.isEmpty && !(Self.self == EmptyInfo.self) {
             throw SolanaSDK.Error.couldNotRetrieveAccountInfo
         }
         
