@@ -27,6 +27,7 @@ public struct ResponseErrorData: Decodable {
     public let logs: [String]?
     public let numSlotsBehind: Int?
 }
+
 public struct Rpc<T: Decodable>: Decodable {
     public let context: Context
     public let value: T
@@ -41,7 +42,7 @@ public struct BlockCommitment: Decodable {
 public struct ClusterNodes: Decodable {
     public let pubkey: String
     public let gossip: String
-    public let tpu: String
+    public let tpu: String?
     public let rpc: String?
     public let version: String?
 }
