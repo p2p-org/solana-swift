@@ -125,8 +125,6 @@ public class TokensListParser {
         guard let url = tokenListURL else { throw TokensListParserError.invalidTokenlistURL }
         let urlRequest = URLRequest(url: url)
         let data = try await networkManager.requestData(request: urlRequest)
-        print("networkManager")
-        print(networkManager)
         let tokenList: TokensList
         do {
             tokenList = try JSONDecoder().decode(TokensList.self, from: data)
