@@ -300,7 +300,7 @@ public class TransactionParser: SolanaSDKTransactionParserType {
         else {
             request = solanaSDK.getAccountInfo(account: sourcePubkey, retryWithAccount: destinationPubkey)
                     .flatMap { [weak self] info in
-                        guard let self = self else {throw SolanaSDK.Error.unknown}
+                        guard let self = self else {throw SolanaError.unknown}
                         return self.solanaSDK.getTokenWithMint(info?.mint.base58EncodedString)
                                 .map { token in
                                     let source = Wallet(pubkey: sourcePubkey, lamports: nil, token: token)
@@ -320,7 +320,7 @@ public class TransactionParser: SolanaSDKTransactionParserType {
         
         return request
             .flatMap { [weak self] transaction -> Single<TransferTransaction> in
-                guard let self = self else {throw SolanaSDK.Error.unknown}
+                guard let self = self else {throw SolanaError.unknown}
                 if transaction.destinationAuthority != nil {
                     return .just(transaction)
                 }
@@ -517,7 +517,7 @@ public class TransactionParser: SolanaSDKTransactionParserType {
             getMinRentExemption
         )
             .map { [weak self] lamportsPerSignature, minRentExemption in
-                guard let self = self else {throw SolanaSDK.Error.unknown}
+                guard let self = self else {throw SolanaError.unknown}
                 
                 // get creating and closing account instruction
                 let createTokenAccountInstructions = confirmedTransaction.message.instructions.filter {$0.programId == PublicKey.tokenProgramId.base58EncodedString && $0.parsed?.type == "create"}

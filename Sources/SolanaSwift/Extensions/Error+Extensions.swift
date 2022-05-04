@@ -12,12 +12,12 @@ extension Error {
         (self as? LocalizedError)?.errorDescription ?? "\(self)"
     }
     
-    public func isEqualTo(_ error: SolanaSDK.Error) -> Bool {
-        (self as? SolanaSDK.Error) == error
+    public func isEqualTo(_ error: SolanaError) -> Bool {
+        (self as? SolanaError) == error
     }
     
     public var isAlreadyInUseSolanaError: Bool {
-        if let error = self as? SolanaSDK.Error {
+        if let error = self as? SolanaError {
             switch error {
             case .invalidResponse(let response):
                 return response.data?.logs?.contains(where: {$0.isAlreadyInUseLog}) == true

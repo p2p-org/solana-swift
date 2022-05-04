@@ -3,7 +3,7 @@ import Foundation
 /// Blockhash as Base58 string.
 typealias BlockHash = String
 
-public extension Transaction {
+extension Transaction {
     public struct Message {
         // MARK: - Constants
         private static let RECENT_BLOCK_HASH_LENGTH = 32
@@ -63,7 +63,7 @@ public extension Transaction {
             
             let accountCount = try data.decodeLength()
             var accountKeys: [PublicKey] = []
-            for index in stride(from: 0, through: accountCount - 1, by: 1) {
+            for _ in stride(from: 0, through: accountCount - 1, by: 1) {
                 let account = data.prefix(PublicKey.numberOfBytes)
                 data = data.dropFirst(PublicKey.numberOfBytes)
                 accountKeys.append(try PublicKey.init(string: Base58.encode(account.bytes)))
@@ -76,7 +76,7 @@ public extension Transaction {
             let instructionCount = try data.decodeLength()
             print(instructionCount)
             var instructions: [CompiledInstruction] = []
-            for index in stride(from: 0, through: instructionCount - 1, by: 1) {
+            for _ in stride(from: 0, through: instructionCount - 1, by: 1) {
                 let programIdIndex = data.popFirst()!
                 let accountCount = try data.decodeLength()
                 let accounts = data.prefix(accountCount)
@@ -202,12 +202,12 @@ extension Sequence where Iterator.Element == TransactionInstruction {
             
             var keyIndices = Data()
             for i in 0..<keysSize {
-                let index = try accountKeys.index(of: instruction.keys[i].publicKey)!
+                let index = accountKeys.firstIndex(of: instruction.keys[i].publicKey)!
                 keyIndices.append(UInt8(index))
             }
             
             let compiledInstruction = Transaction.Message.CompiledInstruction(
-                programIdIndex: UInt8(try accountKeys.index(of: instruction.programId)!),
+                programIdIndex: UInt8(accountKeys.firstIndex(of: instruction.programId)!),
                 keyIndicesCount: [UInt8](Data.encodeLength(keysSize)),
                 keyIndices: [UInt8](keyIndices),
                 dataLength: [UInt8](Data.encodeLength(instruction.data.count)),
