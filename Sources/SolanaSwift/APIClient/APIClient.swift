@@ -13,7 +13,7 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an BufferInfo
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
     ///
-    func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>
+    func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>?
 
     /// Returns the balance of the account of provided Pubkey
     /// - Parameters:
@@ -222,6 +222,15 @@ public protocol SolanaAPIClient {
     func simulateTransaction(transaction: String, configs: RequestConfiguration) async throws -> TransactionStatus
     func setLogFilter(filter: String) async throws -> String?
     func validatorExit() async throws -> Bool
+    
+    /// Returns the account information for a list of Pubkeys
+    /// - Parameters:
+    ///  - pubkeys: An array of Pubkeys to query, as base-58 encoded strings
+    /// - Throws: APIClientError
+    /// - Returns The result will be an RpcResponse
+    /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getmultipleaccounts
+    ///
+    func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>]
 
     // Requests
     func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
@@ -237,12 +246,11 @@ public enum APIClientError: Error {
 /// Solana API Methods
 extension SolanaAPIClient {
     
-    public func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T> {
+    public func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>? {
         let requestConfig = RequestConfiguration(encoding: "base64")
         let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
-        let response: AnyResponse<Rpc<BufferInfo<T>>> = try await request(with: req)
-        guard let ret = response.result?.value else {
-            throw APIClientError.cantDecodeResponse
+        guard let ret = try? await (request(with: req) as AnyResponse<Rpc<BufferInfo<T>?>>).result?.value else {
+            throw SolanaSDK.Error.other("Could not retrieve account info")
         }
         return ret
     }
@@ -381,12 +389,35 @@ extension SolanaAPIClient {
     }
     
     public func setLogFilter(filter: String) async throws -> String? {
-        let result: String? = try await self.get(method: "setLogFilter", params: [filter])
-        return result
+        try await self.get(method: "setLogFilter", params: [filter])
     }
     
     public func validatorExit() async throws -> Bool {
         try await self.get(method: "validatorExit", params: [])
+    }
+    
+    public func getMultipleMintDatas(mintAddresses: [String], programId: String = PublicKey.tokenProgramId.base58EncodedString) async throws -> [String: Mint] {
+        let accounts: [BufferInfo<Mint>] = try await getMultipleAccounts(pubkeys: mintAddresses)
+        var mintDict = [String: Mint]()
+        if accounts.contains(where: { $0.owner != programId }) == true {
+            throw SolanaSDK.Error.other("Invalid mint owner")
+        }
+        let result = accounts.map({ $0.data })
+        guard result.count == mintAddresses.count else {
+            throw SolanaSDK.Error.other("Some of mint data are missing")
+        }
+
+        for (index, address) in mintAddresses.enumerated() {
+            mintDict[address] = result[index]
+        }
+        return mintDict
+    }
+    
+    public func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>] {
+        let configs = RequestConfiguration(encoding: "base64")
+        guard !pubkeys.isEmpty else { return [] }
+        let result: Rpc<[BufferInfo<T>]> = try await self.get(method: "getMultipleAccounts", params: [pubkeys, configs])
+        return result.value
     }
     
     // MARK: - Private
