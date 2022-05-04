@@ -7,17 +7,6 @@
 
 import Foundation
 
-public extension SolanaSDK {
-    typealias EncodableWrapper = SolanaSwift.EncodableWrapper
-    typealias RequestAPI = SolanaSwift.RequestAPI
-    typealias Transfer = SolanaSwift.Transfer
-    typealias OwnerInfoParams = SolanaSwift.OwnerInfoParams
-    typealias RequestConfiguration = SolanaSwift.RequestConfiguration
-    typealias DataSlice = SolanaSwift.DataSlice
-    
-    typealias Commitment = SolanaSwift.Commitment
-}
-
 public struct EncodableWrapper: Encodable {
     let wrapped: Encodable
     
