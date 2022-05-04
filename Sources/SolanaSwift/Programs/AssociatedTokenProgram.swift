@@ -10,7 +10,7 @@ public protocol SolanaAssociatedTokenProgram {
 
 public struct AssociatedTokenProgram: SolanaBasicProgram, SolanaAssociatedTokenProgram {
     // MARK: - Properties
-    public static var id: PublicKey {
+    public var id: PublicKey {
         "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
     }
     
@@ -36,11 +36,11 @@ public struct AssociatedTokenProgram: SolanaBasicProgram, SolanaAssociatedTokenP
                 ),
                 .init(publicKey: owner, isSigner: false, isWritable: false),
                 .init(publicKey: mint, isSigner: false, isWritable: false),
-                .init(publicKey: SystemProgram.id, isSigner: false, isWritable: false),
-                .init(publicKey: TokenProgram.id, isSigner: false, isWritable: false),
+                .init(publicKey: SystemProgram().id, isSigner: false, isWritable: false),
+                .init(publicKey: TokenProgram().id, isSigner: false, isWritable: false),
                 .init(publicKey: .sysvarRent, isSigner: false, isWritable: false)
             ],
-            programId: AssociatedTokenProgram.id,
+            programId: AssociatedTokenProgram().id,
             data: []
         )
     }

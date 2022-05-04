@@ -23,7 +23,7 @@ public struct SystemProgram: SolanaBasicProgram, SolanaSystemProgram {
     }
     
     // MARK: - Properties
-    public static var id: PublicKey {
+    public var id: PublicKey {
         "11111111111111111111111111111111"
     }
     
@@ -43,8 +43,8 @@ public struct SystemProgram: SolanaBasicProgram, SolanaSystemProgram {
                 Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
                 Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true)
             ],
-            programId: SystemProgram.id,
-            data: [Index.create, lamports, space, SystemProgram.id]
+            programId: id,
+            data: [Index.create, lamports, space, id]
         )
     }
     
@@ -59,7 +59,7 @@ public struct SystemProgram: SolanaBasicProgram, SolanaSystemProgram {
                 Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
                 Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true)
             ],
-            programId: SystemProgram.id,
+            programId: id,
             data: [Index.transfer, lamports]
         )
     }

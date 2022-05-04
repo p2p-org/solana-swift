@@ -15,7 +15,7 @@ class SystemProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys.count, 2)
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", isSigner: true))
         XCTAssertEqual(instruction.keys[1], .writable(publicKey: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", isSigner: true))
-        XCTAssertEqual(instruction.programId, SystemProgram.id)
+        XCTAssertEqual(instruction.programId, SystemProgram().id)
         XCTAssertEqual(Base58.encode(instruction.data), "11119os1e9qSs2u7TsThXqkBSRUo9x7kpbdqtNNbTeaxHGPdWbvoHsks9hpp6mb2ed1NeB")
     }
     
@@ -32,7 +32,7 @@ class SystemProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys.count, 2)
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", isSigner: true))
         XCTAssertEqual(instruction.keys[1], .writable(publicKey: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", isSigner: false))
-        XCTAssertEqual(instruction.programId, SystemProgram.id)
+        XCTAssertEqual(instruction.programId, SystemProgram().id)
         XCTAssertEqual(Base58.encode(instruction.data), "3Bxs4Xe7CKfY5Mkb")
     }
 }

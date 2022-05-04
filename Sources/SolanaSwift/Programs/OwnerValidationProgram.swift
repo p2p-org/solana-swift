@@ -8,7 +8,7 @@ protocol SolanaOwnerValidationProgram: SolanaBasicProgram {
 }
 
 public struct OwnerValidationProgram: SolanaOwnerValidationProgram {
-    public static var id: PublicKey {
+    public var id: PublicKey {
         "4MNPdKu9wFMvEeZBMt3Eipfs5ovVWTJb31pEXDJAAxX5"
     }
     
@@ -22,7 +22,7 @@ public struct OwnerValidationProgram: SolanaOwnerValidationProgram {
             keys: [
                 Account.Meta(publicKey: account, isSigner: false, isWritable: false)
             ],
-            programId: OwnerValidationProgram.id,
+            programId: OwnerValidationProgram().id,
             data: [programId]
         )
     }

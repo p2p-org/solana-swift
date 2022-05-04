@@ -159,7 +159,7 @@ extension SolanaSDK {
                 .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
                 // check if associated address is registered
                 .map { info -> Bool in
-                    if info.owner == TokenProgram.id.base58EncodedString,
+                    if info.owner == TokenProgram().id.base58EncodedString,
                        info.data.owner == owner
                     {
                         return true
