@@ -1,14 +1,14 @@
 import Foundation
 
-protocol OwnerValidationProgram: SolanaBasicProgram {
+protocol SolanaOwnerValidationProgram: SolanaBasicProgram {
     func assertOwnerInstruction(
         account: PublicKey,
         programId: PublicKey
     ) -> TransactionInstruction
 }
 
-public struct OwnerValidationProgramImpl: OwnerValidationProgram {
-    public var id: PublicKey {
+public struct OwnerValidationProgram: SolanaOwnerValidationProgram {
+    public static var id: PublicKey {
         "4MNPdKu9wFMvEeZBMt3Eipfs5ovVWTJb31pEXDJAAxX5"
     }
     
@@ -22,7 +22,7 @@ public struct OwnerValidationProgramImpl: OwnerValidationProgram {
             keys: [
                 Account.Meta(publicKey: account, isSigner: false, isWritable: false)
             ],
-            programId: id,
+            programId: OwnerValidationProgram.id,
             data: [programId]
         )
     }

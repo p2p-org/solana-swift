@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol SystemProgram {
+public protocol SolanaSystemProgram {
     func createAccountInstruction(
         from fromPublicKey: PublicKey,
         toNewPubkey newPubkey: PublicKey,
@@ -15,7 +15,7 @@ public protocol SystemProgram {
     ) -> TransactionInstruction
 }
 
-public struct SystemProgramImpl: SolanaBasicProgram, SystemProgram {
+public struct SystemProgram: SolanaBasicProgram, SolanaSystemProgram {
     // MARK: - Nested type
     private struct Index {
         static let create: UInt32 = 0
@@ -23,7 +23,7 @@ public struct SystemProgramImpl: SolanaBasicProgram, SystemProgram {
     }
     
     // MARK: - Properties
-    public var id: PublicKey {
+    public static var id: PublicKey {
         "11111111111111111111111111111111"
     }
     
@@ -43,8 +43,8 @@ public struct SystemProgramImpl: SolanaBasicProgram, SystemProgram {
                 Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
                 Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true)
             ],
-            programId: id,
-            data: [Index.create, lamports, space, id]
+            programId: SystemProgram.id,
+            data: [Index.create, lamports, space, SystemProgram.id]
         )
     }
     
@@ -59,7 +59,7 @@ public struct SystemProgramImpl: SolanaBasicProgram, SystemProgram {
                 Account.Meta(publicKey: fromPublicKey, isSigner: true, isWritable: true),
                 Account.Meta(publicKey: toPublicKey, isSigner: false, isWritable: true)
             ],
-            programId: id,
+            programId: SystemProgram.id,
             data: [Index.transfer, lamports]
         )
     }

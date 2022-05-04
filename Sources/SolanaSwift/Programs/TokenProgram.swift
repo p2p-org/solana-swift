@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol TokenProgram {
+public protocol SolanaTokenProgram {
     func initializeMintInstruction(
         mint: PublicKey,
         decimals: UInt8,
@@ -26,7 +26,7 @@ public protocol TokenProgram {
         mint: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
-        multiSigners: [Account],
+        multiSigners: [PublicKey],
         amount: Lamports,
         decimals: Decimals
     ) -> TransactionInstruction
@@ -68,7 +68,7 @@ public protocol TokenProgram {
     ) -> TransactionInstruction
 }
 
-public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
+public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
     // MARK: - Nested type
     private struct Index {
         static let initalizeMint: UInt8 = 0
@@ -82,7 +82,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
     }
     
     // MARK: - Properties
-    public var id: PublicKey {
+    public static var id: PublicKey {
         "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
     }
     
@@ -102,7 +102,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
                 Account.Meta(publicKey: mint, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [
                 Index.initalizeMint,
                 decimals,
@@ -126,7 +126,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
                 Account.Meta(publicKey: owner, isSigner: false, isWritable: false),
                 Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.initializeAccount]
         )
     }
@@ -143,7 +143,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
                 Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: owner, isSigner: true, isWritable: true)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.transfer, amount]
         )
     }
@@ -174,7 +174,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
         
         return .init(
             keys: keys,
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.transferChecked, amount, decimals]
         )
     }
@@ -192,7 +192,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
                 .init(publicKey: mint, isSigner: false, isWritable: true),
                 .init(publicKey: owner, isSigner: true, isWritable: false),
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [
                 Index.burnChecked,
                 amount,
@@ -231,7 +231,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
         
         return TransactionInstruction(
             keys: keys,
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.approve, amount]
         )
     }
@@ -249,7 +249,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
                 Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: authority, isSigner: true, isWritable: true)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.mintTo, amount]
         )
     }
@@ -265,7 +265,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
                 Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: owner, isSigner: false, isWritable: false)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.closeAccount]
         )
     }
@@ -282,7 +282,7 @@ public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
                 .writable(publicKey: destination, isSigner: false),
                 .readonly(publicKey: owner, isSigner: signers.isEmpty)
             ] + signers.map {.readonly(publicKey: $0, isSigner: true)},
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.closeAccount])
     }
 }

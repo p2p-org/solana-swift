@@ -2,7 +2,7 @@ import XCTest
 import SolanaSwift
 
 class TokenProgramTests: XCTestCase {
-    let program = TokenProgramImpl()
+    let program = TokenProgram()
     
     func testInitializeMintInstruction() throws {
         let instruction = program.initializeMintInstruction(
@@ -15,7 +15,7 @@ class TokenProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys.count, 2)
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", isSigner: false))
         XCTAssertEqual(instruction.keys[1], .readonly(publicKey: "SysvarRent111111111111111111111111111111111", isSigner: false))
-        XCTAssertEqual(instruction.programId, program.id)
+        XCTAssertEqual(instruction.programId, TokenProgram.id)
         XCTAssertEqual(Base58.encode(instruction.data), "195AHs4ykNczn89ynGjJ5v7rSfaK9giG1eL2bNrmUqn1oNw")
     }
     
@@ -31,7 +31,7 @@ class TokenProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys[1], .readonly(publicKey: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", isSigner: false))
         XCTAssertEqual(instruction.keys[2], .readonly(publicKey: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", isSigner: false))
         XCTAssertEqual(instruction.keys[3], .readonly(publicKey: "SysvarRent111111111111111111111111111111111", isSigner: false))
-        XCTAssertEqual(instruction.programId, program.id)
+        XCTAssertEqual(instruction.programId, TokenProgram.id)
         XCTAssertEqual(Base58.encode(instruction.data), "2")
     }
     
@@ -47,7 +47,7 @@ class TokenProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", isSigner: false))
         XCTAssertEqual(instruction.keys[1], .writable(publicKey: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3", isSigner: false))
         XCTAssertEqual(instruction.keys[2], .writable(publicKey: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", isSigner: true))
-        XCTAssertEqual(instruction.programId, program.id)
+        XCTAssertEqual(instruction.programId, TokenProgram.id)
         XCTAssertEqual("3WBgs5fm8oDy", Base58.encode(instruction.data))
     }
     
@@ -67,7 +67,7 @@ class TokenProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys[1], .readonly(publicKey: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", isSigner: false))
         XCTAssertEqual(instruction.keys[2], .writable(publicKey: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3", isSigner: false))
         XCTAssertEqual(instruction.keys[3], .readonly(publicKey: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", isSigner: true))
-        XCTAssertEqual(instruction.programId, program.id)
+        XCTAssertEqual(instruction.programId, TokenProgram.id)
         XCTAssertEqual("hNmtbNYibdzwf", Base58.encode(instruction.data))
     }
     
@@ -84,7 +84,7 @@ class TokenProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", isSigner: false))
         XCTAssertEqual(instruction.keys[1], .writable(publicKey: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", isSigner: false))
         XCTAssertEqual(instruction.keys[2], .readonly(publicKey: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", isSigner: true))
-        XCTAssertEqual(instruction.programId, program.id)
+        XCTAssertEqual(instruction.programId, TokenProgram.id)
         XCTAssertEqual("s9m8UUrvs3fBT", Base58.encode(instruction.data))
     }
     
@@ -101,7 +101,7 @@ class TokenProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", isSigner: false))
         XCTAssertEqual(instruction.keys[1], .readonly(publicKey: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", isSigner: false))
         XCTAssertEqual(instruction.keys[2], .readonly(publicKey: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", isSigner: true))
-        XCTAssertEqual(instruction.programId, program.id)
+        XCTAssertEqual(instruction.programId, TokenProgram.id)
         XCTAssertEqual("4d5tSvUuzUVM", Base58.encode(instruction.data))
     }
     
@@ -117,7 +117,7 @@ class TokenProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", isSigner: false))
         XCTAssertEqual(instruction.keys[1], .writable(publicKey: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3", isSigner: false))
         XCTAssertEqual(instruction.keys[2], .writable(publicKey: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", isSigner: true))
-        XCTAssertEqual(instruction.programId, program.id)
+        XCTAssertEqual(instruction.programId, TokenProgram.id)
         XCTAssertEqual("6AsKhot84V8s", Base58.encode(instruction.data))
     }
     
@@ -132,7 +132,7 @@ class TokenProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3", isSigner: false))
         XCTAssertEqual(instruction.keys[1], .writable(publicKey: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", isSigner: false))
         XCTAssertEqual(instruction.keys[2], .readonly(publicKey: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG", isSigner: false))
-        XCTAssertEqual(instruction.programId, program.id)
+        XCTAssertEqual(instruction.programId, TokenProgram.id)
         XCTAssertEqual("A", Base58.encode(instruction.data))
     }
 }
