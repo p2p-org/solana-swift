@@ -8,8 +8,8 @@
 import Foundation
 
 public extension SolanaSDK {
-    typealias SystemProgram = SolanaSwift.SystemProgram
-    typealias TokenProgram = SolanaSwift.TokenProgram
-    typealias AssociatedTokenProgram = SolanaSwift.AssociatedTokenProgram
-    typealias TokenSwapProgram = SolanaSwift.TokenSwapProgram
+    typealias SystemProgram = SolanaSwift.SystemProgramImpl
+    typealias TokenProgram = SolanaSwift.TokenProgramImpl
+    typealias AssociatedTokenProgram = SolanaSwift.AssociatedTokenProgramImpl
+    typealias TokenSwapProgram = SolanaSwift.TokenSwapProgramImpl
 }

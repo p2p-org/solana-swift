@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol SystemProgramType {
+public protocol SystemProgram {
     func createAccountInstruction(
         from fromPublicKey: PublicKey,
         toNewPubkey newPubkey: PublicKey,
@@ -15,7 +15,7 @@ public protocol SystemProgramType {
     ) -> TransactionInstruction
 }
 
-public struct SystemProgram: SolanaBasicProgramType, SystemProgramType {
+public struct SystemProgramImpl: SolanaBasicProgram, SystemProgram {
     // MARK: - Nested type
     private struct Index {
         static let create: UInt32 = 0

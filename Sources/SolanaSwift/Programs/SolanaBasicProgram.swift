@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol SolanaBasicProgramType {
+public protocol SolanaBasicProgram {
     /// id of program on blockchain
     var id: PublicKey { get }
 }
