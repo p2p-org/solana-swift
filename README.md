@@ -42,12 +42,13 @@ pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
 ## How to use
 * For those who still use `SolanaSDK` class, see [How to use SolanaSDK (Deprecated) section](#how-to-use-solanasdk-deprecated)
 
-* Import
+### Import
 ```swift
 import SolanaSwift
 ```
 
-* Create an `AccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The "`CustomAccountStorage`" must conform to protocol `AccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK.Account? { get thrrows }` for retrieving user's account.
+### AccountStorage
+Create an `AccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The "`CustomAccountStorage`" must conform to protocol `AccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK.Account? { get thrrows }` for retrieving user's account.
 
 Example:
 ```swift
@@ -81,6 +82,23 @@ struct InMemoryAccountStorage: AccountStorage {
     }
 }
 ```
+
+### Create an account (keypair)
+```swift
+let account = try await Account(network: .mainnetBeta)
+// optional
+accountStorage.save(account)
+```
+
+### Restore an account from a seed phrase (keypair)
+```swift
+let account = try await Account(phrases: ["miracle", "hundred", ...], network: .mainnetBeta, derivablePath: ...)
+// optional
+accountStorage.save(account)
+```
+
+### Solana RPC Client
+// TODO
 
 ## How to use SolanaSDK (Deprecated)
 * [Deprecated] Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
