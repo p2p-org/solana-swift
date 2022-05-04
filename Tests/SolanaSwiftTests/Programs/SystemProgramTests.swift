@@ -2,7 +2,7 @@ import XCTest
 import SolanaSwift
 
 class SystemProgramTests: XCTestCase {
-    let program = SystemProgramImpl()
+    let program = SystemProgram()
     
     func testCreateAccountInstruction() throws {
         let instruction = program.createAccountInstruction(

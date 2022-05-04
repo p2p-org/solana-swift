@@ -2,7 +2,7 @@ import XCTest
 import SolanaSwift
 
 class AssociatedTokenProgramTests: XCTestCase {
-    let program = AssociatedTokenProgramImpl()
+    let program = AssociatedTokenProgram()
     
     func testAssociatedTokenAddress() throws {
         let associatedTokenAddress = try PublicKey.associatedTokenAddress(

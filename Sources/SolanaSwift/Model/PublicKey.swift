@@ -203,12 +203,12 @@ public extension PublicKey {
 
 public extension PublicKey {
     @available(*, deprecated, renamed: "TokenProgram.id")
-    static var tokenProgramId: PublicKey { TokenProgramImpl().id }
+    static var tokenProgramId: PublicKey { TokenProgram().id }
     
     static var sysvarRent: PublicKey { "SysvarRent111111111111111111111111111111111" }
     
     @available(*, deprecated, renamed: "SystemProgram.id")
-    static var programId: PublicKey { SystemProgramImpl().id }
+    static var programId: PublicKey { SystemProgram().id }
     
     static var wrappedSOLMint: PublicKey { "So11111111111111111111111111111111111111112" }
     static var solMint: PublicKey { "Ejmc1UB4EsES5oAaRN63SpoxMJidt3ZGBrqrZk49vjTZ" } // Arbitrary mint to represent SOL (not wrapped SOL).
@@ -218,7 +218,7 @@ public extension PublicKey {
     static var swapHostFeeAddress: PublicKey { "AHLwq66Cg3CuDJTFtwjPfwjJhifiv6rFwApQNKgX57Yg" }
     
     @available(*, deprecated, renamed: "AssociatedTokenProgram.id")
-    static var splAssociatedTokenAccountProgramId: PublicKey { AssociatedTokenProgramImpl().id }
+    static var splAssociatedTokenAccountProgramId: PublicKey { AssociatedTokenProgram().id }
     
     static var renBTCMint: PublicKey { "CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5" }
     static var renBTCMintDevnet: PublicKey { "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD" }

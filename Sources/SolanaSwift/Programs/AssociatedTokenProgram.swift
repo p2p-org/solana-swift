@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol AssociatedTokenProgram {
+public protocol AssociatedTokenProgramType {
     func createAssociatedTokenAccountInstruction(
         mint: PublicKey,
         owner: PublicKey,
@@ -8,7 +8,7 @@ public protocol AssociatedTokenProgram {
     ) throws -> TransactionInstruction
 }
 
-public struct AssociatedTokenProgramImpl: SolanaBasicProgram, AssociatedTokenProgram {
+public struct AssociatedTokenProgram: SolanaBasicProgramType, AssociatedTokenProgramType {
     // MARK: - Properties
     public var id: PublicKey {
         "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
@@ -36,8 +36,8 @@ public struct AssociatedTokenProgramImpl: SolanaBasicProgram, AssociatedTokenPro
                 ),
                 .init(publicKey: owner, isSigner: false, isWritable: false),
                 .init(publicKey: mint, isSigner: false, isWritable: false),
-                .init(publicKey: SystemProgramImpl().id, isSigner: false, isWritable: false),
-                .init(publicKey: TokenProgramImpl().id, isSigner: false, isWritable: false),
+                .init(publicKey: SystemProgram().id, isSigner: false, isWritable: false),
+                .init(publicKey: TokenProgram().id, isSigner: false, isWritable: false),
                 .init(publicKey: .sysvarRent, isSigner: false, isWritable: false)
             ],
             programId: id,

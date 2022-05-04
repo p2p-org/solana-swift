@@ -1,13 +1,13 @@
 import Foundation
 
-protocol OwnerValidationProgram: SolanaBasicProgram {
+protocol OwnerValidationProgramType: SolanaBasicProgramType {
     func assertOwnerInstruction(
         account: PublicKey,
         programId: PublicKey
     ) -> TransactionInstruction
 }
 
-public struct OwnerValidationProgramImpl: OwnerValidationProgram {
+public struct OwnerValidationProgram: OwnerValidationProgramType {
     public var id: PublicKey {
         "4MNPdKu9wFMvEeZBMt3Eipfs5ovVWTJb31pEXDJAAxX5"
     }

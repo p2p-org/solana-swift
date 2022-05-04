@@ -2,7 +2,7 @@ import XCTest
 import SolanaSwift
 
 class TokenProgramTests: XCTestCase {
-    let program = TokenProgramImpl()
+    let program = TokenProgram()
     
     func testInitializeMintInstruction() throws {
         let instruction = program.initializeMintInstruction(
