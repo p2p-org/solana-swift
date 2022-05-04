@@ -1,6 +1,6 @@
 import Foundation
 
-protocol AccountStorage: AnyObject {
+protocol SolanaAccountStorage: AnyObject {
     var account: Account? {get throws}
     func save(_ account: Account) throws
 }
