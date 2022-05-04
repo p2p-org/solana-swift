@@ -10,6 +10,7 @@ import RxAlamofire
 import Alamofire
 import RxSwift
 
+@available(*, deprecated, renamed: "AccountStorageType", message: "This protocol is outdated")
 public protocol SolanaSDKAccountStorage {
     var account: Account? {get}
     func save(_ account: Account) throws
@@ -39,7 +40,7 @@ public class SolanaSDK {
         log: Bool = true
     ) -> Single<T>{
         guard let url = URL(string: (overridingEndpoint != nil ? overridingEndpoint!: endpoint.getURL()) + path) else {
-            return .error(SolanaSDK.Error.invalidRequest(reason: "Invalid URL"))
+            return .error(SolanaError.invalidRequest(reason: "Invalid URL"))
         }
         let params = parameters.compactMap {$0}
         
@@ -79,12 +80,12 @@ public class SolanaSDK {
                             .replacingOccurrences(of: ", contact your app developer or support@rpcpool.com.", with: "")
                     }
                     
-                    throw SolanaSDK.Error.invalidResponse(res.error ?? .init(code: statusCode, message: readableErrorMessage, data: nil))
+                    throw SolanaError.invalidResponse(res.error ?? .init(code: statusCode, message: readableErrorMessage, data: nil))
                 }
                 .take(1)
                 .asSingle()
                 .catch {[weak self] error in
-                    guard let self = self else {throw SolanaSDK.Error.unknown}
+                    guard let self = self else {throw SolanaError.unknown}
                     if let error = error as? Error, let replacingMethod = replacingMethod
                     {
                         switch error {

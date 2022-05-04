@@ -25,32 +25,32 @@ extension SolanaSDK {
         lamportsPerSignature: Lamports? = nil
     ) -> Single<PreparedTransaction> {
         guard let account = accountStorage.account else {
-            return .error(SolanaSDK.Error.unauthorized)
+            return .error(SolanaError.unauthorized)
         }
         let feePayer = feePayer ?? account.publicKey
         do {
             let fromPublicKey = account.publicKey
             
             if fromPublicKey.base58EncodedString == destination {
-                throw SolanaSDK.Error.other("You can not send tokens to yourself")
+                throw SolanaError.other("You can not send tokens to yourself")
             }
             
             // check
             return getAccountInfo(account: destination, decodedTo: EmptyInfo.self)
                 .map {info -> Void in
                     guard info.owner == PublicKey.programId.base58EncodedString
-                    else {throw SolanaSDK.Error.other("Invalid account info")}
+                    else {throw SolanaError.other("Invalid account info")}
                     return
                 }
                 .catch { error in
-                    if error.isEqualTo(SolanaSDK.Error.couldNotRetrieveAccountInfo) {
+                    if error.isEqualTo(SolanaError.couldNotRetrieveAccountInfo) {
                         // let request through
                         return .just(())
                     }
                     throw error
                 }
                 .flatMap { [weak self] in
-                    guard let self = self else {return .error(SolanaSDK.Error.unknown)}
+                    guard let self = self else {return .error(SolanaError.unknown)}
                     // form instruction
                     let instruction = SystemProgram.transferInstruction(
                         from: fromPublicKey,
@@ -291,7 +291,7 @@ extension SolanaSDK {
                 }
                 
                 // token is of another type
-                throw SolanaSDK.Error.invalidRequest(reason: "Wallet address is not valid")
+                throw SolanaError.invalidRequest(reason: "Wallet address is not valid")
             }
             .catch { error in
                 // let request through if result of getAccountInfo is null (it may be a new SOL address)
@@ -311,7 +311,7 @@ extension SolanaSDK {
                 throw error
             }
             .flatMap { [weak self] toPublicKey -> Single<SPLTokenDestinationAddress> in
-                guard let self = self else {throw SolanaSDK.Error.unknown}
+                guard let self = self else {throw SolanaError.unknown}
                 let toPublicKey = try PublicKey(string: toPublicKey)
                 // if destination address is an SOL account address
                 if destinationAddress != toPublicKey.base58EncodedString {

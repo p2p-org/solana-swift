@@ -42,7 +42,7 @@ extension SolanaSDK.Socket: WebSocketDelegate {
             status.accept(.disconnected)
         case .error(let error):
             if let error = error {
-                onError(SolanaSDK.Error.socket(error))
+                onError(SolanaError.socket(error))
             }
         }
     }
