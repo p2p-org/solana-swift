@@ -22,7 +22,7 @@ public struct DerivablePath: Hashable, Codable {
     public let walletIndex: Int
     public let accountIndex: Int?
     
-    public init(type: SolanaSDK.DerivablePath.DerivableType, walletIndex: Int, accountIndex: Int? = nil) {
+    public init(type: DerivablePath.DerivableType, walletIndex: Int, accountIndex: Int? = nil) {
         self.type = type
         self.walletIndex = walletIndex
         self.accountIndex = accountIndex

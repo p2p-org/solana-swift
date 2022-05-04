@@ -170,7 +170,7 @@ public struct Transaction: Encodable {
         var uniqueMetas: [Account.Meta] = []
         accountMetas.forEach { accountMeta in
             let pubkey = accountMeta.publicKey.base58EncodedString
-            let uniqueIndex = uniqueMetas.index { x in x.publicKey.base58EncodedString == pubkey }
+            let uniqueIndex = uniqueMetas.firstIndex { x in x.publicKey.base58EncodedString == pubkey }
             if let uniqueIndex = uniqueIndex {
                 uniqueMetas[uniqueIndex].isWritable = uniqueMetas[uniqueIndex].isWritable || accountMeta.isWritable
             } else {
@@ -179,7 +179,7 @@ public struct Transaction: Encodable {
         }
         
         // move fee payer to front
-        let feePayerIndex = uniqueMetas.index { x in x.publicKey == feePayer }
+        let feePayerIndex = uniqueMetas.firstIndex { x in x.publicKey == feePayer }
         if let feePayerIndex = feePayerIndex {
             var payerMeta = uniqueMetas.remove(at: feePayerIndex)
             payerMeta.isSigner = true;
@@ -247,7 +247,6 @@ public struct Transaction: Encodable {
         let accountKeys = accountMetas.map { $0.publicKey }
         let instructions = instructions.compile(accountKeys: accountKeys)
         try instructions.forEach { instruction in
-            if instruction.programIdIndex < 0 { throw SolanaError.assertionFailed }
             try instruction.accounts.forEach { keyIndex in
                 if (keyIndex < 0) { throw SolanaError.assertionFailed }
             }
@@ -291,7 +290,7 @@ public struct Transaction: Encodable {
             if let signature = signature.signature {
                 data.append(signature)
             } else {
-                data.append(SolanaSDK.Transaction.DEFAULT_SIGNATURE)
+                data.append(Transaction.DEFAULT_SIGNATURE)
             }
             return data
         })
@@ -311,7 +310,7 @@ public struct Transaction: Encodable {
         var signatures: [String] = []
         let signatureCount = try data.decodeLength()
         
-        for index in stride(from: 0, through: signatureCount - 1, by: 1) {
+        for _ in stride(from: 0, through: signatureCount - 1, by: 1) {
             let signatureData = data.prefix(Transaction.SIGNATURE_LENGTH)
             data = data.dropFirst(Transaction.SIGNATURE_LENGTH)
             signatures.append(Base58.encode(signatureData))
@@ -329,8 +328,8 @@ public struct Transaction: Encodable {
             transaction.feePayer = message.accountKeys[0]
         }
         signatures.enumerated().forEach { (index, signature) in
-            let sigPubkeyPair = SolanaSDK.Transaction.Signature(
-                signature: signature == Base58.encode(SolanaSDK.Transaction.DEFAULT_SIGNATURE) ? nil : Data(bytes: Base58.decode(signature)),
+            let sigPubkeyPair = Transaction.Signature(
+                signature: signature == Base58.encode(Transaction.DEFAULT_SIGNATURE) ? nil : Data(Base58.decode(signature)),
                 publicKey: message.accountKeys[index]
             )
             transaction.signatures.append(sigPubkeyPair)
@@ -355,7 +354,7 @@ public struct Transaction: Encodable {
     }
 }
 
-public extension Transaction {
+extension Transaction {
     public struct Signature: Encodable {
         public var signature: Data?
         public var publicKey: PublicKey

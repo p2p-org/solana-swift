@@ -25,8 +25,8 @@ public protocol EncodableBufferLayout: BufferLayout, Encodable {}
 
 public typealias CodableBufferLayout = DecodableBufferLayout & EncodableBufferLayout
 
-public extension DecodableBufferLayout {
-    init(from decoder: Decoder) throws {
+extension DecodableBufferLayout {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         
         // Unable to get parsed data, fallback to decoding base64

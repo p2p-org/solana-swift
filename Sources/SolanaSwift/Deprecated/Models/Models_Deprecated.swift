@@ -44,4 +44,14 @@ public extension SolanaSDK {
     typealias TokenSwapInfo = SolanaSwift.TokenSwapInfo
     
     typealias Error = SolanaError
+    
+    // MARK: - Others
+    typealias EncodableWrapper = SolanaSwift.EncodableWrapper
+    typealias RequestAPI = SolanaSwift.RequestAPI
+    typealias Transfer = SolanaSwift.Transfer
+    typealias OwnerInfoParams = SolanaSwift.OwnerInfoParams
+    typealias RequestConfiguration = SolanaSwift.RequestConfiguration
+    typealias DataSlice = SolanaSwift.DataSlice
+    
+    typealias Commitment = SolanaSwift.Commitment
 }

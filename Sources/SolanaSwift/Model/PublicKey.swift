@@ -78,7 +78,7 @@ private extension Int {
     }
 }
 
-public extension PublicKey {
+extension PublicKey {
     public static func associatedTokenAddress(
         walletAddress: PublicKey,
         tokenMintAddress: PublicKey
@@ -113,7 +113,7 @@ public extension PublicKey {
         throw SolanaError.notFound
     }
 
-    static func createProgramAddress(
+    public static func createProgramAddress(
         seeds: [Data],
         programId: PublicKey
     ) throws -> PublicKey {
@@ -139,7 +139,7 @@ public extension PublicKey {
         return try PublicKey(data: publicKeyBytes)
     }
 
-    static func createWithSeed(
+    public static func createWithSeed(
         fromPublicKey: PublicKey,
         seed: String,
         programId: PublicKey
