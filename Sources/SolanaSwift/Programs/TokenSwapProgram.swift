@@ -1,6 +1,6 @@
 import Foundation
 
-protocol TokenSwapProgramType {
+protocol TokenSwapProgram {
     func swapInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
@@ -52,7 +52,7 @@ protocol TokenSwapProgramType {
     ) -> TransactionInstruction
 }
 
-public struct TokenSwapProgram: TokenSwapProgramType {
+public struct TokenSwapProgramImpl: TokenSwapProgram {
     // MARK: - Nested type
     private enum Index: UInt8, BytesEncodable {
         case initialize = 0

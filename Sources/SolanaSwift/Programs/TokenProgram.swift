@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol TokenProgramType {
+public protocol TokenProgram {
     func initializeMintInstruction(
         mint: PublicKey,
         decimals: UInt8,
@@ -68,7 +68,7 @@ public protocol TokenProgramType {
     ) -> TransactionInstruction
 }
 
-public struct TokenProgram: SolanaBasicProgramType {
+public struct TokenProgramImpl: SolanaBasicProgram, TokenProgram {
     // MARK: - Nested type
     private struct Index {
         static let initalizeMint: UInt8 = 0

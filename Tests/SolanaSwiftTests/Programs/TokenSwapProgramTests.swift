@@ -2,7 +2,7 @@ import XCTest
 import SolanaSwift
 
 class TokenSwapProgramTests: XCTestCase {
-    let program = TokenSwapProgram()
+    let program = TokenSwapProgramImpl()
     let publicKey: PublicKey = "11111111111111111111111111111111"
     
     func testSwapInstruction() throws {
