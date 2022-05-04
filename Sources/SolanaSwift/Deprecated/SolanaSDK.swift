@@ -10,6 +10,7 @@ import RxAlamofire
 import Alamofire
 import RxSwift
 
+@available(*, deprecated, renamed: "AccountStorageType", message: "This protocol is outdated")
 public protocol SolanaSDKAccountStorage {
     var account: Account? {get}
     func save(_ account: Account) throws
