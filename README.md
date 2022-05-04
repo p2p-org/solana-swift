@@ -98,7 +98,27 @@ accountStorage.save(account)
 ```
 
 ### Solana RPC Client
-// TODO
+Make an API call to Solana using JSONRPC Client
+
+Example: 
+```swift
+import SolanaSwift
+
+let endpoint = APIEndPoint(
+    address: "https://api.mainnet-beta.solana.com",
+    network: .mainnetBeta
+)
+
+// To get block height
+let apiClient = JSONRPCAPIClient(endpoint: endpoint)
+let result = try await apiClient.getBlockHeight()
+
+// To get balance of the current account
+guard let account = try? accountStorage.account?.publicKey else { throw SolanaError.unauthorized }
+let balance = try await apiClient.getBalance(account: try accountStorage.account, commitment: "recent")
+```
+The full list of supported methods available in `APIClient/APIClient.swift`
+
 
 ## How to use SolanaSDK (Deprecated)
 * [Deprecated] Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
