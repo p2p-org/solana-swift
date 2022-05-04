@@ -109,6 +109,7 @@ let endpoint = APIEndPoint(
     network: .mainnetBeta
 )
 
+// To get block height
 let apiClient = JSONRPCAPIClient(endpoint: endpoint)
 let result = try await apiClient.getBlockHeight()
 
