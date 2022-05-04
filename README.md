@@ -39,7 +39,50 @@ it, simply add the following line to your Podfile:
 pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
 ```
 
-## How to use 
+## How to use
+* For those who still use `SolanaSDK` class, see [How to use SolanaSDK (Deprecated) section](#how-to-use-solanasdk-deprecated)
+
+* Import
+```swift
+import SolanaSwift
+```
+
+* Create an `AccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The "`CustomAccountStorage`" must conform to protocol `AccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK.Account? { get thrrows }` for retrieving user's account.
+
+Example:
+```swift
+import SolanaSwift
+import KeychainSwift
+struct KeychainAccountStorage: AccountStorage {
+    let tokenKey = <YOUR_KEY_TO_STORE_IN_KEYCHAIN>
+    func save(_ account: Account) throws {
+        let data = try JSONEncoder().encode(account)
+        keychain.set(data, forKey: tokenKey)
+    }
+    
+    var account: Account? {
+        get throws {
+            guard let data = keychain.getData(tokenKey) else {return nil}
+            return try JSONDecoder().decode(SolanaSDK.Account.self, from: data)
+        }
+    }
+}
+
+struct InMemoryAccountStorage: AccountStorage {
+    private var _account: SolanaSDK.Account?
+    func save(_ account: Account) throws {
+        _account = account
+    }
+    
+    var account: Account? {
+        get throws {
+            _account
+        }
+    }
+}
+```
+
+## How to use SolanaSDK (Deprecated)
 * [Deprecated] Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
 
 * Import
