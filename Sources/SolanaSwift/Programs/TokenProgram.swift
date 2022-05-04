@@ -153,7 +153,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         mint: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
-        multiSigners: [Account],
+        multiSigners: [PublicKey],
         amount: Lamports,
         decimals: Decimals
     ) -> TransactionInstruction {
@@ -168,7 +168,7 @@ public struct TokenProgram: SolanaBasicProgramType {
         } else {
             keys.append(.init(publicKey: owner, isSigner: false, isWritable: false))
             multiSigners.forEach { signer in
-                keys.append(.init(publicKey: signer.publicKey, isSigner: true, isWritable: false))
+                keys.append(.init(publicKey: signer, isSigner: true, isWritable: false))
             }
         }
         
