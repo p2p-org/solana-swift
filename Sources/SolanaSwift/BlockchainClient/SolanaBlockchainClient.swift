@@ -22,8 +22,8 @@ public protocol SolanaBlockchainClient: AnyObject {
         signers: [Account],
         feePayer: PublicKey,
         accountsCreationFee: Lamports,
-        recentBlockhash: String?,
-        lamportsPerSignature: Lamports?
+        recentBlockhash: String,
+        lamportsPerSignature: Lamports
     ) async throws -> PreparedTransaction
     
     /// Serialize PreparedTransaction for sending
