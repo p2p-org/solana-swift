@@ -2,11 +2,11 @@ import XCTest
 import SolanaSwift
 
 class TokenSwapProgramTests: XCTestCase {
-    let program = TokenSwapProgram()
+    
     let publicKey: PublicKey = "11111111111111111111111111111111"
     
     func testSwapInstruction() throws {
-        let instruction = program.swapInstruction(
+        let instruction = TokenSwapProgram.swapInstruction(
             tokenSwap: publicKey,
             authority: publicKey,
             userTransferAuthority: publicKey,
@@ -40,7 +40,7 @@ class TokenSwapProgramTests: XCTestCase {
     }
     
     func testDepositInstruction() throws {
-        let instruction = program.depositInstruction(
+        let instruction = TokenSwapProgram.depositInstruction(
             tokenSwap: publicKey,
             authority: publicKey,
             sourceA: publicKey,
@@ -71,7 +71,7 @@ class TokenSwapProgramTests: XCTestCase {
     }
     
     func testWithdrawInstruction() throws {
-        let instruction = program.withdrawInstruction(
+        let instruction = TokenSwapProgram.withdrawInstruction(
             tokenSwap: publicKey,
             authority: publicKey,
             poolMint: publicKey,

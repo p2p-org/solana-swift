@@ -1,24 +1,13 @@
 import Foundation
 
-public protocol SolanaAssociatedTokenProgram {
-    func createAssociatedTokenAccountInstruction(
-        mint: PublicKey,
-        owner: PublicKey,
-        payer: PublicKey
-    ) throws -> TransactionInstruction
-}
-
-public struct AssociatedTokenProgram: SolanaBasicProgram, SolanaAssociatedTokenProgram {
+public enum AssociatedTokenProgram: SolanaBasicProgram {
     // MARK: - Properties
-    public var id: PublicKey {
+    public static var id: PublicKey {
         "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
     }
     
-    // MARK: - Initializer
-    public init() {}
-    
     // MARK: - Instruction builder
-    public func createAssociatedTokenAccountInstruction(
+    public static func createAssociatedTokenAccountInstruction(
         mint: PublicKey,
         owner: PublicKey,
         payer: PublicKey
@@ -36,11 +25,11 @@ public struct AssociatedTokenProgram: SolanaBasicProgram, SolanaAssociatedTokenP
                 ),
                 .init(publicKey: owner, isSigner: false, isWritable: false),
                 .init(publicKey: mint, isSigner: false, isWritable: false),
-                .init(publicKey: SystemProgram().id, isSigner: false, isWritable: false),
-                .init(publicKey: TokenProgram().id, isSigner: false, isWritable: false),
+                .init(publicKey: SystemProgram.id, isSigner: false, isWritable: false),
+                .init(publicKey: TokenProgram.id, isSigner: false, isWritable: false),
                 .init(publicKey: .sysvarRent, isSigner: false, isWritable: false)
             ],
-            programId: AssociatedTokenProgram().id,
+            programId: AssociatedTokenProgram.id,
             data: []
         )
     }

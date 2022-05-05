@@ -1,74 +1,6 @@
 import Foundation
 
-public protocol SolanaTokenProgram {
-    func initializeMintInstruction(
-        mint: PublicKey,
-        decimals: UInt8,
-        authority: PublicKey,
-        freezeAuthority: PublicKey?
-    ) -> TransactionInstruction
-    
-    func initializeAccountInstruction(
-        account: PublicKey,
-        mint: PublicKey,
-        owner: PublicKey
-    ) -> TransactionInstruction
-    
-    func transferInstruction(
-        source: PublicKey,
-        destination: PublicKey,
-        owner: PublicKey,
-        amount: UInt64
-    ) -> TransactionInstruction
-    
-    func transferCheckedInstruction(
-        source: PublicKey,
-        mint: PublicKey,
-        destination: PublicKey,
-        owner: PublicKey,
-        multiSigners: [PublicKey],
-        amount: Lamports,
-        decimals: Decimals
-    ) -> TransactionInstruction
-    
-    func burnCheckedInstruction(
-        mint: PublicKey,
-        account: PublicKey,
-        owner: PublicKey,
-        amount: UInt64,
-        decimals: UInt8
-    ) -> TransactionInstruction
-    
-    func approveInstruction(
-        account: PublicKey,
-        delegate: PublicKey,
-        owner: PublicKey,
-        multiSigners: [Account],
-        amount: UInt64
-    ) -> TransactionInstruction
-    
-    func mintToInstruction(
-        mint: PublicKey,
-        destination: PublicKey,
-        authority: PublicKey,
-        amount: UInt64
-    ) -> TransactionInstruction
-    
-    func closeAccountInstruction(
-        account: PublicKey,
-        destination: PublicKey,
-        owner: PublicKey
-    ) -> TransactionInstruction
-    
-    func closeAccountInstruction(
-        account: PublicKey,
-        destination: PublicKey,
-        owner: PublicKey,
-        signers: [PublicKey]
-    ) -> TransactionInstruction
-}
-
-public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
+public enum TokenProgram: SolanaBasicProgram {
     // MARK: - Nested type
     private struct Index {
         static let initalizeMint: UInt8 = 0
@@ -82,15 +14,12 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
     }
     
     // MARK: - Properties
-    public var id: PublicKey {
+    public static var id: PublicKey {
         "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
     }
     
-    // MARK: - Initializer
-    public init() {}
-    
     // MARK: - Instruction builders
-    public func initializeMintInstruction(
+    public static func initializeMintInstruction(
         mint: PublicKey,
         decimals: UInt8,
         authority: PublicKey,
@@ -102,7 +31,7 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
                 Account.Meta(publicKey: mint, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [
                 Index.initalizeMint,
                 decimals,
@@ -113,7 +42,7 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
         )
     }
     
-    public func initializeAccountInstruction(
+    public static func initializeAccountInstruction(
         account: PublicKey,
         mint: PublicKey,
         owner: PublicKey
@@ -126,12 +55,12 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
                 Account.Meta(publicKey: owner, isSigner: false, isWritable: false),
                 Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.initializeAccount]
         )
     }
     
-    public func transferInstruction(
+    public static func transferInstruction(
         source: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
@@ -143,12 +72,12 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
                 Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: owner, isSigner: true, isWritable: true)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.transfer, amount]
         )
     }
     
-    public func transferCheckedInstruction(
+    public static func transferCheckedInstruction(
         source: PublicKey,
         mint: PublicKey,
         destination: PublicKey,
@@ -174,12 +103,12 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
         
         return .init(
             keys: keys,
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.transferChecked, amount, decimals]
         )
     }
     
-    public func burnCheckedInstruction(
+    public static func burnCheckedInstruction(
         mint: PublicKey,
         account: PublicKey,
         owner: PublicKey,
@@ -192,7 +121,7 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
                 .init(publicKey: mint, isSigner: false, isWritable: true),
                 .init(publicKey: owner, isSigner: true, isWritable: false),
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [
                 Index.burnChecked,
                 amount,
@@ -201,7 +130,7 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
         )
     }
     
-    public func approveInstruction(
+    public static func approveInstruction(
         account: PublicKey,
         delegate: PublicKey,
         owner: PublicKey,
@@ -231,12 +160,12 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
         
         return TransactionInstruction(
             keys: keys,
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.approve, amount]
         )
     }
     
-    public func mintToInstruction(
+    public static func mintToInstruction(
         mint: PublicKey,
         destination: PublicKey,
         authority: PublicKey,
@@ -249,12 +178,12 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
                 Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: authority, isSigner: true, isWritable: true)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.mintTo, amount]
         )
     }
     
-    public func closeAccountInstruction(
+    public static func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
         owner: PublicKey
@@ -265,12 +194,12 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
                 Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: owner, isSigner: false, isWritable: false)
             ],
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.closeAccount]
         )
     }
     
-    public func closeAccountInstruction(
+    public static func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
@@ -282,7 +211,7 @@ public struct TokenProgram: SolanaBasicProgram, SolanaTokenProgram {
                 .writable(publicKey: destination, isSigner: false),
                 .readonly(publicKey: owner, isSigner: signers.isEmpty)
             ] + signers.map {.readonly(publicKey: $0, isSigner: true)},
-            programId: id,
+            programId: TokenProgram.id,
             data: [Index.closeAccount])
     }
 }

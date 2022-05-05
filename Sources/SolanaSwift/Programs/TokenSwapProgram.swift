@@ -1,58 +1,8 @@
 import Foundation
 
-protocol SolanaTokenSwapProgram {
-    func swapInstruction(
-        tokenSwap: PublicKey,
-        authority: PublicKey,
-        userTransferAuthority: PublicKey,
-        userSource: PublicKey,
-        poolSource: PublicKey,
-        poolDestination: PublicKey,
-        userDestination: PublicKey,
-        poolMint: PublicKey,
-        feeAccount: PublicKey,
-        hostFeeAccount: PublicKey?,
-        swapProgramId: PublicKey,
-        tokenProgramId: PublicKey,
-        amountIn: UInt64,
-        minimumAmountOut: UInt64
-    ) -> TransactionInstruction
-    
-    func depositInstruction(
-        tokenSwap: PublicKey,
-        authority: PublicKey,
-        sourceA: PublicKey,
-        sourceB: PublicKey,
-        intoA: PublicKey,
-        intoB: PublicKey,
-        poolToken: PublicKey,
-        poolAccount: PublicKey,
-        tokenProgramId: PublicKey,
-        swapProgramId: PublicKey,
-        poolTokenAmount: UInt64,
-        maximumTokenA: UInt64,
-        maximumTokenB: UInt64
-    ) -> TransactionInstruction
-    
-    func withdrawInstruction(
-        tokenSwap: PublicKey,
-        authority: PublicKey,
-        poolMint: PublicKey,
-        feeAccount: PublicKey,
-        sourcePoolAccount: PublicKey,
-        fromA: PublicKey,
-        fromB: PublicKey,
-        userAccountA: PublicKey,
-        userAccountB: PublicKey,
-        swapProgramId: PublicKey,
-        tokenProgramId: PublicKey,
-        poolTokenAmount: UInt64,
-        minimumTokenA: UInt64,
-        minimumTokenB: UInt64
-    ) -> TransactionInstruction
-}
+// TODO: - In construction
 
-public struct TokenSwapProgram: SolanaTokenSwapProgram {
+public enum TokenSwapProgram {
     // MARK: - Nested type
     private enum Index: UInt8, BytesEncodable {
         case initialize = 0
@@ -61,11 +11,8 @@ public struct TokenSwapProgram: SolanaTokenSwapProgram {
         case withdraw = 3
     }
     
-    // MARK: - Initializer
-    public init() {}
-    
     // MARK: - Instruction builder
-    public func swapInstruction(
+    public static func swapInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
         userTransferAuthority: PublicKey,
@@ -106,7 +53,7 @@ public struct TokenSwapProgram: SolanaTokenSwapProgram {
     }
     
     // MARK: - Deposit
-    public func depositInstruction(
+    public static func depositInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
         sourceA: PublicKey,
@@ -140,7 +87,7 @@ public struct TokenSwapProgram: SolanaTokenSwapProgram {
     }
     
     // MARK: - Withdraw
-    public func withdrawInstruction(
+    public static func withdrawInstruction(
         tokenSwap: PublicKey,
         authority: PublicKey,
         poolMint: PublicKey,

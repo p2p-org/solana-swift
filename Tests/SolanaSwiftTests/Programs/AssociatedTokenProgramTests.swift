@@ -2,7 +2,6 @@ import XCTest
 import SolanaSwift
 
 class AssociatedTokenProgramTests: XCTestCase {
-    let program = AssociatedTokenProgram()
     
     func testAssociatedTokenAddress() throws {
         let associatedTokenAddress = try PublicKey.associatedTokenAddress(
@@ -17,7 +16,7 @@ class AssociatedTokenProgramTests: XCTestCase {
         let owner: PublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
         let mintAddress: PublicKey = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
         
-        let instruction = try program
+        let instruction = try AssociatedTokenProgram
             .createAssociatedTokenAccountInstruction(
                 mint: mintAddress,
                 owner: owner,

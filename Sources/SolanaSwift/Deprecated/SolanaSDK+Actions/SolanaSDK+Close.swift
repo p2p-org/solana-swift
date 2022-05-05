@@ -20,7 +20,7 @@ extension SolanaSDK {
         do {
             let tokenPubkey = try PublicKey(string: tokenPubkey)
             
-            let instruction = TokenProgram().closeAccountInstruction(
+            let instruction = TokenProgram.closeAccountInstruction(
                 account: tokenPubkey,
                 destination: account.publicKey,
                 owner: account.publicKey
