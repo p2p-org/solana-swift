@@ -2,13 +2,18 @@ import Foundation
 
 /// Default implementation of SolanaBlockchainClient
 class BlockchainClient: SolanaBlockchainClient {
+    func load() async throws {
+        <#code#>
+    }
+    
+    func update() async throws {
+        <#code#>
+    }
+    
     func prepareTransaction(
         instructions: [TransactionInstruction],
         signers: [Account],
-        feePayer: PublicKey,
-        accountsCreationFee: Lamports,
-        recentBlockhash: String,
-        lamportsPerSignature: Lamports
+        feePayer: PublicKey
     ) async throws -> PreparedTransaction {
         var transaction = Transaction()
         transaction.instructions = instructions

@@ -2,6 +2,12 @@ import Foundation
 
 /// BlockchainClient that prepares and serialises transaction to send to blockchain
 public protocol SolanaBlockchainClient: AnyObject {
+    /// Load all requirements before any operations from cache or network
+    func load() async throws
+    
+    /// Update all requirements
+    func update() async throws
+    
     /// Prepare a transaction base on its instructions
     /// - Parameters:
     ///   - instructions: instructions of the transaction
@@ -14,10 +20,7 @@ public protocol SolanaBlockchainClient: AnyObject {
     func prepareTransaction(
         instructions: [TransactionInstruction],
         signers: [Account],
-        feePayer: PublicKey,
-        accountsCreationFee: Lamports,
-        recentBlockhash: String,
-        lamportsPerSignature: Lamports
+        feePayer: PublicKey
     ) async throws -> PreparedTransaction
     
     /// Serialize PreparedTransaction for sending
