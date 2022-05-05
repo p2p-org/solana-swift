@@ -35,7 +35,8 @@ extension SolanaSDK {
                 let createAccountInstruction = SystemProgram.createAccountInstruction(
                     from: payer.publicKey,
                     toNewPubkey: newAccount.publicKey,
-                    lamports: minBalance
+                    lamports: minBalance,
+                    space: AccountInfo.span
                 )
                 
                 let initializeAccountInstruction = TokenProgram.initializeAccountInstruction(
