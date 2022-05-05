@@ -4,9 +4,6 @@ import Foundation
 public protocol SolanaBlockchainClient: AnyObject {
     associatedtype APIClient: SolanaAPIClient
     
-    /// Fee calculator for calculating network fee
-    var feeCalculator: FeeCalculator { get set }
-    
     /// APIClient for handling network requests
     var apiClient: APIClient { get set }
     
@@ -15,14 +12,15 @@ public protocol SolanaBlockchainClient: AnyObject {
     ///   - instructions: instructions of the transaction
     ///   - signers: the signers
     ///   - feePayer: the feePayer, usually is the first signer
-    ///   - accountsCreationFee: estimated account creation fee
     ///   - recentBlockhash: recentBlockhash, can be fetched lately when the value is nil
-    ///   - lamportsPerSignature: lamportsPerSignature, can be automatically fetched when the value is nil
+    ///   - feeCalculator: the fee calculator, leave it nil to use DefaultFeeCalculator
     /// - Returns: information of a prepared transaction
     func prepareTransaction(
         instructions: [TransactionInstruction],
         signers: [Account],
-        feePayer: PublicKey
+        feePayer: PublicKey,
+        recentBlockhash: String?,
+        feeCalculator: FeeCalculator?
     ) async throws -> PreparedTransaction
     
     /// Sign and Serialize PreparedTransaction for sending
