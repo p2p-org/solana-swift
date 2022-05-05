@@ -311,7 +311,7 @@ extension SolanaAPIClient {
     public func getRecentBlockhash(commitment: Commitment? = nil) async throws -> String {
         let result: Rpc<Fee> = try await self.get(method: "getRecentBlockhash", params: [RequestConfiguration(commitment: commitment)])
         guard let blockhash = result.value.blockhash else {
-            throw SolanaSDK.Error.other("Blockhash not found")
+            throw SolanaError.other("Blockhash not found")
         }
         return blockhash
     }
@@ -331,7 +331,7 @@ extension SolanaAPIClient {
     public func getTokenAccountBalance(pubkey: String, commitment: Commitment? = nil) async throws -> TokenAccountBalance {
         let result: Rpc<TokenAccountBalance> = try await self.get(method: "getTokenAccountBalance", params: [pubkey, RequestConfiguration(commitment: commitment)])
         if UInt64(result.value.amount) == nil {
-            throw SolanaSDK.Error.couldNotRetrieveAccountInfo
+            throw SolanaError.couldNotRetrieveAccountInfo
         }
         return result.value
     }
