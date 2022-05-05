@@ -25,18 +25,47 @@ public protocol SolanaBlockchainClient: AnyObject {
         feePayer: PublicKey
     ) async throws -> PreparedTransaction
     
-    /// Serialize PreparedTransaction for sending
+    /// Sign and Serialize PreparedTransaction for sending
     /// - Parameter preparedTransaction: a prepared transaction
     /// - Returns: Serialized transaction which is ready to be sent
-    func serialize(
+    func signAndSerialize(
         preparedTransaction: PreparedTransaction
     ) throws -> String
+    
+    /// Send transaction
+    /// - Parameter preparedTransaction: a prepared transaction
+    /// - Returns: Transaction id
+    func sendTransaction(
+        preparedTransaction: PreparedTransaction
+    ) async throws -> String
+    
+    /// Simulate transaction
+    /// - Parameter preparedTransaction: a prepared transaction
+    func simulateTransaction(
+        preparedTransaction: PreparedTransaction
+    ) async throws -> TransactionStatus
 }
 
 extension SolanaBlockchainClient {
-    public func serialize(
+    public func signAndSerialize(
         preparedTransaction: PreparedTransaction
     ) throws -> String {
-        try preparedTransaction.serialize()
+        var preparedTransaction = preparedTransaction
+        try preparedTransaction.sign()
+        return try preparedTransaction.serialize()
+    }
+    
+    public func sendTransaction(
+        preparedTransaction: PreparedTransaction
+    ) async throws -> String {
+        let serializedTransaction = try signAndSerialize(preparedTransaction: preparedTransaction)
+        return try await apiClient.sendTransaction(transaction: serializedTransaction)
+    }
+    
+    public func simulateTransaction(
+        preparedTransaction: PreparedTransaction
+    ) async throws -> TransactionStatus {
+        let serializedTransaction = try signAndSerialize(preparedTransaction: preparedTransaction)
+        return try await apiClient.simulateTransaction(transaction: serializedTransaction)
     }
 }

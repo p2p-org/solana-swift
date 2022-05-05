@@ -22,13 +22,10 @@ public class BlockchainClient<APIClient: SolanaAPIClient>: SolanaBlockchainClien
         let recentBlockhash = try await apiClient.getRecentBlockhash()
         
         // form transaction
-        var transaction = Transaction(instructions: instructions, recentBlockhash: recentBlockhash, feePayer: feePayer)
+        let transaction = Transaction(instructions: instructions, recentBlockhash: recentBlockhash, feePayer: feePayer)
         
         // calculate fee first
         let expectedFee = try feeCalculator.calculateNetworkFee(transaction: transaction)
-        
-        // resign transaction
-        try transaction.sign(signers: signers)
         
         // return formed transaction
         return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
