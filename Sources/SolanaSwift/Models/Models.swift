@@ -11,6 +11,7 @@ public struct Response<T: Decodable>: Decodable {
     public let error: ResponseError?
     public let method: String?
 }
+
 public struct ResponseError: Decodable {
     public init(code: Int?, message: String?, data: ResponseErrorData?) {
         self.code = code
