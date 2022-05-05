@@ -2,7 +2,7 @@ import Foundation
 
 public enum SystemProgram: SolanaBasicProgram {
     // MARK: - Nested type
-    private struct Index {
+    public struct Index {
         static let create: UInt32 = 0
         static let transfer: UInt32 = 2
     }
