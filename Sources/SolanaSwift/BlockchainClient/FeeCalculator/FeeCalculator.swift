@@ -26,34 +26,38 @@ public class DefaultFeeCalculator: FeeCalculator {
         var accountCreationFee: Lamports = 0
         var depositFee: Lamports = 0
         for instruction in transaction.instructions {
+            var createdAccount: PublicKey?
             switch instruction.programId {
             case SystemProgram.id:
-                guard instruction.data.count >= 2 else {break}
-                let index = UInt32(bytes: instruction.data[0..<2])
+                guard instruction.data.count >= 4 else {break}
+                let index = UInt32(bytes: instruction.data[0..<4])
                 if index == SystemProgram.Index.create {
-                    // Check if account is closed right after its creation
-                    let initializingAccount = instruction.keys.first?.publicKey
-                    let closingInstruction = transaction.instructions.first(
-                        where: {
-                            $0.data.first == TokenProgram.Index.closeAccount &&
-                            $0.keys.first?.publicKey == initializingAccount
-                        })
-                    let isAccountClosedAfterCreation = closingInstruction != nil
-                    
-                    // If account is closed after creation, increase the deposit fee
-                    if isAccountClosedAfterCreation {
-                        depositFee += minRentExemption
-                    }
-                    
-                    // Otherwise, there will be an account creation fee
-                    else {
-                        accountCreationFee += minRentExemption
-                    }
+                    createdAccount =  instruction.keys.last?.publicKey
                 }
             case AssociatedTokenProgram.id:
-                accountCreationFee += minRentExemption // data is empty
+                createdAccount = instruction.keys[safe: 1]?.publicKey
             default:
                 break
+            }
+            
+            if let createdAccount = createdAccount {
+                // Check if account is closed right after its creation
+                let closingInstruction = transaction.instructions.first(
+                    where: {
+                        $0.data.first == TokenProgram.Index.closeAccount &&
+                        $0.keys.first?.publicKey == createdAccount
+                    })
+                let isAccountClosedAfterCreation = closingInstruction != nil
+                
+                // If account is closed after creation, increase the deposit fee
+                if isAccountClosedAfterCreation {
+                    depositFee += minRentExemption
+                }
+                
+                // Otherwise, there will be an account creation fee
+                else {
+                    accountCreationFee += minRentExemption
+                }
             }
         }
         

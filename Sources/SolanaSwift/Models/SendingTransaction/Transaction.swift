@@ -12,6 +12,16 @@ public struct Transaction: Encodable {
 //        TODO: nonceInfo
     
     public init() {}
+    public init(
+        instructions: [TransactionInstruction],
+        recentBlockhash: String,
+        feePayer: PublicKey
+    ) {
+        self.init()
+        self.instructions = instructions
+        self.recentBlockhash = recentBlockhash
+        self.feePayer = feePayer
+    }
     
     // MARK: - Methods
     public mutating func sign(signers: [Account]) throws {
