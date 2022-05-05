@@ -1,12 +1,6 @@
-//
-//  File.swift
-//  
-//
-//  Created by Chung Tran on 04/05/2022.
-//
-
 import Foundation
 
+/// BlockchainClient that prepares and serialises transaction to send to blockchain
 public protocol SolanaBlockchainClient: AnyObject {
     /// Prepare a transaction base on its instructions
     /// - Parameters:

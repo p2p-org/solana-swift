@@ -1,12 +1,6 @@
-//
-//  File.swift
-//  
-//
-//  Created by Chung Tran on 04/05/2022.
-//
-
 import Foundation
 
+/// Default implementation of SolanaBlockchainClient
 class BlockchainClient: SolanaBlockchainClient {
     func prepareTransaction(
         instructions: [TransactionInstruction],
