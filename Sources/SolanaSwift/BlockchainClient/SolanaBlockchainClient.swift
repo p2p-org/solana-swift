@@ -2,11 +2,13 @@ import Foundation
 
 /// BlockchainClient that prepares and serialises transaction to send to blockchain
 public protocol SolanaBlockchainClient: AnyObject {
-    /// Load all requirements before any operations from cache or network
-    func load() async throws
+    associatedtype APIClient: SolanaAPIClient
     
-    /// Update all requirements
-    func update() async throws
+    /// Fee calculator for calculating network fee
+    var feeCalculator: FeeCalculator { get set }
+    
+    /// APIClient for handling network requests
+    var apiClient: APIClient { get set }
     
     /// Prepare a transaction base on its instructions
     /// - Parameters:
@@ -32,7 +34,7 @@ public protocol SolanaBlockchainClient: AnyObject {
 }
 
 extension SolanaBlockchainClient {
-    func serialize(
+    public func serialize(
         preparedTransaction: PreparedTransaction
     ) throws -> String {
         try preparedTransaction.serialize()

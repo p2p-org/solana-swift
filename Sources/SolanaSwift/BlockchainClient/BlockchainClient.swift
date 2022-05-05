@@ -1,35 +1,36 @@
 import Foundation
 
 /// Default implementation of SolanaBlockchainClient
-class BlockchainClient: SolanaBlockchainClient {
-    func load() async throws {
-        <#code#>
+public class BlockchainClient<APIClient: SolanaAPIClient>: SolanaBlockchainClient {
+    public var feeCalculator: FeeCalculator
+    public var apiClient: APIClient
+    
+    public init(
+        apiClient: APIClient,
+        feeCalculator: FeeCalculator
+    ) {
+        self.apiClient = apiClient
+        self.feeCalculator = feeCalculator
     }
     
-    func update() async throws {
-        <#code#>
-    }
-    
-    func prepareTransaction(
+    public func prepareTransaction(
         instructions: [TransactionInstruction],
         signers: [Account],
         feePayer: PublicKey
     ) async throws -> PreparedTransaction {
-        var transaction = Transaction()
-        transaction.instructions = instructions
-        transaction.recentBlockhash = recentBlockhash
-        transaction.feePayer = feePayer
+        // get recent blockhash
+        let recentBlockhash = try await apiClient.getRecentBlockhash()
+        
+        // form transaction
+        var transaction = Transaction(instructions: instructions, recentBlockhash: recentBlockhash, feePayer: feePayer)
         
         // calculate fee first
-        let expectedFee = FeeAmount(
-            transaction: try transaction.calculateTransactionFee(lamportsPerSignatures: lamportsPerSignature),
-            accountBalances: accountsCreationFee
-        )
+        let expectedFee = try feeCalculator.calculateNetworkFee(transaction: transaction)
         
         // resign transaction
         try transaction.sign(signers: signers)
         
-        
+        // return formed transaction
         return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
     }
 }
