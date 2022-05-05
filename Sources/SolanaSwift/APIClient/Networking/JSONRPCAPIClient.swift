@@ -42,9 +42,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         } catch {
             throw APIClientError.cantEncodeParams
         }
-        let urlRequest = try self.urlRequest(data: encodedParams)
-        
-        return try await networkManager.requestData(request: urlRequest)
+        return try await networkManager.requestData(request: try self.urlRequest(data: encodedParams))
     }
     
     private func urlRequest(data: Data) throws -> URLRequest {

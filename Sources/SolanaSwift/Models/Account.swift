@@ -63,7 +63,7 @@ public struct Account: Codable, Hashable {
 }
 
 public extension Account {
-    struct Meta: Codable, CustomDebugStringConvertible {
+    struct Meta: Equatable, Codable, CustomDebugStringConvertible {
         public let publicKey: PublicKey
         public var isSigner: Bool
         public var isWritable: Bool

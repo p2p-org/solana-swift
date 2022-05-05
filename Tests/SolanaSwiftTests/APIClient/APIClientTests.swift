@@ -30,10 +30,10 @@ class APIClientTests: XCTestCase {
     func testGetAccountInfo() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getAccountInfo"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result: BufferInfo<AccountInfo> = try! await apiClient.getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
-        XCTAssert(result.owner == "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-        XCTAssert(result.lamports == 2039280)
-        XCTAssert(result.rentEpoch == 304)
+        let result: BufferInfo<AccountInfo>? = try! await apiClient.getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
+        XCTAssert(result?.owner == "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+        XCTAssert(result?.lamports == 2039280)
+        XCTAssert(result?.rentEpoch == 304)
     }
     
     func testGetConfirmedBlocksWithLimit() async throws {
@@ -156,6 +156,32 @@ class APIClientTests: XCTestCase {
         XCTAssertEqual(result, "63ionHTAM94KaSujUCg23hfg7TLharchq5BYXdLGqia1")
     }
     
+    func testGetMultipleAccounts() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getMultipleAccounts"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result: [BufferInfo<Mint>] = try await apiClient.getMultipleAccounts(pubkeys: ["DkZzno16JLXYda4eHZzM9J8Vxet9StJJ5mimrtjbK5V3"])
+        XCTAssertNotNil(result)
+    }
+    
+    func testGetMultipleMintDatas() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getMultipleMintDatas"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result = try await apiClient.getMultipleMintDatas(mintAddresses: ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"])
+        XCTAssertNotNil(result)
+        
+        // usdc
+        let usdc = result["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"]!
+        XCTAssertEqual(usdc.mintAuthority?.base58EncodedString, "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9")
+        XCTAssertEqual(usdc.decimals, 6)
+        XCTAssertEqual(usdc.freezeAuthority?.base58EncodedString, "3sNBr7kMccME5D55xNgsmYpZnzPgP2g12CixAajXypn6")
+        
+        // usdt
+        let usdt = result["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]!
+        XCTAssertEqual(usdt.mintAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
+        XCTAssertEqual(usdt.decimals, 6)
+        XCTAssertEqual(usdt.freezeAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
+    }
+    
     // MARK: - Mocks
     
     
@@ -188,7 +214,8 @@ class APIClientTests: XCTestCase {
         , "sendTransaction": "[{\"jsonrpc\":\"2.0\",\"result\":\"123\",\"id\":\"3FF1AACE-812A-4106-8C34-6EF66237673C\"}]\n"
         , "getMinimumBalanceForRentExemption": "[{\"jsonrpc\":\"2.0\",\"result\":890880,\"id\":\"25423C5F-2FF3-4134-8CB3-9090BFCB2CE3\"}]\n"
         , "getRecentBlockhash": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131780453},\"value\":{\"blockhash\":\"63ionHTAM94KaSujUCg23hfg7TLharchq5BYXdLGqia1\",\"feeCalculator\":{\"lamportsPerSignature\":5000}}},\"id\":\"21D61199-F235-4CC9-9BE6-06745D3AC69E\"}]\n"
-
+        , "getMultipleAccounts": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":132420615},\"value\":[{\"data\":[\"APoAh5MDAAAAAAKLjuya35R64GfrOPbupmMcxJ1pmaH2fciYq9DxSQ88FioLlNul6FnDNF06/RKhMFBVI8fFQKRYcqukjYZitosKxZBjjg9hLR2AsDm2e/itloPtlrPeVDPIVdnO4+dmM2JiSZHdhsj7+Fn94OTNte9elt1ek0p487C2fLrFA9CvUPerjZvfP97EqlF9OXbPSzaGJzdmfWhk4jRnThsg5scAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAObFpMVhxY3CRrzEcywhYTa4a4SsovPp4wKPRTbTJVtzAfQBZAAAAABDU47UFrGnHMTsb0EaE1TBoVQGvCIHKJ4/EvpK3zvIfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACsWQY44PYS0dgLA5tnv4rZaD7Zaz3lQzyFXZzuPnZjMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\",\"base64\"],\"executable\":false,\"lamports\":1345194,\"owner\":\"617jbWo616ggkDxvW1Le8pV38XLbVSyWY8ae6QUmGBAU\",\"rentEpoch\":306}]},\"id\":\"D5BCACBB-3CE7-44D6-8F66-C57470A90440\"}]\n"
+        , "getMultipleMintDatas": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":132426903},\"value\":[{\"data\":[\"AQAAABzjWe1aAS4E+hQrnHUaHF6Hz9CgFhuchf/TG3jN/Nj2dbn7oe7/EAAGAQEAAAAqnl7btTwEZ5CY/3sSZRcUQ0/AjFYqmjuGEQXmctQicw==\",\"base64\"],\"executable\":false,\"lamports\":122356825965,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":306},{\"data\":[\"AQAAAAXqnPFs5BGY8aSZN8iMNwqU1K//ibW6y470XmMku3j3J0UE6/G2BgAGAQEAAAAF6pzxbOQRmPGkmTfIjDcKlNSv/4m1usuO9F5jJLt49w==\",\"base64\"],\"executable\":false,\"lamports\":23879870146,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":306}]},\"id\":\"65766E4D-F678-489A-943B-8D70B5C6F1ED\"}]\n"
     ]
 
 }
