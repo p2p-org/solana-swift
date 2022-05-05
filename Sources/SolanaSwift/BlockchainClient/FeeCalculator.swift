@@ -24,34 +24,39 @@ public class DefaultFeeCalculator: FeeCalculator {
         var transaction = transaction
         let transactionFee = try transaction.calculateTransactionFee(lamportsPerSignatures: lamportsPerSignature)
         var accountCreationFee: Lamports = 0
-//        var depositFee: Lamports = 0
+        var depositFee: Lamports = 0
         for instruction in transaction.instructions {
             switch instruction.programId {
+            case SystemProgram.id:
+                guard instruction.data.count >= 2 else {break}
+                let index = UInt32(bytes: instruction.data[0..<2])
+                if index == SystemProgram.Index.create {
+                    // Check if account is closed right after its creation
+                    let initializingAccount = instruction.keys.first?.publicKey
+                    let closingInstruction = transaction.instructions.first(
+                        where: {
+                            $0.data.first == TokenProgram.Index.closeAccount &&
+                            $0.keys.first?.publicKey == initializingAccount
+                        })
+                    let isAccountClosedAfterCreation = closingInstruction != nil
+                    
+                    // If account is closed after creation, increase the deposit fee
+                    if isAccountClosedAfterCreation {
+                        depositFee += minRentExemption
+                    }
+                    
+                    // Otherwise, there will be an account creation fee
+                    else {
+                        accountCreationFee += minRentExemption
+                    }
+                }
             case AssociatedTokenProgram.id:
                 accountCreationFee += minRentExemption // data is empty
-            case TokenProgram.id:
-                guard instruction.data.count >= 1 else {break}
-                let index = instruction.data.first!
-                switch index {
-                case TokenProgram.Index.initializeAccount:
-                    accountCreationFee += minRentExemption
-                    
-                // TODO: - Deposit fee
-//                case TokenProgram.Index.closeAccount:
-//                    if accountCreationFee > minRentExemption {
-//                        accountCreationFee -= minRentExemption
-//                    } else {
-//                        depositFee += minRentExemption
-//                    }
-                default:
-                    break
-                }
-                
             default:
                 break
             }
         }
         
-        return .init(transaction: transactionFee, accountBalances: accountCreationFee)
+        return .init(transaction: transactionFee, accountBalances: accountCreationFee, deposit: depositFee)
     }
 }
