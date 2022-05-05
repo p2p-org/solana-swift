@@ -120,6 +120,17 @@ let balance = try await apiClient.getBalance(account: try accountStorage.account
 The full list of supported methods available in `APIClient/APIClient.swift`
 
 
+### Solana Tokens Repository
+Tokens repository usefull when you need to get a list of tokens
+
+Example:
+```swift
+let tokenRepository = TokensRepository(endpoint: endpoint)
+let list = try await tokenRepository.getTokensList()
+```
+TokenRepository be default uses cache not to make extra calls, it can disabled manually `.getTokensList(useCache: false)`
+
+
 ## How to use SolanaSDK (Deprecated)
 * [Deprecated] Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
 
