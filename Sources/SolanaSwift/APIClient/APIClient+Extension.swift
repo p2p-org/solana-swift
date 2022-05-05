@@ -3,8 +3,7 @@ import Foundation
 // MARK: - TokenRepository
 
 public extension SolanaAPIClient {
-    
-    public func getMultipleMintDatas(mintAddresses: [String], programId: String = TokenProgram.id.base58EncodedString) async throws -> [String: Mint] {
+    func getMultipleMintDatas(mintAddresses: [String], programId: String = TokenProgram.id.base58EncodedString) async throws -> [String: Mint] {
         let accounts: [BufferInfo<Mint>] = try await getMultipleAccounts(pubkeys: mintAddresses)
         var mintDict = [String: Mint]()
         if accounts.contains(where: { $0.owner != programId }) == true {
