@@ -116,7 +116,8 @@ extension SolanaSDK {
                         SystemProgram.createAccountInstruction(
                             from: owner,
                             toNewPubkey: newAccount.publicKey,
-                            lamports: amount + minimumBalanceForRentExemption
+                            lamports: amount + minimumBalanceForRentExemption,
+                            space: AccountInfo.span
                         ),
                         TokenProgram.initializeAccountInstruction(
                             account: newAccount.publicKey,
@@ -158,7 +159,7 @@ extension SolanaSDK {
                 .observe(on: ConcurrentDispatchQueueScheduler(qos: .userInteractive))
                 // check if associated address is registered
                 .map { info -> Bool in
-                    if info.owner == PublicKey.tokenProgramId.base58EncodedString,
+                    if info.owner == TokenProgram.id.base58EncodedString,
                        info.data.owner == owner
                     {
                         return true
@@ -197,10 +198,9 @@ extension SolanaSDK {
                     return .init(
                         account: associatedAddress,
                         instructions: [
-                            AssociatedTokenProgram
+                            try AssociatedTokenProgram
                                 .createAssociatedTokenAccountInstruction(
                                     mint: mint,
-                                    associatedAccount: associatedAddress,
                                     owner: owner,
                                     payer: feePayer
                                 )

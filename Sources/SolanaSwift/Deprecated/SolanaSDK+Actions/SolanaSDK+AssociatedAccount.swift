@@ -70,27 +70,6 @@ extension SolanaSDK {
             }
     }
     
-    public func createAssociatedTokenAccountInstruction(
-        for owner: PublicKey,
-        tokenMint: PublicKey,
-        payer: PublicKey
-    ) throws -> TransactionInstruction {
-        do {
-            let associatedAddress = try PublicKey.associatedTokenAddress(
-                walletAddress: owner,
-                tokenMintAddress: tokenMint
-            )
-    
-            return AssociatedTokenProgram
-                .createAssociatedTokenAccountInstruction(
-                    mint: tokenMint,
-                    associatedAccount: associatedAddress,
-                    owner: owner,
-                    payer: payer
-                )
-        }
-    }
-    
     public func createAssociatedTokenAccount(
         for owner: PublicKey,
         tokenMint: PublicKey,
@@ -104,7 +83,12 @@ extension SolanaSDK {
         
         do {
             // create instruction
-            let instruction = try createAssociatedTokenAccountInstruction(for: owner, tokenMint: tokenMint, payer: payer.publicKey)
+            let instruction = try AssociatedTokenProgram
+                .createAssociatedTokenAccountInstruction(
+                    mint: tokenMint,
+                    owner: owner,
+                    payer: payer.publicKey
+                )
             
             // send transaction
             return serializeAndSend(

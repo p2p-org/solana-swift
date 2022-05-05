@@ -159,9 +159,8 @@ extension SolanaSDK {
                     let mint = try PublicKey(string: mintAddress)
                     let owner = try PublicKey(string: destinationAddress)
                     
-                    let createATokenInstruction = AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+                    let createATokenInstruction = try AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
                         mint: mint,
-                        associatedAccount: toPublicKey,
                         owner: owner,
                         payer: feePayer
                     )
@@ -176,7 +175,6 @@ extension SolanaSDK {
                 if transferChecked {
                     // transfer checked transaction
                     sendInstruction = TokenProgram.transferCheckedInstruction(
-                        programId: .tokenProgramId,
                         source: fromPublicKey,
                         mint: try PublicKey(string: mintAddress),
                         destination: splDestinationAddress.destination,
@@ -188,7 +186,6 @@ extension SolanaSDK {
                 } else {
                     // transfer transaction
                     sendInstruction = TokenProgram.transferInstruction(
-                        tokenProgramId: .tokenProgramId,
                         source: fromPublicKey,
                         destination: toPublicKey,
                         owner: account.publicKey,
