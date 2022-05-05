@@ -1,10 +1,10 @@
 import Foundation
 
-public actor TokenRepository {
+public actor TokensRepository {
 
     // MARK: -
     
-    public init(endpoint: APIEndPoint, tokenListParser: TokensListParser) {
+    public init(endpoint: APIEndPoint, tokenListParser: TokensListParser = .init()) {
         self.endpoint = endpoint
         self.tokenListParser = tokenListParser
     }
@@ -23,11 +23,11 @@ public actor TokenRepository {
     /// - Returns Set of tokens
     ///
     public func getTokensList(useCache: Bool = true) async throws -> Set<Token> {
-        if useCache, let tokens = TokenRepository.tokenCache.value(forKey: tokenCacheKey) {
+        if useCache, let tokens = TokensRepository.tokenCache.value(forKey: tokenCacheKey) {
             return tokens
         }
         let tokenlist = try await tokenListParser.parse(network: endpoint.network.rawValue)
-        TokenRepository.tokenCache.insert(tokenlist, forKey: tokenCacheKey)
+        TokensRepository.tokenCache.insert(tokenlist, forKey: tokenCacheKey)
         return tokenlist
     }
     
@@ -40,7 +40,7 @@ public actor TokenRepository {
     public func getTokenWallets(account: String) async throws -> [Wallet] {
         let apiClient = JSONRPCAPIClient(endpoint: endpoint)
         async let accounts = try await apiClient.getTokenAccountsByOwner(pubkey: account,
-                                                               params: .init(mint: nil, programId: PublicKey.tokenProgramId.base58EncodedString),
+                                                                         params: .init(mint: nil, programId: TokenProgram.id.base58EncodedString),
                                                                configs: .init(encoding: "base64"))
         async let tokens = try await getTokensList()
         var knownWallets = [Wallet]()
@@ -68,7 +68,7 @@ public actor TokenRepository {
             }
         }
         let mintDatas = try await apiClient.getMultipleMintDatas(mintAddresses: unknownAccounts.map{ $0.1.mint.base58EncodedString })
-        guard mintDatas.count == unknownAccounts.count else { throw SolanaSDK.Error.unknown }
+        guard mintDatas.count == unknownAccounts.count else { throw SolanaError.unknown }
         let wallets = mintDatas.enumerated().map {
             Wallet(
                 pubkey: unknownAccounts[$0].0,
@@ -92,7 +92,7 @@ public actor TokenRepository {
         let apiClient = JSONRPCAPIClient(endpoint: endpoint)
         do {
             _ = try await apiClient.getAccountInfo(account: account) as BufferInfo<EmptyInfo>?
-        } catch let error as SolanaSDK.Error where error == .couldNotRetrieveAccountInfo {
+        } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
             return false
         } catch let error {
             throw error
