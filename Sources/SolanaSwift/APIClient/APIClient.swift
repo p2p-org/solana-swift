@@ -231,6 +231,14 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getmultipleaccounts
     ///
     func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>]
+    
+    /// Wait for transaction to be completed by periodically sending request to getSignatureStatuses
+    /// - Parameters:
+    ///  - signature: signature of the transaction, as base-58 encoded strings
+    /// - Throws: APIClientError
+    /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getsignaturestatuses
+    ///
+    func waitForConfirmation(signature: String) async throws
 
     // Requests
     func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
@@ -403,6 +411,32 @@ extension SolanaAPIClient {
         return result.value
     }
     
+    public func waitForConfirmation(signature: String) async throws {
+        // Due to a bug (https://github.com/solana-labs/solana/issues/15461)
+        // the `confirmationStatus` field could be unpopulated.
+        // To handle this case, also check the `confirmations` field.
+        // Note that a `null` value for `confirmations` signals that the
+        // transaction was finalized.
+        try await Task.retrying(
+            where: {($0 as? SolanaError) == .transactionHasNotBeenConfirmed},
+            maxRetryCount: .max,
+            retryDelay: 1
+        ) {
+            try Task.checkCancellation()
+            let status = try await getSignatureStatus(signature: signature)
+            //            if let confirmations = status.confirmations,
+            //               confirmations > 0
+            //            {
+            //                partiallyConfirmed = true
+            //            }
+            let finalized = status.confirmations == nil ||
+            status.confirmationStatus == "finalized"
+            if finalized {return}
+            throw SolanaError.transactionHasNotBeenConfirmed
+        }
+        .value
+    }
+    
     // MARK: - Private
     
     private func get<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity {
@@ -413,6 +447,4 @@ extension SolanaAPIClient {
         }
         return result
     }
-    
-
 }
