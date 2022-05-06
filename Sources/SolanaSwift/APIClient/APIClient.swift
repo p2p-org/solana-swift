@@ -413,11 +413,13 @@ extension SolanaAPIClient {
     
     public func observeSignatureStatus(signature: String) -> AsyncStream<TransactionStatus> {
         AsyncStream { continuation in
-            let monitor = TransactionMonitor(apiClient: self, signature: signature) { transactionStatus in
+            let monitor = TransactionMonitor(apiClient: self, signature: signature, responseHandler: { transactionStatus in
                 continuation.yield(transactionStatus)
                 if transactionStatus == .finalized {
                     continuation.finish()
                 }
+            }) {
+                continuation.finish()
             }
             continuation.onTermination = { @Sendable _ in
                 monitor.stopMonitoring()

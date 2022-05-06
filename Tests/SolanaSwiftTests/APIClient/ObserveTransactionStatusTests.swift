@@ -46,13 +46,15 @@ class ObserveTransactionStatusTests: XCTestCase {
         }
         
         func requestData(request: URLRequest) async throws -> Data {
+            if count == 1 {
+                try await Task.sleep(nanoseconds: 3000000000) // 3 seconds
+            }
             switch results[count] {
             case .success(let string):
                 let data = string.data(using: .utf8)!
                 count += 1
                 return data
             case .failure(let error):
-                print(error.localizedDescription)
                 count += 1
                 throw error
             }

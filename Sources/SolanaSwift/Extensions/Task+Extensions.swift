@@ -11,7 +11,7 @@ extension Task where Failure == Error {
         priority: TaskPriority? = nil,
         maxRetryCount: Int = 3,
         retryDelay: TimeInterval = 1,
-        timeout: TimeInterval? = nil,
+        timeoutInSeconds: Int? = nil,
         operation: @Sendable @escaping () async throws -> Success
     ) -> Task {
         let oneSecond = TimeInterval(1_000_000_000)
@@ -19,8 +19,8 @@ extension Task where Failure == Error {
         
         let startAt = Date()
         let deadline: Date?
-        if let timeout = timeout {
-            deadline = Date(timeInterval: oneSecond * timeout, since: startAt)
+        if let timeoutInSeconds = timeoutInSeconds {
+            deadline = Calendar.current.date(byAdding: .second, value: Int(timeoutInSeconds), to: startAt)
         } else {
             deadline = nil
         }
