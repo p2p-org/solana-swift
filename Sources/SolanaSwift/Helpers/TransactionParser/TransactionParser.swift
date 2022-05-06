@@ -82,7 +82,7 @@ public class TransactionParser: SolanaSDKTransactionParserType {
         }
         
         // parse error
-        var status = SolanaSDK.ParsedTransaction.Status.confirmed
+        var status = TransactionStatus.confirmed
         if transactionInfo.meta?.err != nil {
             let errorMessage = transactionInfo.meta?.logMessages?
                     .first(where: { $0.contains("Program log: Error:") })?

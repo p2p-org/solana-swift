@@ -219,7 +219,7 @@ public protocol SolanaAPIClient {
     /// - Returns First Transaction Signature embedded in the transaction, as base-58 encoded string
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#simulatetransaction
     ///
-    func simulateTransaction(transaction: String, configs: RequestConfiguration) async throws -> TransactionStatus
+    func simulateTransaction(transaction: String, configs: RequestConfiguration) async throws -> SimulationResult
     func setLogFilter(filter: String) async throws -> String?
     func validatorExit() async throws -> Bool
     
@@ -391,8 +391,8 @@ extension SolanaAPIClient {
         try await self.get(method: "sendTransaction", params: [transaction, configs])
     }
     
-    public func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> TransactionStatus {
-        let result: Rpc<TransactionStatus> = try await self.get(method: "simulateTransaction", params: [transaction, configs])
+    public func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> SimulationResult {
+        let result: Rpc<SimulationResult> = try await self.get(method: "simulateTransaction", params: [transaction, configs])
         return result.value
     }
     
@@ -435,6 +435,12 @@ extension SolanaAPIClient {
             throw SolanaError.transactionHasNotBeenConfirmed
         }
         .value
+    }
+    
+    public func observeSignatureStatus(signature: String) -> AsyncStream<Any> {
+        AsyncStream { continuation in
+            
+        }
     }
     
     // MARK: - Private

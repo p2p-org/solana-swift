@@ -16,37 +16,7 @@ public extension SolanaSDK {
 }
 
 public struct ParsedTransaction: Hashable {
-    public enum Status: Equatable, Hashable {
-        case requesting
-        case processing(percent: Double)
-        case confirmed
-        case error(String?)
-        
-        public func getError() -> Error? {
-            switch self {
-            case .error(let err) where err != nil:
-                return SolanaError.other(err!)
-            default:
-                break
-            }
-            return nil
-        }
-        
-        public var rawValue: String {
-            switch self {
-            case .requesting:
-                return "requesting"
-            case .processing:
-                return "processing"
-            case .confirmed:
-                return "confirmed"
-            case .error:
-                return "error"
-            }
-        }
-    }
-    
-    public init(status: Status, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: FeeAmount?, blockhash: String?, paidByP2POrg: Bool = false) {
+    public init(status: TransactionStatus, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: FeeAmount?, blockhash: String?, paidByP2POrg: Bool = false) {
         self.status = status
         self.signature = signature
         self.value = value
@@ -58,7 +28,7 @@ public struct ParsedTransaction: Hashable {
         self.paidByP2POrg = paidByP2POrg
     }
     
-    public var status: Status
+    public var status: TransactionStatus
     public var signature: String?
     public var value: AnyHashable?
     public var amountInFiat: Double?
