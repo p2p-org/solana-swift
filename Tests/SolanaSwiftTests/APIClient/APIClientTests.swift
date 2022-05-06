@@ -144,6 +144,16 @@ class APIClientTests: XCTestCase {
         XCTAssertEqual(result, "63ionHTAM94KaSujUCg23hfg7TLharchq5BYXdLGqia1")
     }
     
+    func testGetSignatureStatusses() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getSignatureStatuses"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result = try! await apiClient.getSignatureStatuses(signatures: [])
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result.count, 2)
+        XCTAssertEqual(result[0]?.confirmations, 10)
+        XCTAssertTrue(result[1] == nil)
+    }
+    
     func testGetMultipleAccounts() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getMultipleAccounts"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
@@ -204,6 +214,7 @@ class APIClientTests: XCTestCase {
         , "getRecentBlockhash": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131780453},\"value\":{\"blockhash\":\"63ionHTAM94KaSujUCg23hfg7TLharchq5BYXdLGqia1\",\"feeCalculator\":{\"lamportsPerSignature\":5000}}},\"id\":\"21D61199-F235-4CC9-9BE6-06745D3AC69E\"}]\n"
         , "getMultipleAccounts": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":132420615},\"value\":[{\"data\":[\"APoAh5MDAAAAAAKLjuya35R64GfrOPbupmMcxJ1pmaH2fciYq9DxSQ88FioLlNul6FnDNF06/RKhMFBVI8fFQKRYcqukjYZitosKxZBjjg9hLR2AsDm2e/itloPtlrPeVDPIVdnO4+dmM2JiSZHdhsj7+Fn94OTNte9elt1ek0p487C2fLrFA9CvUPerjZvfP97EqlF9OXbPSzaGJzdmfWhk4jRnThsg5scAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAObFpMVhxY3CRrzEcywhYTa4a4SsovPp4wKPRTbTJVtzAfQBZAAAAABDU47UFrGnHMTsb0EaE1TBoVQGvCIHKJ4/EvpK3zvIfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACsWQY44PYS0dgLA5tnv4rZaD7Zaz3lQzyFXZzuPnZjMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\",\"base64\"],\"executable\":false,\"lamports\":1345194,\"owner\":\"617jbWo616ggkDxvW1Le8pV38XLbVSyWY8ae6QUmGBAU\",\"rentEpoch\":306}]},\"id\":\"D5BCACBB-3CE7-44D6-8F66-C57470A90440\"}]\n"
         , "getMultipleMintDatas": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":132426903},\"value\":[{\"data\":[\"AQAAABzjWe1aAS4E+hQrnHUaHF6Hz9CgFhuchf/TG3jN/Nj2dbn7oe7/EAAGAQEAAAAqnl7btTwEZ5CY/3sSZRcUQ0/AjFYqmjuGEQXmctQicw==\",\"base64\"],\"executable\":false,\"lamports\":122356825965,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":306},{\"data\":[\"AQAAAAXqnPFs5BGY8aSZN8iMNwqU1K//ibW6y470XmMku3j3J0UE6/G2BgAGAQEAAAAF6pzxbOQRmPGkmTfIjDcKlNSv/4m1usuO9F5jJLt49w==\",\"base64\"],\"executable\":false,\"lamports\":23879870146,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":306}]},\"id\":\"65766E4D-F678-489A-943B-8D70B5C6F1ED\"}]\n"
+        , "getSignatureStatuses": #"[{"jsonrpc":"2.0","result":{"context":{"slot":82},"value":[{"slot":72,"confirmations":10,"err":null,"status":{"Ok":null},"confirmationStatus":"confirmed"},null]},"id":1}]"#
     ]
 
 }
