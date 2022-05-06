@@ -24,9 +24,11 @@ class ObserveTransactionStatusTests: XCTestCase {
             .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
         ])
         let apiClient = SolanaSwift.JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        var statuses = [TransactionStatus]()
         for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoijvaij") {
-            print(status)
+            statuses.append(status)
         }
+        print(statuses)
 //        let result = try! await apiClient.getBlockHeight()
 //        XCTAssertEqual(result, 119396901)
     }
@@ -46,9 +48,6 @@ class ObserveTransactionStatusTests: XCTestCase {
         }
         
         func requestData(request: URLRequest) async throws -> Data {
-            if count == 1 {
-                try await Task.sleep(nanoseconds: 3000000000) // 3 seconds
-            }
             switch results[count] {
             case .success(let string):
                 let data = string.data(using: .utf8)!
