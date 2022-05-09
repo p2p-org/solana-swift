@@ -40,6 +40,7 @@ pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
 ```
 
 ## How to use
+* From v2.0.0 we officially ditch Rx library from dependencies and adopt swift concurrency to `solana-swift`
 * For those who still use `SolanaSDK` class, see [How to use SolanaSDK (Deprecated) section](#how-to-use-solanasdk-deprecated)
 
 ### Import
