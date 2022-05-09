@@ -7,7 +7,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     // MARK: -
     
-    private let endpoint: APIEndPoint
+    public let endpoint: APIEndPoint
     private let networkManager: NetworkManager
     
     public init(endpoint: APIEndPoint, networkManager: NetworkManager = URLSession(configuration: .default)) {
