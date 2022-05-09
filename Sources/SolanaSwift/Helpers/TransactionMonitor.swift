@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Task_retrying
 
 class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
     let signature: String
@@ -39,7 +40,7 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
         task = Task.retrying(
             where: { [weak self] error in
                 guard let self = self else {return false}
-                if let error = error as? CustomTaskError, error == .timedOut {
+                if let error = error as? TaskRetryingError, error == .timedOut {
                     self.timedOutHandler()
                     return false
                 }
