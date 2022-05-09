@@ -117,6 +117,20 @@ let result = try await apiClient.getBlockHeight()
 guard let account = try? accountStorage.account?.publicKey else { throw SolanaError.unauthorized }
 let balance = try await apiClient.getBalance(account: try accountStorage.account, commitment: "recent")
 ```
+
+// Observe signature status with `observeSignatureStatus` method
+In stead of using socket to observe signature status, which is not really reliable (socket often returns signature status == `finalized` when it is not fully finalized), we observe its status by periodically sending `getSignatureStatuses` (with `observeSignatureStatus` method)
+```swift
+var statuses = [TransactionStatus]()
+for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoijvaij", timeout: 60, delay: 3) {
+    print(status)
+    statuses.append(status)
+}
+// statuses.last == .sending // the signature is not confirmed
+// statuses.last?.numberOfConfirmations == x // the signature is confirmed by x nodes (partially confirmed)
+// statuses.last == .finalized // the signature is confirmed by all nodes
+```
+
 The full list of supported methods available in `APIClient/APIClient.swift`
 
 
