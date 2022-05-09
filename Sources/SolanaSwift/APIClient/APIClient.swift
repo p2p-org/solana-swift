@@ -232,13 +232,15 @@ public protocol SolanaAPIClient {
     ///
     func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>]
     
-    /// Observe status of a sending transaction
+    /// Observe status of a sending transaction by periodically calling getSignatureStatuses
     /// - Parameters:
     ///  - signature: signature of the transaction, as base-58 encoded strings
+    ///  - timeout: timeout (in seconds)
+    ///  - delay: delay between requests
     /// - Throws: APIClientError
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getsignaturestatuses
     ///
-    func observeSignatureStatus(signature: String) -> AsyncStream<TransactionStatus>
+    func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus>
 
     // Requests
     func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity>
@@ -411,16 +413,23 @@ extension SolanaAPIClient {
         return result.value
     }
     
-    public func observeSignatureStatus(signature: String) -> AsyncStream<TransactionStatus> {
+    public func observeSignatureStatus(signature: String, timeout: Int = 60, delay: Int = 2) -> AsyncStream<TransactionStatus> {
         AsyncStream { continuation in
-            let monitor = TransactionMonitor(apiClient: self, signature: signature, responseHandler: { transactionStatus in
-                continuation.yield(transactionStatus)
-                if transactionStatus == .finalized {
+            let monitor = TransactionMonitor(
+                apiClient: self,
+                signature: signature,
+                timeout: timeout,
+                delay: delay,
+                responseHandler: { transactionStatus in
+                    continuation.yield(transactionStatus)
+                    if transactionStatus == .finalized {
+                        continuation.finish()
+                    }
+                },
+                timedOutHandler: {
                     continuation.finish()
                 }
-            }) {
-                continuation.finish()
-            }
+            )
             continuation.onTermination = { @Sendable _ in
                 monitor.stopMonitoring()
             }

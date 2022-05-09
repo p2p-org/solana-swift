@@ -10,14 +10,25 @@ import Foundation
 class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
     let signature: String
     let apiClient: SolanaAPIClient
+    let timeout: Int
+    let delay: Int
     var responseHandler: (TransactionStatus) -> Void
     var timedOutHandler: () -> Void
     var task: Task<Void, Error>!
     var currentStatus: TransactionStatus!
     
-    init(apiClient: SolanaAPIClient, signature: String, responseHandler: @escaping (TransactionStatus) -> Void, timedOutHandler: @escaping () -> Void) {
+    init(
+        apiClient: SolanaAPIClient,
+        signature: String,
+        timeout: Int,
+        delay: Int,
+        responseHandler: @escaping (TransactionStatus) -> Void,
+        timedOutHandler: @escaping () -> Void
+    ) {
         self.apiClient = apiClient
         self.signature = signature
+        self.timeout = timeout
+        self.delay = delay
         self.responseHandler = responseHandler
         self.timedOutHandler = timedOutHandler
     }
@@ -35,8 +46,8 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
                 return true
             },
             maxRetryCount: .max,
-            retryDelay: 1,
-            timeoutInSeconds: 3
+            retryDelay: TimeInterval(delay),
+            timeoutInSeconds: timeout
         ) { [weak self] in
             guard let self = self else {return}
             try Task.checkCancellation()

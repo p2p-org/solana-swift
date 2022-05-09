@@ -24,13 +24,31 @@ class ObserveTransactionStatusTests: XCTestCase {
             .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
         ])
         let apiClient = SolanaSwift.JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        
         var statuses = [TransactionStatus]()
-        for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoijvaij") {
+        
+        // Test 1, timeout 5
+        for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoijvaij", timeout: 5, delay: 1) {
             statuses.append(status)
         }
         print(statuses)
-//        let result = try! await apiClient.getBlockHeight()
-//        XCTAssertEqual(result, 119396901)
+        XCTAssertEqual(statuses.last?.numberOfConfirmations, 1)
+
+        // Test 2, timeout 7
+        statuses = []
+        for try await status in apiClient.observeSignatureStatus(signature: "jijviajidsfjiaj", timeout: 7, delay: 1) {
+            statuses.append(status)
+        }
+        print(statuses)
+        XCTAssertEqual(statuses.last?.numberOfConfirmations, 10)
+        
+        // Test 3, default timeout (60)
+        statuses = []
+        for try await status in apiClient.observeSignatureStatus(signature: "jijviajidsfjiaj") {
+            statuses.append(status)
+        }
+        print(statuses)
+        XCTAssertEqual(statuses.last, .finalized)
     }
     
     // MARK: - Helpers
@@ -48,6 +66,7 @@ class ObserveTransactionStatusTests: XCTestCase {
         }
         
         func requestData(request: URLRequest) async throws -> Data {
+            try await Task.sleep(nanoseconds: 1000000000)
             switch results[count] {
             case .success(let string):
                 let data = string.data(using: .utf8)!
