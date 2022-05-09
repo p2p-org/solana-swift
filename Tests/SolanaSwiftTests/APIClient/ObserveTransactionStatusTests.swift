@@ -11,7 +11,10 @@ class ObserveTransactionStatusTests: XCTestCase {
         network: .mainnetBeta
     )
     
-    func testObservingTransactionStatus() async throws {
+    var apiClient: JSONRPCAPIClient!
+    var statuses: [TransactionStatus]!
+    
+    override func setUpWithError() throws {
         let mock = NetworkManagerMock([
             .success(mockResponse(confirmations: 0, confirmationStatus: "processed")),
             .failure(CustomError.unknownNetworkError),
@@ -23,31 +26,37 @@ class ObserveTransactionStatusTests: XCTestCase {
             .failure(SolanaError.unknown),
             .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
         ])
-        let apiClient = SolanaSwift.JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        
-        var statuses = [TransactionStatus]()
-        
+        apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        statuses = []
+    }
+    
+    override func tearDownWithError() throws {
+        apiClient = nil
+        statuses = []
+    }
+    
+    func testObservingTransactionStatusExceededTimeout1() async throws {
         // Test 1, timeout 5
         for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoijvaij", timeout: 5, delay: 1) {
+            print(status)
             statuses.append(status)
         }
-        print(statuses)
         XCTAssertEqual(statuses.last?.numberOfConfirmations, 1)
-
-        // Test 2, timeout 7
-        statuses = []
+    }
+    
+    func testObservingTransactionStatusExceededTimeout2() async throws {
         for try await status in apiClient.observeSignatureStatus(signature: "jijviajidsfjiaj", timeout: 7, delay: 1) {
+            print(status)
             statuses.append(status)
         }
-        print(statuses)
         XCTAssertEqual(statuses.last?.numberOfConfirmations, 10)
-        
-        // Test 3, default timeout (60)
-        statuses = []
-        for try await status in apiClient.observeSignatureStatus(signature: "jijviajidsfjiaj") {
+    }
+    
+    func testObservingTransactionStatusFinalized() async throws {
+        for try await status in apiClient.observeSignatureStatus(signature: "jijviajidsfjiaj", delay: 1) {
+            print(status)
             statuses.append(status)
         }
-        print(statuses)
         XCTAssertEqual(statuses.last, .finalized)
     }
     
@@ -58,7 +67,7 @@ class ObserveTransactionStatusTests: XCTestCase {
     }
     
     class NetworkManagerMock: NetworkManager {
-        private var count = 0
+        fileprivate var count = 0
         private let results: [Result<String, Error>]
         
         init(_ results: [Result<String, Error>]) {
@@ -66,7 +75,6 @@ class ObserveTransactionStatusTests: XCTestCase {
         }
         
         func requestData(request: URLRequest) async throws -> Data {
-            try await Task.sleep(nanoseconds: 1000000000)
             switch results[count] {
             case .success(let string):
                 let data = string.data(using: .utf8)!
