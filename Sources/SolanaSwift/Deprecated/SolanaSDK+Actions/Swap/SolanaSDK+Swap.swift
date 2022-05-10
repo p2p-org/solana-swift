@@ -81,7 +81,8 @@ extension SolanaSDK {
                             from: owner,
                             toNewPubkey: newAccount.publicKey,
                             lamports: amount + minimumBalanceForRentExemption,
-                            space: AccountInfo.span
+                            space: AccountInfo.span,
+                            programId: TokenProgram.id
                         ),
                         TokenProgram.initializeAccountInstruction(
                             account: newAccount.publicKey,

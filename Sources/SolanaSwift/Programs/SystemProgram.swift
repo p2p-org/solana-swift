@@ -17,7 +17,8 @@ public enum SystemProgram: SolanaBasicProgram {
         from fromPublicKey: PublicKey,
         toNewPubkey newPubkey: PublicKey,
         lamports: UInt64,
-        space: UInt64
+        space: UInt64,
+        programId: PublicKey
     ) -> TransactionInstruction {
         
         TransactionInstruction(
@@ -26,7 +27,7 @@ public enum SystemProgram: SolanaBasicProgram {
                 Account.Meta(publicKey: newPubkey, isSigner: true, isWritable: true)
             ],
             programId: SystemProgram.id,
-            data: [Index.create, lamports, space, SystemProgram.id]
+            data: [Index.create, lamports, space, programId]
         )
     }
     
