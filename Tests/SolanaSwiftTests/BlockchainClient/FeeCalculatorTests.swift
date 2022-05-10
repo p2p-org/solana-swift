@@ -63,7 +63,8 @@ class FeeCalculatorTests: XCTestCase {
                 from: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
                 toNewPubkey: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
                 lamports: 1000,
-                space: 165
+                space: 165,
+                programId: TokenProgram.id
             ),
             TokenProgram.initializeAccountInstruction(
                 account: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
@@ -84,7 +85,8 @@ class FeeCalculatorTests: XCTestCase {
                     from: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
                     toNewPubkey: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
                     lamports: 1000,
-                    space: 165
+                    space: 165,
+                    programId: TokenProgram.id
                 ),
                 TokenProgram.initializeAccountInstruction(
                     account: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
