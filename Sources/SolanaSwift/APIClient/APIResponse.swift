@@ -11,7 +11,7 @@ public struct AnyResponse<Entity: Decodable>: APIClientResponse {
     public var result: Entity?
     public var error: ResponseError?
     
-    init<T: APIClientResponse>(_ response: T) where T.Entity == Entity {
+    public init<T: APIClientResponse>(_ response: T) where T.Entity == Entity {
         self.result = response.result
         self.error = response.error
     }
@@ -23,6 +23,14 @@ public struct JSONRPCResponse<Entity: Decodable>: APIClientResponse {
     public let result: Entity?
     public let error: ResponseError?
     public let method: String?
+    
+    public init(id: String? = nil, result: Entity? = nil, error: ResponseError? = nil, method: String? = nil) {
+        self.jsonrpc = "2.0"
+        self.id = ""
+        self.result = result
+        self.error = error
+        self.method = method
+    }
 }
 
 public class JSONRPCResponseDecoder<Entity: Decodable> {
