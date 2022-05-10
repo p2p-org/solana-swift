@@ -1,4 +1,5 @@
 import Foundation
+import LoggerSwift
 
 /// JSON RPC
 public class JSONRPCAPIClient: SolanaAPIClient {
@@ -17,6 +18,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     public func request(with requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>] {
         let data = try await self.makeRequest(requests: requests)
+        
+        // log
+        LoggerSwift.Logger.log(event: .response, message: String(data: data, encoding: .utf8) ?? "")
+        
         let response = try ResponseDecoder<[AnyResponse<AnyDecodable>]>().decode(with: data)
         let ret = response.map({ resp in
             return AnyResponse<RequestEncoder.RequestType.Entity>(resp)
@@ -26,6 +31,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     public func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity> {
         let data = try await self.makeRequest(requests: [request])
+        
+        // log
+        LoggerSwift.Logger.log(event: .response, message: String(data: data, encoding: .utf8) ?? "")
+        
         let response = try ResponseDecoder<[AnyResponse<Entity>]>().decode(with: data)
         guard let ret = response.first else {
             throw APIClientError.cantDecodeResponse
@@ -51,6 +60,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         urlRequest.httpBody = data
         urlRequest.httpMethod = "POST"
         urlRequest.headers = ["Content-Type": "application/json; charset=utf-8"]
+        
+        // log
+        LoggerSwift.Logger.log(event: .request, message: urlRequest.cURL())
+        
         return urlRequest
     }
 }

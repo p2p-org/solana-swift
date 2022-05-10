@@ -36,7 +36,8 @@ extension SolanaSDK {
                     from: payer.publicKey,
                     toNewPubkey: newAccount.publicKey,
                     lamports: minBalance,
-                    space: AccountInfo.span
+                    space: AccountInfo.span,
+                    programId: TokenProgram.id
                 )
                 
                 let initializeAccountInstruction = TokenProgram.initializeAccountInstruction(
