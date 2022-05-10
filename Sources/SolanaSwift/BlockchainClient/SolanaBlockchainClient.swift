@@ -20,7 +20,8 @@ public protocol SolanaBlockchainClient: AnyObject {
         instructions: [TransactionInstruction],
         signers: [Account],
         feePayer: PublicKey,
-        feeCalculator: FeeCalculator?
+        recentBlockhash: String,
+        feeCalculator: FeeCalculator
     ) async throws -> PreparedTransaction
     
     /// Send transaction
