@@ -152,7 +152,7 @@ class FeeCalculatorTests: XCTestCase {
     private func createTransaction(instructions: [TransactionInstruction], feePayer: PublicKey? = nil) -> Transaction {
         Transaction(
             instructions: instructions,
-            recentBlockhash: "63ionHTAM94KaSujUCg23hfg7TLharchq5BYXdLGqia1",
+            recentBlockhash: nil,
             feePayer: feePayer ?? "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
         )
     }

@@ -14,7 +14,7 @@ public struct Transaction: Encodable {
     public init() {}
     public init(
         instructions: [TransactionInstruction],
-        recentBlockhash: String,
+        recentBlockhash: String?,
         feePayer: PublicKey
     ) {
         self.init()
@@ -45,8 +45,10 @@ public struct Transaction: Encodable {
         try partialSign(message: message, signers: signers)
     }
     
-    public mutating func calculateTransactionFee(lamportsPerSignatures: UInt64) throws -> UInt64 {
-        let message = try compile()
+    public func calculateTransactionFee(lamportsPerSignatures: UInt64) throws -> UInt64 {
+        var transaction = self
+        transaction.recentBlockhash = "BdA9gRatFvvwszr9uU5fznkHoMVQE8tf6ZFi8Mp6xdKs" // fake
+        let message = try transaction.compile()
         return UInt64(message.header.numRequiredSignatures) * lamportsPerSignatures
     }
     

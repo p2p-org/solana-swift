@@ -1,4 +1,5 @@
 import Foundation
+import Task_retrying
 
 /// BlockchainClient that prepares and serialises transaction to send to blockchain
 public protocol SolanaBlockchainClient: AnyObject {
@@ -19,16 +20,8 @@ public protocol SolanaBlockchainClient: AnyObject {
         instructions: [TransactionInstruction],
         signers: [Account],
         feePayer: PublicKey,
-        recentBlockhash: String?,
         feeCalculator: FeeCalculator?
     ) async throws -> PreparedTransaction
-    
-    /// Sign and Serialize PreparedTransaction for sending
-    /// - Parameter preparedTransaction: a prepared transaction
-    /// - Returns: Serialized transaction which is ready to be sent
-    func signAndSerialize(
-        preparedTransaction: PreparedTransaction
-    ) throws -> String
     
     /// Send transaction
     /// - Parameter preparedTransaction: a prepared transaction
@@ -46,9 +39,11 @@ public protocol SolanaBlockchainClient: AnyObject {
 
 extension SolanaBlockchainClient {
     public func signAndSerialize(
-        preparedTransaction: PreparedTransaction
+        preparedTransaction: PreparedTransaction,
+        recentBlockhash: String
     ) throws -> String {
         var preparedTransaction = preparedTransaction
+        preparedTransaction.transaction.recentBlockhash = recentBlockhash
         try preparedTransaction.sign()
         return try preparedTransaction.serialize()
     }
@@ -56,14 +51,48 @@ extension SolanaBlockchainClient {
     public func sendTransaction(
         preparedTransaction: PreparedTransaction
     ) async throws -> String {
-        let serializedTransaction = try signAndSerialize(preparedTransaction: preparedTransaction)
-        return try await apiClient.sendTransaction(transaction: serializedTransaction)
+        try await Task.retrying(
+            where: {$0.isBlockhashNotFoundError},
+            maxRetryCount: 3,
+            retryDelay: 1,
+            timeoutInSeconds: 60
+        ) {
+            let recentBlockhash = try await self.apiClient.getRecentBlockhash()
+            let serializedTransaction = try self.signAndSerialize(preparedTransaction: preparedTransaction, recentBlockhash: recentBlockhash)
+            return try await self.apiClient.sendTransaction(transaction: serializedTransaction)
+        }
+            .value
     }
     
     public func simulateTransaction(
         preparedTransaction: PreparedTransaction
     ) async throws -> TransactionStatus {
-        let serializedTransaction = try signAndSerialize(preparedTransaction: preparedTransaction)
-        return try await apiClient.simulateTransaction(transaction: serializedTransaction)
+        try await Task.retrying(
+            where: {$0.isBlockhashNotFoundError},
+            maxRetryCount: 3,
+            retryDelay: 1,
+            timeoutInSeconds: 60
+        ) {
+            let recentBlockhash = try await self.apiClient.getRecentBlockhash()
+            let serializedTransaction = try self.signAndSerialize(preparedTransaction: preparedTransaction, recentBlockhash: recentBlockhash)
+            return try await self.apiClient.simulateTransaction(transaction: serializedTransaction)
+        }
+            .value
+    }
+}
+
+private extension Error {
+    var isBlockhashNotFoundError: Bool {
+        if let error = self as? SolanaError {
+            switch error {
+            case .other(let message) where message == "Blockhash not found":
+                return true
+            case .invalidResponse(let response) where response.message == "Blockhash not found":
+                return true
+            default:
+                break
+            }
+        }
+        return false
     }
 }

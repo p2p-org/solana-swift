@@ -12,19 +12,10 @@ public class BlockchainClient<APIClient: SolanaAPIClient>: SolanaBlockchainClien
         instructions: [TransactionInstruction],
         signers: [Account],
         feePayer: PublicKey,
-        recentBlockhash rc: String?,
         feeCalculator fc: FeeCalculator?
     ) async throws -> PreparedTransaction {
-        // get recent blockhash
-        let recentBlockhash: String
-        if let rc = rc {
-            recentBlockhash = rc
-        } else {
-            recentBlockhash = try await apiClient.getRecentBlockhash()
-        }
-        
         // form transaction
-        let transaction = Transaction(instructions: instructions, recentBlockhash: recentBlockhash, feePayer: feePayer)
+        let transaction = Transaction(instructions: instructions, recentBlockhash: nil, feePayer: feePayer)
         
         // calculate fee first
         let feeCalculator: FeeCalculator

@@ -21,7 +21,6 @@ public class DefaultFeeCalculator: FeeCalculator {
     }
     
     public func calculateNetworkFee(transaction: Transaction) throws -> FeeAmount {
-        var transaction = transaction
         let transactionFee = try transaction.calculateTransactionFee(lamportsPerSignatures: lamportsPerSignature)
         var accountCreationFee: Lamports = 0
         var depositFee: Lamports = 0
