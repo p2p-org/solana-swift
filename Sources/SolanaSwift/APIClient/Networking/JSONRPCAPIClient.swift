@@ -155,10 +155,34 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         try await self.get(method: "sendTransaction", params: [transaction, configs])
     }
     
-    public func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> TransactionStatus {
-        let result: Rpc<TransactionStatus> = try await self.get(method: "simulateTransaction", params: [transaction, configs])
+    public func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> SimulationResult {
+        let result: Rpc<SimulationResult> = try await self.get(method: "simulateTransaction", params: [transaction, configs])
         return result.value
     }
+    
+    public func observeSignatureStatus(signature: String, timeout: Int = 60, delay: Int = 2) -> AsyncStream<TransactionStatus> {
+         AsyncStream { continuation in
+             let monitor = TransactionMonitor(
+                 apiClient: self,
+                 signature: signature,
+                 timeout: timeout,
+                 delay: delay,
+                 responseHandler: { transactionStatus in
+                     continuation.yield(transactionStatus)
+                     if transactionStatus == .finalized {
+                         continuation.finish()
+                     }
+                 },
+                 timedOutHandler: {
+                     continuation.finish()
+                 }
+             )
+             continuation.onTermination = { @Sendable _ in
+                 monitor.stopMonitoring()
+             }
+             monitor.startMonitoring()
+         }
+     }
     
     public func setLogFilter(filter: String) async throws -> String? {
         try await self.get(method: "setLogFilter", params: [filter])

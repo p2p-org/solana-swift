@@ -52,7 +52,7 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
         ) { [weak self] in
             guard let self = self else {return}
             try Task.checkCancellation()
-            let status = try await self.apiClient.getSignatureStatus(signature: self.signature)
+            let status = try await self.apiClient.getSignatureStatus(signature: self.signature, configs: nil)
             
             if let confirmations = status.confirmations, status.confirmationStatus == "confirmed" {
                 self.setStatus(.confirmed(numberOfConfirmations: confirmations))
