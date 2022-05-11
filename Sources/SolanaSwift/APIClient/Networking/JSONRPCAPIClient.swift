@@ -226,7 +226,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     private func get<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity {
         let req = RequestEncoder.RequestType(method: method, params: params)
-        try Task.checkCancellation()
         let response: AnyResponse<Entity> = try await request(with: req)
         guard let result = response.result else {
             throw APIClientError.cantDecodeResponse
@@ -260,6 +259,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         } catch {
             throw APIClientError.cantEncodeParams
         }
+        try Task.checkCancellation()
         let responseData = try await networkManager.requestData(request: try self.urlRequest(data: encodedParams))
         
         // log
