@@ -243,6 +243,8 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getsignaturestatuses
     ///
     func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus>
+    
+    func getRecentBlockhash(commitment: Commitment?) async throws -> String
 
 }
 
