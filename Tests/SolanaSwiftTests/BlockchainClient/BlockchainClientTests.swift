@@ -27,7 +27,7 @@ class BlockchainClientTests: XCTestCase {
     
     func testPrepareSendingNativeSOL() async throws {
         let account = accountStorage.account!
-        let toPublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+        let toPublicKey = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
         let apiClient = MockAPIClient()
         let blockchain = BlockchainClient(apiClient: apiClient)
         
