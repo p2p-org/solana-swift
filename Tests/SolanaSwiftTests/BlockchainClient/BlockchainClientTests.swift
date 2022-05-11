@@ -75,7 +75,6 @@ class BlockchainClientTests: XCTestCase {
         let api = JSONRPCAPIClient(endpoint: endpoint)
         let bc = BlockchainClient(apiClient: api)
         
-        // calculate fees
         let tx = try await bc.prepareSendingSPLTokens(account: account,
                                                       mintAddress: mintAddress,
                                                       decimals: 6,

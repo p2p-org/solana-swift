@@ -120,6 +120,38 @@ let balance = try await apiClient.getBalance(account: try accountStorage.account
 ```
 The full list of supported methods available in `APIClient/APIClient.swift`
 
+### Solana Blockchain Client
+Prepare, send and simulate transactions
+
+Example: 
+```swift
+import SolanaSwift
+
+/// Prepare Sending SPL Tokens
+let fee = try await api.getFees(commitment: nil)
+let bc = BlockchainClient(apiClient: JSONRPCAPIClient(endpoint: endpoint))
+try await bc.prepareSendingSPLTokens(account: account,
+                                     mintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
+                                     decimals: 6,
+                                     from: "DjY1uZozQTPz9c6WsjpPC3jXWp7u98KzyuyQTRzcGHFk",
+                                     to: destination,
+                                     amount: Double(0.001).toLamport(decimals: 6),
+                                     fee: fee,
+                                     feePayer: "B4PdyoVU39hoCaiTLPtN9nJxy6rEpbciE3BNPvHkCeE2",
+                                     recentBlockhash: "F8wk1XcFVcd5M3UDx8S2jy3mEhSVkeBgYw979Mp2fF4")
+
+/// Prepare Sending SPL Tokens
+feeCalculator = DefaultFeeCalculator(lamportsPerSignature: lamportsPerSignature, minRentExemption: minRentExemption)
+
+let recentBlockhash = try await apiClient.getRecentBlockhash(commitment: nil)
+try await blockchain.prepareSendingNativeSOL(account: account,
+                                             to: toPublicKey,
+                                             amount: 0,
+                                             feePayer: feePayerPublicKey,
+                                             recentBlockhash: "F8wk1XcFVcd5M3UDx8S2jy3mEhSVkeBgYw979Mp2fF4",
+                                             feeCalculator: feeCalculator)
+```
+
 
 ### Solana Tokens Repository
 Tokens repository usefull when you need to get a list of tokens
