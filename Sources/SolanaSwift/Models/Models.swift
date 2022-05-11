@@ -226,8 +226,7 @@ public struct TokenBalance: Decodable {
     let mint: String
     let uiTokenAmount: TokenAccountBalance
 }
-
-public struct TransactionStatus: Decodable {
+public struct SimulationResult: Decodable {
     public let err: ErrorDetail? //TransactionError? // string | object
     public let logs: [String]
 }

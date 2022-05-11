@@ -35,7 +35,7 @@ public protocol SolanaBlockchainClient: AnyObject {
     /// - Parameter preparedTransaction: a prepared transaction
     func simulateTransaction(
         preparedTransaction: PreparedTransaction
-    ) async throws -> TransactionStatus
+    ) async throws -> SimulationResult
 }
 
 extension SolanaBlockchainClient {
@@ -67,7 +67,7 @@ extension SolanaBlockchainClient {
     
     public func simulateTransaction(
         preparedTransaction: PreparedTransaction
-    ) async throws -> TransactionStatus {
+    ) async throws -> SimulationResult {
         try await Task.retrying(
             where: {$0.isBlockhashNotFoundError},
             maxRetryCount: 3,
