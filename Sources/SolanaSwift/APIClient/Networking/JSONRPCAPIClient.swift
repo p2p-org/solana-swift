@@ -22,7 +22,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         let requestConfig = RequestConfiguration(encoding: "base64")
         let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
         guard let ret = try? await (request(with: req) as AnyResponse<Rpc<BufferInfo<T>?>>).result?.value else {
-            throw SolanaError.other("Could not retrieve account info")
+            throw SolanaError.couldNotRetrieveAccountInfo
         }
         return ret
     }
@@ -148,7 +148,34 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
     
     public func sendTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> TransactionID {
-        try await self.get(method: "sendTransaction", params: [transaction, configs])
+        do {
+            return try await self.get(method: "sendTransaction", params: [transaction, configs])
+        } catch {
+            // Modify error message
+            if let error = error as? SolanaError {
+                switch error {
+                case .invalidResponse(let response) where response.message != nil:
+                    var message = response.message
+                    if let readableMessage = response.data?.logs?
+                        .first(where: {$0.contains("Error:")})?
+                        .components(separatedBy: "Error: ")
+                        .last
+                    {
+                        message = readableMessage
+                    } else if let readableMessage = response.message?
+                                .components(separatedBy: "Transaction simulation failed: ")
+                                .last
+                    {
+                        message = readableMessage
+                    }
+                    
+                    throw SolanaError.invalidResponse(ResponseError(code: response.code, message: message, data: response.data))
+                default:
+                    break
+                }
+            }
+            throw error
+        }
     }
     
     public func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> SimulationResult {
