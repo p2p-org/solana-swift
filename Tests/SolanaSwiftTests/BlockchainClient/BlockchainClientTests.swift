@@ -12,7 +12,7 @@ class BlockchainClientTests: XCTestCase {
     override func setUp() async throws {
         accountStorage = InMemoryAccountStorage()
         let account = try await Account(
-            phrase: "promote ignore inmate coast excess candy vanish erosion palm oxygen build powder"
+            phrase: "miracle pizza supply useful steak border same again youth silver access hundred"
                 .components(separatedBy: " "),
             network: .mainnetBeta
         )
