@@ -8,7 +8,8 @@ class SystemProgramTests: XCTestCase {
             from: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo",
             toNewPubkey: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
             lamports: 2039280,
-            space: 165
+            space: 165,
+            programId: TokenProgram.id
         )
         
         XCTAssertEqual(instruction.keys.count, 2)

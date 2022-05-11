@@ -291,7 +291,7 @@ public extension SolanaSDK {
         (request(parameters: [transaction, configs]) as Single<Rpc<SimulationResult>>)
             .map {$0.value}
             .map {status in
-                if let err = status.err {
+                if let err = status.err as? TransactionError {
                     throw Error.transactionError(err, logs: status.logs)
                 }
                 return status

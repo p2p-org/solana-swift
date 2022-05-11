@@ -29,6 +29,15 @@
         }
       },
       {
+        "package": "LoggerSwift",
+        "repositoryURL": "https://github.com/bigearsenal/loggerswift.git",
+        "state": {
+          "branch": null,
+          "revision": "bbb62757aca270f8bb6489de50b48ae424daf913",
+          "version": "1.0.0"
+        }
+      },
+      {
         "package": "OHHTTPStubs",
         "repositoryURL": "https://github.com/AliSoftware/OHHTTPStubs.git",
         "state": {

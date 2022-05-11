@@ -38,25 +38,28 @@ public struct JSONRPCAPIClientRequest<Entity: Decodable>: APIClientRequest {
 /// Encoder used to encode request in able to use with the transport
 public protocol APIClientRequestEncoder {
     associatedtype RequestType: APIClientRequest
-    
     init(request: RequestType)
     init(requests: [RequestType])
     
     func encoded() throws -> Data
 }
 
+enum JSONRPCRequestEncoderError: Error {
+    case cantEncodeValue
+}
+
 /// JSONRPCRequestEncoder encodes requests of type RequestAPI according to JSONRPC rules
 public class JSONRPCRequestEncoder: APIClientRequestEncoder {
     public typealias RequestType = JSONRPCAPIClientRequest<AnyDecodable>
     
-    private var requests = [RequestType]()
+    private var requests: AnyEncodable // either array or single RequestType
     
     required public init(request: RequestType) {
-        requests = [request]
+        requests = AnyEncodable(request)
     }
     
     required public init(requests: [RequestType]) {
-        self.requests = requests
+        self.requests = AnyEncodable(requests)
     }
     
     public func encoded() throws -> Data {

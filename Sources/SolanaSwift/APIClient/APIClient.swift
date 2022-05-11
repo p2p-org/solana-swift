@@ -3,6 +3,9 @@ import RxSwift
 
 public protocol SolanaAPIClient {
     associatedtype RequestEncoder: APIClientRequestEncoder
+    
+    /// The endpoint that indicates the rpcpool address and network
+    var endpoint: APIEndPoint { get }
 
     // MARK: -  API Methods
     
