@@ -3,10 +3,9 @@ import Task_retrying
 
 /// BlockchainClient that prepares and serialises transaction to send to blockchain
 public protocol SolanaBlockchainClient: AnyObject {
-    associatedtype APIClient: SolanaAPIClient
     
     /// APIClient for handling network requests
-    var apiClient: APIClient { get set }
+    var apiClient: SolanaAPIClient { get set }
     
     /// Prepare a transaction base on its instructions
     /// - Parameters:

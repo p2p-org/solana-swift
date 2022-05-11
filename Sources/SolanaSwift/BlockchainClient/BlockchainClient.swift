@@ -1,10 +1,10 @@
 import Foundation
 
 /// Default implementation of SolanaBlockchainClient
-public class BlockchainClient<APIClient: SolanaAPIClient>: SolanaBlockchainClient {
-    public var apiClient: APIClient
+public class BlockchainClient: SolanaBlockchainClient {
+    public var apiClient: SolanaAPIClient
     
-    public init(apiClient: APIClient) {
+    public init(apiClient: SolanaAPIClient) {
         self.apiClient = apiClient
     }
     
