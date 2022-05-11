@@ -27,6 +27,7 @@ let package = Package(
                              from: "6.1.1"),
         .package(url: "https://github.com/daltoniam/Starscream.git", from: "4.0.0"),
         
+        .package(name: "Task_retrying", url: "https://github.com/bigearsenal/task-retrying-swift.git", from: "1.0.1"),
         .package(name: "LoggerSwift", url: "https://github.com/bigearsenal/loggerswift.git", from: "1.0.0")
     ],
     targets: [
@@ -35,6 +36,7 @@ let package = Package(
         .target(
             name: "SolanaSwift",
             dependencies: ["CryptoSwift", "BufferLayoutSwift", "secp256k1", "TweetNacl", "RxSwift", .product(name: "RxCocoa", package: "RxSwift"), "RxAlamofire", "Starscream",
+                          "Task_retrying",
                           "LoggerSwift"],
             resources: [ .process("Resources") ]
         ),

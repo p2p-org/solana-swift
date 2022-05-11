@@ -8,7 +8,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     // MARK: -
     
-    private let endpoint: APIEndPoint
+    public let endpoint: APIEndPoint
     private let networkManager: NetworkManager
     
     public init(endpoint: APIEndPoint, networkManager: NetworkManager = URLSession(configuration: .default)) {
@@ -30,16 +30,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
     
     public func request<Entity: Decodable>(with request: RequestEncoder.RequestType) async throws -> AnyResponse<Entity> {
-        let data = try await self.makeRequest(requests: [request])
-        
-        // log
-        LoggerSwift.Logger.log(event: .response, message: String(data: data, encoding: .utf8) ?? "")
-        
-        let response = try ResponseDecoder<[AnyResponse<Entity>]>().decode(with: data)
-        guard let ret = response.first else {
-            throw APIClientError.cantDecodeResponse
-        }
-        return ret
+        try ResponseDecoder<AnyResponse<Entity>>().decode(with: try await self.makeRequest(requests: [request]))
     }
     
     // MARK: - Private
@@ -47,7 +38,11 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     private func makeRequest(requests: [RequestEncoder.RequestType]) async throws -> Data {
         var encodedParams: Data = Data()
         do {
-            encodedParams += try RequestEncoder(requests: requests).encoded()
+            if requests.count == 1, let request = requests.first {
+                encodedParams += try RequestEncoder(request: request).encoded()
+            } else {
+                encodedParams += try RequestEncoder(requests: requests).encoded()
+            }
         } catch {
             throw APIClientError.cantEncodeParams
         }

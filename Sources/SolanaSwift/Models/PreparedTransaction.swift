@@ -11,6 +11,10 @@ public struct PreparedTransaction {
     public var signers: [Account]
     public var expectedFee: FeeAmount
     
+    public mutating func sign() throws {
+        try transaction.sign(signers: signers)
+    }
+    
     public func serialize() throws -> String {
         var transaction = transaction
         let serializedTransaction = try transaction.serialize().bytes.toBase64()
