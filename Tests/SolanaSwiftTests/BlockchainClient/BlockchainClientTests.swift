@@ -48,25 +48,30 @@ class BlockchainClientTests: XCTestCase {
         
         // USDC
         let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-        let source = "DjY1uZozQTPz9c6WsjpPC3jXWp7u98KzyuyQTRzcGHFk"
-        let destination = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+        let source = "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3"
         
-        let apiClient = MockAPIClient(testCase: #function)
+        let apiClient = MockAPIClient(testCase: #function + "#1")
         let blockchainClient = BlockchainClient(apiClient: apiClient)
         
-        let tx = try await blockchainClient.prepareSendingSPLTokens(account: account,
-                                                      mintAddress: mintAddress,
-                                                      decimals: 6,
-                                                      from: source,
-                                                      to: destination,
-                                                      amount: Double(0.001).toLamport(decimals: 6))
+        // Test1: for address that has no funds
+        let tx = try await blockchainClient.prepareSendingSPLTokens(
+            account: account,
+            mintAddress: mintAddress,
+            decimals: 6,
+            from: source,
+            to: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+            amount: Double(0.001).toLamport(decimals: 6)
+        )
             .preparedTransaction
         
-        XCTAssertEqual(tx.expectedFee, .init(transaction: 5000, accountBalances: 0))
+        XCTAssertEqual(tx.expectedFee, .init(transaction: 5000, accountBalances: 2039280))
         
         let recentBlockhash = try await apiClient.getRecentBlockhash()
         let serializedTransaction = try blockchainClient.signAndSerialize(preparedTransaction: tx, recentBlockhash: recentBlockhash)
-        XCTAssertEqual(serializedTransaction, "AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABVDg6PUgP0/j0vr9ikPMW6XfkjTjFIO3fUnGTc0jeLpRDcZvF4GaxvBeOfxYD6ldZGD/yTnGbn+CDHT6o9emsLAgABBZVzNUScL8XOGDuZ10tEfPOQu+xHxBtpXUDQYjWq91/PUGovppzL+Lnil9LlySMgCL9FHk19zxobvW2CEQYB/tq9MbTiQmankdqjmH2uZjpU9OB4Cg14/hOLUUY6cv3Fvys0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkDnx0J6XtIf2GzNZPI5gc77kjN9sIC6bnhGhtxCMtQHwEEAwIDAQkD6AMAAAAAAAA=")
+        XCTAssertEqual(serializedTransaction, "AYMEskYoYyUUFfAOOBVge/ZvKsdnThz6h8SD9fjwhMrlzdyJqOHWd1E/TNwtASCdkG2tb6+mKwvPbTmfvpDJ/gUBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsV6z8KtZmvbVqZpAcS9akND4i7DwzOEXd14OkugPk5Sjis0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sUGovppzL+Lnil9LlySMgCL9FHk19zxobvW2CEQYB/trG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZfhq5F8HYKBbSm7geKKfkJABMkKQSWgrHSxAVWNN0/7wCCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA==")
+        
+        // Test2: for address that has no funds but has usdc
+        
     }
     
     let json: [String: String] = [
@@ -87,7 +92,19 @@ private class MockAPIClient: SolanaAPIClient {
     
     func getAccountInfo<T>(account: String) async throws -> BufferInfo<T>? where T : DecodableBufferLayout {
         if account == "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm" {
-            return BufferInfo<T>(lamports: 0, owner: SystemProgram.id.base58EncodedString, data: EmptyInfo() as! T, executable: true, rentEpoch: 0)
+            let data: T
+            switch testCase {
+            case "testPrepareSendingNativeSOL()":
+                data = EmptyInfo() as! T
+            case "testPrepareSendingSPLTokens()#1":
+                throw SolanaError.couldNotRetrieveAccountInfo
+            default:
+                fatalError()
+            }
+            return BufferInfo<T>(lamports: 0, owner: SystemProgram.id.base58EncodedString, data: data, executable: true, rentEpoch: 0)
+        }
+        if account == "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch" {
+            throw SolanaError.couldNotRetrieveAccountInfo
         }
         fatalError()
     }
@@ -130,9 +147,12 @@ private class MockAPIClient: SolanaAPIClient {
     
     func getFees(commitment: Commitment?) async throws -> Fee {
         let blockhash: String
-        if testCase == "testPrepareSendingNativeSOL()" {
+        switch testCase {
+        case "testPrepareSendingNativeSOL()":
             blockhash = "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
-        } else {
+        case "testPrepareSendingSPLTokens()#1":
+            blockhash = "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
+        default:
             fatalError()
         }
         return .init(feeCalculator: .init(lamportsPerSignature: 5000), feeRateGovernor: nil, blockhash: blockhash, lastValidSlot: 133389328)
@@ -203,8 +223,13 @@ private class MockAPIClient: SolanaAPIClient {
     }
     
     func getRecentBlockhash(commitment: Commitment?) async throws -> String {
-        if testCase == "testPrepareSendingNativeSOL()" {
+        switch testCase {
+        case "testPrepareSendingNativeSOL()":
             return "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
+        case "testPrepareSendingSPLTokens()#1":
+            return "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
+        default:
+            fatalError()
         }
         fatalError()
     }
