@@ -56,7 +56,7 @@ extension SolanaBlockchainClient {
             retryDelay: 1,
             timeoutInSeconds: 60
         ) {
-            let recentBlockhash = try await self.apiClient.getRecentBlockhash(commitment: "recent")
+            let recentBlockhash = try await self.apiClient.getRecentBlockhash()
             let serializedTransaction = try self.signAndSerialize(preparedTransaction: preparedTransaction, recentBlockhash: recentBlockhash)
             return try await self.apiClient.sendTransaction(transaction: serializedTransaction, configs: RequestConfiguration(encoding: "base64")!)
         }
@@ -72,7 +72,7 @@ extension SolanaBlockchainClient {
             retryDelay: 1,
             timeoutInSeconds: 60
         ) {
-            let recentBlockhash = try await self.apiClient.getRecentBlockhash(commitment: "recent")
+            let recentBlockhash = try await self.apiClient.getRecentBlockhash()
             let serializedTransaction = try self.signAndSerialize(preparedTransaction: preparedTransaction, recentBlockhash: recentBlockhash)
             return try await self.apiClient.simulateTransaction(transaction: serializedTransaction, configs: RequestConfiguration(encoding: "base64")!)
         }
