@@ -4,26 +4,23 @@ import XCTest
 @testable import SolanaSwift
 
 class BlockchainClientTests: XCTestCase {
-    var accountStorage: InMemoryAccountStorage!
+    var account: Account!
     
     override func setUp() async throws {
-        accountStorage = InMemoryAccountStorage()
-        let account = try await Account(
+        account = try await Account(
             phrase: "miracle pizza supply useful steak border same again youth silver access hundred"
                 .components(separatedBy: " "),
             network: .mainnetBeta
         )
-        try accountStorage.save(account)
     }
     
     override func tearDown() async throws {
-        accountStorage = nil
+        account = nil
     }
     
     // MARK: - Testcases
     
     func testPrepareSendingNativeSOL() async throws {
-        let account = accountStorage.account!
         let toPublicKey = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
         let apiClient = MockAPIClient(testCase: #function)
         let blockchain = BlockchainClient(apiClient: apiClient)
@@ -70,7 +67,6 @@ class BlockchainClientTests: XCTestCase {
         expectedFee: FeeAmount,
         expectedSerializedTransaction: String
     ) async throws {
-        let account = accountStorage.account!
         
         // USDC
         let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
