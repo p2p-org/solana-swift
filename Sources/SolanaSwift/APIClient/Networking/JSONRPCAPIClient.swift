@@ -22,7 +22,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         let requestConfig = RequestConfiguration(encoding: "base64")
         let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
         guard let ret = try? await (request(with: req) as AnyResponse<Rpc<BufferInfo<T>?>>).result?.value else {
-            throw SolanaSDK.Error.other("Could not retrieve account info")
+            throw SolanaError.other("Could not retrieve account info")
         }
         return ret
     }
@@ -209,10 +209,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     public func request(with requests: [RequestEncoder.RequestType]) async throws -> [AnyResponse<RequestEncoder.RequestType.Entity>] {
         let data = try await self.makeRequest(requests: requests)
-        
-        // log
-        LoggerSwift.Logger.log(event: .response, message: String(data: data, encoding: .utf8) ?? "")
-        
         let response = try ResponseDecoder<[AnyResponse<AnyDecodable>]>().decode(with: data)
         let ret = response.map({ resp in
             return AnyResponse<RequestEncoder.RequestType.Entity>(resp)
@@ -237,7 +233,12 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         } catch {
             throw APIClientError.cantEncodeParams
         }
-        return try await networkManager.requestData(request: try self.urlRequest(data: encodedParams))
+        let responseData = try await networkManager.requestData(request: try self.urlRequest(data: encodedParams))
+        
+        // log
+        LoggerSwift.Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
+        
+        return responseData
     }
     
     private func urlRequest(data: Data) throws -> URLRequest {
