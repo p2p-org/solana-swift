@@ -24,7 +24,7 @@ extension SolanaBlockchainClient {
             newAccount = try await requestNewAccount
         } else {
             (minRentExemption, newAccount) = try await (
-                apiClient.getMinimumBalanceForRentExemption(span: UInt64(AccountInfo.BUFFER_LENGTH)),
+                apiClient.getMinimumBalanceForRentExemption(dataLength: UInt64(AccountInfo.BUFFER_LENGTH), commitment: "recent"),
                 requestNewAccount
             )
         }

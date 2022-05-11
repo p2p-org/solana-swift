@@ -85,7 +85,7 @@ public class BlockchainClient<APIClient: SolanaAPIClient>: SolanaBlockchainClien
         if let minRentExemption = minRentExemption {
             minRentExemptionRequest = minRentExemption
         } else {
-            minRentExemptionRequest = try await apiClient.getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
+            minRentExemptionRequest = try await apiClient.getMinimumBalanceForRentExemption(dataLength: AccountInfo.span, commitment: "recent")
         }
         let destinataion = try await findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destinationAddress)
 
