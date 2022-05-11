@@ -4,9 +4,6 @@ import XCTest
 @testable import SolanaSwift
 
 class BlockchainClientTests: XCTestCase {
-    var lamportsPerSignature: UInt64 { 5000 }
-    var minRentExemption: UInt64 { 2039280 }
-    
     var accountStorage: InMemoryAccountStorage!
     
     override func setUp() async throws {
@@ -31,10 +28,12 @@ class BlockchainClientTests: XCTestCase {
         let apiClient = MockAPIClient(testCase: #function)
         let blockchain = BlockchainClient(apiClient: apiClient)
         
-        let tx = try await blockchain.prepareSendingNativeSOL(from: account,
-                                                              to: toPublicKey,
-                                                              amount: 100,
-                                                              feePayer: account.publicKey)
+        let tx = try await blockchain.prepareSendingNativeSOL(
+            from: account,
+            to: toPublicKey,
+            amount: 100,
+            feePayer: account.publicKey
+        )
         
         let recentBlockhash = try await apiClient.getRecentBlockhash()
         let serializedTransaction = try blockchain.signAndSerialize(preparedTransaction: tx, recentBlockhash: recentBlockhash)
