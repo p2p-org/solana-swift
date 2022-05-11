@@ -84,10 +84,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         try await self.get(method: "getMinimumBalanceForRentExemption", params: [dataLength, RequestConfiguration(commitment: commitment)])
     }
     
-    public func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {
-        try await self.getMinimumBalanceForRentExemption(dataLength: span)
-    }
-    
     public func getRecentBlockhash(commitment: Commitment? = nil) async throws -> String {
         let result: Rpc<Fee> = try await self.get(method: "getRecentBlockhash", params: [RequestConfiguration(commitment: commitment)])
         guard let blockhash = result.value.blockhash else {

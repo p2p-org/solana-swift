@@ -228,6 +228,18 @@ class APIClientTests: XCTestCase {
         XCTAssertTrue(tx.err != nil)
     }
     
+    func testFindSPLTokenDestinationAddress() async throws {
+        // USDC
+        let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        let destination = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+        
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["simulateTransaction"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result = try await apiClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destination)
+        XCTAssertEqual(result.destination, "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3")
+        XCTAssertEqual(result.isUnregisteredAsocciatedToken, false)
+    }
+    
     // MARK: - Mocks
     class NetworkManagerMock: NetworkManager {
         private let json: String

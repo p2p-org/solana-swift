@@ -11,12 +11,23 @@ public class BlockchainClient: SolanaBlockchainClient {
     public func prepareTransaction(instructions: [TransactionInstruction],
                                    signers: [Account],
                                    feePayer: PublicKey,
-                                   recentBlockhash rc: String,
-                                   feeCalculator fc: FeeCalculator
+                                   feeCalculator fc: FeeCalculator? = nil
     ) async throws -> PreparedTransaction {
         // form transaction
-        let transaction = Transaction(instructions: instructions, recentBlockhash: rc, feePayer: feePayer)
-        let expectedFee = try fc.calculateNetworkFee(transaction: transaction)
+        let transaction = Transaction(instructions: instructions, recentBlockhash: nil, feePayer: feePayer)
+        
+        let feeCalculator: FeeCalculator
+        if let fc = fc {
+            feeCalculator = fc
+        } else {
+            let (lps, minRentExemption) = try await (
+                apiClient.getFees(commitment: nil).feeCalculator?.lamportsPerSignature,
+                apiClient.getMinimumBalanceForRentExemption(span: 165)
+            )
+            let lamportsPerSignature = lps ?? 5000
+            feeCalculator = DefaultFeeCalculator(lamportsPerSignature: lamportsPerSignature, minRentExemption: minRentExemption)
+        }
+        let expectedFee = try feeCalculator.calculateNetworkFee(transaction: transaction)
         // return formed transaction
         return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
     }
@@ -29,12 +40,10 @@ public class BlockchainClient: SolanaBlockchainClient {
     ///   - feePayer: customm fee payer, can be omited if the authorized user is the payer
     ///    - recentBlockhash optional
     /// - Returns: PreparedTransaction, can be send either directly or via custom fee relayer
-    public func prepareSendingNativeSOL(account: Account,
+    public func prepareSendingNativeSOL(from account: Account,
                                         to destination: String,
                                         amount: UInt64,
-                                        feePayer: PublicKey? = nil,
-                                        recentBlockhash: String,
-                                        feeCalculator: FeeCalculator
+                                        feePayer: PublicKey? = nil
     ) async throws -> PreparedTransaction {
         let feePayer = feePayer ?? account.publicKey
         let fromPublicKey = account.publicKey
@@ -60,9 +69,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         )
         return try await prepareTransaction(instructions: [instruction],
                                   signers: [account],
-                                  feePayer: feePayer,
-                                  recentBlockhash: recentBlockhash,
-                                  feeCalculator: feeCalculator)
+                                  feePayer: feePayer)
     }
     
     public func prepareSendingSPLTokens(
@@ -72,22 +79,20 @@ public class BlockchainClient: SolanaBlockchainClient {
         from fromPublicKey: String,
         to destinationAddress: String,
         amount: UInt64,
-        fee: Fee,
         feePayer: PublicKey? = nil,
         transferChecked: Bool = false,
-        recentBlockhash: String,
         lamportsPerSignature: Lamports? = nil,
-        minRentExemption: Lamports? = nil
+        minRentExemption mre: Lamports? = nil
     ) async throws -> (preparedTransaction: PreparedTransaction, realDestination: String) {
         let feePayer = feePayer ?? account.publicKey
 
-        let minRentExemptionRequest: Lamports
-        if let minRentExemption = minRentExemption {
-            minRentExemptionRequest = minRentExemption
+        let minRenExemption: Lamports
+        if let mre = mre {
+            minRenExemption = mre
         } else {
-            minRentExemptionRequest = try await apiClient.getMinimumBalanceForRentExemption(dataLength: AccountInfo.span, commitment: "recent")
+            minRenExemption = try await apiClient.getMinimumBalanceForRentExemption(dataLength: AccountInfo.span, commitment: "recent")
         }
-        let destinataion = try await findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destinationAddress)
+        let destinataion = try await apiClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destinationAddress)
 
         // get address
         let toPublicKey = destinataion.destination
@@ -113,7 +118,7 @@ public class BlockchainClient: SolanaBlockchainClient {
                 payer: feePayer
             )
             instructions.append(createATokenInstruction)
-            accountsCreationFee += minRentExemptionRequest
+            accountsCreationFee += minRenExemption
         }
 
         // send instruction
@@ -147,99 +152,13 @@ public class BlockchainClient: SolanaBlockchainClient {
         if !destinataion.isUnregisteredAsocciatedToken {
             realDestination = destinataion.destination.base58EncodedString
         }
-        
-        guard let lamportsPerSignature = fee.feeCalculator?.lamportsPerSignature ?? lamportsPerSignature else {
-            throw SolanaError.other("Either lamportsPerSignature or Fee must be provided")
-        }
 
         // if not, serialize and send instructions normally
-        let preparedTx = try await self.prepareTransaction(instructions: instructions,
-                                                           signers: [account],
-                                                           feePayer: feePayer,
-                                                           accountsCreationFee: accountsCreationFee,
-                                                           recentBlockhash: recentBlockhash,
-                                                           lamportsPerSignature: fee.feeCalculator?.lamportsPerSignature ?? lamportsPerSignature)
-        return (preparedTx, realDestination)
-    }
-    
-    public func findSPLTokenDestinationAddress(
-        mintAddress: String,
-        destinationAddress: String
-    ) async throws -> SolanaSDK.SPLTokenDestinationAddress {
-        var address: String
-        var accountInfo: BufferInfo<AccountInfo>?
-        do {
-            accountInfo = try await apiClient.getAccountInfo(account: destinationAddress)
-            let toTokenMint = accountInfo?.data.mint.base58EncodedString
-            // detect if destination address is already a SPLToken address
-            if mintAddress == toTokenMint {
-                address = destinationAddress
-            // detect if destination address is a SOL address
-            } else if accountInfo?.owner == SystemProgram.id.base58EncodedString {
-               let owner = try PublicKey(string: destinationAddress)
-               let tokenMint = try PublicKey(string: mintAddress)
-                // create associated token address
-                address = try PublicKey.associatedTokenAddress(
-                   walletAddress: owner,
-                   tokenMintAddress: tokenMint
-                ).base58EncodedString
-            } else {
-                throw SolanaError.invalidRequest(reason: "Wallet address is not valid")
-            }
-        } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
-            let owner = try PublicKey(string: destinationAddress)
-            let tokenMint = try PublicKey(string: mintAddress)
-            // create associated token address
-            address = try PublicKey.associatedTokenAddress(
-               walletAddress: owner,
-               tokenMintAddress: tokenMint
-            ).base58EncodedString
-        } catch let error {
-            throw error
-        }
-        
-        //address needs here
-        let toPublicKey = try PublicKey(string: address)
-        // if destination address is an SOL account address
-        var isUnregisteredAsocciatedToken = false
-        if destinationAddress != toPublicKey.base58EncodedString {
-            // check if associated address is already registered
-            let info: BufferInfo<AccountInfo>?
-            do {
-                info = try await apiClient.getAccountInfo(account: toPublicKey.base58EncodedString)
-            } catch {
-                info = nil
-            }
-            isUnregisteredAsocciatedToken = true
-
-            // if associated token account has been registered
-            if info?.owner == TokenProgram.id.base58EncodedString && info?.data != nil {
-                isUnregisteredAsocciatedToken = false
-            }
-        }
-        return (destination: toPublicKey, isUnregisteredAsocciatedToken: isUnregisteredAsocciatedToken)
-    }
-    
-    public func prepareTransaction(
-        instructions: [TransactionInstruction],
-        signers: [Account],
-        feePayer: PublicKey,
-        accountsCreationFee: Lamports,
-        recentBlockhash: String,
-        lamportsPerSignature: Lamports
-    ) async throws -> PreparedTransaction {
-        var transaction = Transaction()
-        transaction.instructions = instructions
-        transaction.recentBlockhash = recentBlockhash
-        transaction.feePayer = feePayer
-
-        // calculate fee first
-        let expectedFee = FeeAmount(
-            transaction: try transaction.calculateTransactionFee(lamportsPerSignatures: lamportsPerSignature),
-            accountBalances: accountsCreationFee
+        let preparedTransaction = try await prepareTransaction(
+            instructions: instructions,
+            signers: [account],
+            feePayer: feePayer
         )
-        // resign transaction
-        try transaction.sign(signers: signers)
-        return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
+        return (preparedTransaction, realDestination)
     }
 }

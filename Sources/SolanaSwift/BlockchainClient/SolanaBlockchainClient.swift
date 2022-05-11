@@ -19,8 +19,7 @@ public protocol SolanaBlockchainClient: AnyObject {
         instructions: [TransactionInstruction],
         signers: [Account],
         feePayer: PublicKey,
-        recentBlockhash: String,
-        feeCalculator: FeeCalculator
+        feeCalculator: FeeCalculator?
     ) async throws -> PreparedTransaction
     
     /// Send transaction
@@ -38,7 +37,7 @@ public protocol SolanaBlockchainClient: AnyObject {
 }
 
 extension SolanaBlockchainClient {
-    public func signAndSerialize(
+    func signAndSerialize(
         preparedTransaction: PreparedTransaction,
         recentBlockhash: String
     ) throws -> String {

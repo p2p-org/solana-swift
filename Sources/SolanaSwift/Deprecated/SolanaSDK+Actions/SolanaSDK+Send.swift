@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 
 extension SolanaSDK {
-    public typealias SPLTokenDestinationAddress = (destination: PublicKey, isUnregisteredAsocciatedToken: Bool)
+    public typealias SPLTokenDestinationAddress = SolanaSwift.SPLTokenDestinationAddress
     
     /// Create prepared transaction for sending SOL
     /// - Parameters:
