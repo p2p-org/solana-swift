@@ -81,6 +81,8 @@ class RestAPITransactionTests: RestAPITests {
             feePayer: "B4PdyoVU39hoCaiTLPtN9nJxy6rEpbciE3BNPvHkCeE2"
         ).toBlocking().first()!.preparedTransaction
         
+        print(try? preparedTransaction.serialize())
+        
         XCTAssertEqual(preparedTransaction.expectedFee, .init(transaction: 10000, accountBalances: 2039280))
         
         // send simulation

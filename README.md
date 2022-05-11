@@ -40,6 +40,7 @@ pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
 ```
 
 ## How to use
+* From v2.0.0 we officially ditch Rx library from dependencies and adopt swift concurrency to `solana-swift`
 * For those who still use `SolanaSDK` class, see [How to use SolanaSDK (Deprecated) section](#how-to-use-solanasdk-deprecated)
 
 ### Import
@@ -117,7 +118,53 @@ let result = try await apiClient.getBlockHeight()
 guard let account = try? accountStorage.account?.publicKey else { throw SolanaError.unauthorized }
 let balance = try await apiClient.getBalance(account: try accountStorage.account, commitment: "recent")
 ```
+
+// Observe signature status with `observeSignatureStatus` method
+In stead of using socket to observe signature status, which is not really reliable (socket often returns signature status == `finalized` when it is not fully finalized), we observe its status by periodically sending `getSignatureStatuses` (with `observeSignatureStatus` method)
+```swift
+var statuses = [TransactionStatus]()
+for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoijvaij", timeout: 60, delay: 3) {
+    print(status)
+    statuses.append(status)
+}
+// statuses.last == .sending // the signature is not confirmed
+// statuses.last?.numberOfConfirmations == x // the signature is confirmed by x nodes (partially confirmed)
+// statuses.last == .finalized // the signature is confirmed by all nodes
+```
+
 The full list of supported methods available in `APIClient/APIClient.swift`
+
+### Solana Blockchain Client
+Prepare, send and simulate transactions
+
+Example: 
+```swift
+import SolanaSwift
+
+/// Prepare Sending SPL Tokens
+let fee = try await api.getFees(commitment: nil)
+let bc = BlockchainClient(apiClient: JSONRPCAPIClient(endpoint: endpoint))
+try await bc.prepareSendingSPLTokens(account: account,
+                                     mintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
+                                     decimals: 6,
+                                     from: "DjY1uZozQTPz9c6WsjpPC3jXWp7u98KzyuyQTRzcGHFk",
+                                     to: destination,
+                                     amount: Double(0.001).toLamport(decimals: 6),
+                                     fee: fee,
+                                     feePayer: "B4PdyoVU39hoCaiTLPtN9nJxy6rEpbciE3BNPvHkCeE2",
+                                     recentBlockhash: "F8wk1XcFVcd5M3UDx8S2jy3mEhSVkeBgYw979Mp2fF4")
+
+/// Prepare Sending SPL Tokens
+feeCalculator = DefaultFeeCalculator(lamportsPerSignature: lamportsPerSignature, minRentExemption: minRentExemption)
+
+let recentBlockhash = try await apiClient.getRecentBlockhash(commitment: nil)
+try await blockchain.prepareSendingNativeSOL(account: account,
+                                             to: toPublicKey,
+                                             amount: 0,
+                                             feePayer: feePayerPublicKey,
+                                             recentBlockhash: "F8wk1XcFVcd5M3UDx8S2jy3mEhSVkeBgYw979Mp2fF4",
+                                             feeCalculator: feeCalculator)
+```
 
 
 ### Solana Tokens Repository

@@ -1,7 +1,7 @@
 import XCTest
 @testable import SolanaSwift
 
-class TokenRepositoryTests: XCTestCase {
+class TokensRepositoryTests: XCTestCase {
     
     let endpoint = APIEndPoint(
         address: "https://api.mainnet-beta.solana.com",
