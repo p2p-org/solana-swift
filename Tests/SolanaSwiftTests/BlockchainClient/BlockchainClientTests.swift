@@ -73,10 +73,6 @@ class BlockchainClientTests: XCTestCase {
         // Test2: for address that has no funds but has usdc
         
     }
-    
-    let json: [String: String] = [
-        "prepareSendingNativeSOL": "AbGldIcg+coxW3idbrOM6lGA6hfBozLGcQwNUSc7fFWnHipqUS2H78BeTkBjnHLcVEBHsfaigKnhfycpVFuhDQwBAAEDUGovppzL+Lnil9LlySMgCL9FHk19zxobvW2CEQYB/ton97kEVYkyppO43UtuZxDeKV73hCs+rPNfzL6PmRAKxQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjmPmh7ra9WkvBCyAZ3QzuN3hIn6PwTtCRCylLM5r3cQBAgIAAQwCAAAAAAAAAAAAAAA="
-    ]
 }
 
 private class MockAPIClient: SolanaAPIClient {
@@ -231,7 +227,6 @@ private class MockAPIClient: SolanaAPIClient {
         default:
             fatalError()
         }
-        fatalError()
     }
     
     func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus> {
