@@ -269,7 +269,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         let responseData = try await networkManager.requestData(request: try self.urlRequest(data: encodedParams))
         
         // log
-        LoggerSwift.Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
+        Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
         
         return responseData
     }
@@ -282,7 +282,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         urlRequest.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         
         // log
-        LoggerSwift.Logger.log(event: .request, message: urlRequest.cURL())
+        Logger.log(event: .request, message: urlRequest.cURL())
         
         return urlRequest
     }
