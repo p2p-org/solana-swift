@@ -18,7 +18,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     // MARK: -
     
-    public func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>? {
+    public func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>? {
         let requestConfig = RequestConfiguration(encoding: "base64")
         let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
         guard let ret = try? await (request(with: req) as AnyResponse<Rpc<BufferInfo<T>?>>).result?.value else {
@@ -221,7 +221,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         try await self.get(method: "validatorExit", params: [])
     }
     
-    public func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>] {
+    public func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>] {
         let configs = RequestConfiguration(encoding: "base64")
         guard !pubkeys.isEmpty else { return [] }
         let result: Rpc<[BufferInfo<T>]> = try await self.get(method: "getMultipleAccounts", params: [pubkeys, configs])

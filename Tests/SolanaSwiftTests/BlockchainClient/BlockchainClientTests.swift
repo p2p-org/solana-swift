@@ -135,7 +135,7 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
     
-    func getAccountInfo<T>(account: String) async throws -> BufferInfo<T>? where T : DecodableBufferLayout {
+    func getAccountInfo<T>(account: String) async throws -> BufferInfo<T>? where T : BufferLayout {
         let data: T
         let lamports: Lamports
         let owner: String
@@ -168,13 +168,15 @@ private class MockAPIClient: SolanaAPIClient {
                     owner: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
                     lamports: 100,
                     delegateOption: 0,
-                    delegate: nil,
+                    isInitialized: true,
+                    isFrozen: false,
                     state: 0,
                     isNativeOption: 0,
+                    rentExemptReserve: nil,
                     isNativeRaw: 0,
+                    isNative: false,
                     delegatedAmount: 0,
-                    closeAuthorityOption: 0,
-                    closeAuthority: nil
+                    closeAuthorityOption: 0
                 ) as! T
                 lamports = 0
                 owner = TokenProgram.id.base58EncodedString
@@ -340,7 +342,7 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
     
-    func getMultipleAccounts<T>(pubkeys: [String]) async throws -> [BufferInfo<T>] where T : DecodableBufferLayout {
+    func getMultipleAccounts<T>(pubkeys: [String]) async throws -> [BufferInfo<T>] where T : BufferLayout {
         fatalError()
     }
     
