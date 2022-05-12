@@ -405,10 +405,9 @@ public struct BInt:
 		return (self.sign, self.limbs)
 	}
 
-	public var hashValue: Int
-	{
-		return "\(self.sign)\(self.limbs)".hashValue
-	}
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine("\(self.sign)\(self.limbs)".hashValue)
+    }
 
 	///	A Boolean value indicating whether this type is a signed integer type.
 	public static var isSigned: Bool
@@ -944,7 +943,7 @@ fileprivate extension String
 
 		for char in number.reversed()
 		{
-			if let digit = chars.index(of: char)
+			if let digit = chars.firstIndex(of: char)
 			{
 				precondition(digit < from)
 
@@ -2264,13 +2263,13 @@ public struct BDouble:
 	{
 		let nStr = String(d)
 
-		if let exp = nStr.index(of: "e")?.encodedOffset
+		if let exp = nStr.firstIndex(of: "e")?.encodedOffset
 		{
 			let beforeExp = String(Array(nStr)[..<exp].filter{ $0 != "." })
 			var afterExp = String(Array(nStr)[(exp + 1)...])
 			var sign = false
 
-			if let neg = afterExp.index(of: "-")?.encodedOffset
+			if let neg = afterExp.firstIndex(of: "-")?.encodedOffset
 			{
 				afterExp = String(Array(afterExp)[(neg + 1)...])
 				sign = true
@@ -2347,10 +2346,9 @@ public struct BDouble:
 		return res
 	}
 
-	public var hashValue: Int
-	{
-		return "\(self.sign)\(self.numerator)\(self.denominator)".hashValue
-	}
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine("\(self.sign)\(self.numerator)\(self.denominator)".hashValue)
+    }
 
 	public func rawData() -> (sign: Bool, numerator: [UInt64], denominator: [UInt64])
 	{
