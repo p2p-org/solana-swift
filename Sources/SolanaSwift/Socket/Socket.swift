@@ -9,6 +9,7 @@ import Foundation
 import RxSwift
 import Starscream
 import RxCocoa
+import LoggerSwift
 
 public class Socket {
     // MARK: - Properties
@@ -201,12 +202,12 @@ public class Socket {
                 guard let string = String(data: data, encoding: .utf8) else {
                     throw SolanaError.other("Request is invalid \(requestAPI)")
                 }
-                Logger.log(message: string, event: .request)
+                Logger.log(event: .request, message: string)
                 self?.socket.write(string: string, completion: {
                     completion?()
                 })
             } catch {
-                Logger.log(message: "\(requestAPI.method) failed: \(error)", event: .event)
+                Logger.log(event: .event, message: "\(requestAPI.method) failed: \(error)")
             }
         }
         

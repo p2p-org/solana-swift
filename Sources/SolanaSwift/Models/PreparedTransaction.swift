@@ -1,4 +1,5 @@
 import Foundation
+import LoggerSwift
 
 public struct PreparedTransaction {
     public init(transaction: Transaction, signers: [Account], expectedFee: FeeAmount) {
@@ -19,9 +20,9 @@ public struct PreparedTransaction {
         var transaction = transaction
         let serializedTransaction = try transaction.serialize().bytes.toBase64()
         #if DEBUG
-        Logger.log(message: serializedTransaction, event: .info)
+        Logger.log(event: .info, message: serializedTransaction)
         if let decodedTransaction = transaction.jsonString {
-            Logger.log(message: decodedTransaction, event: .info)
+            Logger.log(event: .info, message: decodedTransaction)
         }
         #endif
         return serializedTransaction

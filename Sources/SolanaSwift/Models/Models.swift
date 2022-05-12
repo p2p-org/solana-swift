@@ -1,4 +1,5 @@
 import Foundation
+import LoggerSwift
 
 public typealias TransactionID = String
 public typealias Lamports = UInt64
@@ -124,7 +125,7 @@ public struct ProgramAccounts<T: DecodableBufferLayout>: Decodable {
             case .success(let account):
                 accounts.append(account)
             case .failure(let error):
-                Logger.log(message: "Error decoding an account in program accounts list: \(error.localizedDescription)", event: .error)
+                Logger.log(event: .error, message: "Error decoding an account in program accounts list: \(error.localizedDescription)")
             }
         }
         self.accounts = accounts

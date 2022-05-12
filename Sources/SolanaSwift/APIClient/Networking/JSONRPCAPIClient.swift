@@ -279,7 +279,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpBody = data
         urlRequest.httpMethod = "POST"
-        urlRequest.headers = ["Content-Type": "application/json; charset=utf-8"]
+        urlRequest.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         
         // log
         LoggerSwift.Logger.log(event: .request, message: urlRequest.cURL())
