@@ -7,6 +7,6 @@
 
 import Foundation
 
-extension Decimals {
+public extension Decimals {
     static var SOL: Decimals { 9 }
 }
