@@ -3,6 +3,20 @@ import Foundation
 // MARK: - TokenRepository
 
 public extension SolanaAPIClient {
+    // MARK: - Convenience methods
+    func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {
+        try await self.getMinimumBalanceForRentExemption(dataLength: span, commitment: "recent")
+    }
+    
+    func getRecentBlockhash() async throws -> String {
+        try await self.getRecentBlockhash(commitment: nil)
+    }
+    
+    func observeSignatureStatus(signature: String) -> AsyncStream<TransactionStatus> {
+        self.observeSignatureStatus(signature: signature, timeout: 60, delay: 2)
+    }
+    
+    // MARK: - Additional methods
     func getMultipleMintDatas(mintAddresses: [String], programId: String = TokenProgram.id.base58EncodedString) async throws -> [String: Mint] {
         let accounts: [BufferInfo<Mint>] = try await getMultipleAccounts(pubkeys: mintAddresses)
         var mintDict = [String: Mint]()
@@ -43,16 +57,16 @@ public extension SolanaAPIClient {
         }
     }
     
-    func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {
-        try await self.getMinimumBalanceForRentExemption(dataLength: span, commitment: "recent")
-    }
-    
-    func getRecentBlockhash() async throws -> String {
-        try await self.getRecentBlockhash(commitment: nil)
-    }
-    
-    func observeSignatureStatus(signature: String) -> AsyncStream<TransactionStatus> {
-        self.observeSignatureStatus(signature: signature, timeout: 60, delay: 2)
+    func checkAccountValidation(account: String) async throws -> Bool {
+        do {
+            let _ : BufferInfo<EmptyInfo>? = try await getAccountInfo(account: account)
+            return true
+        } catch {
+            if error.isEqualTo(SolanaError.couldNotRetrieveAccountInfo) {
+                return false
+            }
+            throw error
+        }
     }
     
     func findSPLTokenDestinationAddress(
