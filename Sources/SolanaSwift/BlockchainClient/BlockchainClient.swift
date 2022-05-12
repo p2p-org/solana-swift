@@ -92,10 +92,10 @@ public class BlockchainClient: SolanaBlockchainClient {
         } else {
             minRenExemption = try await apiClient.getMinimumBalanceForRentExemption(dataLength: AccountInfo.span, commitment: "recent")
         }
-        let destinataion = try await apiClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destinationAddress)
+        let splDestination = try await apiClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destinationAddress)
 
         // get address
-        let toPublicKey = destinataion.destination
+        let toPublicKey = splDestination.destination
 
         // catch error
         if fromPublicKey == toPublicKey.base58EncodedString {
@@ -108,7 +108,7 @@ public class BlockchainClient: SolanaBlockchainClient {
 
         // create associated token address
         var accountsCreationFee: UInt64 = 0
-        if destinataion.isUnregisteredAsocciatedToken {
+        if splDestination.isUnregisteredAsocciatedToken {
             let mint = try PublicKey(string: mintAddress)
             let owner = try PublicKey(string: destinationAddress)
 
@@ -130,7 +130,7 @@ public class BlockchainClient: SolanaBlockchainClient {
             sendInstruction = TokenProgram.transferCheckedInstruction(
                 source: fromPublicKey,
                 mint: try PublicKey(string: mintAddress),
-                destination: destinataion.destination,
+                destination: splDestination.destination,
                 owner: account.publicKey,
                 multiSigners: [],
                 amount: amount,
@@ -149,8 +149,8 @@ public class BlockchainClient: SolanaBlockchainClient {
         instructions.append(sendInstruction)
 
         var realDestination = destinationAddress
-        if !destinataion.isUnregisteredAsocciatedToken {
-            realDestination = destinataion.destination.base58EncodedString
+        if !splDestination.isUnregisteredAsocciatedToken {
+            realDestination = splDestination.destination.base58EncodedString
         }
 
         // if not, serialize and send instructions normally
