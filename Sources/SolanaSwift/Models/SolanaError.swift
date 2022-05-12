@@ -35,7 +35,7 @@ public enum SolanaError: Swift.Error, Equatable {
     case invalidResponse(ResponseError)
     
     // Transaction error
-    case transactionError(TransactionError, logs: [String])
+    case transactionError(ErrorDetail, logs: [String])
     
     // Socket error
     case socket(Swift.Error)

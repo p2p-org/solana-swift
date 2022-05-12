@@ -189,6 +189,10 @@ public struct TransactionMeta: Decodable {
 }
 public typealias TransactionError = [String: [ErrorDetail]]
 public struct ErrorDetail: Codable {
+    public init(wrapped: Any) {
+        self.wrapped = wrapped
+    }
+    
     let wrapped: Any
     
     public init(from decoder: Decoder) throws {

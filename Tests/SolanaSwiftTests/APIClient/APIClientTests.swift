@@ -1,5 +1,5 @@
 import XCTest
-import SolanaSwift
+@testable import SolanaSwift
 
 class APIClientTests: XCTestCase {
     
@@ -7,16 +7,6 @@ class APIClientTests: XCTestCase {
         address: "https://api.mainnet-beta.solana.com",
         network: .mainnetBeta
     )
-    var solanaSDK: SolanaSDK!
-
-    override func setUpWithError() throws {
-        let accountStorage = InMemoryAccountStorage()
-        solanaSDK = SolanaSDK(endpoint: endpoint, accountStorage: accountStorage)
-        let account = try Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network)
-        try accountStorage.save(account)
-    }
-
-    override func tearDownWithError() throws {}
     
     func testGetBlock() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getBlockHeight"]!)
@@ -224,8 +214,12 @@ class APIClientTests: XCTestCase {
     func testSimulateTx() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["simulateTransaction"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let tx = try await apiClient.simulateTransaction(transaction: "")
-        XCTAssertTrue(tx.err != nil)
+        do {
+            let _ = try await apiClient.simulateTransaction(transaction: "")
+        } catch {
+            let error = error as? SolanaError
+            XCTAssertEqual(error, .transactionError(.init(wrapped: "AccountNotFound"), logs: []))
+        }
     }
     
     func testFindSPLTokenDestinationAddress() async throws {
