@@ -1,8 +1,8 @@
 import Foundation
 
-class WebSocketStream: AsyncSequence {
-    typealias Element = URLSessionWebSocketTask.Message
-    typealias AsyncIterator = AsyncThrowingStream<URLSessionWebSocketTask.Message, Error>.Iterator
+public class AccountInfoStream: AsyncSequence {
+    public typealias Element = BufferInfo<AccountInfo>
+    public typealias AsyncIterator = AsyncThrowingStream<BufferInfo<AccountInfo>, Error>.Iterator
     
     private var stream: AsyncThrowingStream<Element, Error>?
     private var continuation: AsyncThrowingStream<Element, Error>.Continuation?
@@ -18,7 +18,7 @@ class WebSocketStream: AsyncSequence {
         }
     }
     
-    func makeAsyncIterator() -> AsyncIterator {
+    public func makeAsyncIterator() -> AsyncIterator {
         guard let stream = stream else {
             fatalError("stream was not initialized")
         }
@@ -31,7 +31,7 @@ class WebSocketStream: AsyncSequence {
         task.receive { [unowned self] result in
             switch result {
             case .success(let message):
-                continuation?.yield(message)
+                continuation?.yield(message) // TODO: Convert message to BufferInfo<AccountInfo>
                 listenForMessages()
             case .failure(let error):
                 continuation?.finish(throwing: error)
