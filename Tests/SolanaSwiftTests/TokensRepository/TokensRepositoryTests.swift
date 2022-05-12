@@ -3,11 +3,11 @@ import XCTest
 
 class TokensRepositoryTests: XCTestCase {
     
-    let apiClient = JSONRPCAPIClient(endpoint: .defaultEndpoints.first!)
+    let endpoint: APIEndPoint = .defaultEndpoints.first!
     
     func testTokenRepository() async throws {
         let mock = MockNetworkManager()
-        let tokenRepository = TokensRepository(apiClient: apiClient, tokenListParser: TokensListParser(networkManager: mock))
+        let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
         let list = try await tokenRepository.getTokensList()
         XCTAssertFalse(list.isEmpty)
         XCTAssertEqual(list.count, 1)
@@ -21,12 +21,12 @@ class TokensRepositoryTests: XCTestCase {
         // Putting to cache
         try? await {
             let mock = MockNetworkManager()
-            let tokenRepository = TokensRepository(apiClient: apiClient, tokenListParser: TokensListParser(networkManager: mock))
+            let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
             _ = try await tokenRepository.getTokensList()
         }()
         
         let mock = MockNetworkManager(withError: true)
-        let tokenRepository = TokensRepository(apiClient: apiClient, tokenListParser: TokensListParser(networkManager: mock))
+        let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
         let list = try await tokenRepository.getTokensList()
         XCTAssertFalse(list.isEmpty)
         XCTAssertEqual(list.count, 1)
@@ -34,32 +34,13 @@ class TokensRepositoryTests: XCTestCase {
     
     func testTokenRepositoryNoCacheNetworkError() async throws {
         let mock = MockNetworkManager(withError: true)
-        let tokenRepository = TokensRepository(apiClient: apiClient, tokenListParser: TokensListParser(networkManager: mock))
+        let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
         do {
             let list = try await tokenRepository.getTokensList(useCache: false)
             XCTAssertTrue(list.isEmpty)
         } catch {
             XCTAssertTrue(true)
         }
-    }
-    
-    func testGetTokenWallets() async throws {
-        let mock = MockNetworkManager(withError: false)
-        let tokenRepository = TokensRepository(apiClient: apiClient, tokenListParser: TokensListParser(networkManager: mock))
-        let datas = try! await tokenRepository.getTokenWallets(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
-        XCTAssertNotEqual(datas.count, 0)
-    }
-
-    func testCheckAccountValidation() async throws {
-        let mock = MockNetworkManager(withError: false)
-        let tokenRepository = TokensRepository(apiClient: apiClient, tokenListParser: TokensListParser(networkManager: mock))
-        // funding SOL address
-        let isValid1 = try await tokenRepository.checkAccountValidation(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
-        XCTAssertEqual(isValid1, true)
-
-        // no funding SOL address
-        let isValid2 = try await tokenRepository.checkAccountValidation(account: "HnXJX1Bvps8piQwDYEYC6oea9GEkvQvahvRj3c97X9xr")
-        XCTAssertEqual(isValid2, false)
     }
 
     class MockNetworkManager: NetworkManager {
