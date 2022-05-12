@@ -10,7 +10,7 @@ import RxSwift
 
 extension SolanaSDK {
     public func getCreatingTokenAccountFee() -> Single<UInt64> {
-        getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
+        getMinimumBalanceForRentExemption(dataLength: AccountInfo.BUFFER_LENGTH)
     }
 
     public func createTokenAccount(
@@ -36,7 +36,7 @@ extension SolanaSDK {
                     from: payer.publicKey,
                     toNewPubkey: newAccount.publicKey,
                     lamports: minBalance,
-                    space: AccountInfo.span,
+                    space: AccountInfo.BUFFER_LENGTH,
                     programId: TokenProgram.id
                 )
                 

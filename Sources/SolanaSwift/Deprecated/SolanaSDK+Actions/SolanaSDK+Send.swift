@@ -127,7 +127,7 @@ extension SolanaSDK {
         if let minRentExemption = minRentExemption {
             minRentExemptionRequest = .just(minRentExemption)
         } else {
-            minRentExemptionRequest = getMinimumBalanceForRentExemption(dataLength: AccountInfo.span)
+            minRentExemptionRequest = getMinimumBalanceForRentExemption(dataLength: AccountInfo.BUFFER_LENGTH)
         }
         
         // Request

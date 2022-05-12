@@ -1,6 +1,7 @@
 import Foundation
 
 public struct PublicKey: Codable, Equatable, CustomStringConvertible, Hashable {
+    public static let NULL_PUBLICKEY_BYTES: [UInt8] = Array(repeating: UInt8(0), count: numberOfBytes)
     public static let numberOfBytes = 32
     public let bytes: [UInt8]
     
@@ -239,5 +240,16 @@ public extension PublicKey {
     static var serumSwapPID: PublicKey { "22Y43yTVxuUkoRKdm9thyRhQ3SdgQS7c7kB6UNCiaczD" }
     var isUsdx: Bool {
         self == .usdcMint || self == .usdtMint
+    }
+}
+
+extension PublicKey: BorshCodable {
+    public func serialize(to writer: inout Data) throws {
+        try bytes.forEach { try $0.serialize(to: &writer) }
+    }
+
+    public init(from reader: inout BinaryReader) throws {
+        let byteArray = try Array(0..<PublicKey.numberOfBytes).map { _ in try UInt8.init(from: &reader) }
+        self.bytes = byteArray
     }
 }
