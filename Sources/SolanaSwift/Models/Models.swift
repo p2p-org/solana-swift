@@ -112,7 +112,7 @@ public struct LargestAccount: Decodable {
     public let address: String
 }
 
-public struct ProgramAccounts<T: DecodableBufferLayout>: Decodable {
+public struct ProgramAccounts<T: BufferLayout>: Decodable {
     public let accounts: [ProgramAccount<T>]
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -131,12 +131,12 @@ public struct ProgramAccounts<T: DecodableBufferLayout>: Decodable {
     }
 }
 
-public struct ProgramAccount<T: DecodableBufferLayout>: Decodable {
+public struct ProgramAccount<T: BufferLayout>: Decodable {
     public let account: BufferInfo<T>
     public let pubkey: String
 }
 
-public struct BufferInfo<T: DecodableBufferLayout>: Decodable {
+public struct BufferInfo<T: BufferLayout>: Decodable {
     public let lamports: Lamports
     public let owner: String
     public let data: T
@@ -269,7 +269,7 @@ public struct TokenAccountBalance: Codable, Equatable, Hashable {
         return UInt64(amount)
     }
 }
-public struct TokenAccount<T: DecodableBufferLayout>: Decodable {
+public struct TokenAccount<T: BufferLayout>: Decodable {
     public let pubkey: String
     public let account: BufferInfo<T>
 }

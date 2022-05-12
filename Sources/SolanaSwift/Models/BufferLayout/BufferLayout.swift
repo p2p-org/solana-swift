@@ -1,33 +1,21 @@
-//
-//  BufferLayout.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 19/11/2020.
-//
-
 import Foundation
-import BufferLayoutSwift
 
-extension PublicKey: BufferLayoutProperty {
-    public init(buffer: Data, pointer: inout Int) throws {
-        guard buffer.bytes.count > pointer else {throw BufferLayoutSwift.Error.bytesLengthIsNotValid}
-        try self.init(data: buffer[pointer..<pointer+Self.numberOfBytes])
-        pointer += Self.numberOfBytes
-    }
-    public func serialize() throws -> Data {
-        Data(bytes)
-    }
+public enum BufferLayoutError: Error {
+    case NotImplemented
+}
+public protocol BufferLayout: Codable, BorshCodable {
+    static var BUFFER_LENGTH: UInt64 { get }
 }
 
-public protocol DecodableBufferLayout: BufferLayout, Decodable {}
-
-public protocol EncodableBufferLayout: BufferLayout, Encodable {}
-
-public typealias CodableBufferLayout = DecodableBufferLayout & EncodableBufferLayout
-
-extension DecodableBufferLayout {
+extension BufferLayout {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
+        
+//        // decode parsedJSON
+//        if let parsedData = try? container.decode(Self.self) {
+//            self = parsedData
+//            return
+//        }
         
         // Unable to get parsed data, fallback to decoding base64
         let stringData = (try? container.decode([String].self).first) ?? (try? container.decode(String.self))
@@ -42,11 +30,10 @@ extension DecodableBufferLayout {
         }
         
         do {
-            var pointer = 0
-            try self.init(buffer: data, pointer: &pointer)
+            var reader = BinaryReader(bytes: data.bytes)
+            try self.init(from: &reader)
         } catch {
             throw SolanaError.couldNotRetrieveAccountInfo
         }
     }
 }
-

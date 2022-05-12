@@ -15,7 +15,7 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an BufferInfo
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
     ///
-    func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>?
+    func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>?
 
     /// Returns the balance of the account of provided Pubkey
     /// - Parameters:
@@ -232,7 +232,7 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an RpcResponse
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getmultipleaccounts
     ///
-    func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>]
+    func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>]
     
     /// Observe status of a sending transaction by periodically calling getSignatureStatuses
     /// - Parameters:

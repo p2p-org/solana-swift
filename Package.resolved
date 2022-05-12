@@ -11,15 +11,6 @@
         }
       },
       {
-        "package": "BufferLayoutSwift",
-        "repositoryURL": "https://github.com/bigearsenal/BufferLayoutSwift.git",
-        "state": {
-          "branch": null,
-          "revision": "26894ef3ad991b4be8766776e4465326bfb6273f",
-          "version": "0.9.0"
-        }
-      },
-      {
         "package": "LoggerSwift",
         "repositoryURL": "https://github.com/bigearsenal/loggerswift.git",
         "state": {
@@ -35,15 +26,6 @@
           "branch": null,
           "revision": "12f19662426d0434d6c330c6974d53e2eb10ecd9",
           "version": "9.1.0"
-        }
-      },
-      {
-        "package": "Runtime",
-        "repositoryURL": "https://github.com/wickwirew/Runtime.git",
-        "state": {
-          "branch": null,
-          "revision": "a848b81e1a0100801f572e5273ffe4352fd54088",
-          "version": "2.2.2"
         }
       },
       {

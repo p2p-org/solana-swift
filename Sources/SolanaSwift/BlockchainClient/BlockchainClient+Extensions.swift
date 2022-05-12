@@ -36,7 +36,7 @@ extension SolanaBlockchainClient {
                     from: owner,
                     toNewPubkey: newAccount.publicKey,
                     lamports: amount + minRentExemption,
-                    space: AccountInfo.span,
+                    space: AccountInfo.BUFFER_LENGTH,
                     programId: TokenProgram.id
                 ),
                 TokenProgram.initializeAccountInstruction(

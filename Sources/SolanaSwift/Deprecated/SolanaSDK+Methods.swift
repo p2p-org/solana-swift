@@ -18,7 +18,7 @@ public extension SolanaSDK {
         accountStorage.account?.publicKey
     }
     
-    func getAccountInfo<T: DecodableBufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
+    func getAccountInfo<T: BufferLayout>(account: String, decodedTo: T.Type) -> Single<BufferInfo<T>> {
         let configs = RequestConfiguration(encoding: "base64")
         return (request(parameters: [account, configs]) as Single<Rpc<BufferInfo<T>?>>)
             .map {
@@ -134,13 +134,13 @@ public extension SolanaSDK {
     func getMinimumBalanceForRentExemption(span: UInt64) -> Single<UInt64> {
         getMinimumBalanceForRentExemption(dataLength: span)
     }
-    func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String], decodedTo: T.Type, log: Bool = true) -> Single<[BufferInfo<T>]?> {
+    func getMultipleAccounts<T: BufferLayout>(pubkeys: [String], decodedTo: T.Type, log: Bool = true) -> Single<[BufferInfo<T>]?> {
         let configs = RequestConfiguration(encoding: "base64")
         guard !pubkeys.isEmpty else {return .just([])}
         return (request(parameters: [pubkeys, configs], log: log) as Single<Rpc<[BufferInfo<T>]?>>)
             .map {$0.value}
     }
-    func getProgramAccounts<T: DecodableBufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type, log: Bool = true) -> Single<ProgramAccounts<T>>
+    func getProgramAccounts<T: BufferLayout>(publicKey: String, configs: RequestConfiguration? = RequestConfiguration(encoding: "base64"), decodedTo: T.Type, log: Bool = true) -> Single<ProgramAccounts<T>>
     {
         request(parameters: [publicKey, configs], log: log)
     }
