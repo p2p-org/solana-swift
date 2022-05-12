@@ -9,7 +9,7 @@
 
 import Foundation
 import CryptoKit
-import CryptoSwift
+import CommonCrypto
 
 public class Mnemonic {
     public enum Error: Swift.Error {
@@ -116,7 +116,7 @@ public class Mnemonic {
         let ENT = bytes.count * 8
         let CS = ENT / 32
         
-        let hash = bytes.sha256()
+        let hash = Data(bytes).sha256()
         let hashbits = String(hash.flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
         return String(hashbits.prefix(CS))
     }
@@ -124,8 +124,8 @@ public class Mnemonic {
     public var seed: [UInt8] {
         let mnemonic = (self.phrase.joined(separator: " ") as NSString).decomposedStringWithCompatibilityMapping
         let salt = (("mnemonic" + passphrase) as NSString).decomposedStringWithCompatibilityMapping
-        let pbkdf2 = try! PKCS5.PBKDF2(password: mnemonic.bytes, salt: salt.bytes, iterations: 2048, keyLength: 64, variant: .sha512)
-        return try! pbkdf2.calculate()
+        let pbkdf2 = pbkdf2(hash: CCPBKDFAlgorithm(kCCPRFHmacAlgSHA512), password: mnemonic, salt: Data(salt.bytes), keyByteCount: 64, rounds: 2048)!
+        return pbkdf2.bytes
     }
 }
 
