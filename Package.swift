@@ -20,10 +20,6 @@ let package = Package(
     dependencies: [
         .package(name: "secp256k1", url: "https://github.com/Boilertalk/secp256k1.swift.git", from: "0.1.0"),
         .package(name: "TweetNacl", url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git", from: "1.0.2"),
-        .package(url: "https://github.com/ReactiveX/RxSwift.git", from: "6.5.0"),
-        .package(url: "https://github.com/RxSwiftCommunity/RxAlamofire.git",
-                             from: "6.1.1"),
-        .package(url: "https://github.com/daltoniam/Starscream.git", from: "4.0.0"),
         
         .package(name: "Task_retrying", url: "https://github.com/bigearsenal/task-retrying-swift.git", from: "1.0.1"),
         .package(name: "LoggerSwift", url: "https://github.com/bigearsenal/loggerswift.git", from: "1.0.0")
@@ -33,15 +29,18 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "SolanaSwift",
-            dependencies: ["secp256k1", "TweetNacl", "RxSwift", .product(name: "RxCocoa", package: "RxSwift"), "RxAlamofire", "Starscream",
-                          "Task_retrying",
-                          "LoggerSwift"],
-            resources: [ .process("Resources") ]
+            dependencies: [
+                "secp256k1",
+                "TweetNacl",
+                "Task_retrying",
+                "LoggerSwift"
+            ]
+//            resources: [ .process("Resources") ]
         ),
         .testTarget(
             name: "SolanaSwiftTests",
-            dependencies: ["SolanaSwift", "RxSwift", .product(name: "RxBlocking", package: "RxSwift")],
-            resources: [ .process("Resources") ]
+            dependencies: ["SolanaSwift"]
+//            resources: [ .process("Resources") ]
         ),
     ]
 )
