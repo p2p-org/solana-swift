@@ -12,15 +12,15 @@ import SolanaSwift
 class BufferLayoutTests: XCTestCase {
     // MARK: - Mint
     func testDecodingMint() throws {
-        XCTAssertEqual(SolanaSDK.Mint.BUFFER_LENGTH, 82)
-        XCTAssertEqual(SolanaSDK.Mint.span, 82)
+        XCTAssertEqual(Mint.BUFFER_LENGTH, 82)
+        XCTAssertEqual(Mint.span, 82)
         
         let string = "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
         
         let data = Data(base64Encoded: string)!
         
         var pointer = 0
-        let mintLayout = try SolanaSDK.Mint(buffer: data, pointer: &pointer)
+        let mintLayout = try Mint(buffer: data, pointer: &pointer)
         
         XCTAssertEqual(mintLayout.mintAuthorityOption, 1)
         XCTAssertEqual(mintLayout.mintAuthority?.base58EncodedString, "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")
@@ -33,8 +33,8 @@ class BufferLayoutTests: XCTestCase {
 
     // MARK: - Account info
     func testDecodingAccountInfo() throws {
-        XCTAssertEqual(SolanaSDK.AccountInfo.BUFFER_LENGTH, 165)
-        XCTAssertEqual(SolanaSDK.AccountInfo.span, 165)
+        XCTAssertEqual(AccountInfo.BUFFER_LENGTH, 165)
+        XCTAssertEqual(AccountInfo.span, 165)
         
         let string = "BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         
@@ -42,7 +42,7 @@ class BufferLayoutTests: XCTestCase {
         let data = Data(base64Encoded: string)!
         
         var pointer = 0
-        let accountInfo = try SolanaSDK.AccountInfo(buffer: data, pointer: &pointer)
+        let accountInfo = try AccountInfo(buffer: data, pointer: &pointer)
         
         XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", accountInfo.mint.base58EncodedString)
         XCTAssertEqual("BQWWFhzBdw2vKKBUX17NHeFbCoFQHfRARpdztPE2tDJ", accountInfo.owner.base58EncodedString)
@@ -67,7 +67,7 @@ class BufferLayoutTests: XCTestCase {
         let data = Data(base64Encoded: string)!
         
         var pointer = 0
-        let accountInfo = try SolanaSDK.AccountInfo(buffer: data, pointer: &pointer)
+        let accountInfo = try AccountInfo(buffer: data, pointer: &pointer)
         
         XCTAssertEqual("11111111111111111111111111111111", accountInfo.mint.base58EncodedString)
         XCTAssertEqual("11111111111111111111111111111111", accountInfo.owner.base58EncodedString)
@@ -89,7 +89,7 @@ class BufferLayoutTests: XCTestCase {
         let data2 = Data(base64Encoded: string2)!
         
         pointer = 0
-        let accountInfo2 = try SolanaSDK.AccountInfo(buffer: data2, pointer: &pointer)
+        let accountInfo2 = try AccountInfo(buffer: data2, pointer: &pointer)
         
         XCTAssertEqual("11111111111111111111111111111111", accountInfo2.mint.base58EncodedString)
         XCTAssertEqual("11111111111111111111111111111111", accountInfo2.owner.base58EncodedString)
@@ -110,13 +110,13 @@ class BufferLayoutTests: XCTestCase {
 
     // MARK: - TokenSwapInfo
     func testDecodingTokenSwapInfo() throws {
-        XCTAssertEqual(SolanaSDK.TokenSwapInfo.BUFFER_LENGTH, 324)
-        XCTAssertEqual(SolanaSDK.TokenSwapInfo.span, 324)
+        XCTAssertEqual(TokenSwapInfo.BUFFER_LENGTH, 324)
+        XCTAssertEqual(TokenSwapInfo.span, 324)
         
         let string = "AQH/Bt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkg7XoTWySqouc9rBPiFviH2xU9/fRb+6P90QcOMKupqewjVdppkaFaD9TmikzQc7KAtp/LEF9bATPPnDdGT+7Kj7KrmDRVoZN9WTu3h9wgrrN83pVvcqGHLhOtWWeWCUjG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYZqhgojuhD2D9j0JH/1UU78OyY17yIzxSctOkEdQqtVncXgwwKhJB+PCDsVtlUWWQbPgBu+MNnFskXx8qDFMwSAeAAAAAAAAABAnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         let data = Data(base64Encoded: string)!
         var pointer = 0
-        let swapInfo = try SolanaSDK.TokenSwapInfo(buffer: data, pointer: &pointer)
+        let swapInfo = try TokenSwapInfo(buffer: data, pointer: &pointer)
         
         XCTAssertEqual(swapInfo.version, 1)
         XCTAssertEqual(swapInfo.isInitialized, true)
@@ -145,6 +145,6 @@ class BufferLayoutTests: XCTestCase {
         let string = "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
         let data = Data(base64Encoded: string)!
         var pointer = 0
-        let _ = try SolanaSDK.EmptyInfo(buffer: data, pointer: &pointer)
+        let _ = try EmptyInfo(buffer: data, pointer: &pointer)
     }
 }
