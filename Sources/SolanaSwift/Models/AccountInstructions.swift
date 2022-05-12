@@ -3,8 +3,8 @@ import Foundation
 public struct AccountInstructions {
     public init(
         account: PublicKey,
-        instructions: [SolanaSDK.TransactionInstruction] = [],
-        cleanupInstructions: [SolanaSDK.TransactionInstruction] = [],
+        instructions: [TransactionInstruction] = [],
+        cleanupInstructions: [TransactionInstruction] = [],
         signers: [Account] = [],
         newWalletPubkey: String? = nil,
         secretKey: Data? = nil
