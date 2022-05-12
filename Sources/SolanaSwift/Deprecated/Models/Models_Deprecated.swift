@@ -54,4 +54,6 @@ public extension SolanaSDK {
     typealias DataSlice = SolanaSwift.DataSlice
     
     typealias Commitment = SolanaSwift.Commitment
+    
+    public typealias Socket = SolanaSwift.Socket
 }

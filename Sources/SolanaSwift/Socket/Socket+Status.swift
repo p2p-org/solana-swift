@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension SolanaSDK.Socket {
+extension Socket {
     enum Status: Equatable {
         case initializing
         case connecting
