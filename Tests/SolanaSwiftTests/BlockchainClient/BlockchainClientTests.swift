@@ -58,6 +58,15 @@ class BlockchainClientTests: XCTestCase {
             expectedSerializedTransaction: "AcmZrbta/yeGExv0eP4fVbdNNZGplCRvXDmlfoxNHh6ycwtCSFuPXUBOWyrZfMpEofvsm2yGTIyBt+YR6efJlQIBAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkrJVtPUbEv94VNs3mRIzbJPOl5IOElFA5abYNNphafAwEDAwECAAkD6AMAAAAAAAA="
         )
         
+        // Test3: for address that has funds but doesn't have usdc
+        try await doSendSPLTokenTest(
+            testCase: #function + "#3",
+            destination: "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh",
+            amount: 0.001,
+            expectedFee: .init(transaction: 5000, accountBalances: 2039280),
+            expectedSerializedTransaction: "AdFz8FoWp+YjJVuR0hPx4CKcDdpV36IsfbQXfSrMDWXqSOzOIlRp2rY2b4lRgB8VcXqmwpxcXGDGxVGFdU4JMAEBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsXfmyqCexcvWjX327oQJDPaq1QcjeU6DhBOBHkowzTMxys0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sRvkyC6kCcd7AsWv0bpvAPPFAp4Byt86SKMMioFAVLcTG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZM+I2hl0m6ASxaD/BXAGtM5jr5pKui/izvz+3UR6SIT8CCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA=="
+        )
+        
     }
     
     private func doSendSPLTokenTest(
@@ -106,11 +115,21 @@ private class MockAPIClient: SolanaAPIClient {
     }
     
     func getAccountInfo<T>(account: String) async throws -> BufferInfo<T>? where T : DecodableBufferLayout {
-        if account == "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm" {
-            let data: T
+        let data: T
+        let lamports: Lamports
+        let owner: String
+        let executable: Bool
+        let rentEpoch: UInt64
+        
+        switch account {
+        case "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm":
             switch testCase {
             case "testPrepareSendingNativeSOL()":
                 data = EmptyInfo() as! T
+                lamports = 0
+                owner = SystemProgram.id.base58EncodedString
+                executable = true
+                rentEpoch = 0
             case "testPrepareSendingSPLTokens()#1":
                 throw SolanaError.couldNotRetrieveAccountInfo
             case "testPrepareSendingSPLTokens()#2":
@@ -118,15 +137,78 @@ private class MockAPIClient: SolanaAPIClient {
             default:
                 fatalError()
             }
-            return BufferInfo<T>(lamports: 0, owner: SystemProgram.id.base58EncodedString, data: data, executable: true, rentEpoch: 0)
-        }
-        if account == "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch" {
-            if testCase == "testPrepareSendingSPLTokens()#2" {
-                return BufferInfo<T>(lamports: 0, owner: TokenProgram.id.base58EncodedString, data: AccountInfo(mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", owner: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm", lamports: 100, delegateOption: 0, delegate: nil, state: 0, isNativeOption: 0, isNativeRaw: 0, delegatedAmount: 0, closeAuthorityOption: 0, closeAuthority: nil) as! T, executable: true, rentEpoch: 0)
+        case "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch":
+            switch testCase {
+            case "testPrepareSendingSPLTokens()#2":
+                data = AccountInfo(
+                    mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                    owner: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+                    lamports: 100,
+                    delegateOption: 0,
+                    delegate: nil,
+                    state: 0,
+                    isNativeOption: 0,
+                    isNativeRaw: 0,
+                    delegatedAmount: 0,
+                    closeAuthorityOption: 0,
+                    closeAuthority: nil
+                ) as! T
+                lamports = 0
+                owner = TokenProgram.id.base58EncodedString
+                executable = true
+                rentEpoch = 0
+            default:
+                throw SolanaError.couldNotRetrieveAccountInfo
             }
+        case "G3s9UyAY7hCwrghDMyurVtPk3wy8CV6hi8haWGLdbdTc":
             throw SolanaError.couldNotRetrieveAccountInfo
+        case "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh":
+            throw SolanaError.couldNotRetrieveAccountInfo
+        default:
+            fatalError()
         }
-        fatalError()
+        return BufferInfo<T>(lamports: lamports, owner: owner, data: data, executable: executable, rentEpoch: rentEpoch)
+    }
+    
+    func getFees(commitment: Commitment?) async throws -> Fee {
+        let blockhash: String
+        let lastValidSlot: UInt64
+        switch testCase {
+        case "testPrepareSendingNativeSOL()":
+            blockhash = "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
+            lastValidSlot = 133389328
+        case "testPrepareSendingSPLTokens()#1":
+            blockhash = "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
+            lastValidSlot = 133389328
+        case "testPrepareSendingSPLTokens()#2":
+            blockhash = "3uRa2bbJgTKVEKmZqKRtfWfhZF5YMn4D9xE64NYvTh4v"
+            lastValidSlot = 133389328
+        case "testPrepareSendingSPLTokens()#3":
+            blockhash = "4VXrgGDjah4rCo2bvqSWXJTLbaDkmn4NTXknLn9GzacN"
+            lastValidSlot = 133458521
+        default:
+            fatalError()
+        }
+        return .init(feeCalculator: .init(lamportsPerSignature: 5000), feeRateGovernor: nil, blockhash: blockhash, lastValidSlot: lastValidSlot)
+    }
+    
+    func getRecentBlockhash(commitment: Commitment?) async throws -> String {
+        switch testCase {
+        case "testPrepareSendingNativeSOL()":
+            return "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
+        case "testPrepareSendingSPLTokens()#1":
+            return "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
+        case "testPrepareSendingSPLTokens()#2":
+            return "3uRa2bbJgTKVEKmZqKRtfWfhZF5YMn4D9xE64NYvTh4v"
+        case "testPrepareSendingSPLTokens()#3":
+            return "4VXrgGDjah4rCo2bvqSWXJTLbaDkmn4NTXknLn9GzacN"
+        default:
+            fatalError()
+        }
+    }
+    
+    func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment?) async throws -> UInt64 {
+        2039280
     }
     
     func getBalance(account: String, commitment: Commitment?) async throws -> UInt64 {
@@ -163,21 +245,6 @@ private class MockAPIClient: SolanaAPIClient {
     
     func getEpochInfo(commitment: Commitment?) async throws -> EpochInfo {
         fatalError()
-    }
-    
-    func getFees(commitment: Commitment?) async throws -> Fee {
-        let blockhash: String
-        switch testCase {
-        case "testPrepareSendingNativeSOL()":
-            blockhash = "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
-        case "testPrepareSendingSPLTokens()#1":
-            blockhash = "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
-        case "testPrepareSendingSPLTokens()#2":
-            blockhash = "3uRa2bbJgTKVEKmZqKRtfWfhZF5YMn4D9xE64NYvTh4v"
-        default:
-            fatalError()
-        }
-        return .init(feeCalculator: .init(lamportsPerSignature: 5000), feeRateGovernor: nil, blockhash: blockhash, lastValidSlot: 133389328)
     }
     
     func getSignatureStatuses(signatures: [String], configs: RequestConfiguration?) async throws -> [SignatureStatus?] {
@@ -244,24 +311,7 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
     
-    func getRecentBlockhash(commitment: Commitment?) async throws -> String {
-        switch testCase {
-        case "testPrepareSendingNativeSOL()":
-            return "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
-        case "testPrepareSendingSPLTokens()#1":
-            return "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
-        case "testPrepareSendingSPLTokens()#2":
-            return "3uRa2bbJgTKVEKmZqKRtfWfhZF5YMn4D9xE64NYvTh4v"
-        default:
-            fatalError()
-        }
-    }
-    
     func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus> {
         fatalError()
-    }
-    
-    func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment?) async throws -> UInt64 {
-        2039280
     }
 }
