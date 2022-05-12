@@ -3,14 +3,7 @@ import XCTest
 
 class TokensRepositoryTests: XCTestCase {
     
-    let endpoint = APIEndPoint(
-        address: "https://api.mainnet-beta.solana.com",
-        network: .mainnetBeta
-    )
-
-    override func setUpWithError() throws {}
-
-    override func tearDownWithError() throws {}
+    let endpoint: APIEndPoint = .defaultEndpoints.first!
     
     func testTokenRepository() async throws {
         let mock = MockNetworkManager()
@@ -48,25 +41,6 @@ class TokensRepositoryTests: XCTestCase {
         } catch {
             XCTAssertTrue(true)
         }
-    }
-    
-    func testGetTokenWallets() async throws {
-        let mock = MockNetworkManager(withError: false)
-        let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
-        let datas = try! await tokenRepository.getTokenWallets(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
-        XCTAssertNotEqual(datas.count, 0)
-    }
-
-    func testCheckAccountValidation() async throws {
-        let mock = MockNetworkManager(withError: false)
-        let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
-        // funding SOL address
-        let isValid1 = try await tokenRepository.checkAccountValidation(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
-        XCTAssertEqual(isValid1, true)
-
-        // no funding SOL address
-        let isValid2 = try await tokenRepository.checkAccountValidation(account: "HnXJX1Bvps8piQwDYEYC6oea9GEkvQvahvRj3c97X9xr")
-        XCTAssertEqual(isValid2, false)
     }
 
     class MockNetworkManager: NetworkManager {

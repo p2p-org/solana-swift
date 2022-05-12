@@ -74,14 +74,7 @@ extension SolanaBlockchainClient {
         ) {
             let recentBlockhash = try await self.apiClient.getRecentBlockhash()
             let serializedTransaction = try self.signAndSerialize(preparedTransaction: preparedTransaction, recentBlockhash: recentBlockhash)
-            let result = try await self.apiClient.simulateTransaction(transaction: serializedTransaction, configs: RequestConfiguration(encoding: "base64")!)
-            if let errString = result.err?.wrapped as? String {
-                if errString == "BlockhashNotFound" {
-                    throw SolanaError.other("Blockhash not found")
-                }
-                throw SolanaError.other(errString)
-            }
-            return result
+            return try await self.apiClient.simulateTransaction(transaction: serializedTransaction, configs: RequestConfiguration(encoding: "base64")!)
         }
             .value
     }

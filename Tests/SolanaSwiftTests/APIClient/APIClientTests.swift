@@ -1,5 +1,5 @@
 import XCTest
-import SolanaSwift
+@testable import SolanaSwift
 
 class APIClientTests: XCTestCase {
     
@@ -7,16 +7,6 @@ class APIClientTests: XCTestCase {
         address: "https://api.mainnet-beta.solana.com",
         network: .mainnetBeta
     )
-    var solanaSDK: SolanaSDK!
-
-    override func setUpWithError() throws {
-        let accountStorage = InMemoryAccountStorage()
-        solanaSDK = SolanaSDK(endpoint: endpoint, accountStorage: accountStorage)
-        let account = try Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network)
-        try accountStorage.save(account)
-    }
-
-    override func tearDownWithError() throws {}
     
     func testGetBlock() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getBlockHeight"]!)
@@ -81,16 +71,14 @@ class APIClientTests: XCTestCase {
     func testGetBalance() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getBalance"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let account = try await Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network).publicKey.base58EncodedString
-        let result: UInt64 = try! await apiClient.getBalance(account: account, commitment: "recent")
+        let result: UInt64 = try! await apiClient.getBalance(account: "", commitment: "recent")
         XCTAssert(result == 123456)
     }
     
     func testGetBalanceSingle() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getBalance_1"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let account = try await Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network).publicKey.base58EncodedString
-        let result: UInt64 = try! await apiClient.getBalance(account: account, commitment: "recent")
+        let result: UInt64 = try! await apiClient.getBalance(account: "", commitment: "recent")
         XCTAssert(result == 123456)
     }
     
@@ -127,8 +115,7 @@ class APIClientTests: XCTestCase {
     func testGetConfirmedSignaturesForAddress() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getConfirmedSignaturesForAddress"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let account = try await Account(phrase: endpoint.network.testAccount.components(separatedBy: " "), network: endpoint.network).publicKey.base58EncodedString
-        let result: [String] = try! await apiClient.getConfirmedSignaturesForAddress(account: account, startSlot: 131647712, endSlot: 131647713)
+        let result: [String] = try! await apiClient.getConfirmedSignaturesForAddress(account: "", startSlot: 131647712, endSlot: 131647713)
         XCTAssertEqual(result.count, 3)
         XCTAssertEqual(result[0], "1")
         XCTAssertEqual(result[1], "2")
@@ -224,20 +211,12 @@ class APIClientTests: XCTestCase {
     func testSimulateTx() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["simulateTransaction"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let tx = try await apiClient.simulateTransaction(transaction: "")
-        XCTAssertTrue(tx.err != nil)
-    }
-    
-    func testFindSPLTokenDestinationAddress() async throws {
-        // USDC
-        let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-        let destination = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-        
-        let mock = NetworkManagerMock(NetworkManagerMockJSON["simulateTransaction"]!)
-        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result = try await apiClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destination)
-        XCTAssertEqual(result.destination, "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3")
-        XCTAssertEqual(result.isUnregisteredAsocciatedToken, false)
+        do {
+            let _ = try await apiClient.simulateTransaction(transaction: "")
+        } catch {
+            let error = error as? SolanaError
+            XCTAssertEqual(error, .transactionError(.init(wrapped: "AccountNotFound"), logs: []))
+        }
     }
     
     // MARK: - Mocks

@@ -1,4 +1,5 @@
 import Foundation
+import LoggerSwift
 
 public typealias TransactionID = String
 public typealias Lamports = UInt64
@@ -112,7 +113,7 @@ public struct LargestAccount: Decodable {
     public let address: String
 }
 
-public struct ProgramAccounts<T: DecodableBufferLayout>: Decodable {
+public struct ProgramAccounts<T: BufferLayout>: Decodable {
     public let accounts: [ProgramAccount<T>]
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -124,19 +125,19 @@ public struct ProgramAccounts<T: DecodableBufferLayout>: Decodable {
             case .success(let account):
                 accounts.append(account)
             case .failure(let error):
-                Logger.log(message: "Error decoding an account in program accounts list: \(error.localizedDescription)", event: .error)
+                Logger.log(event: .error, message: "Error decoding an account in program accounts list: \(error.localizedDescription)")
             }
         }
         self.accounts = accounts
     }
 }
 
-public struct ProgramAccount<T: DecodableBufferLayout>: Decodable {
+public struct ProgramAccount<T: BufferLayout>: Decodable {
     public let account: BufferInfo<T>
     public let pubkey: String
 }
 
-public struct BufferInfo<T: DecodableBufferLayout>: Decodable {
+public struct BufferInfo<T: BufferLayout>: Decodable {
     public let lamports: Lamports
     public let owner: String
     public let data: T
@@ -189,6 +190,10 @@ public struct TransactionMeta: Decodable {
 }
 public typealias TransactionError = [String: [ErrorDetail]]
 public struct ErrorDetail: Codable {
+    public init(wrapped: Any) {
+        self.wrapped = wrapped
+    }
+    
     let wrapped: Any
     
     public init(from decoder: Decoder) throws {
@@ -265,7 +270,7 @@ public struct TokenAccountBalance: Codable, Equatable, Hashable {
         return UInt64(amount)
     }
 }
-public struct TokenAccount<T: DecodableBufferLayout>: Decodable {
+public struct TokenAccount<T: BufferLayout>: Decodable {
     public let pubkey: String
     public let account: BufferInfo<T>
 }

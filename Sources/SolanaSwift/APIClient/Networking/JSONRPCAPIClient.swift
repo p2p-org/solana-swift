@@ -18,7 +18,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     // MARK: -
     
-    public func getAccountInfo<T: DecodableBufferLayout>(account: String) async throws -> BufferInfo<T>? {
+    public func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>? {
         let requestConfig = RequestConfiguration(encoding: "base64")
         let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
         guard let ret = try? await (request(with: req) as AnyResponse<Rpc<BufferInfo<T>?>>).result?.value else {
@@ -180,6 +180,12 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     public func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> SimulationResult {
         let result: Rpc<SimulationResult> = try await self.get(method: "simulateTransaction", params: [transaction, configs])
+        if let err = result.value.err {
+            if (err.wrapped as? String) == "BlockhashNotFound" {
+                throw SolanaError.other("Blockhash not found")
+            }
+            throw SolanaError.transactionError(err, logs: result.value.logs)
+        }
         return result.value
     }
     
@@ -215,7 +221,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         try await self.get(method: "validatorExit", params: [])
     }
     
-    public func getMultipleAccounts<T: DecodableBufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>] {
+    public func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>] {
         let configs = RequestConfiguration(encoding: "base64")
         guard !pubkeys.isEmpty else { return [] }
         let result: Rpc<[BufferInfo<T>]> = try await self.get(method: "getMultipleAccounts", params: [pubkeys, configs])
@@ -226,7 +232,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     
     private func get<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity {
         let req = RequestEncoder.RequestType(method: method, params: params)
-        try Task.checkCancellation()
         let response: AnyResponse<Entity> = try await request(with: req)
         guard let result = response.result else {
             throw APIClientError.cantDecodeResponse
@@ -260,10 +265,11 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         } catch {
             throw APIClientError.cantEncodeParams
         }
+        try Task.checkCancellation()
         let responseData = try await networkManager.requestData(request: try self.urlRequest(data: encodedParams))
         
         // log
-        LoggerSwift.Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
+        Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
         
         return responseData
     }
@@ -273,10 +279,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpBody = data
         urlRequest.httpMethod = "POST"
-        urlRequest.headers = ["Content-Type": "application/json; charset=utf-8"]
+        urlRequest.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         
         // log
-        LoggerSwift.Logger.log(event: .request, message: urlRequest.cURL())
+        Logger.log(event: .request, message: urlRequest.cURL())
         
         return urlRequest
     }
