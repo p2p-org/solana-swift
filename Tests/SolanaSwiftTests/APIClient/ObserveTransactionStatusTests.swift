@@ -63,7 +63,7 @@ class ObserveTransactionStatusTests: XCTestCase {
     // MARK: - Helpers
     
     func mockResponse(confirmations: Int?, confirmationStatus: String) -> String {
-        #"[{"jsonrpc":"2.0","result":{"context":{"slot":82},"value":[{"slot":72,"confirmations":\#(confirmations != nil ? "\(confirmations!)": "null"),"err":null,"status":{"Ok":null},"confirmationStatus":"\#(confirmationStatus)"},null]},"id":1}]"#
+        #"{"jsonrpc":"2.0","result":{"context":{"slot":82},"value":[{"slot":72,"confirmations":\#(confirmations != nil ? "\(confirmations!)": "null"),"err":null,"status":{"Ok":null},"confirmationStatus":"\#(confirmationStatus)"},null]},"id":1}"#
     }
     
     class NetworkManagerMock: NetworkManager {
