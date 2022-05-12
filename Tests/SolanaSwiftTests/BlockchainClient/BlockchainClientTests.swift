@@ -40,6 +40,8 @@ class BlockchainClientTests: XCTestCase {
     }
     
     func testPrepareSendingSPLTokens() async throws {
+        // TESTS: SEND TO NATIVE SOL ACCOUNT (AUTO FIND AND CHECK SPL TOKEN ACCOUNT FROM OWNER NATIVE SOL ACCOUNT)
+        
         // Test1: for address that has no funds no usdc account
         try await doSendSPLTokenTest(
             testCase: #function + "#1",
@@ -48,7 +50,7 @@ class BlockchainClientTests: XCTestCase {
             expectedFee: .init(transaction: 5000, accountBalances: 2039280),
             expectedSerializedTransaction: "AYMEskYoYyUUFfAOOBVge/ZvKsdnThz6h8SD9fjwhMrlzdyJqOHWd1E/TNwtASCdkG2tb6+mKwvPbTmfvpDJ/gUBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsV6z8KtZmvbVqZpAcS9akND4i7DwzOEXd14OkugPk5Sjis0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sUGovppzL+Lnil9LlySMgCL9FHk19zxobvW2CEQYB/trG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZfhq5F8HYKBbSm7geKKfkJABMkKQSWgrHSxAVWNN0/7wCCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA=="
         )
-        
+
         // Test2: for address that has no funds but has usdc
         try await doSendSPLTokenTest(
             testCase: #function + "#2",
@@ -57,7 +59,7 @@ class BlockchainClientTests: XCTestCase {
             expectedFee: .init(transaction: 5000, accountBalances: 0),
             expectedSerializedTransaction: "AcmZrbta/yeGExv0eP4fVbdNNZGplCRvXDmlfoxNHh6ycwtCSFuPXUBOWyrZfMpEofvsm2yGTIyBt+YR6efJlQIBAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkrJVtPUbEv94VNs3mRIzbJPOl5IOElFA5abYNNphafAwEDAwECAAkD6AMAAAAAAAA="
         )
-        
+
         // Test3: for address that has funds but doesn't have usdc
         try await doSendSPLTokenTest(
             testCase: #function + "#3",
@@ -66,7 +68,26 @@ class BlockchainClientTests: XCTestCase {
             expectedFee: .init(transaction: 5000, accountBalances: 2039280),
             expectedSerializedTransaction: "AdFz8FoWp+YjJVuR0hPx4CKcDdpV36IsfbQXfSrMDWXqSOzOIlRp2rY2b4lRgB8VcXqmwpxcXGDGxVGFdU4JMAEBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsXfmyqCexcvWjX327oQJDPaq1QcjeU6DhBOBHkowzTMxys0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sRvkyC6kCcd7AsWv0bpvAPPFAp4Byt86SKMMioFAVLcTG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZM+I2hl0m6ASxaD/BXAGtM5jr5pKui/izvz+3UR6SIT8CCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA=="
         )
+
+        // Test4: for address that has funds and has usdc
+        try await doSendSPLTokenTest(
+            testCase: #function + "#4",
+            destination: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+            amount: 0.001,
+            expectedFee: .init(transaction: 5000, accountBalances: 0),
+            expectedSerializedTransaction: "AYZTxeufMDUP3SaAKy1V0B7LsQfO/oUpkGW/VlbD5K9KdYHdumis1YARp5VmkOye3GHuH41gfQPVvq6cibyVfwYBAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKmdjDa7+mojnL/9tFXOHQHyRb2yoOh+Mrxn+Yekjd3s0AEDAwECAAkD6AMAAAAAAAA="
+        )
         
+        // TESTS: SEND DIRECTLY TO SPL TOKEN ACCOUNT
+        
+        // Test5: directly to spl token account
+        try await doSendSPLTokenTest(
+            testCase: #function + "#5",
+            destination: "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch",
+            amount: 0.001,
+            expectedFee: .init(transaction: 5000, accountBalances: 0),
+            expectedSerializedTransaction: "ATfyE+TZcxsXHnQzWgqgCpsJ3hVmYteZYBnsBS4KGNH5zJcw8QL49tWztgIssBXk8j5aW4jWi4mFWM7ZAbT/rw4BAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKldK0fNaK6EJyL45ciI7x9wC9uwOhoblHsR+lp+1bX0OAEDAwECAAkD6AMAAAAAAAA="
+        )
     }
     
     private func doSendSPLTokenTest(
@@ -134,12 +155,14 @@ private class MockAPIClient: SolanaAPIClient {
                 throw SolanaError.couldNotRetrieveAccountInfo
             case "testPrepareSendingSPLTokens()#2":
                 throw SolanaError.couldNotRetrieveAccountInfo
+            case "testPrepareSendingSPLTokens()#4":
+                throw SolanaError.couldNotRetrieveAccountInfo
             default:
                 fatalError()
             }
         case "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch":
             switch testCase {
-            case "testPrepareSendingSPLTokens()#2":
+            case "testPrepareSendingSPLTokens()#2", "testPrepareSendingSPLTokens()#4", "testPrepareSendingSPLTokens()#5":
                 data = AccountInfo(
                     mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     owner: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
@@ -186,6 +209,12 @@ private class MockAPIClient: SolanaAPIClient {
         case "testPrepareSendingSPLTokens()#3":
             blockhash = "4VXrgGDjah4rCo2bvqSWXJTLbaDkmn4NTXknLn9GzacN"
             lastValidSlot = 133458521
+        case "testPrepareSendingSPLTokens()#4":
+            blockhash = "Bc11qGhSE3Vham6cBWEUxhRVVSNtzkyisdGGXwh6hvnT"
+            lastValidSlot = 133461545
+        case "testPrepareSendingSPLTokens()#5":
+            blockhash = "7GhCDV2MK7RVhYzD3iNZAVkCd9hYCgyqkgXdFbEFj9PD"
+            lastValidSlot = 133461991
         default:
             fatalError()
         }
@@ -202,6 +231,10 @@ private class MockAPIClient: SolanaAPIClient {
             return "3uRa2bbJgTKVEKmZqKRtfWfhZF5YMn4D9xE64NYvTh4v"
         case "testPrepareSendingSPLTokens()#3":
             return "4VXrgGDjah4rCo2bvqSWXJTLbaDkmn4NTXknLn9GzacN"
+        case "testPrepareSendingSPLTokens()#4":
+            return "Bc11qGhSE3Vham6cBWEUxhRVVSNtzkyisdGGXwh6hvnT"
+        case "testPrepareSendingSPLTokens()#5":
+            return "7GhCDV2MK7RVhYzD3iNZAVkCd9hYCgyqkgXdFbEFj9PD"
         default:
             fatalError()
         }
