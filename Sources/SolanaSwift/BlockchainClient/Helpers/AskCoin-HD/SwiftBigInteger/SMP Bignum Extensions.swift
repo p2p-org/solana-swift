@@ -12,10 +12,10 @@ import Foundation
 public typealias Bignum = BInt
 
 
-public extension Bignum
+extension Bignum
 {
 	/// Representation as Data
-	public var data: Data {
+	var data: Data {
 		let n = limbs.count
 		var data = Data(count: n * 8)
 		data.withUnsafeMutableBytes { (ptr: UnsafeMutablePointer<UInt8>) -> Void in

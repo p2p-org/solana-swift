@@ -174,7 +174,7 @@ public class Keychain: NSObject {
             var temp = indexString
             if indexString.hasSuffix(BTCKeychainHardenedSymbol) {
                 isHardened = true
-                temp = temp.substring(to: temp.index(temp.endIndex, offsetBy: -1))
+                temp = String(temp[..<temp.index(temp.endIndex, offsetBy: -1)])
             }
             if let index = UInt32(temp) {
                 kc = try kc.derivedKeychain(at: index, hardened: isHardened)
