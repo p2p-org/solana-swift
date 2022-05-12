@@ -16,7 +16,7 @@ class SystemProgramTests: XCTestCase {
         XCTAssertEqual(instruction.keys[0], .writable(publicKey: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", isSigner: true))
         XCTAssertEqual(instruction.keys[1], .writable(publicKey: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", isSigner: true))
         XCTAssertEqual(instruction.programId, SystemProgram.id)
-        XCTAssertEqual(Base58.encode(instruction.data), "11119os1e9qSs2u7TsThXqkBSRUo9x7kpbdqtNNbTeaxHGPdWbvoHsks9hpp6mb2ed1NeB")
+        XCTAssertEqual(Base58.encode(instruction.data), "11119os1e9qSs2u7TsThXqkBSRVFxhmYaFKFZ1waB2X7armDmvK3p5GmLdUxYdg3h7QSrL")
     }
     
     func testTransferInstruction() throws {
