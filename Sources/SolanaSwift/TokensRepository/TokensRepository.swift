@@ -1,18 +1,21 @@
 import Foundation
 
-public actor TokensRepository {
+public class TokensRepository {
 
     // MARK: -
     
-    public init(endpoint: APIEndPoint, tokenListParser: TokensListParser = .init()) {
-        self.endpoint = endpoint
+    public init(apiClient: SolanaAPIClient, tokenListParser: TokensListParser = .init()) {
+        self.apiClient = apiClient
         self.tokenListParser = tokenListParser
     }
 
     private let tokenListParser: TokensListParser
-    private let endpoint: APIEndPoint
+    private let apiClient: SolanaAPIClient
     private static var tokenCache = Cache<String, Set<Token>>()
     private let tokenCacheKey = "TokenRepositoryTokensKey"
+    private var endpoint: APIEndPoint {
+        apiClient.endpoint
+    }
     
     // MARK: - Public Methods
     
@@ -23,11 +26,11 @@ public actor TokensRepository {
     /// - Returns Set of tokens
     ///
     public func getTokensList(useCache: Bool = true) async throws -> Set<Token> {
-        if useCache, let tokens = TokensRepository.tokenCache.value(forKey: tokenCacheKey) {
+        if useCache, let tokens = await TokensRepository.tokenCache.value(forKey: tokenCacheKey) {
             return tokens
         }
         let tokenlist = try await tokenListParser.parse(network: endpoint.network.rawValue)
-        TokensRepository.tokenCache.insert(tokenlist, forKey: tokenCacheKey)
+        await TokensRepository.tokenCache.insert(tokenlist, forKey: tokenCacheKey)
         return tokenlist
     }
     
@@ -38,7 +41,6 @@ public actor TokensRepository {
     /// - Returns array of Wallet
     ///
     public func getTokenWallets(account: String) async throws -> [Wallet] {
-        let apiClient = JSONRPCAPIClient(endpoint: endpoint)
         async let accounts = try await apiClient.getTokenAccountsByOwner(pubkey: account,
                                                                          params: .init(mint: nil, programId: TokenProgram.id.base58EncodedString),
                                                                configs: .init(encoding: "base64"))
@@ -89,7 +91,6 @@ public actor TokensRepository {
     /// - Returns wether account is valid
     ///
     public func checkAccountValidation(account: String) async throws -> Bool {
-        let apiClient = JSONRPCAPIClient(endpoint: endpoint)
         do {
             _ = try await apiClient.getAccountInfo(account: account) as BufferInfo<EmptyInfo>?
         } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {

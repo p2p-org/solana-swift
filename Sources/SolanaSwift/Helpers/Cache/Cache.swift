@@ -1,6 +1,6 @@
 import Foundation
 
-final class Cache<Key: Hashable, Value> {
+final actor Cache<Key: Hashable, Value> {
     private let wrapped = NSCache<WrappedKey, Entry>()
 
     func insert(_ value: Value, forKey key: Key) {
