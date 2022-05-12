@@ -38,9 +38,4 @@ class APIClientExtensionsTests: XCTestCase {
     func testCheckIfAssociatedTokenAccountExists() async throws {
         // TODO:
     }
-    
-    func testGetTokenWallets() throws {
-//        let datas = try solanaSDK.getTokenWallets(account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG").toBlocking().first()
-//        XCTAssertNotEqual(datas?.count, 0)
-    }
 }
