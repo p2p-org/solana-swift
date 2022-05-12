@@ -4,83 +4,244 @@ import XCTest
 @testable import SolanaSwift
 
 class BlockchainClientTests: XCTestCase {
-    var lamportsPerSignature: UInt64 { 5000 }
-    var minRentExemption: UInt64 { 2039280 }
-    
-    var accountStorage: InMemoryAccountStorage!
+    var account: Account!
     
     override func setUp() async throws {
-        accountStorage = InMemoryAccountStorage()
-        let account = try await Account(
-            phrase: "promote ignore inmate coast excess candy vanish erosion palm oxygen build powder"
+        account = try await Account(
+            phrase: "miracle pizza supply useful steak border same again youth silver access hundred"
                 .components(separatedBy: " "),
             network: .mainnetBeta
         )
-        try accountStorage.save(account)
     }
     
     override func tearDown() async throws {
-        accountStorage = nil
+        account = nil
     }
     
     // MARK: - Testcases
     
     func testPrepareSendingNativeSOL() async throws {
-        let account = accountStorage.account!
-        let toPublicKey = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-        let apiClient = MockAPIClient()
+        let toPublicKey = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
+        let apiClient = MockAPIClient(testCase: #function)
         let blockchain = BlockchainClient(apiClient: apiClient)
         
-        let tx = try await blockchain.prepareSendingNativeSOL(from: account,
-                                                              to: toPublicKey,
-                                                              amount: 0,
-                                                              feePayer: account.publicKey)
+        let tx = try await blockchain.prepareSendingNativeSOL(
+            from: account,
+            to: toPublicKey,
+            amount: 100,
+            feePayer: account.publicKey
+        )
         
         let recentBlockhash = try await apiClient.getRecentBlockhash()
         let serializedTransaction = try blockchain.signAndSerialize(preparedTransaction: tx, recentBlockhash: recentBlockhash)
         
         XCTAssertEqual(tx.expectedFee, .init(transaction: 5000, accountBalances: 0))
-        XCTAssertEqual(serializedTransaction, "")
+        XCTAssertEqual(serializedTransaction, "AYqN18ZDaJtv61HxaIUnmtK0f+ST/HaO3YzAOBjwtG9Qf/Td58DSe5zS5nyx9InT+UyLIZbb4nFE/XYrWfHKCwQBAAEDJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsVQai+mnMv4ueKX0uXJIyAIv0UeTX3PGhu9bYIRBgH+2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuN92Q8S3ViiBKFjrCz0SjRSx6JhG5pY6fuBlpw98caYBAgIAAQwCAAAAZAAAAAAAAAA=")
     }
     
     func testPrepareSendingSPLTokens() async throws {
-        let account = accountStorage.account!
+        // TESTS: SEND TO NATIVE SOL ACCOUNT (AUTO FIND AND CHECK SPL TOKEN ACCOUNT FROM OWNER NATIVE SOL ACCOUNT)
+        
+        // Test1: for address that has no funds no usdc account
+        try await doSendSPLTokenTest(
+            testCase: #function + "#1",
+            destination: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+            amount: 0.001,
+            expectedFee: .init(transaction: 5000, accountBalances: 2039280),
+            expectedSerializedTransaction: "AYMEskYoYyUUFfAOOBVge/ZvKsdnThz6h8SD9fjwhMrlzdyJqOHWd1E/TNwtASCdkG2tb6+mKwvPbTmfvpDJ/gUBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsV6z8KtZmvbVqZpAcS9akND4i7DwzOEXd14OkugPk5Sjis0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sUGovppzL+Lnil9LlySMgCL9FHk19zxobvW2CEQYB/trG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZfhq5F8HYKBbSm7geKKfkJABMkKQSWgrHSxAVWNN0/7wCCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA=="
+        )
+
+        // Test2: for address that has no funds but has usdc
+        try await doSendSPLTokenTest(
+            testCase: #function + "#2",
+            destination: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+            amount: 0.001,
+            expectedFee: .init(transaction: 5000, accountBalances: 0),
+            expectedSerializedTransaction: "AcmZrbta/yeGExv0eP4fVbdNNZGplCRvXDmlfoxNHh6ycwtCSFuPXUBOWyrZfMpEofvsm2yGTIyBt+YR6efJlQIBAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkrJVtPUbEv94VNs3mRIzbJPOl5IOElFA5abYNNphafAwEDAwECAAkD6AMAAAAAAAA="
+        )
+
+        // Test3: for address that has funds but doesn't have usdc
+        try await doSendSPLTokenTest(
+            testCase: #function + "#3",
+            destination: "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh",
+            amount: 0.001,
+            expectedFee: .init(transaction: 5000, accountBalances: 2039280),
+            expectedSerializedTransaction: "AdFz8FoWp+YjJVuR0hPx4CKcDdpV36IsfbQXfSrMDWXqSOzOIlRp2rY2b4lRgB8VcXqmwpxcXGDGxVGFdU4JMAEBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsXfmyqCexcvWjX327oQJDPaq1QcjeU6DhBOBHkowzTMxys0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sRvkyC6kCcd7AsWv0bpvAPPFAp4Byt86SKMMioFAVLcTG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZM+I2hl0m6ASxaD/BXAGtM5jr5pKui/izvz+3UR6SIT8CCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA=="
+        )
+
+        // Test4: for address that has funds and has usdc
+        try await doSendSPLTokenTest(
+            testCase: #function + "#4",
+            destination: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+            amount: 0.001,
+            expectedFee: .init(transaction: 5000, accountBalances: 0),
+            expectedSerializedTransaction: "AYZTxeufMDUP3SaAKy1V0B7LsQfO/oUpkGW/VlbD5K9KdYHdumis1YARp5VmkOye3GHuH41gfQPVvq6cibyVfwYBAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKmdjDa7+mojnL/9tFXOHQHyRb2yoOh+Mrxn+Yekjd3s0AEDAwECAAkD6AMAAAAAAAA="
+        )
+        
+        // TESTS: SEND DIRECTLY TO SPL TOKEN ACCOUNT
+        
+        // Test5: directly to spl token account
+        try await doSendSPLTokenTest(
+            testCase: #function + "#5",
+            destination: "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch",
+            amount: 0.001,
+            expectedFee: .init(transaction: 5000, accountBalances: 0),
+            expectedSerializedTransaction: "ATfyE+TZcxsXHnQzWgqgCpsJ3hVmYteZYBnsBS4KGNH5zJcw8QL49tWztgIssBXk8j5aW4jWi4mFWM7ZAbT/rw4BAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKldK0fNaK6EJyL45ciI7x9wC9uwOhoblHsR+lp+1bX0OAEDAwECAAkD6AMAAAAAAAA="
+        )
+    }
+    
+    private func doSendSPLTokenTest(
+        testCase: String,
+        destination: String,
+        amount: Double,
+        expectedFee: FeeAmount,
+        expectedSerializedTransaction: String
+    ) async throws {
         
         // USDC
         let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-        let source = "DjY1uZozQTPz9c6WsjpPC3jXWp7u98KzyuyQTRzcGHFk"
-        let destination = "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
+        let source = "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3"
         
-        let apiClient = MockAPIClient()
+        let apiClient = MockAPIClient(testCase: testCase)
         let blockchainClient = BlockchainClient(apiClient: apiClient)
         
-        let tx = try await blockchainClient.prepareSendingSPLTokens(account: account,
-                                                      mintAddress: mintAddress,
-                                                      decimals: 6,
-                                                      from: source,
-                                                      to: destination,
-                                                      amount: Double(0.001).toLamport(decimals: 6))
+        // Test1: for address that has no funds
+        let tx = try await blockchainClient.prepareSendingSPLTokens(
+            account: account,
+            mintAddress: mintAddress,
+            decimals: 6,
+            from: source,
+            to: destination,
+            amount: amount.toLamport(decimals: 6)
+        )
             .preparedTransaction
         
-        XCTAssertEqual(tx.expectedFee, .init(transaction: 5000, accountBalances: 0))
+        XCTAssertEqual(tx.expectedFee, expectedFee)
         
         let recentBlockhash = try await apiClient.getRecentBlockhash()
         let serializedTransaction = try blockchainClient.signAndSerialize(preparedTransaction: tx, recentBlockhash: recentBlockhash)
-        XCTAssertEqual(serializedTransaction, "AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABVDg6PUgP0/j0vr9ikPMW6XfkjTjFIO3fUnGTc0jeLpRDcZvF4GaxvBeOfxYD6ldZGD/yTnGbn+CDHT6o9emsLAgABBZVzNUScL8XOGDuZ10tEfPOQu+xHxBtpXUDQYjWq91/PUGovppzL+Lnil9LlySMgCL9FHk19zxobvW2CEQYB/tq9MbTiQmankdqjmH2uZjpU9OB4Cg14/hOLUUY6cv3Fvys0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkDnx0J6XtIf2GzNZPI5gc77kjN9sIC6bnhGhtxCMtQHwEEAwIDAQkD6AMAAAAAAAA=")
+        XCTAssertEqual(serializedTransaction, expectedSerializedTransaction)
     }
-    
-    let json: [String: String] = [
-        "prepareSendingNativeSOL": "AbGldIcg+coxW3idbrOM6lGA6hfBozLGcQwNUSc7fFWnHipqUS2H78BeTkBjnHLcVEBHsfaigKnhfycpVFuhDQwBAAEDUGovppzL+Lnil9LlySMgCL9FHk19zxobvW2CEQYB/ton97kEVYkyppO43UtuZxDeKV73hCs+rPNfzL6PmRAKxQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjmPmh7ra9WkvBCyAZ3QzuN3hIn6PwTtCRCylLM5r3cQBAgIAAQwCAAAAAAAAAAAAAAA="
-    ]
 }
 
 private class MockAPIClient: SolanaAPIClient {
+    let testCase: String
+    
+    init(testCase: String) {
+        self.testCase = testCase
+    }
+    
     var endpoint: APIEndPoint {
         fatalError()
     }
     
     func getAccountInfo<T>(account: String) async throws -> BufferInfo<T>? where T : DecodableBufferLayout {
-        fatalError()
+        let data: T
+        let lamports: Lamports
+        let owner: String
+        let executable: Bool
+        let rentEpoch: UInt64
+        
+        switch account {
+        case "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm":
+            switch testCase {
+            case "testPrepareSendingNativeSOL()":
+                data = EmptyInfo() as! T
+                lamports = 0
+                owner = SystemProgram.id.base58EncodedString
+                executable = true
+                rentEpoch = 0
+            case "testPrepareSendingSPLTokens()#1":
+                throw SolanaError.couldNotRetrieveAccountInfo
+            case "testPrepareSendingSPLTokens()#2":
+                throw SolanaError.couldNotRetrieveAccountInfo
+            case "testPrepareSendingSPLTokens()#4":
+                throw SolanaError.couldNotRetrieveAccountInfo
+            default:
+                fatalError()
+            }
+        case "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch":
+            switch testCase {
+            case "testPrepareSendingSPLTokens()#2", "testPrepareSendingSPLTokens()#4", "testPrepareSendingSPLTokens()#5":
+                data = AccountInfo(
+                    mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                    owner: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+                    lamports: 100,
+                    delegateOption: 0,
+                    delegate: nil,
+                    state: 0,
+                    isNativeOption: 0,
+                    isNativeRaw: 0,
+                    delegatedAmount: 0,
+                    closeAuthorityOption: 0,
+                    closeAuthority: nil
+                ) as! T
+                lamports = 0
+                owner = TokenProgram.id.base58EncodedString
+                executable = true
+                rentEpoch = 0
+            default:
+                throw SolanaError.couldNotRetrieveAccountInfo
+            }
+        case "G3s9UyAY7hCwrghDMyurVtPk3wy8CV6hi8haWGLdbdTc":
+            throw SolanaError.couldNotRetrieveAccountInfo
+        case "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh":
+            throw SolanaError.couldNotRetrieveAccountInfo
+        default:
+            fatalError()
+        }
+        return BufferInfo<T>(lamports: lamports, owner: owner, data: data, executable: executable, rentEpoch: rentEpoch)
+    }
+    
+    func getFees(commitment: Commitment?) async throws -> Fee {
+        let blockhash: String
+        let lastValidSlot: UInt64
+        switch testCase {
+        case "testPrepareSendingNativeSOL()":
+            blockhash = "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
+            lastValidSlot = 133389328
+        case "testPrepareSendingSPLTokens()#1":
+            blockhash = "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
+            lastValidSlot = 133389328
+        case "testPrepareSendingSPLTokens()#2":
+            blockhash = "3uRa2bbJgTKVEKmZqKRtfWfhZF5YMn4D9xE64NYvTh4v"
+            lastValidSlot = 133389328
+        case "testPrepareSendingSPLTokens()#3":
+            blockhash = "4VXrgGDjah4rCo2bvqSWXJTLbaDkmn4NTXknLn9GzacN"
+            lastValidSlot = 133458521
+        case "testPrepareSendingSPLTokens()#4":
+            blockhash = "Bc11qGhSE3Vham6cBWEUxhRVVSNtzkyisdGGXwh6hvnT"
+            lastValidSlot = 133461545
+        case "testPrepareSendingSPLTokens()#5":
+            blockhash = "7GhCDV2MK7RVhYzD3iNZAVkCd9hYCgyqkgXdFbEFj9PD"
+            lastValidSlot = 133461991
+        default:
+            fatalError()
+        }
+        return .init(feeCalculator: .init(lamportsPerSignature: 5000), feeRateGovernor: nil, blockhash: blockhash, lastValidSlot: lastValidSlot)
+    }
+    
+    func getRecentBlockhash(commitment: Commitment?) async throws -> String {
+        switch testCase {
+        case "testPrepareSendingNativeSOL()":
+            return "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
+        case "testPrepareSendingSPLTokens()#1":
+            return "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
+        case "testPrepareSendingSPLTokens()#2":
+            return "3uRa2bbJgTKVEKmZqKRtfWfhZF5YMn4D9xE64NYvTh4v"
+        case "testPrepareSendingSPLTokens()#3":
+            return "4VXrgGDjah4rCo2bvqSWXJTLbaDkmn4NTXknLn9GzacN"
+        case "testPrepareSendingSPLTokens()#4":
+            return "Bc11qGhSE3Vham6cBWEUxhRVVSNtzkyisdGGXwh6hvnT"
+        case "testPrepareSendingSPLTokens()#5":
+            return "7GhCDV2MK7RVhYzD3iNZAVkCd9hYCgyqkgXdFbEFj9PD"
+        default:
+            fatalError()
+        }
+    }
+    
+    func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment?) async throws -> UInt64 {
+        2039280
     }
     
     func getBalance(account: String, commitment: Commitment?) async throws -> UInt64 {
@@ -116,10 +277,6 @@ private class MockAPIClient: SolanaAPIClient {
     }
     
     func getEpochInfo(commitment: Commitment?) async throws -> EpochInfo {
-        fatalError()
-    }
-    
-    func getFees(commitment: Commitment?) async throws -> Fee {
         fatalError()
     }
     
@@ -187,15 +344,7 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
     
-    func getRecentBlockhash(commitment: Commitment?) async throws -> String {
-        fatalError()
-    }
-    
     func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus> {
-        fatalError()
-    }
-    
-    func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment?) async throws -> UInt64 {
         fatalError()
     }
 }
