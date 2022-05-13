@@ -12,7 +12,7 @@ struct SubscriptionsStorages {
         signatureInfoStream.onFinish?()
     }
     
-    func isSubscriptionExists<Item: SubscriptionStorageItem>(item: Item) async -> Bool {
+    func isSubscriptionExists<Item: SocketObservableItem>(item: Item) async -> Bool {
         switch item {
         case let item as SocketObservableAccount:
             return await accountSubscriptionsStorage.activeSubscriptions.contains(where: {item.pubkey == $0.item.pubkey})
@@ -23,7 +23,7 @@ struct SubscriptionsStorages {
         }
     }
     
-    func insertSubscription<Item: SubscriptionStorageItem>(_ subscription: SocketSubscription<Item>) async {
+    func insertSubscription<Item: SocketObservableItem>(_ subscription: SocketSubscription<Item>) async {
         switch subscription {
         case let subscription as SocketSubscription<SocketObservableAccount>:
             await accountSubscriptionsStorage.insertSubscription(subscription)
@@ -34,7 +34,7 @@ struct SubscriptionsStorages {
         }
     }
     
-    func insertObservableItem<Item: SubscriptionStorageItem>(_ item: Item) async {
+    func insertObservableItem<Item: SocketObservableItem>(_ item: Item) async {
         switch item {
         case let item as SocketObservableAccount:
             await accountSubscriptionsStorage.insertObservingItem(item)
@@ -45,7 +45,7 @@ struct SubscriptionsStorages {
         }
     }
     
-    func removeObservingItem<Item: SubscriptionStorageItem>(_ item: Item) async {
+    func removeObservingItem<Item: SocketObservableItem>(_ item: Item) async {
         switch item {
         case let item as SocketObservableAccount:
             await accountSubscriptionsStorage.removeObservingItem(item)
@@ -56,7 +56,7 @@ struct SubscriptionsStorages {
         }
     }
     
-    func findSubscription<Item: SubscriptionStorageItem>(account: String, type: Item.Type) async -> SocketSubscription<Item>? {
+    func findSubscription<Item: SocketObservableItem>(account: String, type: Item.Type) async -> SocketSubscription<Item>? {
         switch type {
         case is SocketObservableAccount.Type:
             guard let subscription = await accountSubscriptionsStorage.activeSubscriptions.first(where: {$0.item.pubkey == account})
@@ -71,7 +71,7 @@ struct SubscriptionsStorages {
         }
     }
     
-    func clearSubscription<Item: SubscriptionStorageItem>(_ subscription: SocketSubscription<Item>) async {
+    func clearSubscription<Item: SocketObservableItem>(_ subscription: SocketSubscription<Item>) async {
         switch subscription {
         case let subscription as SocketSubscription<SocketObservableAccount>:
             await accountSubscriptionsStorage.removeSubscription(subscription)
@@ -83,17 +83,17 @@ struct SubscriptionsStorages {
     }
 }
 
-protocol SubscriptionStorageItem: Hashable {
+protocol SocketObservableItem: Hashable {
     var entity: SocketEntity {get}
 }
-extension SocketObservableSignature: SubscriptionStorageItem {
+extension SocketObservableSignature: SocketObservableItem {
     var entity: SocketEntity {.signature}
 }
-extension SocketObservableAccount: SubscriptionStorageItem {
+extension SocketObservableAccount: SocketObservableItem {
     var entity: SocketEntity {.account}
 }
 
-actor SubscriptionsStorage<Item: SubscriptionStorageItem> {
+actor SubscriptionsStorage<Item: SocketObservableItem> {
     var observingItems = Set<Item>()
     var activeSubscriptions = Set<SocketSubscription<Item>>()
     

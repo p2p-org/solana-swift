@@ -2,7 +2,7 @@ import Foundation
 import LoggerSwift
 
 extension Socket {
-    func subscribe<Item: SubscriptionStorageItem>(item: Item) async throws {
+    func subscribe<Item: SocketObservableItem>(item: Item) async throws {
         let action = SocketMethod.Action.subscribe
         let entity: SocketEntity
         let params: [Encodable]

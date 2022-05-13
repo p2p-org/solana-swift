@@ -3,6 +3,7 @@ import LoggerSwift
 
 public class Socket: NSObject, SolanaSocket {
     // MARK: - Properties
+    /// Connection status of the socket
     var isConnected: Bool = false
     private var urlSession: URLSession!
     private(set) var task: URLSessionWebSocketTask!
@@ -28,17 +29,22 @@ public class Socket: NSObject, SolanaSocket {
     }
     
     // MARK: - Methods
+    /// Connect to socket
     func connect() {
         clean()
         task.resume()
     }
     
+    /// Disconnect from socket
     func disconnect() {
         clean()
         isConnected = false
         task.cancel(with: .goingAway, reason: nil)
     }
     
+    /// Add account to observing list, can be native account or spl token account
+    /// - Parameters:
+    ///   - object: Object that needs to be observed
     func addToObserving(account: SocketObservableAccount) async throws {
         // check if any subscription of account exists
         guard await !subscriptionsStorages.isSubscriptionExists(item: account)
@@ -53,6 +59,8 @@ public class Socket: NSObject, SolanaSocket {
         }
     }
     
+    /// Remove account from observing list
+    /// - Parameter account: account to be removed from observing list
     func removeFromObserving(account: String) async throws {
         // check if any subscription of account exists
         guard let subscription = await subscriptionsStorages.findSubscription(
@@ -70,10 +78,15 @@ public class Socket: NSObject, SolanaSocket {
         
     }
     
+    /// Observe notifications of all accounts in observing list
+    /// - Returns: Stream of SocketAccountResponse
     func observeAllAccounts() -> SocketResponseStream<Result<SocketAccountResponse, Error>> {
         subscriptionsStorages.accountInfoStream
     }
     
+    /// Observe notifications of an account
+    /// - Parameter account: account to be observed
+    /// - Returns: Stream of SocketAccountResponse
     func observe(account: String) async throws -> AsyncFilterSequence<SocketResponseStream<Result<SocketAccountResponse, Error>>> {
         guard let subscription = await subscriptionsStorages.findSubscription(
             account: account,
@@ -90,6 +103,9 @@ public class Socket: NSObject, SolanaSocket {
         }
     }
     
+    /// Observe status of a signature
+    /// - Parameter signature: signature to observe
+    /// - Returns: Sequence of statuses of the signature
     func observe(signature: String) async throws -> AsyncFilterSequence<SocketResponseStream<Result<SocketSignatureResponse, Error>>> {
         // subscribe first
         try await subscribe(item: signature as SocketObservableSignature)

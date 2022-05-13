@@ -5,7 +5,7 @@ enum SocketError: Swift.Error {
     case accountResponseError(SocketObservableAccount)
     case signatureResponseError(SocketObservableSignature)
     
-    static func responseError<Item: SubscriptionStorageItem>(_ item: Item) -> Self {
+    static func responseError<Item: SocketObservableItem>(_ item: Item) -> Self {
         switch item {
         case let item as SocketObservableSignature:
             return .signatureResponseError(item)
@@ -16,7 +16,7 @@ enum SocketError: Swift.Error {
         }
     }
     
-    func getResponseError<Item: SubscriptionStorageItem>(forObservingItem item: Item) -> Self? {
+    func getResponseError<Item: SocketObservableItem>(forObservingItem item: Item) -> Self? {
         switch self {
         case .accountResponseError(let socketObservableAccount):
             if let item = item as? SocketObservableAccount, item == socketObservableAccount {

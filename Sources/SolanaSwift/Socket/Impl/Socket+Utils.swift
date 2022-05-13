@@ -50,7 +50,7 @@ extension Socket {
     
     /// Cancel a subscription
     /// - Parameter subscription: subscription to cancel
-    func cancelSubscription<T: SubscriptionStorageItem>(_ subscription: SocketSubscription<T>) async throws {
+    func cancelSubscription<T: SocketObservableItem>(_ subscription: SocketSubscription<T>) async throws {
         try await write(method: .init(subscription.item.entity, .unsubscribe), params: [subscription.id])
         await subscriptionsStorages.clearSubscription(subscription)
     }
