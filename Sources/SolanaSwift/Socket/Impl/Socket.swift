@@ -29,6 +29,7 @@ class Socket: NSObject, SolanaSocket {
         clean()
         accountInfoStream.onFinish?()
         signatureInfoStream.onFinish?()
+        subscribingResultsStream.onFinish?()
     }
     
     // MARK: - Methods
