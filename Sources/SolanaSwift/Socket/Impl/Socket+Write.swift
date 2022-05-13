@@ -32,7 +32,10 @@ extension Socket {
                 guard response.requestId == requestId else {break}
                 subscriptionId = response.subscriptionId
             case .failure(let error):
-                break
+                guard let error = error as? SocketError,
+                      let responseError = error.getResponseError(forObservingItem: item)
+                else {break}
+                throw responseError
             }
         }
         
