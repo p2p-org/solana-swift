@@ -6,12 +6,17 @@ extension Socket {
         let requestId = try await write(method: method, params: params)
         
         try Task.checkCancellation()
-        let subscriptionId: UInt64
+        var subscriptionId: UInt64?
         
         for try await result in self.subscribingResultsStream where requestId == result.requestId {
+            subscriptionId = result.subscriptionId
             break
         }
         
+        guard let subscriptionId = subscriptionId else {
+            throw SolanaError.other("Subscription id not found")
+        }
+
         await self.subscriptionsStorage.insertSubscription(
             .init(
                 entity: .account,

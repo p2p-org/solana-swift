@@ -6,19 +6,19 @@ public class Socket: NSObject, SolanaSocket {
     var isConnected: Bool = false
     private var urlSession: URLSession!
     private(set) var task: URLSessionWebSocketTask!
-    private var wsHeartBeat: Timer!
+    var wsHeartBeat: Timer!
     
     // MARK: - Streams
     let subscribingResultsStream = SocketResponseStream<SubscribingResultResponse>()
-    private let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
-    private let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
+    let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
+    let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
     
     // MARK: - Subscriptions
     let subscriptionsStorage = SubscriptionsStorage()
     
     // MARK: - Initializers
     init(endpoint: String) {
-        
+        super.init()
         self.urlSession = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue())
         self.task = urlSession.webSocketTask(with: .init(string: endpoint)!)
         
@@ -106,67 +106,6 @@ public class Socket: NSObject, SolanaSocket {
             throw SolanaError.other("Subscription not found")
         }
         return signatureInfoStream.filter {$0.subscription == subscription.id}
-    }
-    
-    // MARK: - Helpers
-    /// Clean the environment
-    private func clean() {
-        Task {
-            try await unsubscribeAllObservingAccounts()
-        }
-        wsHeartBeat?.invalidate()
-        wsHeartBeat = nil
-    }
-    
-    /// Request to get new message
-    private func receiveNewMessage() async throws {
-        do {
-            let message = try await task.receive()
-            switch message {
-            case .string(_):
-                // TODO: - Parse object
-            case .data(_):
-                break
-            @unknown default:
-                break
-            }
-            try await receiveNewMessage()
-        } catch {
-            try await reconnect()
-        }
-    }
-    
-    /// Subscribe to accountNotification from all accounts in the queue
-    private func subscribeToAllAccounts() async {
-        let observingAccounts = await subscriptionsStorage.observingAccounts
-        for account in observingAccounts {
-            Task {
-                try await addToObserving(account: account)
-            }
-        }
-    }
-    
-    /// Remove all current subscriptions
-    private func unsubscribeAllObservingAccounts() async throws {
-        for subscription in await subscriptionsStorage.activeAccountSubscriptions {
-            Task.detached { [weak self] in
-                try await self?.cancelSubscription(subscription)
-            }
-        }
-    }
-    
-    /// Cancel a subscription
-    /// - Parameter subscription: subscription to cancel
-    private func cancelSubscription(_ subscription: SocketSubscription) async throws {
-        try await write(method: .init(subscription.entity, .unsubscribe), params: [subscription.id])
-        await subscriptionsStorage.cancelSubscription(subscription)
-    }
-    
-    /// Reconnect when error
-    fileprivate func reconnect(delayInSeconds: UInt64 = 3) async throws {
-        // TODO: - Handle error
-        try await Task.sleep(nanoseconds: 1_000_000 * delayInSeconds)
-        task.resume()
     }
 }
 
