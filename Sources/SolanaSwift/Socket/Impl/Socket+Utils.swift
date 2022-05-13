@@ -38,7 +38,7 @@ extension Socket {
                 if method == "accountNotification" {
                     do {
                         guard let parsedData = try JSONDecoder().decode(
-                            SocketResponse<SocketResponseParams<SocketAccountResponse>>.self, from: data
+                            SocketResponse<SocketResponseParams<Rpc<SocketAccountResponse>>>.self, from: data
                         )
                             .params?.result
                         else {

@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Response
 
-public typealias SocketAccountResponse = Rpc<BufferInfo<EmptyInfo>>
+public typealias SocketAccountResponse = BufferInfo<EmptyInfo>
 public typealias SocketSignatureResponse = SignatureStatus
 
 // MARK: - Notifications
