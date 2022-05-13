@@ -4,8 +4,8 @@ struct SubscriptionsStorages {
     let accountSubscriptionsStorage = SubscriptionsStorage<SocketObservableAccount>()
     let signatureSubscriptionsStorage = SubscriptionsStorage<SocketObservableSignature>()
     
-    let accountInfoStream = SocketResponseStream<Result<SocketObservableAccount, Error>>()
-    let signatureInfoStream = SocketResponseStream<Result<SocketObservableSignature, Error>>()
+    let accountInfoStream = SocketResponseStream<Result<SocketAccountResponse, Error>>()
+    let signatureInfoStream = SocketResponseStream<Result<SocketSignatureResponse, Error>>()
     
     func onFinish() {
         accountInfoStream.onFinish?()

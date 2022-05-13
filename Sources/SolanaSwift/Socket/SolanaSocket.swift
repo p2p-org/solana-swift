@@ -21,15 +21,15 @@ protocol SolanaSocket {
     
     /// Observe notifications of all accounts in observing list
     /// - Returns: Stream of SocketAccountResponse
-    func observeAllAccounts() -> SocketResponseStream<Result<SocketObservableAccount, Error>>
+    func observeAllAccounts() -> SocketResponseStream<Result<SocketAccountResponse, Error>>
     
     /// Observe notifications of an account
     /// - Parameter account: account to be observed
     /// - Returns: Stream of SocketAccountResponse
-    func observe(account: String) async throws -> AsyncFilterSequence<SocketResponseStream<Result<SocketObservableAccount, Error>>>
+    func observe(account: String) async throws -> AsyncFilterSequence<SocketResponseStream<Result<SocketAccountResponse, Error>>>
     
     /// Observe status of a signature
     /// - Parameter signature: signature to observe
     /// - Returns: Sequence of statuses of the signature
-    func observe(signature: String) async throws -> AsyncFilterSequence<SocketResponseStream<SocketSignatureResponse>>
+    func observe(signature: String) async throws -> AsyncFilterSequence<SocketResponseStream<Result<SocketSignatureResponse, Error>>>
 }

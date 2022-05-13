@@ -70,31 +70,42 @@ public class Socket: NSObject, SolanaSocket {
         
     }
     
-    func observeAllAccounts() -> SocketResponseStream<Result<SocketObservableAccount, Error>> {
+    func observeAllAccounts() -> SocketResponseStream<Result<SocketAccountResponse, Error>> {
         subscriptionsStorages.accountInfoStream
     }
     
-    func observe(account: String) async throws -> AsyncFilterSequence<SocketResponseStream<Result<SocketObservableAccount, Error>>> {
-        guard let subscription = await subscriptionsStorage.activeAccountSubscriptions.first(where: {$0.account == account})
-        else {
-            throw SolanaError.other("Subscription not found")
+    func observe(account: String) async throws -> AsyncFilterSequence<SocketResponseStream<Result<SocketAccountResponse, Error>>> {
+        guard let subscription = await subscriptionsStorages.findSubscription(
+            account: account,
+            type: SocketObservableAccount.self
+        ) else { throw SocketError.subscriptionIdNotFound }
+        
+        return subscriptionsStorages.accountInfoStream.filter { result in
+            switch result {
+            case .success(let account):
+                return subscription.id == account.subscription
+            case .failure:
+                return false
+            }
         }
-        return accountInfoStream.filter {$0.subscription == subscription.id}
     }
     
-    func observe(signature: String) async throws -> AsyncFilterSequence<SocketResponseStream<SocketSignatureResponse>> {
+    func observe(signature: String) async throws -> AsyncFilterSequence<SocketResponseStream<Result<SocketSignatureResponse, Error>>> {
         // subscribe first
-        try await subscribe(
-            method: .init(.signature, .subscribe),
-            params: [signature, ["commitment": "confirmed"]],
-            entity: .signature,
-            entityValue: signature
-        )
+        try await subscribe(item: signature as SocketObservableSignature)
         
-        guard let subscription = await subscriptionsStorage.activeSignatureSubscriptions.first(where: {$0.account == signature})
-        else {
-            throw SolanaError.other("Subscription not found")
+        guard let subscription = await subscriptionsStorages.findSubscription(
+            account: signature,
+            type: SocketObservableSignature.self
+        ) else { throw SocketError.subscriptionIdNotFound }
+        
+        return subscriptionsStorages.signatureInfoStream.filter { result in
+            switch result {
+            case .success(let signature):
+                return subscription.id == signature.subscription
+            case .failure:
+                return false
+            }
         }
-        return signatureInfoStream.filter {$0.subscription == subscription.id}
     }
 }
