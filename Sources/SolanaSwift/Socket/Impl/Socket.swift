@@ -55,11 +55,13 @@ public class Socket: NSObject, SolanaSocket {
     
     func removeFromObserving(account: String) async throws {
         // check if any subscription of account exists
-        guard let subscription = await subscriptionsStorage.activeAccountSubscriptions.first(where: {$0.account == account})
-        else { return /* not yet subscribed */ }
+        guard let subscription = await subscriptionsStorages.findSubscription(
+            account: account,
+            type: SocketObservableAccount.self
+        ) else { return /* not yet subscribed */ }
         
         // remove from observing list
-        await subscriptionsStorage.removeObservingAccount(account)
+        await subscriptionsStorages.removeObservingItem(subscription.item)
         
         // write
         Task.detached { [weak self] in
@@ -68,11 +70,11 @@ public class Socket: NSObject, SolanaSocket {
         
     }
     
-    func observeAllAccounts() -> SocketResponseStream<SocketAccountResponse> {
-        accountInfoStream
+    func observeAllAccounts() -> SocketResponseStream<Result<SocketObservableAccount, Error>> {
+        subscriptionsStorages.accountInfoStream
     }
     
-    func observe(account: String) async throws -> AsyncFilterSequence<SocketResponseStream<SocketAccountResponse>> {
+    func observe(account: String) async throws -> AsyncFilterSequence<SocketResponseStream<Result<SocketObservableAccount, Error>>> {
         guard let subscription = await subscriptionsStorage.activeAccountSubscriptions.first(where: {$0.account == account})
         else {
             throw SolanaError.other("Subscription not found")

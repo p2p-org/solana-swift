@@ -23,6 +23,17 @@ struct SubscriptionsStorages {
         }
     }
     
+    func insertSubscription<Item: SubscriptionStorageItem>(_ subscription: SocketSubscription<Item>) async {
+        switch subscription {
+        case let subscription as SocketSubscription<SocketObservableAccount>:
+            await accountSubscriptionsStorage.insertSubscription(subscription)
+        case let subscription as SocketSubscription<SocketObservableSignature>:
+            await signatureSubscriptionsStorage.insertSubscription(subscription)
+        default:
+            fatalError()
+        }
+    }
+    
     func insertObservableItem<Item: SubscriptionStorageItem>(_ item: Item) async {
         switch item {
         case let item as SocketObservableAccount:
@@ -34,12 +45,27 @@ struct SubscriptionsStorages {
         }
     }
     
-    func insertSubscription<Item: SubscriptionStorageItem>(_ subscription: SocketSubscription<Item>) async {
-        switch subscription {
-        case let subscription as SocketSubscription<SocketObservableAccount>:
-            await accountSubscriptionsStorage.insertSubscription(subscription)
-        case let subscription as SocketSubscription<SocketObservableSignature>:
-            await signatureSubscriptionsStorage.insertSubscription(subscription)
+    func removeObservingItem<Item: SubscriptionStorageItem>(_ item: Item) async {
+        switch item {
+        case let item as SocketObservableAccount:
+            await accountSubscriptionsStorage.removeObservingItem(item)
+        case let item as SocketObservableSignature:
+            await signatureSubscriptionsStorage.removeObservingItem(item)
+        default:
+            fatalError()
+        }
+    }
+    
+    func findSubscription<Item: SubscriptionStorageItem>(account: String, type: Item.Type) async -> SocketSubscription<Item>? {
+        switch type {
+        case is SocketObservableAccount.Type:
+            guard let subscription = await accountSubscriptionsStorage.activeSubscriptions.first(where: {$0.item.pubkey == account})
+            else {return nil}
+            return subscription as? SocketSubscription<Item>
+        case is SocketObservableSignature.Type:
+            guard let subscription = await signatureSubscriptionsStorage.activeSubscriptions.first(where: {$0.item == account})
+            else {return nil}
+            return subscription as? SocketSubscription<Item>
         default:
             fatalError()
         }
@@ -56,6 +82,10 @@ actor SubscriptionsStorage<Item: SubscriptionStorageItem> {
     
     func insertObservingItem(_ item: Item) {
         observingItems.insert(item)
+    }
+    
+    func removeObservingItem(_ item: Item) {
+        observingItems.remove(item)
     }
     
     func insertSubscription(_ subscription: SocketSubscription<Item>) {
