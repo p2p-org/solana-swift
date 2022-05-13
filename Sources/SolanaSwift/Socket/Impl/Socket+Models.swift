@@ -3,9 +3,7 @@ import Foundation
 // MARK: - Response
 
 public typealias SocketAccountResponse = SocketResponseParams<BufferInfo<EmptyInfo>>
-public struct SocketSignatureResponse: Decodable {
-    
-}
+public typealias SocketSignatureResponse = SocketResponseParams<SignatureStatus>
 
 // MARK: - Notifications
 public struct SocketResponse<T: Decodable>: Decodable {

@@ -9,12 +9,12 @@ public class Socket: NSObject, SolanaSocket {
     private var wsHeartBeat: Timer!
     
     // MARK: - Streams
-    private let subscribingResultsStream = SocketResponseStream<SubscribingResultResponse>()
+    let subscribingResultsStream = SocketResponseStream<SubscribingResultResponse>()
     private let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
     private let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
     
     // MARK: - Subscriptions
-    private let subscriptionsStorage = SubscriptionsStorage()
+    let subscriptionsStorage = SubscriptionsStorage()
     
     // MARK: - Initializers
     init(endpoint: String) {
@@ -53,28 +53,15 @@ public class Socket: NSObject, SolanaSocket {
         // add account to observing list
         await subscriptionsStorage.insertObservableAccount(account)
         
-        // add subscriptions
-        let requestId = try await write(
-            method: .init(.account, .subscribe),
-            params: [
-                account.pubkey,
-                ["encoding":"base64", "commitment": "recent"]
-            ]
-        )
-        
+        // subscribe
         Task.detached { [weak self] in
-            guard let self = self else {return}
-            let subscriptionId: UInt64
-            for try await result in self.subscribingResultsStream where requestId == result.requestId {
-                break
-            }
-            
-            await self.subscriptionsStorage.insertSubscription(
-                .init(
-                    entity: .account,
-                    id: subscriptionId,
-                    account: account.pubkey
-                )
+            try await self?.subscribe(
+                method: .init(.account, .subscribe),
+                params: [
+                    account.pubkey,
+                    ["encoding":"base64", "commitment": "recent"]
+                ],
+                account: account.pubkey
             )
         }
     }
@@ -107,7 +94,18 @@ public class Socket: NSObject, SolanaSocket {
     }
     
     func observe(signature: String) async throws -> AsyncFilterSequence<SocketResponseStream<SocketSignatureResponse>> {
-        <#code#>
+        // subscribe first
+        try await subscribe(
+            method: .init(.signature, .subscribe),
+            params: [signature, ["commitment": "confirmed"]],
+            account: signature
+        )
+        
+        guard let subscription = await subscriptionsStorage.activeAccountSubscriptions.first(where: {$0.account == signature})
+        else {
+            throw SolanaError.other("Subscription not found")
+        }
+        return signatureInfoStream.filter {$0.subscription == subscription.id}
     }
     
     // MARK: - Helpers
@@ -134,9 +132,7 @@ public class Socket: NSObject, SolanaSocket {
             }
             try await receiveNewMessage()
         } catch {
-            accountInfoStream.onFailure?(error)
-            signatureInfoStream.onFailure?(error)
-            // TODO: - Handle error
+            try await reconnect()
         }
     }
     
@@ -164,6 +160,13 @@ public class Socket: NSObject, SolanaSocket {
     private func cancelSubscription(_ subscription: SocketSubscription) async throws {
         try await write(method: .init(subscription.entity, .unsubscribe), params: [subscription.id])
         await subscriptionsStorage.cancelSubscription(subscription)
+    }
+    
+    /// Reconnect when error
+    fileprivate func reconnect(delayInSeconds: UInt64 = 3) async throws {
+        // TODO: - Handle error
+        try await Task.sleep(nanoseconds: 1_000_000 * delayInSeconds)
+        task.resume()
     }
 }
 
@@ -207,7 +210,7 @@ extension Socket: URLSessionWebSocketDelegate {
         // mark as not connected
         isConnected = false
         
-        // TODO: - Reopen?
+        try await reconnect()
     }
     
     /// If your app is not sending messages over WebSocket with "acceptable" frequency, the server may drop your connection due to inactivity.

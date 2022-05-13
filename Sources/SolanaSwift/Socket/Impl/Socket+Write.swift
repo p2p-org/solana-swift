@@ -2,6 +2,25 @@ import Foundation
 import LoggerSwift
 
 extension Socket {
+    func subscribe(method: SocketMethod, params: [Encodable], account: String) async throws {
+        let requestId = try await write(method: method, params: params)
+        
+        try Task.checkCancellation()
+        let subscriptionId: UInt64
+        
+        for try await result in self.subscribingResultsStream where requestId == result.requestId {
+            break
+        }
+        
+        await self.subscriptionsStorage.insertSubscription(
+            .init(
+                entity: .account,
+                id: subscriptionId,
+                account: account
+            )
+        )
+    }
+    
     /// Write message to socket
     /// - Parameters:
     ///   - method: method to write
