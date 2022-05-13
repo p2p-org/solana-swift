@@ -11,6 +11,10 @@ class Socket: NSObject, SolanaSocket {
     let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
     let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
     
+    // MARK: - Subscriptions
+    var observingAccounts = [SocketObservableAccount]()
+    var activeAccountSubscriptions = [SocketSubscription]()
+    
     // MARK: - Initializers
     init(endpoint: String) {
         
@@ -34,17 +38,45 @@ class Socket: NSObject, SolanaSocket {
     }
     
     func disconnect() {
-        unsubscribeToAllSubscriptions()
+        clean()
         isConnected = false
         task.cancel(with: .goingAway, reason: nil)
-        clean()
     }
     
-    func subscribe(account: String, isNative: Bool) {
-        <#code#>
+    func addToObserving(account: SocketObservableAccount) {
+        // check if subscriptions exists
+        guard !activeAccountSubscriptions.contains(where: {$0.account == account.pubkey })
+        else {
+            // already registered
+            return
+        }
+        
+        // if account was not registered, add account to self.accounts
+        if !observingAccounts.contains(account) {
+            observingAccounts.append(account)
+        }
+        
+        // add subscriptions
+        let id = write(
+            method: .init(.account, .subscribe),
+            params: [
+                subscriber.pubkey,
+                ["encoding":"jsonParsed", "commitment": "recent"]
+            ]
+        )
+        subscribe(id: id)
+            .subscribe(onSuccess: {[weak self] subscriptionId in
+                guard let strongSelf = self else {return}
+                if strongSelf.accountSubscriptions.contains(where: {$0.account == subscriber.pubkey})
+                {
+                    strongSelf.accountSubscriptions.removeAll(where: {$0.account == subscriber.pubkey})
+                }
+                strongSelf.accountSubscriptions.append(.init(entity: .account, id: subscriptionId, account: subscriber.pubkey))
+            })
+            .disposed(by: disposeBag)
     }
     
-    func unsubscribe(account: String) {
+    func removeFromObserving(account: String) {
         <#code#>
     }
     
@@ -63,6 +95,7 @@ class Socket: NSObject, SolanaSocket {
     // MARK: - Helpers
     /// Clean the environment
     private func clean() {
+        unsubscribeAllObservingAccounts()
         wsHeartBeat?.invalidate()
         wsHeartBeat = nil
     }
@@ -97,12 +130,25 @@ class Socket: NSObject, SolanaSocket {
             self?.scheduleNextPing()
         }
     }
+    
+    /// Subscribe to accountNotification from all accounts in the queue
+    private func subscribeToAllAccounts() {
+        observingAccounts.forEach {subscribeAccountNotification(account: $0.pubkey, isNative: $0.isNative)}
+    }
+    
+    /// Remove all current subscriptions
+    private func unsubscribeAllObservingAccounts() {
+        for subscription in activeAccountSubscriptions {
+            write(method: .init(subscription.entity, .unsubscribe), params: [subscription.id])
+        }
+        activeAccountSubscriptions = []
+    }
 }
 
 extension Socket: URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         // wipe old subscriptions
-        unsubscribeToAllSubscriptions()
+        unsubscribeAllObservingAccounts()
         
         // set status
         status.accept(.connected)

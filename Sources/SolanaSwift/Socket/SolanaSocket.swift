@@ -12,13 +12,12 @@ protocol SolanaSocket {
     
     /// Add account to observing list, can be native account or spl token account
     /// - Parameters:
-    ///   - account: Native account or spl token account
-    ///   - isNative: true if the account is native account
-    func subscribe(account: String, isNative: Bool)
+    ///   - object: Object that needs to be observed
+    func addToObserving(account: SocketObservableAccount)
     
     /// Remove account from observing list
     /// - Parameter account: account to be removed from observing list
-    func unsubscribe(account: String)
+    func removeFromObserving(account: String)
     
     /// Observe notifications of all accounts in observing list
     /// - Returns: Stream of SocketAccountResponse
