@@ -17,7 +17,7 @@ protocol SolanaSocket {
     
     /// Remove account from observing list
     /// - Parameter account: account to be removed from observing list
-    func removeFromObserving(account: String)
+    func removeFromObserving(account: String) async throws
     
     /// Observe notifications of all accounts in observing list
     /// - Returns: Stream of SocketAccountResponse

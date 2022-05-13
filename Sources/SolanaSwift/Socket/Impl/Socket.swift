@@ -1,19 +1,20 @@
 import Foundation
+import LoggerSwift
 
-class Socket: NSObject, SolanaSocket {
+public class Socket: NSObject, SolanaSocket {
     // MARK: - Properties
     var isConnected: Bool = false
-    var urlSession: URLSession!
-    var task: URLSessionWebSocketTask!
-    var wsHeartBeat: Timer!
+    private var urlSession: URLSession!
+    private var task: URLSessionWebSocketTask!
+    private var wsHeartBeat: Timer!
     
     // MARK: - Streams
-    let subscribingResultsStream = SocketResponseStream<SubscribingResultResponse>()
-    let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
-    let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
+    private let subscribingResultsStream = SocketResponseStream<SubscribingResultResponse>()
+    private let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
+    private let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
     
     // MARK: - Subscriptions
-    let subscriptionsStorage = SubscriptionsStorage()
+    private let subscriptionsStorage = SubscriptionsStorage()
     
     // MARK: - Initializers
     init(endpoint: String) {
@@ -46,7 +47,7 @@ class Socket: NSObject, SolanaSocket {
     
     func addToObserving(account: SocketObservableAccount) async throws {
         // check if any subscription of account exists
-        guard await !subscriptionsStorage.subscriptionExists(account: account)
+        guard await !subscriptionsStorage.subscriptionExists(account: account.pubkey)
         else { return /* already subscribed */ }
         
         // add account to observing list
@@ -61,22 +62,36 @@ class Socket: NSObject, SolanaSocket {
             ]
         )
         
-        let subscriptionId: UInt64
-        for try await result in subscribingResultsStream where requestId == result.requestId {
-            break
-        }
-        
-        await subscriptionsStorage.insertSubscription(
-            .init(
-                entity: .account,
-                id: subscriptionId,
-                account: account.pubkey
+        Task.detached { [weak self] in
+            guard let self = self else {return}
+            let subscriptionId: UInt64
+            for try await result in self.subscribingResultsStream where requestId == result.requestId {
+                break
+            }
+            
+            await self.subscriptionsStorage.insertSubscription(
+                .init(
+                    entity: .account,
+                    id: subscriptionId,
+                    account: account.pubkey
+                )
             )
-        )
+        }
     }
     
-    func removeFromObserving(account: String) {
-        <#code#>
+    func removeFromObserving(account: String) async throws {
+        // check if any subscription of account exists
+        guard let subscription = await subscriptionsStorage.activeAccountSubscriptions.first(where: {$0.account == account})
+        else { return /* not yet subscribed */ }
+        
+        // remove from observing list
+        await subscriptionsStorage.removeObservingAccount(account)
+        
+        // write
+        Task.detached { [weak self] in
+            try await self?.cancelSubscription(subscription)
+        }
+        
     }
     
     func observeAllAccounts() -> SocketResponseStream<SocketAccountResponse> {
@@ -90,15 +105,80 @@ class Socket: NSObject, SolanaSocket {
     func observe(signature: String) -> SocketResponseStream<SocketSignatureResponse> {
         <#code#>
     }
+    
+    // MARK: - Helpers
+    /// Clean the environment
+    private func clean() {
+        Task {
+            try await unsubscribeAllObservingAccounts()
+        }
+        wsHeartBeat?.invalidate()
+        wsHeartBeat = nil
+    }
+    
+    /// Request to get new message
+    private func receiveNewMessage() async throws {
+        do {
+            let message = try await task.receive()
+            switch message {
+            case .string(_):
+                // TODO: - Parse object
+            case .data(_):
+                break
+            @unknown default:
+                break
+            }
+            try await receiveNewMessage()
+        } catch {
+            accountInfoStream.onFailure?(error)
+            signatureInfoStream.onFailure?(error)
+            // TODO: - Handle error
+        }
+    }
+    
+    /// Subscribe to accountNotification from all accounts in the queue
+    private func subscribeToAllAccounts() async {
+        let observingAccounts = await subscriptionsStorage.observingAccounts
+        for account in observingAccounts {
+            Task {
+                try await addToObserving(account: account)
+            }
+        }
+    }
+    
+    /// Remove all current subscriptions
+    private func unsubscribeAllObservingAccounts() async throws {
+        for subscription in await subscriptionsStorage.activeAccountSubscriptions {
+            Task.detached { [weak self] in
+                try await self?.cancelSubscription(subscription)
+            }
+        }
+    }
+    
+    /// Cancel a subscription
+    /// - Parameter subscription: subscription to cancel
+    private func cancelSubscription(_ subscription: SocketSubscription) async throws {
+        try await write(method: .init(subscription.entity, .unsubscribe), params: [subscription.id])
+        await subscriptionsStorage.cancelSubscription(subscription)
+    }
 }
 
 extension Socket: URLSessionWebSocketDelegate {
-    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+        Task {
+            try await onOpen()
+        }
+    }
+    
+    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        Task {
+            try await onClosed()
+        }
+    }
+    
+    private func onOpen() async throws {
         // wipe old subscriptions
-        unsubscribeAllObservingAccounts()
-        
-        // set status
-        status.accept(.connected)
+        try await unsubscribeAllObservingAccounts()
         
         // set heart beat
         wsHeartBeat?.invalidate()
@@ -108,24 +188,31 @@ extension Socket: URLSessionWebSocketDelegate {
         }
         
         // resubscribe
-        subscribeToAllAccounts()
+        await subscribeToAllAccounts()
         
         // mark as connected
         isConnected = true
         
         // get new message
-        Task {
-            try await receiveNewMessage()
-        }
+        try await receiveNewMessage()
     }
     
-    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
-        
+    private func onClosed() async throws {
         clean()
         
         // mark as not connected
         isConnected = false
         
         // TODO: - Reopen?
+    }
+    
+    /// If your app is not sending messages over WebSocket with "acceptable" frequency, the server may drop your connection due to inactivity.
+    /// Special ping-pong messages are used to solve this problem.
+    private func ping() {
+        task.sendPing { error in
+            if let error = error {
+                Logger.log(event: .error, message: "Ping failed: \(error)")
+            }
+        }
     }
 }
