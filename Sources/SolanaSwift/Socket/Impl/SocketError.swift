@@ -1,6 +1,8 @@
 import Foundation
 
-enum SocketError: Swift.Error {
+enum SocketError: Swift.Error, Equatable {
+    case subscriptionFailed(id: String) // failed to get subscription id from socket
+    
     case subscriptionIdNotFound
     case accountResponseError(SocketObservableAccount)
     case signatureResponseError(SocketObservableSignature)

@@ -15,12 +15,52 @@ extension Socket {
         let message = try await task.receive()
         switch message {
         case .string(let string):
-            guard let data = string.data(using: .utf8) else { return }
-            // TODO: - Parse object
-            // Parse subscription
-            if let subscriptionResult = try? JSONDecoder().decode(Response<UInt64>.self, from: data) {
-                subscribingResultsStream.onReceiving?(.init(requestId: subscriptionResult.id, subscriptionId: subscriptionResult.result))
-            } else if let
+            // Get needed data
+            guard let data = string.data(using: .utf8),
+                  let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
+            else {
+                break
+            }
+            
+            // subscribe request
+            if let id = json["id"] as? String {
+                // subscribe
+                guard let result = json["result"] as? UInt64 else {
+                    subscribingResultsStream.onReceiving?(.failure(SocketError.subscriptionFailed(id: id)))
+                    break
+                }
+                // successfully subscribed
+                subscribingResultsStream.onReceiving?(.success(.init(requestId: id, subscriptionId: result)))
+            }
+            
+            // notification
+            else if let method = json["method"] as? String {
+                if method == "accountNotification" {
+                    do {
+                        let parsedData = try JSONDecoder().decode(SocketResponse<SocketAccountResponse>.self, from: data)
+                        subscriptionsStorages.accountInfoStream.onReceiving?(
+                            .success(
+                                .init(
+                                    result: parsedData.params?.result,
+                                    subscription: parsedData.params?.subscription
+                                )
+                            )
+                        )
+                    } catch {
+                        subscriptionsStorages.accountInfoStream.onReceiving?(
+                            .failure(
+                                SocketError.
+                            )
+                        )
+                    }
+                }
+                
+            }
+            
+            // another
+            else {
+                break
+            }
         case .data(_):
             break
         @unknown default:

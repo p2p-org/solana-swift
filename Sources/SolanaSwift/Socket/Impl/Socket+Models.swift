@@ -9,7 +9,7 @@ public typealias SocketSignatureResponse = SocketResponseParams<SignatureStatus>
 public struct SocketResponse<T: Decodable>: Decodable {
     public let jsonrpc: String
     public let method: String?
-    public let params: SocketResponseParams<T>?
+    public let params: T?
     public let result: T?
 }
 

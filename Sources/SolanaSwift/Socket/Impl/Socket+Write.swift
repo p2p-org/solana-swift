@@ -33,9 +33,9 @@ extension Socket {
                 subscriptionId = response.subscriptionId
             case .failure(let error):
                 guard let error = error as? SocketError,
-                      let responseError = error.getResponseError(forObservingItem: item)
+                      error == .subscriptionFailed(id: requestId)
                 else {break}
-                throw responseError
+                throw error
             }
         }
         
