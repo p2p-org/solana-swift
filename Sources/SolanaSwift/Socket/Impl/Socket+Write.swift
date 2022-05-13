@@ -2,27 +2,46 @@ import Foundation
 import LoggerSwift
 
 extension Socket {
-    func subscribe(method: SocketMethod, params: [Encodable], account: String) async throws {
-        let requestId = try await write(method: method, params: params)
+    func subscribe<Item: SubscriptionStorageItem>(item: Item) async throws {
+        let action = SocketMethod.Action.subscribe
+        let entity: SocketEntity
+        let params: [Encodable]
+        
+        switch item {
+        case let item as SocketObservableAccount:
+            entity = .account
+            params = [
+                item.pubkey,
+                ["encoding":"base64", "commitment": "recent"]
+            ]
+        case let item as SocketObservableSignature:
+            entity = .signature
+            params = [item, ["commitment": "confirmed"]]
+        default:
+            fatalError()
+        }
+        
+        let requestId = try await write(method: .init(entity, action), params: params)
         
         try Task.checkCancellation()
         var subscriptionId: UInt64?
         
-        for try await result in self.subscribingResultsStream where requestId == result.requestId {
-            subscriptionId = result.subscriptionId
-            break
+        for try await result in self.subscribingResultsStream {
+            switch result {
+            case .success(let response):
+                guard response.requestId == requestId else {break}
+                subscriptionId = response.subscriptionId
+            case .failure(let error):
+                break
+            }
         }
         
         guard let subscriptionId = subscriptionId else {
-            throw SolanaError.other("Subscription id not found")
+            throw SocketError.subscriptionIdNotFound
         }
 
-        await self.subscriptionsStorage.insertSubscription(
-            .init(
-                entity: .account,
-                id: subscriptionId,
-                account: account
-            )
+        await self.subscriptionsStorages.insertSubscription(
+            .init(id: subscriptionId, item: item)
         )
     }
     

@@ -1,6 +1,6 @@
 import Foundation
 
-public class SocketResponseStream<Element: Decodable>: AsyncSequence {
+public class SocketResponseStream<Element>: AsyncSequence {
     public typealias AsyncIterator = AsyncThrowingStream<Element, Error>.Iterator
     
     private var stream: AsyncThrowingStream<Element, Error>?

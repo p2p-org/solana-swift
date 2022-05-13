@@ -12,20 +12,21 @@ extension Socket {
     
     /// Request to get new message
     func receiveNewMessage() async throws {
-        do {
-            let message = try await task.receive()
-            switch message {
-            case .string(_):
-                // TODO: - Parse object
-            case .data(_):
-                break
-            @unknown default:
-                break
-            }
-            try await receiveNewMessage()
-        } catch {
-            try await reconnect()
+        let message = try await task.receive()
+        switch message {
+        case .string(let string):
+            guard let data = string.data(using: .utf8) else { return }
+            // TODO: - Parse object
+            // Parse subscription
+            if let subscriptionResult = try? JSONDecoder().decode(Response<UInt64>.self, from: data) {
+                subscribingResultsStream.onReceiving?(.init(requestId: subscriptionResult.id, subscriptionId: subscriptionResult.result))
+            } else if let
+        case .data(_):
+            break
+        @unknown default:
+            break
         }
+        try await receiveNewMessage()
     }
     
     /// Subscribe to accountNotification from all accounts in the queue

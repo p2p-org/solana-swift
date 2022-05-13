@@ -44,10 +44,11 @@ public struct SocketObservableAccount: Equatable, Hashable {
     }
 }
 
-public struct SocketSubscription: Equatable, Hashable {
-    let entity: SocketEntity
+public typealias SocketObservableSignature = String
+
+public struct SocketSubscription<T: Equatable & Hashable>: Equatable, Hashable {
     let id: UInt64
-    var account: String?
+    let item: T
 }
 
 public struct SocketMethod: Equatable {

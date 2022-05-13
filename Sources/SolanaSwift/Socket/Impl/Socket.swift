@@ -8,13 +8,8 @@ public class Socket: NSObject, SolanaSocket {
     private(set) var task: URLSessionWebSocketTask!
     var wsHeartBeat: Timer!
     
-    // MARK: - Streams
-    let subscribingResultsStream = SocketResponseStream<SubscribingResultResponse>()
-    let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
-    let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
-    
-    // MARK: - Subscriptions
-    let subscriptionsStorage = SubscriptionsStorage()
+    let subscribingResultsStream = SocketResponseStream<Result<SubscribingResultResponse, Error>>()
+    let subscriptionsStorages = SubscriptionsStorages()
     
     // MARK: - Initializers
     init(endpoint: String) {
@@ -28,9 +23,8 @@ public class Socket: NSObject, SolanaSocket {
     deinit {
         task.cancel(with: .goingAway, reason: nil)
         clean()
-        accountInfoStream.onFinish?()
-        signatureInfoStream.onFinish?()
         subscribingResultsStream.onFinish?()
+        subscriptionsStorages.onFinish()
     }
     
     // MARK: - Methods
@@ -47,22 +41,15 @@ public class Socket: NSObject, SolanaSocket {
     
     func addToObserving(account: SocketObservableAccount) async throws {
         // check if any subscription of account exists
-        guard await !subscriptionsStorage.subscriptionExists(account: account.pubkey)
+        guard await !subscriptionsStorages.isSubscriptionExists(item: account)
         else { return /* already subscribed */ }
         
         // add account to observing list
-        await subscriptionsStorage.insertObservableAccount(account)
+        await subscriptionsStorages.insertObservableItem(account)
         
         // subscribe
         Task.detached { [weak self] in
-            try await self?.subscribe(
-                method: .init(.account, .subscribe),
-                params: [
-                    account.pubkey,
-                    ["encoding":"base64", "commitment": "recent"]
-                ],
-                account: account.pubkey
-            )
+            try await self?.subscribe(item: account)
         }
     }
     
@@ -98,10 +85,11 @@ public class Socket: NSObject, SolanaSocket {
         try await subscribe(
             method: .init(.signature, .subscribe),
             params: [signature, ["commitment": "confirmed"]],
-            account: signature
+            entity: .signature,
+            entityValue: signature
         )
         
-        guard let subscription = await subscriptionsStorage.activeAccountSubscriptions.first(where: {$0.account == signature})
+        guard let subscription = await subscriptionsStorage.activeSignatureSubscriptions.first(where: {$0.account == signature})
         else {
             throw SolanaError.other("Subscription not found")
         }

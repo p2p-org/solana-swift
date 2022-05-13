@@ -1,32 +1,64 @@
 import Foundation
 
-actor SubscriptionsStorage {
-    var observingAccounts = Set<SocketObservableAccount>()
-    var activeAccountSubscriptions = Set<SocketSubscription>()
+struct SubscriptionsStorages {
+    let accountSubscriptionsStorage = SubscriptionsStorage<SocketObservableAccount>()
+    let signatureSubscriptionsStorage = SubscriptionsStorage<SocketObservableSignature>()
     
-    func subscriptionExists(account: String) -> Bool {
-        activeAccountSubscriptions.contains(where: {$0.account == account})
+    let accountInfoStream = SocketResponseStream<Result<SocketObservableAccount, Error>>()
+    let signatureInfoStream = SocketResponseStream<Result<SocketObservableSignature, Error>>()
+    
+    func onFinish() {
+        accountInfoStream.onFinish?()
+        signatureInfoStream.onFinish?()
     }
     
-    func insertObservableAccount(_ account: SocketObservableAccount) {
-        observingAccounts.insert(account)
+    func isSubscriptionExists<Item: SubscriptionStorageItem>(item: Item) async -> Bool {
+        switch item {
+        case let item as SocketObservableAccount:
+            return await accountSubscriptionsStorage.activeSubscriptions.contains(where: {item.pubkey == $0.item.pubkey})
+        case let item as SocketObservableSignature:
+            return await signatureSubscriptionsStorage.activeSubscriptions.contains(where: {item == $0.item})
+        default:
+            fatalError()
+        }
     }
     
-    func removeObservingAccount(_ account: String) {
-        guard let observingAccount = observingAccounts.first(where: {$0.pubkey == account})
-        else { return }
-        observingAccounts.remove(observingAccount)
+    func insertObservableItem<Item: SubscriptionStorageItem>(_ item: Item) async {
+        switch item {
+        case let item as SocketObservableAccount:
+            await accountSubscriptionsStorage.insertObservingItem(item)
+        case let item as SocketObservableSignature:
+            await signatureSubscriptionsStorage.insertObservingItem(item)
+        default:
+            fatalError()
+        }
     }
     
-    func insertSubscription(_ subscription: SocketSubscription) {
-        activeAccountSubscriptions.insert(subscription)
+    func insertSubscription<Item: SubscriptionStorageItem>(_ subscription: SocketSubscription<Item>) async {
+        switch subscription {
+        case let subscription as SocketSubscription<SocketObservableAccount>:
+            await accountSubscriptionsStorage.insertSubscription(subscription)
+        case let subscription as SocketSubscription<SocketObservableSignature>:
+            await signatureSubscriptionsStorage.insertSubscription(subscription)
+        default:
+            fatalError()
+        }
+    }
+}
+
+protocol SubscriptionStorageItem: Hashable {}
+extension SocketObservableSignature: SubscriptionStorageItem {}
+extension SocketObservableAccount: SubscriptionStorageItem {}
+
+actor SubscriptionsStorage<Item: SubscriptionStorageItem> {
+    var observingItems = Set<Item>()
+    var activeSubscriptions = Set<SocketSubscription<Item>>()
+    
+    func insertObservingItem(_ item: Item) {
+        observingItems.insert(item)
     }
     
-    func cancelSubscription(_ subscription: SocketSubscription) {
-        activeAccountSubscriptions.remove(subscription)
-    }
-    
-    func cancelAllSubscriptions() {
-        activeAccountSubscriptions = []
+    func insertSubscription(_ subscription: SocketSubscription<Item>) {
+        activeSubscriptions.insert(subscription)
     }
 }
