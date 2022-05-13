@@ -8,6 +8,7 @@ public class SocketResponseStream<Element: Decodable>: AsyncSequence {
     
     private(set) var onReceiving: ((Element) -> Void)?
     private(set) var onFailure: ((Error) -> Void)?
+    private(set) var onFinish: (() -> Void)?
     
     init() {
         self.stream = AsyncThrowingStream { continuation in
@@ -20,6 +21,10 @@ public class SocketResponseStream<Element: Decodable>: AsyncSequence {
         
         self.onFailure = { [weak self] error in
             self?.continuation?.finish(throwing: error)
+        }
+        
+        self.onFinish = { [weak self] in
+            self?.continuation?.finish()
         }
     }
     

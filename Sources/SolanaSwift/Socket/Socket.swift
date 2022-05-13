@@ -4,6 +4,8 @@ class Socket: NSObject {
     // MARK: - Properties
     var urlSession: URLSession!
     var task: URLSessionWebSocketTask!
+    var wsHeartBeat: Timer!
+    
     let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
     let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
     
@@ -13,15 +15,34 @@ class Socket: NSObject {
         self.urlSession = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue())
         self.task = urlSession.webSocketTask(with: .init(string: endpoint)!)
         
-        defer { task.resume() }
+        defer { connect() }
+    }
+    
+    deinit {
+        task.cancel(with: .goingAway, reason: nil)
+        clean()
+        accountInfoStream.onFinish?()
+        signatureInfoStream.onFinish?()
     }
     
     // MARK: - Methods
+    func connect() {
+        clean()
+        task.resume()
+    }
+    
     func disconnect() {
         task.cancel(with: .goingAway, reason: nil)
+        clean()
     }
     
     // MARK: - Helpers
+    /// Clean the environment
+    private func clean() {
+        wsHeartBeat?.invalidate()
+        wsHeartBeat = nil
+    }
+    
     /// Request to get new message
     private func receiveNewMessage() async throws {
         do {
@@ -56,10 +77,26 @@ class Socket: NSObject {
 
 extension Socket: URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
-        <#code#>
+        // wipe old subscriptions
+        unsubscribeToAllSubscriptions()
+        
+        // set status
+        status.accept(.connected)
+        
+        // set heart beat
+        wsHeartBeat?.invalidate()
+        wsHeartBeat = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] (_) in
+            // Ping server every 5s to prevent idle timeouts
+            self?.ping()
+        }
+        
+        // resubscribe
+        subscribeToAllAccounts()
     }
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
-        <#code#>
+        clean()
+        
+        // TODO: - Reopen?
     }
 }
