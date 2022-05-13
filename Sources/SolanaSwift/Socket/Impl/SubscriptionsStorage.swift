@@ -70,11 +70,28 @@ struct SubscriptionsStorages {
             fatalError()
         }
     }
+    
+    func clearSubscription<Item: SubscriptionStorageItem>(_ subscription: SocketSubscription<Item>) async {
+        switch subscription {
+        case let subscription as SocketSubscription<SocketObservableAccount>:
+            await accountSubscriptionsStorage.removeSubscription(subscription)
+        case let subscription as SocketSubscription<SocketObservableSignature>:
+            await signatureSubscriptionsStorage.removeSubscription(subscription)
+        default:
+            fatalError()
+        }
+    }
 }
 
-protocol SubscriptionStorageItem: Hashable {}
-extension SocketObservableSignature: SubscriptionStorageItem {}
-extension SocketObservableAccount: SubscriptionStorageItem {}
+protocol SubscriptionStorageItem: Hashable {
+    var entity: SocketEntity {get}
+}
+extension SocketObservableSignature: SubscriptionStorageItem {
+    var entity: SocketEntity {.signature}
+}
+extension SocketObservableAccount: SubscriptionStorageItem {
+    var entity: SocketEntity {.account}
+}
 
 actor SubscriptionsStorage<Item: SubscriptionStorageItem> {
     var observingItems = Set<Item>()
@@ -90,5 +107,9 @@ actor SubscriptionsStorage<Item: SubscriptionStorageItem> {
     
     func insertSubscription(_ subscription: SocketSubscription<Item>) {
         activeSubscriptions.insert(subscription)
+    }
+    
+    func removeSubscription(_ subscription: SocketSubscription<Item>) {
+        activeSubscriptions.remove(subscription)
     }
 }

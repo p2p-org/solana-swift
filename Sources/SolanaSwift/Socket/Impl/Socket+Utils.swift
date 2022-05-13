@@ -31,7 +31,7 @@ extension Socket {
     
     /// Subscribe to accountNotification from all accounts in the queue
     func subscribeToAllAccounts() async {
-        let observingAccounts = await subscriptionsStorage.observingAccounts
+        let observingAccounts = await subscriptionsStorages.accountSubscriptionsStorage.observingItems
         for account in observingAccounts {
             Task {
                 try await addToObserving(account: account)
@@ -41,7 +41,7 @@ extension Socket {
     
     /// Remove all current subscriptions
     func unsubscribeAllObservingAccounts() async throws {
-        for subscription in await subscriptionsStorage.activeAccountSubscriptions {
+        for subscription in await subscriptionsStorages.accountSubscriptionsStorage.activeSubscriptions {
             Task.detached { [weak self] in
                 try await self?.cancelSubscription(subscription)
             }
@@ -50,9 +50,9 @@ extension Socket {
     
     /// Cancel a subscription
     /// - Parameter subscription: subscription to cancel
-    func cancelSubscription(_ subscription: SocketSubscription) async throws {
-        try await write(method: .init(subscription.entity, .unsubscribe), params: [subscription.id])
-        await subscriptionsStorage.cancelSubscription(subscription)
+    func cancelSubscription<T: SubscriptionStorageItem>(_ subscription: SocketSubscription<T>) async throws {
+        try await write(method: .init(subscription.item.entity, .unsubscribe), params: [subscription.id])
+        await subscriptionsStorages.clearSubscription(subscription)
     }
     
     /// Reconnect when error
