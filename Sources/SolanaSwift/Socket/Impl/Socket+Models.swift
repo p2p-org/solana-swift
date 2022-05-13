@@ -1,9 +1,26 @@
 import Foundation
 
-public typealias SocketAccountResponse = BufferInfo<EmptyInfo>
+// MARK: - Response
+
+public typealias SocketAccountResponse = SocketResponseParams<BufferInfo<EmptyInfo>>
 public struct SocketSignatureResponse: Decodable {
     
 }
+
+// MARK: - Notifications
+public struct SocketResponse<T: Decodable>: Decodable {
+    public let jsonrpc: String
+    public let method: String?
+    public let params: SocketResponseParams<T>?
+    public let result: T?
+}
+
+public struct SocketResponseParams<T: Decodable>: Decodable {
+    public let result: Rpc<T>?
+    public let subscription: UInt64?
+}
+
+// MARK: - Request
 
 public struct SubscribingResultResponse: Decodable {
     let requestId: String

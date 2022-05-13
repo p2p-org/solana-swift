@@ -5,7 +5,7 @@ public class Socket: NSObject, SolanaSocket {
     // MARK: - Properties
     var isConnected: Bool = false
     private var urlSession: URLSession!
-    private var task: URLSessionWebSocketTask!
+    private(set) var task: URLSessionWebSocketTask!
     private var wsHeartBeat: Timer!
     
     // MARK: - Streams
@@ -95,14 +95,18 @@ public class Socket: NSObject, SolanaSocket {
     }
     
     func observeAllAccounts() -> SocketResponseStream<SocketAccountResponse> {
-        <#code#>
+        accountInfoStream
     }
     
-    func observe(account: String) -> SocketResponseStream<SocketAccountResponse> {
-        <#code#>
+    func observe(account: String) async throws -> AsyncFilterSequence<SocketResponseStream<SocketAccountResponse>> {
+        guard let subscription = await subscriptionsStorage.activeAccountSubscriptions.first(where: {$0.account == account})
+        else {
+            throw SolanaError.other("Subscription not found")
+        }
+        return accountInfoStream.filter {$0.subscription == subscription.id}
     }
     
-    func observe(signature: String) -> SocketResponseStream<SocketSignatureResponse> {
+    func observe(signature: String) async throws -> AsyncFilterSequence<SocketResponseStream<SocketSignatureResponse>> {
         <#code#>
     }
     

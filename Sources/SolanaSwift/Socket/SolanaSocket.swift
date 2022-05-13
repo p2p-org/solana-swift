@@ -26,10 +26,10 @@ protocol SolanaSocket {
     /// Observe notifications of an account
     /// - Parameter account: account to be observed
     /// - Returns: Stream of SocketAccountResponse
-    func observe(account: String) -> SocketResponseStream<SocketAccountResponse>
+    func observe(account: String) async throws -> AsyncFilterSequence<SocketResponseStream<SocketAccountResponse>>
     
     /// Observe status of a signature
     /// - Parameter signature: signature to observe
     /// - Returns: Sequence of statuses of the signature
-    func observe(signature: String) -> SocketResponseStream<SocketSignatureResponse>
+    func observe(signature: String) async throws -> AsyncFilterSequence<SocketResponseStream<SocketSignatureResponse>>
 }
