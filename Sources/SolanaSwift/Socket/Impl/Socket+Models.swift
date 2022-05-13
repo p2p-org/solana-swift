@@ -2,8 +2,8 @@ import Foundation
 
 // MARK: - Response
 
-public typealias SocketAccountResponse = SocketResponseParams<BufferInfo<EmptyInfo>>
-public typealias SocketSignatureResponse = SocketResponseParams<SignatureStatus>
+public typealias SocketAccountResponse = Rpc<BufferInfo<EmptyInfo>>
+public typealias SocketSignatureResponse = SignatureStatus
 
 // MARK: - Notifications
 public struct SocketResponse<T: Decodable>: Decodable {
@@ -14,7 +14,7 @@ public struct SocketResponse<T: Decodable>: Decodable {
 }
 
 public struct SocketResponseParams<T: Decodable>: Decodable {
-    public let result: Rpc<T>?
+    public let result: T?
     public let subscription: UInt64?
 }
 

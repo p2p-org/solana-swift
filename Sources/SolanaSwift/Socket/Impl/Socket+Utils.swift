@@ -37,13 +37,17 @@ extension Socket {
             else if let method = json["method"] as? String {
                 if method == "accountNotification" {
                     do {
-                        let parsedData = try JSONDecoder().decode(SocketResponse<SocketAccountResponse>.self, from: data)
+                        guard let parsedData = try JSONDecoder().decode(
+                            SocketResponse<SocketResponseParams<SocketAccountResponse>>.self, from: data
+                        )
+                            .params?.result
+                        else {
+//                            subscriptionsStorages.accountInfoStream.onReceiving?)(.failure(SocketError.accountResponseError(<#T##SocketObservableAccount#>)))
+                            break
+                        }
                         subscriptionsStorages.accountInfoStream.onReceiving?(
                             .success(
-                                .init(
-                                    result: parsedData.params?.result,
-                                    subscription: parsedData.params?.subscription
-                                )
+                                parsedData.params?.result
                             )
                         )
                     } catch {
