@@ -1,11 +1,13 @@
 import Foundation
 
-class Socket: NSObject {
+class Socket: NSObject, SolanaSocket {
     // MARK: - Properties
+    var isConnected: Bool = false
     var urlSession: URLSession!
     var task: URLSessionWebSocketTask!
     var wsHeartBeat: Timer!
     
+    // MARK: - Streams
     let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
     let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
     
@@ -32,8 +34,30 @@ class Socket: NSObject {
     }
     
     func disconnect() {
+        unsubscribeToAllSubscriptions()
+        isConnected = false
         task.cancel(with: .goingAway, reason: nil)
         clean()
+    }
+    
+    func subscribe(account: String, isNative: Bool) {
+        <#code#>
+    }
+    
+    func unsubscribe(account: String) {
+        <#code#>
+    }
+    
+    func observeAllAccounts() -> SocketResponseStream<SocketAccountResponse> {
+        <#code#>
+    }
+    
+    func observe(account: String) -> SocketResponseStream<SocketAccountResponse> {
+        <#code#>
+    }
+    
+    func observe(signature: String) -> SocketResponseStream<SocketSignatureResponse> {
+        <#code#>
     }
     
     // MARK: - Helpers
@@ -92,10 +116,17 @@ extension Socket: URLSessionWebSocketDelegate {
         
         // resubscribe
         subscribeToAllAccounts()
+        
+        // mark as connected
+        isConnected = true
     }
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        
         clean()
+        
+        // mark as not connected
+        isConnected = false
         
         // TODO: - Reopen?
     }
