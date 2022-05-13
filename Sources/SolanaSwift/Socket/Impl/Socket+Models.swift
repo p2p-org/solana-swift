@@ -5,6 +5,15 @@ public struct SocketSignatureResponse: Decodable {
     
 }
 
+public enum SocketEntity: String {
+    case account
+    case signature
+    
+    var notificationMethodName: String {
+        self.rawValue + "Notification"
+    }
+}
+
 public struct SocketObservableAccount: Equatable, Hashable {
     public let pubkey: String
     public let isNative: Bool
@@ -15,8 +24,27 @@ public struct SocketObservableAccount: Equatable, Hashable {
     }
 }
 
-public struct SocketSubscription: Equatable {
-    let entity: Entity
+public struct SocketSubscription: Equatable, Hashable {
+    let entity: SocketEntity
     let id: UInt64
     var account: String?
+}
+
+public struct SocketMethod: Equatable {
+    public enum Action: String {
+        case subscribe
+        case unsubscribe
+    }
+    
+    public let entity: SocketEntity
+    public let action: Action
+    
+    public init(_ entity: SocketEntity, _ action: Action) {
+        self.entity = entity
+        self.action = action
+    }
+    
+    public var rawValue: String {
+        entity.rawValue + action.rawValue.capitalizingFirstLetter()
+    }
 }

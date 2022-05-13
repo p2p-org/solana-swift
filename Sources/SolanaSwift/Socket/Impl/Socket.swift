@@ -45,29 +45,29 @@ class Socket: NSObject, SolanaSocket {
     func addToObserving(account: SocketObservableAccount) async throws {
         // check if any subscription of account exists
         guard await !subscriptionsStorage.subscriptionExists(account: account)
-        else { return // already subscribed }
+        else { return /* already subscribed */ }
         
         // add account to observing list
-        subscriptionsStorage.insertObservableAccount(account)
+        await subscriptionsStorage.insertObservableAccount(account)
         
         // add subscriptions
         let id = write(
             method: .init(.account, .subscribe),
             params: [
-                subscriber.pubkey,
-                ["encoding":"jsonParsed", "commitment": "recent"]
+                account.pubkey,
+                ["encoding":"base64", "commitment": "recent"]
             ]
         )
-        subscribe(id: id)
-            .subscribe(onSuccess: {[weak self] subscriptionId in
-                guard let strongSelf = self else {return}
-                if strongSelf.accountSubscriptions.contains(where: {$0.account == subscriber.pubkey})
-                {
-                    strongSelf.accountSubscriptions.removeAll(where: {$0.account == subscriber.pubkey})
-                }
-                strongSelf.accountSubscriptions.append(.init(entity: .account, id: subscriptionId, account: subscriber.pubkey))
-            })
-            .disposed(by: disposeBag)
+//        subscribe(id: id)
+//            .subscribe(onSuccess: {[weak self] subscriptionId in
+//                guard let strongSelf = self else {return}
+//                if strongSelf.accountSubscriptions.contains(where: {$0.account == subscriber.pubkey})
+//                {
+//                    strongSelf.accountSubscriptions.removeAll(where: {$0.account == subscriber.pubkey})
+//                }
+//                strongSelf.accountSubscriptions.append(.init(entity: .account, id: subscriptionId, account: subscriber.pubkey))
+//            })
+//            .disposed(by: disposeBag)
     }
     
     func removeFromObserving(account: String) {
@@ -84,58 +84,6 @@ class Socket: NSObject, SolanaSocket {
     
     func observe(signature: String) -> SocketResponseStream<SocketSignatureResponse> {
         <#code#>
-    }
-    
-    // MARK: - Helpers
-    /// Clean the environment
-    private func clean() {
-        unsubscribeAllObservingAccounts()
-        wsHeartBeat?.invalidate()
-        wsHeartBeat = nil
-    }
-    
-    /// Request to get new message
-    private func receiveNewMessage() async throws {
-        do {
-            let message = try await task.receive()
-            switch message {
-            case .string(_):
-                // TODO: - Parse object
-            case .data(_):
-                break
-            @unknown default:
-                break
-            }
-            try await receiveNewMessage()
-        } catch {
-            accountInfoStream.onFailure?(error)
-            signatureInfoStream.onFailure?(error)
-            // TODO: - Handle error
-        }
-    }
-    
-    /// If your app is not sending messages over WebSocket with "acceptable" frequency, the server may drop your connection due to inactivity.
-    /// Special ping-pong messages are used to solve this problem.
-    private func ping() {
-        task.sendPing { [weak self] error in
-            if let error = error {
-                print("Ping failed: \(error)")
-            }
-            self?.scheduleNextPing()
-        }
-    }
-    
-    /// Subscribe to accountNotification from all accounts in the queue
-    private func subscribeToAllAccounts() {
-        observingAccounts.forEach {subscribeAccountNotification(account: $0.pubkey, isNative: $0.isNative)}
-    }
-    
-    /// Remove all current subscriptions
-    private func unsubscribeAllObservingAccounts() {
-        for subscription in activeAccountSubscriptions {
-            write(method: .init(subscription.entity, .unsubscribe), params: [subscription.id])
-        }
-        activeAccountSubscriptions = []
     }
 }
 
@@ -159,6 +107,11 @@ extension Socket: URLSessionWebSocketDelegate {
         
         // mark as connected
         isConnected = true
+        
+        // get new message
+        Task {
+            try await receiveNewMessage()
+        }
     }
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
