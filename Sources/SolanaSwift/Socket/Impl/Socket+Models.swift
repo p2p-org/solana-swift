@@ -5,7 +5,7 @@ public struct SocketSignatureResponse: Decodable {
     
 }
 
-public struct SocketObservableAccount: Equatable {
+public struct SocketObservableAccount: Equatable, Hashable {
     public let pubkey: String
     public let isNative: Bool
     

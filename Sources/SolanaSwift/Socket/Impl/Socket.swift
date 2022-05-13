@@ -12,8 +12,7 @@ class Socket: NSObject, SolanaSocket {
     let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
     
     // MARK: - Subscriptions
-    var observingAccounts = [SocketObservableAccount]()
-    var activeAccountSubscriptions = [SocketSubscription]()
+    let subscriptionsStorage = SubscriptionsStorage()
     
     // MARK: - Initializers
     init(endpoint: String) {
@@ -43,18 +42,13 @@ class Socket: NSObject, SolanaSocket {
         task.cancel(with: .goingAway, reason: nil)
     }
     
-    func addToObserving(account: SocketObservableAccount) {
-        // check if subscriptions exists
-        guard !activeAccountSubscriptions.contains(where: {$0.account == account.pubkey })
-        else {
-            // already registered
-            return
-        }
+    func addToObserving(account: SocketObservableAccount) async throws {
+        // check if any subscription of account exists
+        guard await !subscriptionsStorage.subscriptionExists(account: account)
+        else { return // already subscribed }
         
-        // if account was not registered, add account to self.accounts
-        if !observingAccounts.contains(account) {
-            observingAccounts.append(account)
-        }
+        // add account to observing list
+        subscriptionsStorage.insertObservableAccount(account)
         
         // add subscriptions
         let id = write(

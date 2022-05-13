@@ -13,7 +13,7 @@ protocol SolanaSocket {
     /// Add account to observing list, can be native account or spl token account
     /// - Parameters:
     ///   - object: Object that needs to be observed
-    func addToObserving(account: SocketObservableAccount)
+    func addToObserving(account: SocketObservableAccount) async throws
     
     /// Remove account from observing list
     /// - Parameter account: account to be removed from observing list
