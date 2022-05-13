@@ -8,6 +8,7 @@ class Socket: NSObject, SolanaSocket {
     var wsHeartBeat: Timer!
     
     // MARK: - Streams
+    let subscribingResultsStream = SocketResponseStream<SubscribingResultResponse>()
     let accountInfoStream = SocketResponseStream<SocketAccountResponse>()
     let signatureInfoStream = SocketResponseStream<SocketSignatureResponse>()
     
@@ -51,23 +52,26 @@ class Socket: NSObject, SolanaSocket {
         await subscriptionsStorage.insertObservableAccount(account)
         
         // add subscriptions
-        let id = write(
+        let requestId = try await write(
             method: .init(.account, .subscribe),
             params: [
                 account.pubkey,
                 ["encoding":"base64", "commitment": "recent"]
             ]
         )
-//        subscribe(id: id)
-//            .subscribe(onSuccess: {[weak self] subscriptionId in
-//                guard let strongSelf = self else {return}
-//                if strongSelf.accountSubscriptions.contains(where: {$0.account == subscriber.pubkey})
-//                {
-//                    strongSelf.accountSubscriptions.removeAll(where: {$0.account == subscriber.pubkey})
-//                }
-//                strongSelf.accountSubscriptions.append(.init(entity: .account, id: subscriptionId, account: subscriber.pubkey))
-//            })
-//            .disposed(by: disposeBag)
+        
+        let subscriptionId: UInt64
+        for try await result in subscribingResultsStream where requestId == result.requestId {
+            break
+        }
+        
+        await subscriptionsStorage.insertSubscription(
+            .init(
+                entity: .account,
+                id: subscriptionId,
+                account: account.pubkey
+            )
+        )
     }
     
     func removeFromObserving(account: String) {

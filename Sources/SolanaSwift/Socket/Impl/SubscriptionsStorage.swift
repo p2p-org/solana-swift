@@ -11,4 +11,8 @@ actor SubscriptionsStorage {
     func insertObservableAccount(_ account: SocketObservableAccount) {
         observingAccounts.insert(account)
     }
+    
+    func insertSubscription(_ subscription: SocketSubscription) {
+        activeAccountSubscriptions.insert(subscription)
+    }
 }

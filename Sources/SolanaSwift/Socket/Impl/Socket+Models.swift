@@ -5,6 +5,11 @@ public struct SocketSignatureResponse: Decodable {
     
 }
 
+public struct SubscribingResultResponse: Decodable {
+    let requestId: String
+    let subscriptionId: UInt64
+}
+
 public enum SocketEntity: String {
     case account
     case signature
@@ -46,5 +51,11 @@ public struct SocketMethod: Equatable {
     
     public var rawValue: String {
         entity.rawValue + action.rawValue.capitalizingFirstLetter()
+    }
+}
+
+private extension String {
+    func capitalizingFirstLetter() -> String {
+        return prefix(1).capitalized + dropFirst()
     }
 }
