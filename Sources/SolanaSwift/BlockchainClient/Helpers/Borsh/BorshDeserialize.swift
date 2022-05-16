@@ -11,7 +11,7 @@ enum DeserializationError: Error {
 public extension FixedWidthInteger {
   init(from reader: inout BinaryReader) throws {
     var value: Self = .zero
-    let bytes = reader.read(count: UInt32(MemoryLayout<Self>.size))
+    let bytes = try reader.read(count: UInt32(MemoryLayout<Self>.size))
     let size = withUnsafeMutableBytes(of: &value, { bytes.copyBytes(to: $0) })
     assert(size == MemoryLayout<Self>.size)
     self = Self(littleEndian: value)
@@ -32,7 +32,7 @@ extension Int128: BorshDeserializable {}
 extension Float32: BorshDeserializable {
   public init(from reader: inout BinaryReader) throws {
     var value: Self = .zero
-    let bytes = reader.read(count: UInt32(MemoryLayout<Self>.size))
+    let bytes = try reader.read(count: UInt32(MemoryLayout<Self>.size))
     let size = withUnsafeMutableBytes(of: &value, { bytes.copyBytes(to: $0) })
     assert(size == MemoryLayout<Self>.size)
     assert(!value.isNaN, "For portability reasons we do not allow to deserialize NaNs.")
@@ -43,7 +43,7 @@ extension Float32: BorshDeserializable {
 extension Float64: BorshDeserializable {
   public init(from reader: inout BinaryReader) throws {
     var value: Self = .zero
-    let bytes = reader.read(count: UInt32(MemoryLayout<Self>.size))
+    let bytes = try reader.read(count: UInt32(MemoryLayout<Self>.size))
     let size = withUnsafeMutableBytes(of: &value, { bytes.copyBytes(to: $0) })
     assert(size == MemoryLayout<Self>.size)
     assert(!value.isNaN, "For portability reasons we do not allow to deserialize NaNs.")
@@ -54,7 +54,7 @@ extension Float64: BorshDeserializable {
 extension Bool: BorshDeserializable {
   public init(from reader: inout BinaryReader) throws {
     var value: Self = false
-    let bytes = reader.read(count: UInt32(MemoryLayout<Self>.size))
+    let bytes = try reader.read(count: UInt32(MemoryLayout<Self>.size))
     let size = withUnsafeMutableBytes(of: &value, { bytes.copyBytes(to: $0) })
     assert(size == MemoryLayout<Self>.size)
     self = value
@@ -74,7 +74,7 @@ extension Optional where Wrapped: BorshDeserializable {
 extension String: BorshDeserializable {
   public init(from reader: inout BinaryReader) throws {
     let count: UInt32 = try .init(from: &reader)
-    let bytes = reader.read(count: count)
+    let bytes = try reader.read(count: count)
     guard let value = String(bytes: bytes, encoding: .utf8) else {throw DeserializationError.noData}
     self = value
   }

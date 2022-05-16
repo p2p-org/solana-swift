@@ -48,4 +48,8 @@ public enum SolanaError: Swift.Error, Equatable {
     public static var couldNotRetrieveAccountInfo: Self {
         .other("Could not retrieve account info")
     }
+    
+    public static var couldNotRetrieveBuffer: Self {
+        .other("Could not retrieve buffer")
+    }
 }

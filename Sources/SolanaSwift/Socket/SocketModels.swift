@@ -33,6 +33,20 @@ struct SocketSubscription: Decodable {
     let result: UInt64
 }
 
+public struct SocketTokenAccountNotificationData: Decodable {
+    public let program: String
+    public let parsed: SocketTokenAccountNotificationDataParsed
+}
+
+public struct SocketTokenAccountNotificationDataParsed: Decodable {
+    public let type: String
+    public let info: SocketTokenAccountNotificationDataInfo
+}
+
+public struct SocketTokenAccountNotificationDataInfo: Decodable {
+    public let tokenAmount: TokenAmount
+}
+
 public struct SocketSignatureNotification: Decodable {
     let err: ResponseError?
 }

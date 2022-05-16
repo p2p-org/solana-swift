@@ -2,7 +2,8 @@ import Foundation
 
 public protocol SolanaSocketEventsDelegate: AnyObject {
     func connected()
-    func accountNotification(notification: Response<BufferInfo<AccountInfo>>)
+    func nativeAccountNotification(notification: Response<BufferInfo<AccountInfo>>)
+    func tokenAccountNotification(notification: Response<BufferInfoParsed<SocketTokenAccountNotificationData>>)
     func programNotification(notification: Response<ProgramAccount<AccountInfo>>)
     func signatureNotification(notification: Response<SocketSignatureNotification>)
     func logsNotification(notification: Response<SocketLogsNotification>)
@@ -135,8 +136,14 @@ public class SolanaSocket: NSObject {
                     
                     switch type {
                     case .accountNotification:
-                        let notification = try JSONDecoder().decode(Response<BufferInfo<AccountInfo>>.self, from: data)
-                        delegate?.accountNotification(notification: notification)
+                        if let notification = try? JSONDecoder().decode(Response<BufferInfo<AccountInfo>>.self, from: data)
+                        {
+                            delegate?.nativeAccountNotification(notification: notification)
+                        } else {
+                            let notification = try JSONDecoder().decode(Response<BufferInfoParsed<SocketTokenAccountNotificationData>>.self, from: data)
+                            delegate?.tokenAccountNotification(notification: notification)
+                        }
+                        
                     case .signatureNotification:
                         let notification = try JSONDecoder().decode(Response<SocketSignatureNotification>.self, from: data)
                         delegate?.signatureNotification(notification: notification)
