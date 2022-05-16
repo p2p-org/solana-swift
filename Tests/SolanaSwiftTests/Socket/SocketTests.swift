@@ -80,30 +80,24 @@ private class MockSocketTask: WebSocketTask {
                 continuation.resume(returning: "subscriptionNotification")
             case .accountUnsubscribe:
                 continuation.resume(returning: "unsubscriptionNotification")
-            case .signatureNotification:
-                continuation.resume(returning: "signatureNotification")
             case .signatureSubscribe:
                 continuation.resume(returning: "subscriptionNotification")
             case .signatureUnsubscribe:
                 continuation.resume(returning: "unsubscriptionNotification")
             case .logsSubscribe:
                 continuation.resume(returning: "subscriptionNotification")
-            case .logsNotification:
-                continuation.resume(returning: "logsNotification")
             case .logsUnsubscribe:
                 continuation.resume(returning: "unsubscriptionNotification")
             case .programSubscribe:
                 continuation.resume(returning: "subscriptionNotification")
-            case .programNotification:
-                continuation.resume(returning: "programNotification")
             case .programUnsubscribe:
                 continuation.resume(returning: "unsubscriptionNotification")
             case .slotSubscribe:
                 continuation.resume(returning: "subscriptionNotification")
-            case .slotNotification:
-                continuation.resume(returning: "slotNotification")
             case .slotUnsubscribe:
                 continuation.resume(returning: "unsubscriptionNotification")
+            default:
+                continuation.resume(returning: method.rawValue)
             }
             break
         @unknown default:
@@ -119,6 +113,6 @@ private class MockSocketTask: WebSocketTask {
     }
     
     func sendPing(pongReceiveHandler: @escaping (Error?) -> Void) {
-        // Do nothing
+        debugPrint("Pong!!!")
     }
 }
