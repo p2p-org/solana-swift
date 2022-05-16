@@ -22,7 +22,7 @@ public enum SocketMethod: String {
     case slotUnsubscribe
 }
 
-enum SocketError: Error {
+public enum SocketError: Error {
     case disconnected
     case couldNotSerialize
 }

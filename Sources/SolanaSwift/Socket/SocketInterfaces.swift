@@ -1,8 +1,12 @@
-//
-//  File.swift
-//  
-//
-//  Created by Chung Tran on 16/05/2022.
-//
-
 import Foundation
+
+public protocol WebSocketTaskProvider {
+    init(configuration: URLSessionConfiguration, delegate: URLSessionDelegate?, delegateQueue queue: OperationQueue?)
+    func createWebSocketTask(with url: URL) -> URLSessionWebSocketTask
+}
+
+extension URLSession: WebSocketTaskProvider {
+    public func createWebSocketTask(with url: URL) -> URLSessionWebSocketTask {
+        webSocketTask(with: url)
+    }
+}

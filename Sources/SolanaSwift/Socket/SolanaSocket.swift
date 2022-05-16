@@ -12,22 +12,11 @@ public protocol SolanaSocketEventsDelegate: AnyObject {
     func error(error: Error?)
 }
 
-protocol WebSocketTask {
-    func resume()
-    func cancel()
-    func receive() async throws -> URLSessionWebSocketTask.Message
-    func sendPing(pongReceiveHandler: @escaping (Error?) -> Void)
-}
-
-extension URLSessionWebSocketTask: WebSocketTask {
-    
-}
-
 public class SolanaSocket: NSObject {
     // MARK: - Properties
     var isConnected: Bool = false
     
-    private let task: URLSessionWebSocketTask
+    private var task: URLSessionWebSocketTask!
     private let enableDebugLogs: Bool
     private var wsHeartBeat: Timer!
     
@@ -35,15 +24,15 @@ public class SolanaSocket: NSObject {
     public weak var delegate: SolanaSocketEventsDelegate?
     
     // MARK: - Initializers
-    init(task: URLSessionWebSocketTask, enableDebugLogs: Bool) {
-        self.task = task
+    init<T: WebSocketTaskProvider>(
+        url: URL,
+        enableDebugLogs: Bool,
+        socketTaskProviderType: T.Type = URLSession.self as! T.Type
+    ) {
         self.enableDebugLogs = enableDebugLogs
         super.init()
-        if #available(macOS 12.0, *) {
-            self.task.delegate = self
-        } else {
-            // Fallback on earlier versions
-        }
+        let urlSession = T(configuration: .default, delegate: self, delegateQueue: .current!)
+        self.task = urlSession.createWebSocketTask(with: url)
     }
     
     deinit {
