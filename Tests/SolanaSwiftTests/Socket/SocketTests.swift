@@ -6,7 +6,7 @@ class SocketTests: XCTestCase {
     var socket: SolanaSocket!
     
     override func setUpWithError() throws {
-        socket = SolanaSocket(url: SocketTestsHelper.url, enableDebugLogs: true, socketTaskProviderType: URLSession.self)
+        socket = SolanaSocket(url: SocketTestsHelper.url, enableDebugLogs: true, socketTaskProviderType: MockSocketTaskProvider.self)
     }
 
     override func tearDownWithError() throws {

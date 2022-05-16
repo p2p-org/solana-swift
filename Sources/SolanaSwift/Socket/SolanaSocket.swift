@@ -28,12 +28,19 @@ public class SolanaSocket: NSObject {
     public init<T: WebSocketTaskProvider>(
         url: URL,
         enableDebugLogs: Bool,
-        socketTaskProviderType: T.Type = URLSession.self as! T.Type
+        socketTaskProviderType: T.Type
     ) {
         self.enableDebugLogs = enableDebugLogs
         super.init()
         let urlSession = T(configuration: .default, delegate: self, delegateQueue: .current!)
         self.task = urlSession.createWebSocketTask(with: url)
+    }
+    
+    public convenience init(
+        url: URL,
+        enableDebugLogs: Bool
+    ) {
+        self.init(url: url, enableDebugLogs: enableDebugLogs, socketTaskProviderType: URLSession.self)
     }
     
     deinit {
