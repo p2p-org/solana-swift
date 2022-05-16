@@ -1,10 +1,5 @@
-import Starscream
 import Foundation
 
-enum SocketError: Error {
-    case disconnected
-    case couldNotSerialize
-}
 public protocol SolanaSocketEventsDelegate: AnyObject {
     func connected()
     func accountNotification(notification: Response<BufferInfo<AccountInfo>>)
@@ -17,103 +12,134 @@ public protocol SolanaSocketEventsDelegate: AnyObject {
     func error(error: Error?)
 }
 
-public class SolanaSocket {
-    private var socket: WebSocket?
-    private var enableDebugLogs: Bool
-    private var request: URLRequest
-    private weak var delegate: SolanaSocketEventsDelegate?
+protocol WebSocketTaskProvider {
+    func createWebSocketTask<T: WebSocketTask>(with url: URL) -> T
+}
 
-    init(url: URL, enableDebugLogs: Bool = false) {
-        self.request = URLRequest(url: url)
-        self.request.timeoutInterval = 5
+extension URLSession: WebSocketTaskProvider {
+    func createWebSocketTask<T: WebSocketTask>(with url: URL) -> T {
+        webSocketTask(with: url) as! T
+    }
+}
+
+protocol WebSocketTask {
+    func resume()
+    func cancel()
+    func receive() async throws -> URLSessionWebSocketTask.Message
+}
+
+extension URLSessionWebSocketTask: WebSocketTask {
+    
+}
+
+public class SolanaSocket {
+    private let task: URLSessionWebSocketTask
+    private var enableDebugLogs: Bool
+    
+    public weak var delegate: SolanaSocketEventsDelegate?
+    
+    init(url: URL, enableDebugLogs: Bool = false, socketTaskProvider: URLSession = URLSession.shared) {
+        self.task = socketTaskProvider.webSocketTask(with: url)
         self.enableDebugLogs = enableDebugLogs
     }
-
-    public func start(delegate: SolanaSocketEventsDelegate) {
-        self.delegate = delegate
-        self.socket = WebSocket(request: request)
-        socket?.delegate = self
-        socket?.connect()
+    
+    public func start() {
+        task.resume()
     }
-
+    
     public func stop() {
-        self.socket?.disconnect()
-        self.delegate = nil
+        task.cancel()
+        delegate = nil
     }
-
-    public func accountSubscribe(publickey: String) -> Result<String, Error> {
+    
+    public func accountSubscribe(publickey: String) async throws -> String {
         let method: SocketMethod = .accountSubscribe
         let params: [Encodable] = [ publickey, ["commitment": "recent", "encoding": "base64"] ]
         let request = RequestAPI(method: method.rawValue, params: params)
-        return writeToSocket(request: request)
+        return try await writeToSocket(request: request)
     }
-
-    func accountUnsubscribe(socketId: UInt64) -> Result<String, Error> {
+    
+    func accountUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .accountUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
-        return writeToSocket(request: request)
+        return try await writeToSocket(request: request)
     }
-
-    public func signatureSubscribe(signature: String) -> Result<String, Error> {
+    
+    public func signatureSubscribe(signature: String) async throws -> String {
         let method: SocketMethod = .signatureSubscribe
         let params: [Encodable] = [signature, ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
-        return writeToSocket(request: request)
+        return try await writeToSocket(request: request)
     }
-
-    func signatureUnsubscribe(socketId: UInt64) -> Result<String, Error> {
+    
+    func signatureUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .signatureUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
-        return writeToSocket(request: request)
+        return try await writeToSocket(request: request)
     }
-
-    public func logsSubscribe(mentions: [String]) -> Result<String, Error> {
+    
+    public func logsSubscribe(mentions: [String]) async throws -> String {
         let method: SocketMethod = .logsSubscribe
         let params: [Encodable] = [["mentions": mentions], ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
-        return writeToSocket(request: request)
+        return try await writeToSocket(request: request)
     }
-
-    public func logsSubscribeAll() -> Result<String, Error> {
+    
+    public func logsSubscribeAll() async throws -> String {
         let method: SocketMethod = .logsSubscribe
         let params: [Encodable] = ["all", ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
-        return writeToSocket(request: request)
+        return try await writeToSocket(request: request)
     }
-
-    func logsUnsubscribe(socketId: UInt64) -> Result<String, Error> {
+    
+    func logsUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .logsUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
-        return writeToSocket(request: request)
+        return try await writeToSocket(request: request)
     }
-
-    public func programSubscribe(publickey: String) -> Result<String, Error> {
+    
+    public func programSubscribe(publickey: String) async throws -> String {
         let method: SocketMethod = .programSubscribe
         let params: [Encodable] = [publickey, ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
-        return writeToSocket(request: request)
+        return try await writeToSocket(request: request)
     }
-
-    func programUnsubscribe(socketId: UInt64) -> Result<String, Error> {
+    
+    func programUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .programUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
-        return writeToSocket(request: request)
+        return try await writeToSocket(request: request)
     }
-
-    private func writeToSocket(request: RequestAPI) -> Result<String, Error> {
-        guard let jsonData = try? JSONEncoder().encode(request) else { return Result.failure(SocketError.couldNotSerialize) }
-        guard let socket = socket else { return Result.failure(SocketError.disconnected) }
-        socket.write(data: jsonData)
-        return Result.success(request.id)
+    
+    private func writeToSocket(request: RequestAPI) async throws -> String {
+        guard let jsonData = try? JSONEncoder().encode(request) else {
+            throw SocketError.couldNotSerialize
+        }
+        try await task.send(.data(jsonData))
+        return request.id
+    }
+    
+    private func readMessage() async throws {
+        let message = try await task.receive()
+        switch message {
+        case .string(let text):
+            print("Received text message: \(text)")
+        case .data(let data):
+            print("Received binary message: \(data)")
+        @unknown default:
+            fatalError()
+        }
+        
+        try await self.readMessage()
     }
 }
 
 extension SolanaSocket: WebSocketDelegate {
-
+    
     public func didReceive(event: WebSocketEvent, client: WebSocket) {
         log(event: event)
         switch event {
@@ -133,7 +159,7 @@ extension SolanaSocket: WebSocketDelegate {
             self.delegate?.error(error: error)
         }
     }
-
+    
     private func log(event: WebSocketEvent) {
         guard enableDebugLogs else {return}
         switch event {
@@ -159,7 +185,7 @@ extension SolanaSocket: WebSocketDelegate {
             debugPrint("error \(error?.localizedDescription ?? "")")
         }
     }
-
+    
     private func onText(string: String) {
         guard let data = string.data(using: .utf8) else { return }
         do {
@@ -167,7 +193,7 @@ extension SolanaSocket: WebSocketDelegate {
             let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
             if let jsonType = jsonResponse["method"] as? String,
                let type = SocketMethod(rawValue: jsonType) {
-
+                
                 switch type {
                 case .accountNotification:
                     let notification = try JSONDecoder().decode(Response<BufferInfo<AccountInfo>>.self, from: data)
@@ -183,14 +209,14 @@ extension SolanaSocket: WebSocketDelegate {
                     delegate?.programNotification(notification: notification)
                 default: break
                 }
-
+                
             } else {
                 if let subscription = try? JSONDecoder().decode(Response<UInt64>.self, from: data),
                    let socketId = subscription.result,
                    let id = subscription.id {
                     delegate?.subscribed(socketId: socketId, id: id)
                 }
-
+                
                 if let subscription = try? JSONDecoder().decode(Response<Bool>.self, from: data),
                    subscription.result == true,
                    let id = subscription.id {
@@ -201,5 +227,5 @@ extension SolanaSocket: WebSocketDelegate {
             delegate?.error(error: error)
         }
     }
-
+    
 }

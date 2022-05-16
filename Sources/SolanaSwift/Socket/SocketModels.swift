@@ -22,6 +22,11 @@ public enum SocketMethod: String {
     case slotUnsubscribe
 }
 
+enum SocketError: Error {
+    case disconnected
+    case couldNotSerialize
+}
+
 struct SocketSubscription: Decodable {
     let jsonrpc: String
     let id: String
