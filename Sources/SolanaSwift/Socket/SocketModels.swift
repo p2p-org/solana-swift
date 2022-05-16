@@ -28,11 +28,11 @@ struct SocketSubscription: Decodable {
     let result: UInt64
 }
 
-public struct SignatureNotification: Decodable {
+public struct SocketSignatureNotification: Decodable {
     let err: ResponseError?
 }
 
-public struct LogsNotification: Decodable {
+public struct SocketLogsNotification: Decodable {
     let signature: String
     let logs: [String]
     let err: ResponseError?

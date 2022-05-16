@@ -1,7 +1,7 @@
 import Starscream
 import Foundation
 
-enum SolanaSocketError: Error {
+enum SocketError: Error {
     case disconnected
     case couldNotSerialize
 }
@@ -9,25 +9,12 @@ public protocol SolanaSocketEventsDelegate: AnyObject {
     func connected()
     func accountNotification(notification: Response<BufferInfo<AccountInfo>>)
     func programNotification(notification: Response<ProgramAccount<AccountInfo>>)
-    func signatureNotification(notification: Response<SignatureNotification>)
-    func logsNotification(notification: Response<LogsNotification>)
+    func signatureNotification(notification: Response<SocketSignatureNotification>)
+    func logsNotification(notification: Response<SocketLogsNotification>)
     func unsubscribed(id: String)
     func subscribed(socketId: UInt64, id: String)
     func disconnected(reason: String, code: UInt16)
     func error(error: Error?)
-}
-
-public protocol SolanaWebSocketEvents: AnyObject {
-    func connected(_: [String: String])
-    func disconnected(_: String, _: UInt16)
-    func text(_: String)
-    func binary(_: Data)
-    func pong(_: Data?)
-    func ping(_: Data?)
-    func error(_: Error?)
-    func viabilityChanged(_: Bool)
-    func reconnectSuggested(_: Bool)
-    func cancelled()
 }
 
 public class SolanaSocket {
@@ -118,8 +105,8 @@ public class SolanaSocket {
     }
 
     private func writeToSocket(request: RequestAPI) -> Result<String, Error> {
-        guard let jsonData = try? JSONEncoder().encode(request) else { return Result.failure(SolanaSocketError.couldNotSerialize) }
-        guard let socket = socket else { return Result.failure(SolanaSocketError.disconnected) }
+        guard let jsonData = try? JSONEncoder().encode(request) else { return Result.failure(SocketError.couldNotSerialize) }
+        guard let socket = socket else { return Result.failure(SocketError.disconnected) }
         socket.write(data: jsonData)
         return Result.success(request.id)
     }
@@ -148,27 +135,28 @@ extension SolanaSocket: WebSocketDelegate {
     }
 
     private func log(event: WebSocketEvent) {
+        guard enableDebugLogs else {return}
         switch event {
         case .connected(let headers):
-            if enableDebugLogs { debugPrint("conected with headers \(headers)") }
+            debugPrint("conected with headers \(headers)")
         case .disconnected(let reason, let code):
-            if enableDebugLogs { debugPrint("disconnected with reason \(reason) \(code)") }
+            debugPrint("disconnected with reason \(reason) \(code)")
         case .text(let string):
-            if enableDebugLogs { debugPrint("text \(string)") }
+            debugPrint("text \(string)")
         case .binary:
-            if enableDebugLogs { debugPrint("binary") }
+            debugPrint("binary")
         case .ping:
-            if enableDebugLogs { debugPrint("ping") }
+            debugPrint("ping")
         case .pong:
-            if enableDebugLogs { debugPrint("pong") }
+            debugPrint("pong")
         case .viabilityChanged(let visible):
-            if enableDebugLogs { debugPrint("viabilityChanged \(visible)") }
+            debugPrint("viabilityChanged \(visible)")
         case .reconnectSuggested(let reconnect):
-            if enableDebugLogs { debugPrint("reconnectSuggested \(reconnect)") }
+            debugPrint("reconnectSuggested \(reconnect)")
         case .cancelled:
-            if enableDebugLogs { debugPrint("cancelled") }
+            debugPrint("cancelled")
         case .error(let error):
-            if enableDebugLogs { debugPrint("error \(error?.localizedDescription ?? "")") }
+            debugPrint("error \(error?.localizedDescription ?? "")")
         }
     }
 
@@ -185,10 +173,10 @@ extension SolanaSocket: WebSocketDelegate {
                     let notification = try JSONDecoder().decode(Response<BufferInfo<AccountInfo>>.self, from: data)
                     delegate?.accountNotification(notification: notification)
                 case .signatureNotification:
-                    let notification = try JSONDecoder().decode(Response<SignatureNotification>.self, from: data)
+                    let notification = try JSONDecoder().decode(Response<SocketSignatureNotification>.self, from: data)
                     delegate?.signatureNotification(notification: notification)
                 case .logsNotification:
-                    let notification = try JSONDecoder().decode(Response<LogsNotification>.self, from: data)
+                    let notification = try JSONDecoder().decode(Response<SocketLogsNotification>.self, from: data)
                     delegate?.logsNotification(notification: notification)
                 case .programNotification:
                     let notification = try JSONDecoder().decode(Response<ProgramAccount<AccountInfo>>.self, from: data)
