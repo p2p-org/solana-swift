@@ -1,4 +1,5 @@
 import Foundation
+import LoggerSwift
 
 public protocol SolanaSocketEventsDelegate: AnyObject {
     func connected()
@@ -126,6 +127,9 @@ public class SolanaSocket: NSObject {
         guard let jsonData = try? JSONEncoder().encode(request) else {
             throw SocketError.couldNotSerialize
         }
+        if enableDebugLogs {
+            Logger.log(event: .event, message: "\(String(data: jsonData, encoding: .utf8) ?? "")")
+        }
         try await task.send(.data(jsonData))
         return request.id
     }
@@ -134,6 +138,9 @@ public class SolanaSocket: NSObject {
         let message = try await task.receive()
         switch message {
         case .string(let text):
+            if enableDebugLogs {
+                Logger.log(event: .event, message: "Receive string from socket: \(text)")
+            }
             guard let data = text.data(using: .utf8) else { return }
             do {
                 // TODO: Fix this mess code
@@ -206,6 +213,10 @@ extension SolanaSocket: URLSessionWebSocketDelegate {
             self?.ping()
         }
         delegate?.connected()
+        
+        if enableDebugLogs {
+            Logger.log(event: .event, message: "Socket connected")
+        }
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
@@ -213,5 +224,9 @@ extension SolanaSocket: URLSessionWebSocketDelegate {
         wsHeartBeat?.invalidate()
         task.resume()
         delegate?.disconnected(reason: reason?.jsonString ?? "", code: closeCode.rawValue)
+        
+        if enableDebugLogs {
+            Logger.log(event: .event, message: "Socket disconnected")
+        }
     }
 }
