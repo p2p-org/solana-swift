@@ -3,7 +3,7 @@ import Foundation
 
 public struct ConfirmedTransaction: Decodable {
     public let message: Message
-    let signatures: [String]
+    public let signatures: [String]
 }
 
 public extension ConfirmedTransaction {
