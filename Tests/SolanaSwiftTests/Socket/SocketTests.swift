@@ -3,40 +3,59 @@ import SolanaSwift
 import Combine
 
 class SocketTests: XCTestCase {
-
+    var socket: SolanaSocket!
+    
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        socket = SolanaSocket(url: SocketTestsHelper.url, enableDebugLogs: true, socketTaskProviderType: URLSession.self)
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        socket.disconnect()
+        socket = nil
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    func testSocketConnected() async throws {
+        let expectation = XCTestExpectation()
+        let delegate = MockSolanaLiveEventsDelegate()
+        delegate.onConected = {
+            expectation.fulfill()
         }
+        socket.delegate = delegate
+        socket.connect()
+        wait(for: [expectation], timeout: 20.0)
     }
-
+    
+    func testSocketSubscribe() {
+        let expectation = XCTestExpectation()
+        let delegate = MockSolanaLiveEventsDelegate()
+        delegate.onConected = {
+            Task {
+                try await self.socket.accountSubscribe(publickey: "fasdfasdf")
+            }
+        }
+        delegate.onSubscribed = { (subscriptionId, id) in
+            expectation.fulfill()
+            XCTAssertEqual("ADFB8971-4473-4B16-A8BC-63EFD2F1FC8E", id)
+        }
+        socket.delegate = delegate
+        socket.connect()
+        wait(for: [expectation], timeout: 20.0)
+    }
 }
 
 private class MockSocketTaskProvider: WebSocketTaskProvider {
     let delegate: URLSessionWebSocketDelegate?
     let mockSession = URLSession(configuration: .default)
-    private lazy var mockWSTask = mockSession.webSocketTask(with: .init(string: "wss://api.mainnet-beta.solana.com")!)
+    private lazy var mockWSTask = mockSession.webSocketTask(with: SocketTestsHelper.url)
     
     required init(configuration: URLSessionConfiguration, delegate: URLSessionDelegate?, delegateQueue queue: OperationQueue?) {
         self.delegate = delegate as? URLSessionWebSocketDelegate
-        self.delegate?.urlSession?(.shared, webSocketTask: mockWSTask, didOpenWithProtocol: nil)
+        
+        // connect after 0.3 sec
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+            self.delegate?.urlSession?(.shared, webSocketTask: self.mockWSTask, didOpenWithProtocol: nil)
+        }
+        
     }
     
     func createWebSocketTask(with url: URL) -> WebSocketTask {
@@ -63,7 +82,6 @@ private class MockSocketTask: WebSocketTask {
             let id: String
             let method: String
             let jsonrpc: String
-            let params: [String]
         }
         
         switch message {
@@ -114,5 +132,59 @@ private class MockSocketTask: WebSocketTask {
     
     func sendPing(pongReceiveHandler: @escaping (Error?) -> Void) {
         debugPrint("Pong!!!")
+    }
+}
+
+class MockSolanaLiveEventsDelegate: SolanaSocketEventsDelegate {
+    
+    var onConected: (() -> Void)? = nil
+    var onDisconnected: (() -> Void)? = nil
+    var onNativeAccountNotification: ((SocketNativeAccountNotification) -> Void)? = nil
+    var onTokenAccountNotification: ((SocketTokenAccountNotification) -> Void)? = nil
+    var onSignatureNotification: ((SocketSignatureNotification) -> Void)? = nil
+    var onLogsNotification: ((SocketLogsNotification) -> Void)? = nil
+    var onProgramNotification: ((SocketProgramAccountNotification) -> Void)? = nil
+    var onSubscribed: ((UInt64, String) -> Void)? = nil
+    var onUnsubscribed: ((String) -> Void)? = nil
+
+    func connected() {
+        onConected?()
+    }
+    
+    
+    func nativeAccountNotification(notification: SocketNativeAccountNotification) {
+        onNativeAccountNotification?(notification)
+    }
+    
+    func tokenAccountNotification(notification: SocketTokenAccountNotification) {
+        onTokenAccountNotification?(notification)
+    }
+    
+    func signatureNotification(notification: SocketSignatureNotification) {
+        onSignatureNotification?(notification)
+    }
+    
+    func logsNotification(notification: SocketLogsNotification) {
+        onLogsNotification?(notification)
+    }
+    
+    func programNotification(notification: SocketProgramAccountNotification) {
+        onProgramNotification?(notification)
+    }
+    
+    func subscribed(socketId: UInt64, id: String) {
+        onSubscribed?(socketId, id)
+    }
+    
+    func unsubscribed(id: String) {
+        onUnsubscribed?(id)
+    }
+    
+    func disconnected(reason: String, code: Int) {
+        onDisconnected?()
+    }
+    
+    func error(error: Error?) {
+        
     }
 }

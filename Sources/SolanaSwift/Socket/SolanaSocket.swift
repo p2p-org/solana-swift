@@ -9,7 +9,7 @@ public protocol SolanaSocketEventsDelegate: AnyObject {
     func logsNotification(notification: SocketLogsNotification)
     func unsubscribed(id: String)
     func subscribed(socketId: UInt64, id: String)
-    func disconnected(reason: String, code: UInt16)
+    func disconnected(reason: String, code: Int)
     func error(error: Error?)
 }
 
@@ -25,7 +25,7 @@ public class SolanaSocket: NSObject {
     public weak var delegate: SolanaSocketEventsDelegate?
     
     // MARK: - Initializers
-    init<T: WebSocketTaskProvider>(
+    public init<T: WebSocketTaskProvider>(
         url: URL,
         enableDebugLogs: Bool,
         socketTaskProviderType: T.Type = URLSession.self as! T.Type
@@ -198,11 +198,13 @@ extension SolanaSocket: URLSessionWebSocketDelegate {
             // Ping server every 5s to prevent idle timeouts
             self?.ping()
         }
+        delegate?.connected()
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         isConnected = false
         wsHeartBeat?.invalidate()
         task.resume()
+        delegate?.disconnected(reason: reason?.jsonString ?? "", code: closeCode.rawValue)
     }
 }

@@ -1,6 +1,8 @@
 import Foundation
 
 struct SocketTestsHelper {
+    static var url: URL = .init(string: "wss://api.mainnet-beta.solana.com")!
+    
     static var emittingEvents: [String: String] {
         [
             "subscriptionNotification": #"{"jsonrpc":"2.0","result":22529999,"id":"ADFB8971-4473-4B16-A8BC-63EFD2F1FC8E"}"#,
