@@ -1,5 +1,6 @@
 import XCTest
 import SolanaSwift
+import Combine
 
 class SocketTests: XCTestCase {
 
@@ -46,25 +47,78 @@ private class MockSocketTaskProvider: WebSocketTaskProvider {
 }
 
 private class MockSocketTask: WebSocketTask {
-    private let pointer = 0
+    private var continuation: CheckedContinuation<String, Error>!
+    private var nativeEmitted: Bool = false
     
     func resume() {
-        
+        // do nothing
     }
     
     func cancel() {
-        
+        // do nothing
     }
     
     func send(_ message: URLSessionWebSocketTask.Message) async throws {
-        <#code#>
+        struct RequestAPI: Decodable {
+            let id: String
+            let method: String
+            let jsonrpc: String
+            let params: [String]
+        }
+        
+        switch message {
+        case .string:
+            break
+        case .data(let data):
+            let requestAPI = try JSONDecoder().decode(RequestAPI.self, from: data)
+            let method = SocketMethod(rawValue: requestAPI.method)!
+            switch method {
+            case .accountNotification:
+                continuation.resume(returning: "accountNotification#\(nativeEmitted ? "Token": "Native")")
+                nativeEmitted = true
+            case .accountSubscribe:
+                continuation.resume(returning: "subscriptionNotification")
+            case .accountUnsubscribe:
+                continuation.resume(returning: "unsubscriptionNotification")
+            case .signatureNotification:
+                continuation.resume(returning: "signatureNotification")
+            case .signatureSubscribe:
+                continuation.resume(returning: "subscriptionNotification")
+            case .signatureUnsubscribe:
+                continuation.resume(returning: "unsubscriptionNotification")
+            case .logsSubscribe:
+                continuation.resume(returning: "subscriptionNotification")
+            case .logsNotification:
+                continuation.resume(returning: "logsNotification")
+            case .logsUnsubscribe:
+                continuation.resume(returning: "unsubscriptionNotification")
+            case .programSubscribe:
+                continuation.resume(returning: "subscriptionNotification")
+            case .programNotification:
+                continuation.resume(returning: "programNotification")
+            case .programUnsubscribe:
+                continuation.resume(returning: "unsubscriptionNotification")
+            case .slotSubscribe:
+                continuation.resume(returning: "subscriptionNotification")
+            case .slotNotification:
+                continuation.resume(returning: "slotNotification")
+            case .slotUnsubscribe:
+                continuation.resume(returning: "unsubscriptionNotification")
+            }
+            break
+        @unknown default:
+            fatalError()
+        }
     }
     
     func receive() async throws -> URLSessionWebSocketTask.Message {
-        <#code#>
+        let key = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
+            self.continuation = continuation
+        }
+        return .string(SocketTestsHelper.emittingEvents[key]!)
     }
     
     func sendPing(pongReceiveHandler: @escaping (Error?) -> Void) {
-        <#code#>
+        // Do nothing
     }
 }
