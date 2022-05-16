@@ -2,11 +2,11 @@ import Foundation
 
 public protocol SolanaSocketEventsDelegate: AnyObject {
     func connected()
-    func nativeAccountNotification(notification: Response<BufferInfo<AccountInfo>>)
-    func tokenAccountNotification(notification: Response<BufferInfoParsed<SocketTokenAccountNotificationData>>)
-    func programNotification(notification: Response<ProgramAccount<AccountInfo>>)
-    func signatureNotification(notification: Response<SocketSignatureNotification>)
-    func logsNotification(notification: Response<SocketLogsNotification>)
+    func nativeAccountNotification(notification: SocketNativeAccountNotification)
+    func tokenAccountNotification(notification: SocketTokenAccountNotification)
+    func programNotification(notification: SocketProgramAccountNotification)
+    func signatureNotification(notification: SocketSignatureNotification)
+    func logsNotification(notification: SocketLogsNotification)
     func unsubscribed(id: String)
     func subscribed(socketId: UInt64, id: String)
     func disconnected(reason: String, code: UInt16)
@@ -136,34 +136,34 @@ public class SolanaSocket: NSObject {
                     
                     switch type {
                     case .accountNotification:
-                        if let notification = try? JSONDecoder().decode(Response<BufferInfo<AccountInfo>>.self, from: data)
+                        if let notification = try? JSONDecoder().decode(SocketNativeAccountNotification.self, from: data)
                         {
                             delegate?.nativeAccountNotification(notification: notification)
                         } else {
-                            let notification = try JSONDecoder().decode(Response<BufferInfoParsed<SocketTokenAccountNotificationData>>.self, from: data)
+                            let notification = try JSONDecoder().decode(SocketTokenAccountNotification.self, from: data)
                             delegate?.tokenAccountNotification(notification: notification)
                         }
                         
                     case .signatureNotification:
-                        let notification = try JSONDecoder().decode(Response<SocketSignatureNotification>.self, from: data)
+                        let notification = try JSONDecoder().decode(SocketSignatureNotification.self, from: data)
                         delegate?.signatureNotification(notification: notification)
                     case .logsNotification:
-                        let notification = try JSONDecoder().decode(Response<SocketLogsNotification>.self, from: data)
+                        let notification = try JSONDecoder().decode(SocketLogsNotification.self, from: data)
                         delegate?.logsNotification(notification: notification)
                     case .programNotification:
-                        let notification = try JSONDecoder().decode(Response<ProgramAccount<AccountInfo>>.self, from: data)
+                        let notification = try JSONDecoder().decode(SocketProgramAccountNotification.self, from: data)
                         delegate?.programNotification(notification: notification)
                     default: break
                     }
                     
                 } else {
-                    if let subscription = try? JSONDecoder().decode(Response<UInt64>.self, from: data),
+                    if let subscription = try? JSONDecoder().decode(SocketSubscriptionResponse.self, from: data),
                        let socketId = subscription.result,
                        let id = subscription.id {
                         delegate?.subscribed(socketId: socketId, id: id)
                     }
                     
-                    if let subscription = try? JSONDecoder().decode(Response<Bool>.self, from: data),
+                    if let subscription = try? JSONDecoder().decode(SocketUnsubscriptionResponse.self, from: data),
                        subscription.result == true,
                        let id = subscription.id {
                         delegate?.unsubscribed(id: id)
