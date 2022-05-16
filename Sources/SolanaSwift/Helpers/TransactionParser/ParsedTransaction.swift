@@ -6,9 +6,10 @@
 //
 
 import Foundation
+import RxSwift
 
 public extension SolanaSDK {
-    struct ParsedTransaction: Hashable {
+    struct ParsedTransaction {
         public enum Status: Equatable, Hashable {
             case requesting
             case processing(percent: Double)
@@ -39,7 +40,17 @@ public extension SolanaSDK {
             }
         }
         
-        public init(status: Status, signature: String?, value: AnyHashable?, amountInFiat: Double? = nil, slot: UInt64?, blockTime: Date?, fee: FeeAmount?, blockhash: String?, paidByP2POrg: Bool = false) {
+        public init(
+            status: Status,
+            signature: String?,
+            value: AnyHashable?,
+            amountInFiat: Double? = nil,
+            slot: UInt64?,
+            blockTime: Date?,
+            fee: FeeAmount?,
+            blockhash: String?,
+            paidByP2POrg: Bool = false
+        ) {
             self.status = status
             self.signature = signature
             self.value = value
@@ -60,6 +71,7 @@ public extension SolanaSDK {
         public let fee: FeeAmount?
         public let blockhash: String?
         public var paidByP2POrg: Bool = false
+        public var rawTransaction: (transaction: RawTransactionType, sentAt: Date)?
         
         public var amount: Double {
             switch value {
@@ -213,5 +225,30 @@ public extension SolanaSDK {
             }
             return .transitiv
         }
+    }
+}
+
+public protocol RawTransactionType {
+    func createRequest() -> Single<String>
+    var mainDescription: String { get }
+}
+
+extension SolanaSDK.ParsedTransaction: Hashable {
+    public static func == (lhs: SolanaSDK.ParsedTransaction, rhs: SolanaSDK.ParsedTransaction) -> Bool {
+        lhs.status == rhs.status && lhs.signature == rhs.signature && lhs.value == rhs.value && lhs.amountInFiat == rhs.amountInFiat && lhs.slot == rhs.slot && lhs.blockTime == rhs.blockTime && lhs.fee == rhs.fee && lhs.blockhash == rhs.blockhash && lhs.paidByP2POrg == rhs.paidByP2POrg && lhs.rawTransaction?.transaction.mainDescription == rhs.rawTransaction?.transaction.mainDescription && lhs.rawTransaction?.sentAt == rhs.rawTransaction?.sentAt
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(status)
+        hasher.combine(signature)
+        hasher.combine(value)
+        hasher.combine(amountInFiat)
+        hasher.combine(slot)
+        hasher.combine(blockTime)
+        hasher.combine(fee)
+        hasher.combine(blockhash)
+        hasher.combine(paidByP2POrg)
+        hasher.combine(rawTransaction?.transaction.mainDescription)
+        hasher.combine(rawTransaction?.sentAt)
     }
 }
