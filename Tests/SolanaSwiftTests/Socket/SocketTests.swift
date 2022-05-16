@@ -14,29 +14,66 @@ class SocketTests: XCTestCase {
         socket = nil
     }
 
-    func testSocketConnected() async throws {
-        let expectation = XCTestExpectation()
-        let delegate = MockSolanaLiveEventsDelegate()
-        delegate.onConected = {
-            expectation.fulfill()
-        }
-        socket.delegate = delegate
-        socket.connect()
-        wait(for: [expectation], timeout: 20.0)
-    }
-    
-    func testSocketSubscribe() {
+    func testSocketEvents() async throws {
         let expectation = XCTestExpectation()
         let delegate = MockSolanaLiveEventsDelegate()
         delegate.onConected = {
             Task {
-                try await self.socket.accountSubscribe(publickey: "fasdfasdf")
+                let _ = try await self.socket.accountSubscribe(publickey: "fasdfasdf") // native address
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
+                    Task {
+                        try await self.socket.accountSubscribe(publickey: "fasdfasdf") // token address
+                    }
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
+                    Task {
+                        try await self.socket.signatureSubscribe(signature: "fasdfjisf") // signature status
+                    }
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
+                    Task {
+                        try await self.socket.logsSubscribe(mentions: [""]) // signature status
+                    }
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(4)) {
+                    Task {
+                        try await self.socket.programSubscribe(publickey: "") // signature status
+                    }
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
+                    Task {
+                        self.socket.disconnect()
+                    }
+                }
             }
         }
         delegate.onSubscribed = { (subscriptionId, id) in
-            expectation.fulfill()
             XCTAssertEqual("ADFB8971-4473-4B16-A8BC-63EFD2F1FC8E", id)
         }
+        delegate.onNativeAccountNotification = { notification in
+            XCTAssertEqual(notification.lamports, 41083620)
+        }
+        delegate.onTokenAccountNotification = { notification in
+            XCTAssertEqual(notification.tokenAmount?.amount, "390000101")
+        }
+        delegate.onSignatureNotification = { notification in
+            XCTAssertEqual(notification.isConfirmed, true)
+        }
+        delegate.onLogsNotification = { notification in
+            XCTAssertEqual(notification.logs?.last, "BPF program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success")
+        }
+        delegate.onProgramNotification = { notification in
+            XCTAssertEqual(notification.subscription, 24040)
+        }
+        delegate.onDisconnected = {
+            expectation.fulfill()
+        }
+        
         socket.delegate = delegate
         socket.connect()
         wait(for: [expectation], timeout: 20.0)
@@ -92,31 +129,46 @@ private class MockSocketTask: WebSocketTask {
             let requestAPI = try JSONDecoder().decode(RequestAPI.self, from: data)
             let method = SocketMethod(rawValue: requestAPI.method)!
             switch method {
-            case .accountNotification:
-                keySubject.send("accountNotification#\(nativeEmitted ? "Token": "Native")")
-                nativeEmitted = true
             case .accountSubscribe:
                 keySubject.send("subscriptionNotification")
+                DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                    self.keySubject.send("accountNotification#\(self.nativeEmitted ? "Token": "Native")")
+                    self.nativeEmitted = true
+                }
             case .accountUnsubscribe:
                 keySubject.send("unsubscriptionNotification")
             case .signatureSubscribe:
                 keySubject.send("subscriptionNotification")
+                DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                    self.keySubject.send("signatureNotification")
+                }
             case .signatureUnsubscribe:
                 keySubject.send("unsubscriptionNotification")
             case .logsSubscribe:
                 keySubject.send("subscriptionNotification")
+                DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                    self.keySubject.send("logsNotification")
+                }
             case .logsUnsubscribe:
                 keySubject.send("unsubscriptionNotification")
             case .programSubscribe:
                 keySubject.send("subscriptionNotification")
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                    self.keySubject.send("programNotification")
+                }
             case .programUnsubscribe:
                 keySubject.send("unsubscriptionNotification")
             case .slotSubscribe:
                 keySubject.send("subscriptionNotification")
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                    self.keySubject.send("slotNotification")
+                }
             case .slotUnsubscribe:
                 keySubject.send("unsubscriptionNotification")
             default:
-                keySubject.send(method.rawValue)
+                break
             }
             break
         @unknown default:

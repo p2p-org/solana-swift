@@ -56,6 +56,8 @@ public class SolanaSocket: NSObject {
     }
     
     public func disconnect() {
+        delegate?.disconnected(reason: "", code: 0)
+        
         asyncTask?.cancel()
         task.cancel()
         delegate = nil
@@ -70,7 +72,7 @@ public class SolanaSocket: NSObject {
         return try await writeToSocket(request: request)
     }
     
-    func accountUnsubscribe(socketId: UInt64) async throws -> String {
+    public func accountUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .accountUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
@@ -84,7 +86,7 @@ public class SolanaSocket: NSObject {
         return try await writeToSocket(request: request)
     }
     
-    func signatureUnsubscribe(socketId: UInt64) async throws -> String {
+    public func signatureUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .signatureUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
@@ -105,7 +107,7 @@ public class SolanaSocket: NSObject {
         return try await writeToSocket(request: request)
     }
     
-    func logsUnsubscribe(socketId: UInt64) async throws -> String {
+    public func logsUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .logsUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
@@ -119,7 +121,7 @@ public class SolanaSocket: NSObject {
         return try await writeToSocket(request: request)
     }
     
-    func programUnsubscribe(socketId: UInt64) async throws -> String {
+    public func programUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .programUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
@@ -131,7 +133,7 @@ public class SolanaSocket: NSObject {
             throw SocketError.couldNotSerialize
         }
         if enableDebugLogs {
-            Logger.log(event: .event, message: "\(String(data: jsonData, encoding: .utf8) ?? "")")
+            Logger.log(event: .request, message: "\(String(data: jsonData, encoding: .utf8) ?? "")")
         }
         try await task.send(.data(jsonData))
         return request.id
