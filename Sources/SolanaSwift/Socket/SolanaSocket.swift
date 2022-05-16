@@ -17,7 +17,7 @@ public class SolanaSocket: NSObject {
     // MARK: - Properties
     var isConnected: Bool = false
     
-    private var task: URLSessionWebSocketTask!
+    private var task: WebSocketTask!
     private let enableDebugLogs: Bool
     private var wsHeartBeat: Timer!
     
