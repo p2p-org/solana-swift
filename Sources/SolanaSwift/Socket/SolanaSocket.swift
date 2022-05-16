@@ -22,6 +22,8 @@ public class SolanaSocket: NSObject {
     private let enableDebugLogs: Bool
     private var wsHeartBeat: Timer!
     
+    private var asyncTask: Task<Void, Error>?
+    
     // MARK: - Delegation
     public weak var delegate: SolanaSocketEventsDelegate?
     
@@ -54,6 +56,7 @@ public class SolanaSocket: NSObject {
     }
     
     public func disconnect() {
+        asyncTask?.cancel()
         task.cancel()
         delegate = nil
         wsHeartBeat?.invalidate()
@@ -135,6 +138,7 @@ public class SolanaSocket: NSObject {
     }
     
     private func readMessage() async throws {
+        try Task.checkCancellation()
         let message = try await task.receive()
         switch message {
         case .string(let text):
@@ -186,13 +190,12 @@ public class SolanaSocket: NSObject {
             } catch let error {
                 delegate?.error(error: error)
             }
+            try await self.readMessage()
         case .data(let data):
             print("Received binary message: \(data)")
         @unknown default:
             fatalError()
         }
-        
-        try await self.readMessage()
     }
     
     private func ping() {
@@ -217,6 +220,10 @@ extension SolanaSocket: URLSessionWebSocketDelegate {
         if enableDebugLogs {
             Logger.log(event: .event, message: "Socket connected")
         }
+        
+        asyncTask = Task { [weak self] in
+            try await self?.readMessage()
+        }
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
@@ -228,5 +235,7 @@ extension SolanaSocket: URLSessionWebSocketDelegate {
         if enableDebugLogs {
             Logger.log(event: .event, message: "Socket disconnected")
         }
+        
+        asyncTask?.cancel()
     }
 }

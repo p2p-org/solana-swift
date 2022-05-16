@@ -66,7 +66,8 @@ private class MockSocketTaskProvider: WebSocketTaskProvider {
 }
 
 private class MockSocketTask: WebSocketTask {
-    private var continuation: CheckedContinuation<String, Error>!
+    private var keySubject = PassthroughSubject<String, Never>()
+    private var subscriptions = [AnyCancellable]()
     private var nativeEmitted: Bool = false
     
     func resume() {
@@ -92,30 +93,30 @@ private class MockSocketTask: WebSocketTask {
             let method = SocketMethod(rawValue: requestAPI.method)!
             switch method {
             case .accountNotification:
-                continuation.resume(returning: "accountNotification#\(nativeEmitted ? "Token": "Native")")
+                keySubject.send("accountNotification#\(nativeEmitted ? "Token": "Native")")
                 nativeEmitted = true
             case .accountSubscribe:
-                continuation.resume(returning: "subscriptionNotification")
+                keySubject.send("subscriptionNotification")
             case .accountUnsubscribe:
-                continuation.resume(returning: "unsubscriptionNotification")
+                keySubject.send("unsubscriptionNotification")
             case .signatureSubscribe:
-                continuation.resume(returning: "subscriptionNotification")
+                keySubject.send("subscriptionNotification")
             case .signatureUnsubscribe:
-                continuation.resume(returning: "unsubscriptionNotification")
+                keySubject.send("unsubscriptionNotification")
             case .logsSubscribe:
-                continuation.resume(returning: "subscriptionNotification")
+                keySubject.send("subscriptionNotification")
             case .logsUnsubscribe:
-                continuation.resume(returning: "unsubscriptionNotification")
+                keySubject.send("unsubscriptionNotification")
             case .programSubscribe:
-                continuation.resume(returning: "subscriptionNotification")
+                keySubject.send("subscriptionNotification")
             case .programUnsubscribe:
-                continuation.resume(returning: "unsubscriptionNotification")
+                keySubject.send("unsubscriptionNotification")
             case .slotSubscribe:
-                continuation.resume(returning: "subscriptionNotification")
+                keySubject.send("subscriptionNotification")
             case .slotUnsubscribe:
-                continuation.resume(returning: "unsubscriptionNotification")
+                keySubject.send("unsubscriptionNotification")
             default:
-                continuation.resume(returning: method.rawValue)
+                keySubject.send(method.rawValue)
             }
             break
         @unknown default:
@@ -125,7 +126,9 @@ private class MockSocketTask: WebSocketTask {
     
     func receive() async throws -> URLSessionWebSocketTask.Message {
         let key = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
-            self.continuation = continuation
+            self.keySubject.first().sink { key in
+                continuation.resume(returning: key)
+            }.store(in: &subscriptions)
         }
         return .string(SocketTestsHelper.emittingEvents[key]!)
     }
