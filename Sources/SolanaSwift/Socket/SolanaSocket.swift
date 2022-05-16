@@ -12,44 +12,54 @@ public protocol SolanaSocketEventsDelegate: AnyObject {
     func error(error: Error?)
 }
 
-protocol WebSocketTaskProvider {
-    func createWebSocketTask<T: WebSocketTask>(with url: URL) -> T
-}
-
-extension URLSession: WebSocketTaskProvider {
-    func createWebSocketTask<T: WebSocketTask>(with url: URL) -> T {
-        webSocketTask(with: url) as! T
-    }
-}
-
 protocol WebSocketTask {
     func resume()
     func cancel()
     func receive() async throws -> URLSessionWebSocketTask.Message
+    func sendPing(pongReceiveHandler: @escaping (Error?) -> Void)
 }
 
 extension URLSessionWebSocketTask: WebSocketTask {
     
 }
 
-public class SolanaSocket {
-    private let task: URLSessionWebSocketTask
-    private var enableDebugLogs: Bool
+public class SolanaSocket: NSObject {
+    // MARK: - Properties
+    var isConnected: Bool = false
     
+    private let task: URLSessionWebSocketTask
+    private let enableDebugLogs: Bool
+    private var wsHeartBeat: Timer!
+    
+    // MARK: - Delegation
     public weak var delegate: SolanaSocketEventsDelegate?
     
-    init(url: URL, enableDebugLogs: Bool = false, socketTaskProvider: URLSession = URLSession.shared) {
-        self.task = socketTaskProvider.webSocketTask(with: url)
+    // MARK: - Initializers
+    init(task: URLSessionWebSocketTask, enableDebugLogs: Bool) {
+        self.task = task
         self.enableDebugLogs = enableDebugLogs
+        super.init()
+        if #available(macOS 12.0, *) {
+            self.task.delegate = self
+        } else {
+            // Fallback on earlier versions
+        }
     }
     
-    public func start() {
+    deinit {
+        disconnect()
+    }
+    
+    // MARK: - Methods
+    public func connect() {
         task.resume()
     }
     
-    public func stop() {
+    public func disconnect() {
         task.cancel()
         delegate = nil
+        wsHeartBeat?.invalidate()
+        wsHeartBeat = nil
     }
     
     public func accountSubscribe(publickey: String) async throws -> String {
@@ -127,7 +137,45 @@ public class SolanaSocket {
         let message = try await task.receive()
         switch message {
         case .string(let text):
-            print("Received text message: \(text)")
+            guard let data = text.data(using: .utf8) else { return }
+            do {
+                // TODO: Fix this mess code
+                let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
+                if let jsonType = jsonResponse["method"] as? String,
+                   let type = SocketMethod(rawValue: jsonType) {
+                    
+                    switch type {
+                    case .accountNotification:
+                        let notification = try JSONDecoder().decode(Response<BufferInfo<AccountInfo>>.self, from: data)
+                        delegate?.accountNotification(notification: notification)
+                    case .signatureNotification:
+                        let notification = try JSONDecoder().decode(Response<SocketSignatureNotification>.self, from: data)
+                        delegate?.signatureNotification(notification: notification)
+                    case .logsNotification:
+                        let notification = try JSONDecoder().decode(Response<SocketLogsNotification>.self, from: data)
+                        delegate?.logsNotification(notification: notification)
+                    case .programNotification:
+                        let notification = try JSONDecoder().decode(Response<ProgramAccount<AccountInfo>>.self, from: data)
+                        delegate?.programNotification(notification: notification)
+                    default: break
+                    }
+                    
+                } else {
+                    if let subscription = try? JSONDecoder().decode(Response<UInt64>.self, from: data),
+                       let socketId = subscription.result,
+                       let id = subscription.id {
+                        delegate?.subscribed(socketId: socketId, id: id)
+                    }
+                    
+                    if let subscription = try? JSONDecoder().decode(Response<Bool>.self, from: data),
+                       subscription.result == true,
+                       let id = subscription.id {
+                        delegate?.unsubscribed(id: id)
+                    }
+                }
+            } catch let error {
+                delegate?.error(error: error)
+            }
         case .data(let data):
             print("Received binary message: \(data)")
         @unknown default:
@@ -136,96 +184,29 @@ public class SolanaSocket {
         
         try await self.readMessage()
     }
+    
+    private func ping() {
+        task.sendPing { (error) in
+            if let error = error {
+                print("Ping failed: \(error)")
+            }
+        }
+    }
 }
 
-extension SolanaSocket: WebSocketDelegate {
-    
-    public func didReceive(event: WebSocketEvent, client: WebSocket) {
-        log(event: event)
-        switch event {
-        case .connected:
-            delegate?.connected()
-        case .disconnected(let reason, let code):
-            delegate?.disconnected(reason: reason, code: code)
-        case .text(let string):
-            onText(string: string)
-        case .binary: break
-        case .ping: break
-        case .pong: break
-        case .viabilityChanged: break
-        case .reconnectSuggested: break
-        case .cancelled: break
-        case .error(let error): break
-            self.delegate?.error(error: error)
+extension SolanaSocket: URLSessionWebSocketDelegate {
+    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+        isConnected = true
+        wsHeartBeat?.invalidate()
+        wsHeartBeat = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] (_) in
+            // Ping server every 5s to prevent idle timeouts
+            self?.ping()
         }
     }
     
-    private func log(event: WebSocketEvent) {
-        guard enableDebugLogs else {return}
-        switch event {
-        case .connected(let headers):
-            debugPrint("conected with headers \(headers)")
-        case .disconnected(let reason, let code):
-            debugPrint("disconnected with reason \(reason) \(code)")
-        case .text(let string):
-            debugPrint("text \(string)")
-        case .binary:
-            debugPrint("binary")
-        case .ping:
-            debugPrint("ping")
-        case .pong:
-            debugPrint("pong")
-        case .viabilityChanged(let visible):
-            debugPrint("viabilityChanged \(visible)")
-        case .reconnectSuggested(let reconnect):
-            debugPrint("reconnectSuggested \(reconnect)")
-        case .cancelled:
-            debugPrint("cancelled")
-        case .error(let error):
-            debugPrint("error \(error?.localizedDescription ?? "")")
-        }
+    public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        isConnected = false
+        wsHeartBeat?.invalidate()
+        task.resume()
     }
-    
-    private func onText(string: String) {
-        guard let data = string.data(using: .utf8) else { return }
-        do {
-            // TODO: Fix this mess code
-            let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
-            if let jsonType = jsonResponse["method"] as? String,
-               let type = SocketMethod(rawValue: jsonType) {
-                
-                switch type {
-                case .accountNotification:
-                    let notification = try JSONDecoder().decode(Response<BufferInfo<AccountInfo>>.self, from: data)
-                    delegate?.accountNotification(notification: notification)
-                case .signatureNotification:
-                    let notification = try JSONDecoder().decode(Response<SocketSignatureNotification>.self, from: data)
-                    delegate?.signatureNotification(notification: notification)
-                case .logsNotification:
-                    let notification = try JSONDecoder().decode(Response<SocketLogsNotification>.self, from: data)
-                    delegate?.logsNotification(notification: notification)
-                case .programNotification:
-                    let notification = try JSONDecoder().decode(Response<ProgramAccount<AccountInfo>>.self, from: data)
-                    delegate?.programNotification(notification: notification)
-                default: break
-                }
-                
-            } else {
-                if let subscription = try? JSONDecoder().decode(Response<UInt64>.self, from: data),
-                   let socketId = subscription.result,
-                   let id = subscription.id {
-                    delegate?.subscribed(socketId: socketId, id: id)
-                }
-                
-                if let subscription = try? JSONDecoder().decode(Response<Bool>.self, from: data),
-                   subscription.result == true,
-                   let id = subscription.id {
-                    delegate?.unsubscribed(id: id)
-                }
-            }
-        } catch let error {
-            delegate?.error(error: error)
-        }
-    }
-    
 }
