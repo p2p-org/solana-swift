@@ -8,7 +8,6 @@
 //
 
 import Foundation
-import CryptoKit
 import CommonCrypto
 
 public class Mnemonic {
