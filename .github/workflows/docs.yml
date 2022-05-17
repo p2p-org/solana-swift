@@ -1,13 +1,10 @@
 name: Swift
 
 on:
-  pull_request:
+  push:
     branches: [ refactor/pwn-3297 ]
-
-    # push:
-    # branches: [ refactor/pwn-3297 ]
-    # paths:
-    #   - 'Sources/**/*'
+    paths:
+      - 'Sources/**/*'
 
 jobs:
   docs:
