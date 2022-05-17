@@ -1,25 +1,25 @@
 name: Swift
 
 on:
-  push:
+  pull_request:
     branches: [ refactor/pwn-3297 ]
-    paths:
-      - 'Sources/**/*'
+
+    # push:
+    # branches: [ refactor/pwn-3297 ]
+    # paths:
+    #   - 'Sources/**/*'
 
 jobs:
   docs:
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
     - uses: actions/checkout@v3
-    - uses: fwal/setup-swift@v1
-      with:
-        swift-version: "5.6.0"
 
     - uses: fwcd/swift-docc-action@v1
       with:
-        target: TransactionParser
+        target: SolanaSwift
         output: ./docs
-        hosting-base-path: solana-swift-library
+        hosting-base-path: solana-swift
         disable-indexing: 'true'
         transform-for-static-hosting: 'true'
 
