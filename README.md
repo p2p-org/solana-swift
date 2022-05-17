@@ -104,7 +104,6 @@ Make an API call to Solana using JSONRPC Client
 Example: 
 ```swift
 import SolanaSwift
-
 let endpoint = APIEndPoint(
     address: "https://api.mainnet-beta.solana.com",
     network: .mainnetBeta
