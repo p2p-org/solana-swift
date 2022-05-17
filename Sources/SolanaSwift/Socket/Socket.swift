@@ -14,49 +14,55 @@ public protocol SolanaSocket {
     /// Disconnect from socket
     func disconnect()
     
+    /// Subscribe to an entity ('account', 'program', 'signature', for example)
+    /// - Parameters:
+    ///   - type: type of entity, '.account', '.program',...
+    ///   - params: params to be sent
+    /// - Returns: id of the request
+    @discardableResult func subscribe<T: Encodable>(type: SocketEntity, params: T, commitment: String) async throws -> String
+    
+    /// Unsubscribe to an entity ('account', 'program', 'signature', for example)
+    /// - Parameters:
+    ///   - type: type of entity, '.account', '.program',...
+    ///   - socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult func unsubscribe(type: SocketEntity, socketId: UInt64) async throws -> String
+}
+
+public extension SolanaSocket {
     /// Subscribe to `accountNotification`
     /// - Parameter publickey: account to be subscribed
     /// - Returns: id of the request
-    @discardableResult func accountSubscribe(publickey: String) async throws -> String
-    
-    /// Unsubscribe from `accountNotification`
-    /// - Parameter socketId: id of the subscription
-    /// - Returns: id of the request
-    @discardableResult func accountUnsubscribe(socketId: UInt64) async throws -> String
+    @discardableResult func accountSubscribe(publickey: String, commitment: String = "recent") async throws -> String {
+        try await subscribe(type: .account, params: publickey, commitment: commitment)
+    }
     
     /// Subscribe to `signatureNotification`
     /// - Parameter signature: signature to be subscribed
     /// - Returns: id of the request
-    @discardableResult func signatureSubscribe(signature: String) async throws -> String
-    
-    /// Unsubscribe to `signatureNotification`
-    /// - Parameter socketId: id of the subscription
-    /// - Returns: id of the request
-    @discardableResult func signatureUnsubscribe(socketId: UInt64) async throws -> String
+    @discardableResult func signatureSubscribe(signature: String, commitment: String = "confirmed") async throws -> String {
+        try await subscribe(type: .signature, params: signature, commitment: commitment)
+    }
     
     /// Subscribe to `logsNotification`
     /// - Parameter mentions: accounts to be subscribed
     /// - Returns: id of the request
-    @discardableResult func logsSubscribe(mentions: [String]) async throws -> String
+    @discardableResult func logsSubscribe(mentions: [String], commitment: String = "confirmed") async throws -> String {
+        try await subscribe(type: .logs, params: ["mentions": mentions], commitment: commitment)
+    }
     
     /// Subscribe to all events
     /// - Returns: id of the request
-    @discardableResult func logsSubscribeAll() async throws -> String
-    
-    /// Unsubscribe to `logsNotification`
-    /// - Parameter socketId: id of the subscription
-    /// - Returns: id of the request
-    @discardableResult func logsUnsubscribe(socketId: UInt64) async throws -> String
+    @discardableResult func logsSubscribeAll(commitment: String = "confirmed") async throws -> String {
+        try await subscribe(type: .logs, params: "all", commitment: commitment)
+    }
     
     /// Subscribe to `programNotification`
     /// - Parameter publickey: program to be subscribed
     /// - Returns: id of the request
-    @discardableResult func programSubscribe(publickey: String) async throws -> String
-    
-    /// Unsubscribe to `programNotification`
-    /// - Parameter socketId: id of the subscription
-    /// - Returns: id of the request
-    @discardableResult func programUnsubscribe(socketId: UInt64) async throws -> String
+    @discardableResult func programSubscribe(publickey: String, commitment: String = "confirmed") async throws -> String {
+        try await subscribe(type: .program, params: publickey, commitment: commitment)
+    }
 }
 
 public class Socket: NSObject, SolanaSocket {
@@ -128,90 +134,25 @@ public class Socket: NSObject, SolanaSocket {
         wsHeartBeat = nil
     }
     
-    /// Subscribe to `accountNotification`
-    /// - Parameter publickey: account to be subscribed
+    /// Subscribe to an entity ('account', 'program', 'signature', for example)
+    /// - Parameters:
+    ///   - type: type of entity, '.account', '.program',...
+    ///   - params: params to be sent
     /// - Returns: id of the request
-    @discardableResult public func accountSubscribe(publickey: String) async throws -> String {
-        let method: SocketMethod = .accountSubscribe
-        let params: [Encodable] = [ publickey, ["commitment": "recent", "encoding": "base64"] ]
+    @discardableResult public func subscribe<T: Encodable>(type entity: SocketEntity, params: T, commitment: String) async throws -> String {
+        let method: SocketMethod = .init(entity, .subscribe)
+        let params: [Encodable] = [params, ["commitment": commitment, "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    /// Unsubscribe from `accountNotification`
-    /// - Parameter socketId: id of the subscription
+    /// Unsubscribe to an entity ('account', 'program', 'signature', for example)
+    /// - Parameters:
+    ///   - type: type of entity, '.account', '.program',...
+    ///   - socketId: id of the subscription
     /// - Returns: id of the request
-    @discardableResult public func accountUnsubscribe(socketId: UInt64) async throws -> String {
-        let method: SocketMethod = .accountUnsubscribe
-        let params: [Encodable] = [socketId]
-        let request = RequestAPI(method: method.rawValue, params: params)
-        return try await writeToSocket(request: request)
-    }
-    
-    /// Subscribe to `signatureNotification`
-    /// - Parameter signature: signature to be subscribed
-    /// - Returns: id of the request
-    @discardableResult public func signatureSubscribe(signature: String) async throws -> String {
-        let method: SocketMethod = .signatureSubscribe
-        let params: [Encodable] = [signature, ["commitment": "confirmed", "encoding": "base64"]]
-        let request = RequestAPI(method: method.rawValue, params: params)
-        return try await writeToSocket(request: request)
-    }
-    
-    /// Unsubscribe to `signatureNotification`
-    /// - Parameter socketId: id of the subscription
-    /// - Returns: id of the request
-    @discardableResult public func signatureUnsubscribe(socketId: UInt64) async throws -> String {
-        let method: SocketMethod = .signatureUnsubscribe
-        let params: [Encodable] = [socketId]
-        let request = RequestAPI(method: method.rawValue, params: params)
-        return try await writeToSocket(request: request)
-    }
-    
-    /// Subscribe to `logsNotification`
-    /// - Parameter mentions: accounts to be subscribed
-    /// - Returns: id of the request
-    @discardableResult public func logsSubscribe(mentions: [String]) async throws -> String {
-        let method: SocketMethod = .logsSubscribe
-        let params: [Encodable] = [["mentions": mentions], ["commitment": "confirmed", "encoding": "base64"]]
-        let request = RequestAPI(method: method.rawValue, params: params)
-        return try await writeToSocket(request: request)
-    }
-    
-    /// Subscribe to all events
-    /// - Returns: id of the request
-    @discardableResult public func logsSubscribeAll() async throws -> String {
-        let method: SocketMethod = .logsSubscribe
-        let params: [Encodable] = ["all", ["commitment": "confirmed", "encoding": "base64"]]
-        let request = RequestAPI(method: method.rawValue, params: params)
-        return try await writeToSocket(request: request)
-    }
-    
-    /// Unsubscribe to `logsNotification`
-    /// - Parameter socketId: id of the subscription
-    /// - Returns: id of the request
-    @discardableResult public func logsUnsubscribe(socketId: UInt64) async throws -> String {
-        let method: SocketMethod = .logsUnsubscribe
-        let params: [Encodable] = [socketId]
-        let request = RequestAPI(method: method.rawValue, params: params)
-        return try await writeToSocket(request: request)
-    }
-    
-    /// Subscribe to `programNotification`
-    /// - Parameter publickey: program to be subscribed
-    /// - Returns: id of the request
-    @discardableResult public func programSubscribe(publickey: String) async throws -> String {
-        let method: SocketMethod = .programSubscribe
-        let params: [Encodable] = [publickey, ["commitment": "confirmed", "encoding": "base64"]]
-        let request = RequestAPI(method: method.rawValue, params: params)
-        return try await writeToSocket(request: request)
-    }
-    
-    /// Unsubscribe to `programNotification`
-    /// - Parameter socketId: id of the subscription
-    /// - Returns: id of the request
-    @discardableResult public func programUnsubscribe(socketId: UInt64) async throws -> String {
-        let method: SocketMethod = .programUnsubscribe
+    @discardableResult public func unsubscribe(type entity: SocketEntity, socketId: UInt64) async throws -> String {
+        let method: SocketMethod = .init(entity, .unsubscribe)
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -245,10 +186,11 @@ public class Socket: NSObject, SolanaSocket {
                 // TODO: Fix this mess code
                 let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
                 if let jsonType = jsonResponse["method"] as? String,
-                   let type = SocketMethod(rawValue: jsonType) {
-                    
-                    switch type {
-                    case .accountNotification:
+                   let type = SocketMethod(rawValue: jsonType),
+                   type.action == .notification
+                {
+                    switch type.entity {
+                    case .account:
                         if let notification = try? JSONDecoder().decode(SocketNativeAccountNotification.self, from: data)
                         {
                             delegate?.nativeAccountNotification(notification: notification)
@@ -257,16 +199,17 @@ public class Socket: NSObject, SolanaSocket {
                             delegate?.tokenAccountNotification(notification: notification)
                         }
                         
-                    case .signatureNotification:
+                    case .signature:
                         let notification = try JSONDecoder().decode(SocketSignatureNotification.self, from: data)
                         delegate?.signatureNotification(notification: notification)
-                    case .logsNotification:
+                    case .logs:
                         let notification = try JSONDecoder().decode(SocketLogsNotification.self, from: data)
                         delegate?.logsNotification(notification: notification)
-                    case .programNotification:
+                    case .program:
                         let notification = try JSONDecoder().decode(SocketProgramAccountNotification.self, from: data)
                         delegate?.programNotification(notification: notification)
-                    default: break
+                    default:
+                        break
                     }
                     
                 } else {

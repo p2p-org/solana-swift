@@ -16,7 +16,7 @@ class SocketTests: XCTestCase {
 
     func testSocketEvents() async throws {
         let expectation = XCTestExpectation()
-        let delegate = MockSolanaLiveEventsDelegate()
+        let delegate = MockSocketDelegate()
         delegate.onConected = {
             Task {
                 let _ = try await self.socket.accountSubscribe(publickey: "fasdfasdf") // native address
@@ -129,43 +129,43 @@ private class MockSocketTask: WebSocketTask {
             let requestAPI = try JSONDecoder().decode(RequestAPI.self, from: data)
             let method = SocketMethod(rawValue: requestAPI.method)!
             switch method {
-            case .accountSubscribe:
+            case .init(.account, .subscribe):
                 keySubject.send("subscriptionNotification")
                 DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
                     self.keySubject.send("accountNotification#\(self.nativeEmitted ? "Token": "Native")")
                     self.nativeEmitted = true
                 }
-            case .accountUnsubscribe:
+            case .init(.account, .unsubscribe):
                 keySubject.send("unsubscriptionNotification")
-            case .signatureSubscribe:
+            case .init(.signature, .subscribe):
                 keySubject.send("subscriptionNotification")
                 DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
                     self.keySubject.send("signatureNotification")
                 }
-            case .signatureUnsubscribe:
+            case .init(.signature, .unsubscribe):
                 keySubject.send("unsubscriptionNotification")
-            case .logsSubscribe:
+            case .init(.logs, .subscribe):
                 keySubject.send("subscriptionNotification")
                 DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
                     self.keySubject.send("logsNotification")
                 }
-            case .logsUnsubscribe:
+            case .init(.logs, .unsubscribe):
                 keySubject.send("unsubscriptionNotification")
-            case .programSubscribe:
+            case .init(.program, .subscribe):
                 keySubject.send("subscriptionNotification")
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
                     self.keySubject.send("programNotification")
                 }
-            case .programUnsubscribe:
+            case .init(.program, .unsubscribe):
                 keySubject.send("unsubscriptionNotification")
-            case .slotSubscribe:
+            case .init(.slot, .subscribe):
                 keySubject.send("subscriptionNotification")
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
                     self.keySubject.send("slotNotification")
                 }
-            case .slotUnsubscribe:
+            case .init(.slot, .unsubscribe):
                 keySubject.send("unsubscriptionNotification")
             default:
                 break
@@ -190,7 +190,7 @@ private class MockSocketTask: WebSocketTask {
     }
 }
 
-class MockSolanaLiveEventsDelegate: SolanaSocketEventsDelegate {
+class MockSocketDelegate: SolanaSocketEventsDelegate {
     
     var onConected: (() -> Void)? = nil
     var onDisconnected: (() -> Void)? = nil
