@@ -232,7 +232,7 @@ public class Socket: NSObject, SolanaSocket {
     }
     
     /// Read message from socket one at a time
-    @discardableResult private func readMessage() async throws {
+    private func readMessage() async throws {
         try Task.checkCancellation()
         let message = try await task.receive()
         switch message {
