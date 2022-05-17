@@ -125,6 +125,7 @@ class BlockchainClientTests: XCTestCase {
 }
 
 private class MockAPIClient: SolanaAPIClient {
+    
     let testCase: String
     
     init(testCase: String) {
@@ -347,6 +348,10 @@ private class MockAPIClient: SolanaAPIClient {
     }
     
     func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus> {
+        fatalError()
+    }
+    
+    func getSignaturesForAddress(address: String, configs: RequestConfiguration?) async throws -> [SignatureInfo] {
         fatalError()
     }
 }

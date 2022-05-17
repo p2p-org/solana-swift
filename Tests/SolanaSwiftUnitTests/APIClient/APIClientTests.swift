@@ -208,6 +208,14 @@ class APIClientTests: XCTestCase {
         XCTAssertEqual(usdt.freezeAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
     }
     
+    func testGetSignaturesForAddress() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getSignatureForAddress"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result = try await apiClient.getSignaturesForAddress(address: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result.first?.signature, "31vx5MqPX1cxzfwGEWjaHuHnmSo9vwrtwBNXyTJjxtfbzkzqWr4sY8JE5Mq5ZZK7aokps9UjhHcNuJTF82FP2ekM")
+    }
+    
     func testSimulateTx() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["simulateTransaction"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
@@ -256,6 +264,7 @@ class APIClientTests: XCTestCase {
         , "getMultipleMintDatas": "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":132426903},\"value\":[{\"data\":[\"AQAAABzjWe1aAS4E+hQrnHUaHF6Hz9CgFhuchf/TG3jN/Nj2dbn7oe7/EAAGAQEAAAAqnl7btTwEZ5CY/3sSZRcUQ0/AjFYqmjuGEQXmctQicw==\",\"base64\"],\"executable\":false,\"lamports\":122356825965,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":306},{\"data\":[\"AQAAAAXqnPFs5BGY8aSZN8iMNwqU1K//ibW6y470XmMku3j3J0UE6/G2BgAGAQEAAAAF6pzxbOQRmPGkmTfIjDcKlNSv/4m1usuO9F5jJLt49w==\",\"base64\"],\"executable\":false,\"lamports\":23879870146,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":306}]},\"id\":\"65766E4D-F678-489A-943B-8D70B5C6F1ED\"}\n"
         , "simulateTransaction": "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":132581497},\"value\":{\"accounts\":null,\"err\":\"AccountNotFound\",\"logs\":[],\"unitsConsumed\":0}},\"id\":\"3916EC69-2924-40E7-8843-8CBA8C6DB14C\"}\n"
         , "getSignatureStatuses": #"{"jsonrpc":"2.0","result":{"context":{"slot":82},"value":[{"slot":72,"confirmations":10,"err":null,"status":{"Ok":null},"confirmationStatus":"confirmed"},null]},"id":1}"#
+        , "getSignatureForAddress": "{\"jsonrpc\":\"2.0\",\"result\":[{\"blockTime\":1652351736,\"confirmationStatus\":\"finalized\",\"err\":null,\"memo\":null,\"signature\":\"31vx5MqPX1cxzfwGEWjaHuHnmSo9vwrtwBNXyTJjxtfbzkzqWr4sY8JE5Mq5ZZK7aokps9UjhHcNuJTF82FP2ekM\",\"slot\":133510309}],\"id\":\"6D72B578-401C-449E-A89F-2E31EA441A47\"}\n"
     ]
 
 }

@@ -178,6 +178,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         }
     }
     
+    public func getSignaturesForAddress(address: String, configs: RequestConfiguration? = nil) async throws -> [SignatureInfo] {
+        try await self.get(method: "getSignaturesForAddress", params: [address, configs])
+    }
+    
     public func simulateTransaction(transaction: String, configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!) async throws -> SimulationResult {
         let result: Rpc<SimulationResult> = try await self.get(method: "simulateTransaction", params: [transaction, configs])
         if let err = result.value.err {
