@@ -237,6 +237,7 @@ public class Socket: NSObject, SolanaSocket {
     }
     
     private func ping() {
+        Logger.log(event: .request, message: "Ping socket")
         task.sendPing { (error) in
             if let error = error {
                 print("Ping failed: \(error)")

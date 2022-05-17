@@ -38,9 +38,14 @@ let package = Package(
 //            resources: [ .process("Resources") ]
         ),
         .testTarget(
-            name: "SolanaSwiftTests",
+            name: "SolanaSwiftUnitTests",
             dependencies: ["SolanaSwift"]
 //            resources: [ .process("Resources") ]
         ),
+        .testTarget(
+            name: "SolanaSwiftIntegrationTests",
+            dependencies: ["SolanaSwift"]
+//            resources: [ .process("Resources") ]
+        )
     ]
 )
