@@ -16,7 +16,7 @@ class SocketTests: XCTestCase {
 
     func testSocketEvents() async throws {
         let expectation = XCTestExpectation()
-        let delegate = MockSolanaLiveEventsDelegate()
+        let delegate = MockSocketDelegate()
         delegate.onConected = {
             Task {
                 let _ = try await self.socket.accountSubscribe(publickey: "fasdfasdf") // native address
@@ -190,7 +190,7 @@ private class MockSocketTask: WebSocketTask {
     }
 }
 
-class MockSolanaLiveEventsDelegate: SolanaSocketEventsDelegate {
+class MockSocketDelegate: SolanaSocketEventsDelegate {
     
     var onConected: (() -> Void)? = nil
     var onDisconnected: (() -> Void)? = nil
