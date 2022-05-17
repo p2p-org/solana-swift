@@ -1,0 +1,13 @@
+name: UnitTest
+
+on: [ push ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build source code
+        run: swift build
+      - name: Run tests
+        run: swift test --filter "SolanaSwiftUnitTests"
