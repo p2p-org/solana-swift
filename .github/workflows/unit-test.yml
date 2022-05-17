@@ -7,10 +7,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Select xcode 13
-        run: |
-          sudo xcode-select --switch /Applications/Xcode_13.0.app/Contents/Developer
-        shell: bash
+      - uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: '5.6.1'
       - name: Build source code
         run: swift build
       - name: Run tests
