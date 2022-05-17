@@ -132,7 +132,7 @@ public class Socket: NSObject, SolanaSocket {
     /// - Parameter publickey: account to be subscribed
     /// - Returns: id of the request
     @discardableResult public func accountSubscribe(publickey: String) async throws -> String {
-        let method: SocketMethod = .accountSubscribe
+        let method: SocketMethod = .init(.account, .subscribe)
         let params: [Encodable] = [ publickey, ["commitment": "recent", "encoding": "base64"] ]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -142,7 +142,7 @@ public class Socket: NSObject, SolanaSocket {
     /// - Parameter socketId: id of the subscription
     /// - Returns: id of the request
     @discardableResult public func accountUnsubscribe(socketId: UInt64) async throws -> String {
-        let method: SocketMethod = .accountUnsubscribe
+        let method: SocketMethod = .init(.account, .unsubscribe)
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -152,7 +152,7 @@ public class Socket: NSObject, SolanaSocket {
     /// - Parameter signature: signature to be subscribed
     /// - Returns: id of the request
     @discardableResult public func signatureSubscribe(signature: String) async throws -> String {
-        let method: SocketMethod = .signatureSubscribe
+        let method: SocketMethod = .init(.signature, .subscribe)
         let params: [Encodable] = [signature, ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -162,7 +162,7 @@ public class Socket: NSObject, SolanaSocket {
     /// - Parameter socketId: id of the subscription
     /// - Returns: id of the request
     @discardableResult public func signatureUnsubscribe(socketId: UInt64) async throws -> String {
-        let method: SocketMethod = .signatureUnsubscribe
+        let method: SocketMethod = .init(.signature, .unsubscribe)
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -172,7 +172,7 @@ public class Socket: NSObject, SolanaSocket {
     /// - Parameter mentions: accounts to be subscribed
     /// - Returns: id of the request
     @discardableResult public func logsSubscribe(mentions: [String]) async throws -> String {
-        let method: SocketMethod = .logsSubscribe
+        let method: SocketMethod = .init(.logs, .subscribe)
         let params: [Encodable] = [["mentions": mentions], ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -181,7 +181,7 @@ public class Socket: NSObject, SolanaSocket {
     /// Subscribe to all events
     /// - Returns: id of the request
     @discardableResult public func logsSubscribeAll() async throws -> String {
-        let method: SocketMethod = .logsSubscribe
+        let method: SocketMethod = .init(.logs, .subscribe)
         let params: [Encodable] = ["all", ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -191,7 +191,7 @@ public class Socket: NSObject, SolanaSocket {
     /// - Parameter socketId: id of the subscription
     /// - Returns: id of the request
     @discardableResult public func logsUnsubscribe(socketId: UInt64) async throws -> String {
-        let method: SocketMethod = .logsUnsubscribe
+        let method: SocketMethod = .init(.logs, .unsubscribe)
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -201,7 +201,7 @@ public class Socket: NSObject, SolanaSocket {
     /// - Parameter publickey: program to be subscribed
     /// - Returns: id of the request
     @discardableResult public func programSubscribe(publickey: String) async throws -> String {
-        let method: SocketMethod = .programSubscribe
+        let method: SocketMethod = .init(.program, .subscribe)
         let params: [Encodable] = [publickey, ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -211,7 +211,7 @@ public class Socket: NSObject, SolanaSocket {
     /// - Parameter socketId: id of the subscription
     /// - Returns: id of the request
     @discardableResult public func programUnsubscribe(socketId: UInt64) async throws -> String {
-        let method: SocketMethod = .programUnsubscribe
+        let method: SocketMethod = .init(.program, .unsubscribe)
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
@@ -245,10 +245,11 @@ public class Socket: NSObject, SolanaSocket {
                 // TODO: Fix this mess code
                 let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
                 if let jsonType = jsonResponse["method"] as? String,
-                   let type = SocketMethod(rawValue: jsonType) {
-                    
-                    switch type {
-                    case .accountNotification:
+                   let type = SocketMethod(rawValue: jsonType),
+                   type.action == .notification
+                {
+                    switch type.entity {
+                    case .account:
                         if let notification = try? JSONDecoder().decode(SocketNativeAccountNotification.self, from: data)
                         {
                             delegate?.nativeAccountNotification(notification: notification)
@@ -257,16 +258,17 @@ public class Socket: NSObject, SolanaSocket {
                             delegate?.tokenAccountNotification(notification: notification)
                         }
                         
-                    case .signatureNotification:
+                    case .signature:
                         let notification = try JSONDecoder().decode(SocketSignatureNotification.self, from: data)
                         delegate?.signatureNotification(notification: notification)
-                    case .logsNotification:
+                    case .logs:
                         let notification = try JSONDecoder().decode(SocketLogsNotification.self, from: data)
                         delegate?.logsNotification(notification: notification)
-                    case .programNotification:
+                    case .program:
                         let notification = try JSONDecoder().decode(SocketProgramAccountNotification.self, from: data)
                         delegate?.programNotification(notification: notification)
-                    default: break
+                    default:
+                        break
                     }
                     
                 } else {

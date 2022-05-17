@@ -1,23 +1,52 @@
 import Foundation
 
-public enum SocketMethod: String {
-    case accountNotification
-    case accountSubscribe
-    case accountUnsubscribe
+public enum SocketEntity: String {
+    case account
+    case signature
+    case logs
+    case program
+    case slot
+}
 
-    case signatureNotification
-    case signatureSubscribe
-    case signatureUnsubscribe
+public enum SocketAction: String, CaseIterable {
+    case subscribe
+    case unsubscribe
+    case notification
+}
 
-    case logsSubscribe
-    case logsNotification
-    case logsUnsubscribe
+public struct SocketMethod: Equatable, RawRepresentable {
+    public let entity: SocketEntity
+    public let action: SocketAction
+    
+    public init(_ entity: SocketEntity, _ action: SocketAction) {
+        self.entity = entity
+        self.action = action
+    }
+    
+    public var rawValue: String {
+        entity.rawValue + action.rawValue.capitalizingFirstLetter()
+    }
+    
+    public init?(rawValue: String) {
+        for action in SocketAction.allCases {
+            if rawValue.hasSuffix(action.rawValue.capitalizingFirstLetter()),
+               let entity = SocketEntity(rawValue: rawValue.replacingOccurrences(of: action.rawValue.capitalizingFirstLetter(), with: ""))
+            {
+                self.action = action
+                self.entity = entity
+                return
+            }
+        }
+        return nil
+    }
+}
 
-    case programSubscribe
-    case programNotification
-    case programUnsubscribe
+private extension String {
+    func capitalizingFirstLetter() -> String {
+      return prefix(1).uppercased() + self.lowercased().dropFirst()
+    }
 
-    case slotSubscribe
-    case slotNotification
-    case slotUnsubscribe
+    mutating func capitalizeFirstLetter() {
+      self = self.capitalizingFirstLetter()
+    }
 }
