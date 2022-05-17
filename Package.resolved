@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/bigearsenal/loggerswift.git",
         "state": {
           "branch": null,
-          "revision": "ca2f8c02e8c37cc02aa1b2a92a7f8458e23f9899",
-          "version": "1.0.1"
+          "revision": "779dbd11a9a2fea3c82943f69a30ca75f4596fc8",
+          "version": "1.0.2"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/bigearsenal/task-retrying-swift.git",
         "state": {
           "branch": null,
-          "revision": "1e83e99e412b27a5b1f2123493ed7ae4f2df7413",
-          "version": "1.0.1"
+          "revision": "c93fef795874cf31b7b0f8f6e9c23f4f15188dec",
+          "version": "1.0.2"
         }
       },
       {
