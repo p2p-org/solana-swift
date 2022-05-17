@@ -1,33 +1,90 @@
 import Foundation
 import LoggerSwift
 
-public protocol SolanaSocketEventsDelegate: AnyObject {
-    func connected()
-    func nativeAccountNotification(notification: SocketNativeAccountNotification)
-    func tokenAccountNotification(notification: SocketTokenAccountNotification)
-    func programNotification(notification: SocketProgramAccountNotification)
-    func signatureNotification(notification: SocketSignatureNotification)
-    func logsNotification(notification: SocketLogsNotification)
-    func unsubscribed(id: String)
-    func subscribed(socketId: UInt64, id: String)
-    func disconnected(reason: String, code: Int)
-    func error(error: Error?)
+public protocol SolanaSocket {
+    /// Connection status of the socket
+    var isConnected: Bool {get}
+    
+    /// Delegation
+    var delegate: SolanaSocketEventsDelegate? {get set}
+    
+    /// Connect to socket
+    func connect()
+    
+    /// Disconnect from socket
+    func disconnect()
+    
+    /// Subscribe to `accountNotification`
+    /// - Parameter publickey: account to be subscribed
+    /// - Returns: id of the request
+    @discardableResult func accountSubscribe(publickey: String) async throws -> String
+    
+    /// Unsubscribe from `accountNotification`
+    /// - Parameter socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult func accountUnsubscribe(socketId: UInt64) async throws -> String
+    
+    /// Subscribe to `signatureNotification`
+    /// - Parameter signature: signature to be subscribed
+    /// - Returns: id of the request
+    @discardableResult func signatureSubscribe(signature: String) async throws -> String
+    
+    /// Unsubscribe to `signatureNotification`
+    /// - Parameter socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult func signatureUnsubscribe(socketId: UInt64) async throws -> String
+    
+    /// Subscribe to `logsNotification`
+    /// - Parameter mentions: accounts to be subscribed
+    /// - Returns: id of the request
+    @discardableResult func logsSubscribe(mentions: [String]) async throws -> String
+    
+    /// Subscribe to all events
+    /// - Returns: id of the request
+    @discardableResult func logsSubscribeAll() async throws -> String
+    
+    /// Unsubscribe to `logsNotification`
+    /// - Parameter socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult func logsUnsubscribe(socketId: UInt64) async throws -> String
+    
+    /// Subscribe to `programNotification`
+    /// - Parameter publickey: program to be subscribed
+    /// - Returns: id of the request
+    @discardableResult func programSubscribe(publickey: String) async throws -> String
+    
+    /// Unsubscribe to `programNotification`
+    /// - Parameter socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult func programUnsubscribe(socketId: UInt64) async throws -> String
 }
 
-public class SolanaSocket: NSObject {
+public class Socket: NSObject, SolanaSocket {
     // MARK: - Properties
-    var isConnected: Bool = false
+    /// Connection status of the socket
+    public var isConnected: Bool = false
     
+    /// Socket task to handle socket event
     private var task: WebSocketTask!
+    
+    /// Enable/disable logging
     private let enableDebugLogs: Bool
+    
+    /// Timer to send pings to prevent idie time out
     private var wsHeartBeat: Timer!
     
+    /// Async task to keep track of asynchronous receiving task
     private var asyncTask: Task<Void, Error>?
     
-    // MARK: - Delegation
+    /// Delegation
     public weak var delegate: SolanaSocketEventsDelegate?
     
     // MARK: - Initializers
+    /// Initializer for Socket
+    /// - Parameters:
+    ///   - url: url of the socket
+    ///   - enableDebugLogs: enable/disable logging
+    ///   - socketTaskProviderType: type of task provider, default is `URLSession.self`
     public init<T: WebSocketTaskProvider>(
         url: URL,
         enableDebugLogs: Bool,
@@ -39,6 +96,10 @@ public class SolanaSocket: NSObject {
         self.task = urlSession.createWebSocketTask(with: url)
     }
     
+    /// Convenience initializer for socket using `URLSession` as `WebSocketTaskProvider`
+    /// - Parameters:
+    ///   - url: url of the socket
+    ///   - enableDebugLogs: enable/disable logging
     public convenience init(
         url: URL,
         enableDebugLogs: Bool
@@ -51,10 +112,12 @@ public class SolanaSocket: NSObject {
     }
     
     // MARK: - Methods
+    /// Connect to socket
     public func connect() {
         task.resume()
     }
     
+    /// Disconnect from socket
     public func disconnect() {
         delegate?.disconnected(reason: "", code: 0)
         
@@ -65,70 +128,99 @@ public class SolanaSocket: NSObject {
         wsHeartBeat = nil
     }
     
-    public func accountSubscribe(publickey: String) async throws -> String {
+    /// Subscribe to `accountNotification`
+    /// - Parameter publickey: account to be subscribed
+    /// - Returns: id of the request
+    @discardableResult public func accountSubscribe(publickey: String) async throws -> String {
         let method: SocketMethod = .accountSubscribe
         let params: [Encodable] = [ publickey, ["commitment": "recent", "encoding": "base64"] ]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    public func accountUnsubscribe(socketId: UInt64) async throws -> String {
+    /// Unsubscribe from `accountNotification`
+    /// - Parameter socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult public func accountUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .accountUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    public func signatureSubscribe(signature: String) async throws -> String {
+    /// Subscribe to `signatureNotification`
+    /// - Parameter signature: signature to be subscribed
+    /// - Returns: id of the request
+    @discardableResult public func signatureSubscribe(signature: String) async throws -> String {
         let method: SocketMethod = .signatureSubscribe
         let params: [Encodable] = [signature, ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    public func signatureUnsubscribe(socketId: UInt64) async throws -> String {
+    /// Unsubscribe to `signatureNotification`
+    /// - Parameter socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult public func signatureUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .signatureUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    public func logsSubscribe(mentions: [String]) async throws -> String {
+    /// Subscribe to `logsNotification`
+    /// - Parameter mentions: accounts to be subscribed
+    /// - Returns: id of the request
+    @discardableResult public func logsSubscribe(mentions: [String]) async throws -> String {
         let method: SocketMethod = .logsSubscribe
         let params: [Encodable] = [["mentions": mentions], ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    public func logsSubscribeAll() async throws -> String {
+    /// Subscribe to all events
+    /// - Returns: id of the request
+    @discardableResult public func logsSubscribeAll() async throws -> String {
         let method: SocketMethod = .logsSubscribe
         let params: [Encodable] = ["all", ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    public func logsUnsubscribe(socketId: UInt64) async throws -> String {
+    /// Unsubscribe to `logsNotification`
+    /// - Parameter socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult public func logsUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .logsUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    public func programSubscribe(publickey: String) async throws -> String {
+    /// Subscribe to `programNotification`
+    /// - Parameter publickey: program to be subscribed
+    /// - Returns: id of the request
+    @discardableResult public func programSubscribe(publickey: String) async throws -> String {
         let method: SocketMethod = .programSubscribe
         let params: [Encodable] = [publickey, ["commitment": "confirmed", "encoding": "base64"]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    public func programUnsubscribe(socketId: UInt64) async throws -> String {
+    /// Unsubscribe to `programNotification`
+    /// - Parameter socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult public func programUnsubscribe(socketId: UInt64) async throws -> String {
         let method: SocketMethod = .programUnsubscribe
         let params: [Encodable] = [socketId]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
     
-    private func writeToSocket(request: RequestAPI) async throws -> String {
+    /// Emit message to socket
+    /// - Parameter request: request to be sent
+    /// - Returns: request id
+    @discardableResult private func writeToSocket(request: RequestAPI) async throws -> String {
         guard let jsonData = try? JSONEncoder().encode(request) else {
             throw SocketError.couldNotSerialize
         }
@@ -139,7 +231,8 @@ public class SolanaSocket: NSObject {
         return request.id
     }
     
-    private func readMessage() async throws {
+    /// Read message from socket one at a time
+    @discardableResult private func readMessage() async throws {
         try Task.checkCancellation()
         let message = try await task.receive()
         switch message {
@@ -209,7 +302,7 @@ public class SolanaSocket: NSObject {
     }
 }
 
-extension SolanaSocket: URLSessionWebSocketDelegate {
+extension Socket: URLSessionWebSocketDelegate {
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         isConnected = true
         wsHeartBeat?.invalidate()

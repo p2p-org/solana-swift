@@ -3,10 +3,10 @@ import SolanaSwift
 import Combine
 
 class SocketTests: XCTestCase {
-    var socket: SolanaSocket!
+    var socket: Socket!
     
     override func setUpWithError() throws {
-        socket = SolanaSocket(url: SocketTestsHelper.url, enableDebugLogs: true, socketTaskProviderType: MockSocketTaskProvider.self)
+        socket = Socket(url: SocketTestsHelper.url, enableDebugLogs: true, socketTaskProviderType: MockSocketTaskProvider.self)
     }
 
     override func tearDownWithError() throws {
