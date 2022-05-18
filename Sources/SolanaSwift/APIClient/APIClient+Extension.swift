@@ -87,7 +87,7 @@ extension SolanaAPIClient {
             if mintAddress == toTokenMint {
                 address = destinationAddress
             // detect if destination address is a SOL address
-            } else if accountInfo?.owner == SystemProgram.id.base58EncodedString {
+            } else if accountInfo?.owner == TokenProgram.id.base58EncodedString {
                let owner = try PublicKey(string: destinationAddress)
                let tokenMint = try PublicKey(string: mintAddress)
                 // create associated token address
@@ -141,13 +141,12 @@ extension SolanaAPIClient {
     ///
     public func getTokenWallets(account: String, tokensRepository: SolanaTokensRepository? = nil) async throws -> [Wallet] {
         async let accounts = try await getTokenAccountsByOwner(pubkey: account,
-                                                                         params: .init(mint: nil, programId: TokenProgram.id.base58EncodedString),
+                                                               params: .init(mint: nil, programId: TokenProgram.id.base58EncodedString),
                                                                configs: .init(encoding: "base64"))
         let tokensRepository = tokensRepository ?? TokensRepository(endpoint: endpoint)
         async let tokens = try await tokensRepository.getTokensList()
         var knownWallets = [Wallet]()
         var unknownAccounts = [(String, AccountInfo)]()
-        
         let (list, supportedTokens) = (try await accounts, try await tokens)
 
         for item in list {
