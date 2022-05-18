@@ -87,7 +87,7 @@ extension SolanaAPIClient {
             if mintAddress == toTokenMint {
                 address = destinationAddress
             // detect if destination address is a SOL address
-            } else if accountInfo?.owner == TokenProgram.id.base58EncodedString {
+            } else if accountInfo?.owner == SystemProgram.id.base58EncodedString {
                let owner = try PublicKey(string: destinationAddress)
                let tokenMint = try PublicKey(string: mintAddress)
                 // create associated token address
