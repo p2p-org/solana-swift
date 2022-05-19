@@ -3,9 +3,7 @@ import Foundation
 public enum BufferLayoutError: Error {
     case NotImplemented
 }
-public protocol BufferLayout: Codable, BorshCodable {
-    static var BUFFER_LENGTH: UInt64 { get }
-}
+public protocol BufferLayout: Codable, BorshCodable {}
 
 extension BufferLayout {
     public init(from decoder: Decoder) throws {
