@@ -15,19 +15,7 @@ class ObserveTransactionStatusTests: XCTestCase {
     var statuses: [TransactionStatus]!
     
     override func setUpWithError() throws {
-        let mock = NetworkManagerMock([
-            .success(mockResponse(confirmations: 0, confirmationStatus: "processed")),
-            .failure(CustomError.unknownNetworkError),
-            .success(mockResponse(confirmations: 1, confirmationStatus: "confirmed")),
-            .failure(CustomError.unknownNetworkError),
-            .failure(SolanaError.unknown),
-            .success(mockResponse(confirmations: 5, confirmationStatus: "confirmed")),
-            .success(mockResponse(confirmations: 10, confirmationStatus: "confirmed")),
-            .failure(SolanaError.unknown),
-            .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
-        ])
-        apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        statuses = []
+        resetAPIClient()
     }
     
     override func tearDownWithError() throws {
@@ -58,6 +46,74 @@ class ObserveTransactionStatusTests: XCTestCase {
             statuses.append(status)
         }
         XCTAssertEqual(statuses.last, .finalized)
+    }
+    
+    func testWaitForConfirmationIgnoreStatus() async throws {
+        // return anyway after time out, even when transaction is not surely confimed
+        let response: [Result<String, Error>] = [
+            .failure(CustomError.unknownNetworkError),
+            .failure(CustomError.unknownNetworkError),
+            .failure(SolanaError.unknown),
+            .success(mockResponse(confirmations: 5, confirmationStatus: "confirmed")),
+            .success(mockResponse(confirmations: 10, confirmationStatus: "confirmed")),
+            .failure(SolanaError.unknown),
+            .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
+        ]
+        
+        resetAPIClient(customResponse: response)
+        try await apiClient.waitForConfirmation(signature: "adfijidjfaisdf", ignoreStatus: true, timeout: 1, delay: 1)
+        
+        resetAPIClient(customResponse: response)
+        try await apiClient.waitForConfirmation(signature: "adfijidjfaisdf", ignoreStatus: true)
+    }
+    
+    func testWaitForConfirmationNotIgnoreStatus() async throws {
+        // return only if transaction is confirmed or partially confirmed
+        let response: [Result<String, Error>] = [
+            .failure(CustomError.unknownNetworkError),
+            .failure(CustomError.unknownNetworkError),
+            .failure(SolanaError.unknown),
+            .success(mockResponse(confirmations: 5, confirmationStatus: "confirmed")),
+            .success(mockResponse(confirmations: 10, confirmationStatus: "confirmed")),
+            .failure(SolanaError.unknown),
+            .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
+        ]
+        
+        resetAPIClient(customResponse: response)
+        do {
+            try await apiClient.waitForConfirmation(signature: "adfijidjfaisdf", ignoreStatus: true, timeout: 1, delay: 1)
+        } catch {
+            XCTAssertTrue(error.isEqualTo(.transactionHasNotBeenConfirmed))
+        }
+        
+        resetAPIClient(customResponse: response)
+        do {
+            try await apiClient.waitForConfirmation(signature: "adfijidjfaisdf", ignoreStatus: true, timeout: 3, delay: 1)
+        } catch {
+            XCTAssertTrue(error.isEqualTo(.transactionHasNotBeenConfirmed))
+        }
+        
+        resetAPIClient(customResponse: response)
+        try await apiClient.waitForConfirmation(signature: "adfijidjfaisdf", ignoreStatus: true, timeout: 7, delay: 1)
+        
+        resetAPIClient(customResponse: response)
+        try await apiClient.waitForConfirmation(signature: "adfijidjfaisdf", ignoreStatus: true, delay: 1)
+    }
+    
+    private func resetAPIClient(customResponse: [Result<String, Error>]? = nil) {
+        let mock = NetworkManagerMock(customResponse ?? [
+            .success(mockResponse(confirmations: 0, confirmationStatus: "processed")),
+            .failure(CustomError.unknownNetworkError),
+            .success(mockResponse(confirmations: 1, confirmationStatus: "confirmed")),
+            .failure(CustomError.unknownNetworkError),
+            .failure(SolanaError.unknown),
+            .success(mockResponse(confirmations: 5, confirmationStatus: "confirmed")),
+            .success(mockResponse(confirmations: 10, confirmationStatus: "confirmed")),
+            .failure(SolanaError.unknown),
+            .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
+        ])
+        apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        statuses = []
     }
     
     // MARK: - Helpers

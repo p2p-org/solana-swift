@@ -40,6 +40,9 @@ public enum SolanaError: Swift.Error, Equatable {
     // Socket error
     case socket(Swift.Error)
     
+    // Transaction has not been confirmed
+    case transactionHasNotBeenConfirmed
+    
     // Other
     case other(String)
     case unknown
