@@ -3,9 +3,7 @@ import Foundation
 public enum BufferLayoutError: Error {
     case NotImplemented
 }
-public protocol BufferLayout: Codable, BorshCodable {
-    static var BUFFER_LENGTH: UInt64 { get }
-}
+public protocol BufferLayout: Codable, BorshCodable {}
 
 extension BufferLayout {
     public init(from decoder: Decoder) throws {
@@ -19,9 +17,7 @@ extension BufferLayout {
         
         // Unable to get parsed data, fallback to decoding base64
         let stringData = (try? container.decode([String].self).first) ?? (try? container.decode(String.self))
-        guard let string = stringData,
-              let data = Data(base64Encoded: string)
-        else {
+        guard let string = stringData else {
             throw SolanaError.couldNotRetrieveAccountInfo
         }
         
@@ -29,11 +25,9 @@ extension BufferLayout {
             throw SolanaError.couldNotRetrieveAccountInfo
         }
         
-        do {
-            var reader = BinaryReader(bytes: data.bytes)
-            try self.init(from: &reader)
-        } catch {
-            throw SolanaError.couldNotRetrieveAccountInfo
-        }
+        let data = Data(base64Encoded: string) ?? Data(Base58.decode(string))
+        
+        var reader = BinaryReader(bytes: data.bytes)
+        try self.init(from: &reader)
     }
 }

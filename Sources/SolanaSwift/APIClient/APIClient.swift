@@ -243,7 +243,23 @@ public protocol SolanaAPIClient {
     ///
     func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus>
     
+    /// Returns a recent block hash from the ledger, and a fee schedule that can be used to compute the cost of submitting a transaction using it.
+    /// - Parameters:
+    ///  - commitment: (optional) Commitment
+    /// - Throws: APIClientError
+    /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getrecentblockhash
+    ///
     func getRecentBlockhash(commitment: Commitment?) async throws -> String
+    
+    /// Returns signatures for confirmed transactions that include the given address in their accountKeys list.
+    /// Returns signatures backwards in time from the provided signature or most recent confirmed block
+    /// - Parameters:
+    ///  - address: account address as base-58 encoded string
+    ///  - configs: (optional) Configuration object
+    /// - Throws: APIClientError
+    /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getrecentblockhash
+    ///
+    func getSignaturesForAddress(address: String, configs: RequestConfiguration?) async throws -> [SignatureInfo]
 
 }
 

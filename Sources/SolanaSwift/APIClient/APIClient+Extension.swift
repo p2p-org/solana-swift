@@ -183,4 +183,28 @@ extension SolanaAPIClient {
         }
         return knownWallets + wallets
     }
+    
+    /// Wait until transaction is confirmed, return even when there is one or more confirmations and request timed out
+    /// - Parameters:
+    ///   - signature: signature of the transaction
+    ///   - ignoreStatus: ignore status and return true even when observation is timed out
+    public func waitForConfirmation(signature: String, ignoreStatus: Bool, timeout: Int = 60, delay: Int = 2) async throws {
+        var statuses = [TransactionStatus]()
+        for try await status in observeSignatureStatus(signature: signature, timeout: timeout, delay: delay) {
+            statuses.append(status)
+        }
+        
+        // if the status is important
+        if !ignoreStatus {
+            guard let lastStatus = statuses.last else {
+                throw SolanaError.transactionHasNotBeenConfirmed
+            }
+            switch lastStatus {
+            case .confirmed, .finalized:
+                return
+            default:
+                throw SolanaError.transactionHasNotBeenConfirmed
+            }
+        }
+    }
 }

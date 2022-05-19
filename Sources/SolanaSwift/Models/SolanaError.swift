@@ -40,6 +40,9 @@ public enum SolanaError: Swift.Error, Equatable {
     // Socket error
     case socket(Swift.Error)
     
+    // Transaction has not been confirmed
+    case transactionHasNotBeenConfirmed
+    
     // Other
     case other(String)
     case unknown
@@ -47,5 +50,9 @@ public enum SolanaError: Swift.Error, Equatable {
     // Predefined error
     public static var couldNotRetrieveAccountInfo: Self {
         .other("Could not retrieve account info")
+    }
+    
+    public static var couldNotRetrieveBuffer: Self {
+        .other("Could not retrieve buffer")
     }
 }

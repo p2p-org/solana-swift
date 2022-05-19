@@ -11,6 +11,14 @@ public struct Response<T: Decodable>: Decodable {
     public let result: T?
     public let error: ResponseError?
     public let method: String?
+    
+    // socket
+    public let params: SocketParams<T>?
+}
+
+public struct SocketParams<T: Decodable>: Decodable {
+    public let result: Rpc<T>?
+    public let subscription: UInt64?
 }
 
 public struct ResponseError: Decodable {
@@ -141,6 +149,14 @@ public struct BufferInfo<T: BufferLayout>: Decodable {
     public let lamports: Lamports
     public let owner: String
     public let data: T
+    public let executable: Bool
+    public let rentEpoch: UInt64
+}
+
+public struct BufferInfoParsed<T: Decodable>: Decodable {
+    public let lamports: Lamports
+    public let owner: String
+    public let data: T?
     public let executable: Bool
     public let rentEpoch: UInt64
 }

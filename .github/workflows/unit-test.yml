@@ -1,0 +1,13 @@
+name: On pull request
+
+on: [ pull_request ]
+
+jobs:
+  unit-test:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build source code
+        run: swift build
+      - name: Run tests
+        run: swift test --filter "SolanaSwiftUnitTests"
