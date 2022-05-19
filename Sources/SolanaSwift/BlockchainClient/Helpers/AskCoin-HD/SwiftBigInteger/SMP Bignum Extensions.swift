@@ -15,7 +15,7 @@ public typealias Bignum = BInt
 extension Bignum
 {
 	/// Representation as Data
-	var data: Data {
+	public var data: Data {
 		let n = limbs.count
 		var data = Data(count: n * 8)
 		data.withUnsafeMutableBytes { (ptr: UnsafeMutablePointer<UInt8>) -> Void in
