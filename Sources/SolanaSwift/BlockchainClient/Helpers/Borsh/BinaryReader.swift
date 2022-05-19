@@ -11,7 +11,7 @@ public struct BinaryReader {
 }
 
 extension BinaryReader {
-    mutating func read(count: UInt32) throws -> [UInt8] {
+    mutating public func read(count: UInt32) throws -> [UInt8] {
         let newPosition = cursor + Int(count)
         guard bytes.count >= newPosition else {
             throw SolanaError.couldNotRetrieveAccountInfo
