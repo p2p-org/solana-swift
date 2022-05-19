@@ -4,11 +4,10 @@
 
 import Foundation
 
-extension TransactionInfo {
-    
-    struct ParsedInstructionData {
-        let instruction: ParsedInstruction
-        let innerInstruction: InnerInstruction?
+public extension TransactionInfo {
+    public struct ParsedInstructionData {
+        public let instruction: ParsedInstruction
+        public let innerInstruction: InnerInstruction?
     }
     
     func instructionsData() -> [ParsedInstructionData] {

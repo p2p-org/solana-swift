@@ -42,5 +42,4 @@ Carthage/Build
 OrcaSwapTransitiveTests-Secret.swift
 
 .build
-
-.idea/
+.idea
