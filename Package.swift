@@ -26,6 +26,12 @@ let package = Package(
         
         // Docs generator
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
+        
+        // Deprecated
+        .package(url: "https://github.com/ReactiveX/RxSwift.git", from: "6.5.0"),
+        .package(url: "https://github.com/RxSwiftCommunity/RxAlamofire.git",
+                             from: "6.1.1"),
+        .package(url: "https://github.com/daltoniam/Starscream.git", from: "4.0.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -36,7 +42,13 @@ let package = Package(
                 "secp256k1",
                 "TweetNacl",
                 "Task_retrying",
-                "LoggerSwift"
+                "LoggerSwift",
+                
+                // Deprecated
+                "RxSwift",
+                .product(name: "RxCocoa", package: "RxSwift"),
+                "RxAlamofire",
+                "Starscream"
             ]
 //            resources: [ .process("Resources") ]
         ),

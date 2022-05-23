@@ -7,26 +7,27 @@
 
 import Foundation
 import Starscream
+import LoggerSwift
 
 extension Socket_Deprecated: WebSocketDelegate {
     public func didReceive(event: WebSocketEvent, client: WebSocket) {
         switch event {
         case .connected(let headers):
-            Logger.log(message: "websocket is connected: \(headers)", event: .event)
+            Logger.log(event: .event, message: "websocket is connected: \(headers)")
             status.accept(.connected)
             onOpen()
         case .disconnected(let reason, let code):
-            Logger.log(message: "websocket is disconnected: \(reason) with code: \(code)", event: .event)
+            Logger.log(event: .event, message: "websocket is disconnected: \(reason) with code: \(code)")
             status.accept(.disconnected)
             onClose(Int(code))
             socket.connect()
         case .text(let string):
-            Logger.log(message: "Received text: \(string)", event: .event)
+            Logger.log(event: .event, message: "Received text: \(string)")
             if let data = string.data(using: .utf8) {
                 dataSubject.onNext(data)
             }
         case .binary(let data):
-            Logger.log(message: "Received data: \(data.count)", event: .event)
+            Logger.log(event: .event, message: "Received data: \(data.count)")
         case .ping(_):
 //            Logger.log(message: "Socket ping", event: .event)
             break
@@ -36,7 +37,7 @@ extension Socket_Deprecated: WebSocketDelegate {
         case .viabilityChanged(_):
             break
         case .reconnectSuggested(let bool):
-            Logger.log(message: "reconnectSuggested \(bool)", event: .event)
+            Logger.log(event: .event, message: "reconnectSuggested \(bool)")
             if bool { socket.connect() }
         case .cancelled:
             status.accept(.disconnected)
@@ -72,7 +73,7 @@ extension Socket_Deprecated: WebSocketDelegate {
     func onError(_ error: Error) {
         guard !status.value.isError else {return}
         status.accept(.error(error))
-        Logger.log(message: "Socket error: \(error.localizedDescription)", event: .error)
+        Logger.log(event: .error, message: "Socket error: \(error.localizedDescription)")
     }
     
     /// On socket closed

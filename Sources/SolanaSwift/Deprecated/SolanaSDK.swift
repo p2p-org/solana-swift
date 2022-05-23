@@ -9,6 +9,7 @@ import Foundation
 import RxAlamofire
 import Alamofire
 import RxSwift
+import LoggerSwift
 
 @available(*, deprecated, renamed: "AccountStorageType", message: "This protocol is outdated")
 public protocol SolanaSDKAccountStorage {
@@ -49,7 +50,7 @@ public class SolanaSDK {
         let requestAPI = RequestAPI(method: bcMethod, params: params)
         
         if log {
-            Logger.log(message: "\(method.rawValue) \(bcMethod) [id=\(requestAPI.id)] \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")", event: .request, apiMethod: bcMethod)
+            Logger.log(event: .request, message: "\(method.rawValue) \(bcMethod) [id=\(requestAPI.id)] \(params.map(EncodableWrapper.init(wrapped:)).jsonString ?? "")")
         }
         
         do {
@@ -62,7 +63,7 @@ public class SolanaSDK {
                     // Print
                     
                     if log {
-                        Logger.log(message: String(data: data, encoding: .utf8) ?? "", event: .response, apiMethod: bcMethod)
+                        Logger.log(event: .response, message: String(data: data, encoding: .utf8) ?? "")
                     }
                     
                     let statusCode = response.statusCode

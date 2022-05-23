@@ -7,6 +7,7 @@
 
 import Foundation
 import RxSwift
+import LoggerSwift
 
 extension SolanaSDK {
     public func prepareTransaction(
@@ -194,8 +195,8 @@ extension SolanaSDK {
                 let serializedTransaction = try transaction.serialize().bytes.toBase64()
                 
                 if let decodedTransaction = transaction.jsonString {
-                    Logger.log(message: decodedTransaction, event: .info)
-                    Logger.log(message: serializedTransaction, event: .info)
+                    Logger.log(event: .info, message: decodedTransaction)
+                    Logger.log(event: .info, message: serializedTransaction)
                 }
                 
                 return serializedTransaction
