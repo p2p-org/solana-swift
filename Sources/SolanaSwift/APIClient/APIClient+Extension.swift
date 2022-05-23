@@ -141,13 +141,12 @@ extension SolanaAPIClient {
     ///
     public func getTokenWallets(account: String, tokensRepository: SolanaTokensRepository? = nil) async throws -> [Wallet] {
         async let accounts = try await getTokenAccountsByOwner(pubkey: account,
-                                                                         params: .init(mint: nil, programId: TokenProgram.id.base58EncodedString),
+                                                               params: .init(mint: nil, programId: TokenProgram.id.base58EncodedString),
                                                                configs: .init(encoding: "base64"))
         let tokensRepository = tokensRepository ?? TokensRepository(endpoint: endpoint)
         async let tokens = try await tokensRepository.getTokensList()
         var knownWallets = [Wallet]()
         var unknownAccounts = [(String, AccountInfo)]()
-        
         let (list, supportedTokens) = (try await accounts, try await tokens)
 
         for item in list {
