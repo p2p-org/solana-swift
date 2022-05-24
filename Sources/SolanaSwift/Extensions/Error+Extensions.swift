@@ -7,20 +7,20 @@
 
 import Foundation
 
-extension Error {
-    public var readableDescription: String {
+public extension Error {
+    var readableDescription: String {
         (self as? LocalizedError)?.errorDescription ?? "\(self)"
     }
-    
-    public func isEqualTo(_ error: SolanaError) -> Bool {
+
+    func isEqualTo(_ error: SolanaError) -> Bool {
         (self as? SolanaError) == error
     }
-    
-    public var isAlreadyInUseSolanaError: Bool {
+
+    var isAlreadyInUseSolanaError: Bool {
         if let error = self as? SolanaError {
             switch error {
-            case .invalidResponse(let response):
-                return response.data?.logs?.contains(where: {$0.isAlreadyInUseLog}) == true
+            case let .invalidResponse(response):
+                return response.data?.logs?.contains(where: \.isAlreadyInUseLog) == true
             default:
                 break
             }

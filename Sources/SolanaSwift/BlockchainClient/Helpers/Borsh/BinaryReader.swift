@@ -5,18 +5,18 @@ public struct BinaryReader {
     private let bytes: [UInt8]
 
     public init(bytes: [UInt8]) {
-        self.cursor = 0
+        cursor = 0
         self.bytes = bytes
     }
 }
 
-extension BinaryReader {
-    mutating public func read(count: UInt32) throws -> [UInt8] {
+public extension BinaryReader {
+    mutating func read(count: UInt32) throws -> [UInt8] {
         let newPosition = cursor + Int(count)
         guard bytes.count >= newPosition else {
             throw SolanaError.couldNotRetrieveAccountInfo
         }
-        let result = bytes[cursor..<newPosition]
+        let result = bytes[cursor ..< newPosition]
         cursor = newPosition
         return Array(result)
     }

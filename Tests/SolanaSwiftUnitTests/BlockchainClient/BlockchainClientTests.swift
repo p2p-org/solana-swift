@@ -5,7 +5,7 @@ import XCTest
 
 class BlockchainClientTests: XCTestCase {
     var account: Account!
-    
+
     override func setUp() async throws {
         account = try await Account(
             phrase: "miracle pizza supply useful steak border same again youth silver access hundred"
@@ -13,41 +13,47 @@ class BlockchainClientTests: XCTestCase {
             network: .mainnetBeta
         )
     }
-    
+
     override func tearDown() async throws {
         account = nil
     }
-    
+
     // MARK: - Testcases
-    
+
     func testPrepareSendingNativeSOL() async throws {
         let toPublicKey = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
         let apiClient = MockAPIClient(testCase: #function)
         let blockchain = BlockchainClient(apiClient: apiClient)
-        
+
         let tx = try await blockchain.prepareSendingNativeSOL(
             from: account,
             to: toPublicKey,
             amount: 100,
             feePayer: account.publicKey
         )
-        
+
         let recentBlockhash = try await apiClient.getRecentBlockhash()
-        let serializedTransaction = try blockchain.signAndSerialize(preparedTransaction: tx, recentBlockhash: recentBlockhash)
-        
+        let serializedTransaction = try blockchain.signAndSerialize(
+            preparedTransaction: tx,
+            recentBlockhash: recentBlockhash
+        )
+
         XCTAssertEqual(tx.expectedFee, .init(transaction: 5000, accountBalances: 0))
-        XCTAssertEqual(serializedTransaction, "AYqN18ZDaJtv61HxaIUnmtK0f+ST/HaO3YzAOBjwtG9Qf/Td58DSe5zS5nyx9InT+UyLIZbb4nFE/XYrWfHKCwQBAAEDJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsVQai+mnMv4ueKX0uXJIyAIv0UeTX3PGhu9bYIRBgH+2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuN92Q8S3ViiBKFjrCz0SjRSx6JhG5pY6fuBlpw98caYBAgIAAQwCAAAAZAAAAAAAAAA=")
+        XCTAssertEqual(
+            serializedTransaction,
+            "AYqN18ZDaJtv61HxaIUnmtK0f+ST/HaO3YzAOBjwtG9Qf/Td58DSe5zS5nyx9InT+UyLIZbb4nFE/XYrWfHKCwQBAAEDJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsVQai+mnMv4ueKX0uXJIyAIv0UeTX3PGhu9bYIRBgH+2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuN92Q8S3ViiBKFjrCz0SjRSx6JhG5pY6fuBlpw98caYBAgIAAQwCAAAAZAAAAAAAAAA="
+        )
     }
-    
+
     func testPrepareSendingSPLTokens() async throws {
         // TESTS: SEND TO NATIVE SOL ACCOUNT (AUTO FIND AND CHECK SPL TOKEN ACCOUNT FROM OWNER NATIVE SOL ACCOUNT)
-        
+
         // Test1: for address that has no funds no usdc account
         try await doSendSPLTokenTest(
             testCase: #function + "#1",
             destination: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
             amount: 0.001,
-            expectedFee: .init(transaction: 5000, accountBalances: 2039280),
+            expectedFee: .init(transaction: 5000, accountBalances: 2_039_280),
             expectedSerializedTransaction: "AYMEskYoYyUUFfAOOBVge/ZvKsdnThz6h8SD9fjwhMrlzdyJqOHWd1E/TNwtASCdkG2tb6+mKwvPbTmfvpDJ/gUBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsV6z8KtZmvbVqZpAcS9akND4i7DwzOEXd14OkugPk5Sjis0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sUGovppzL+Lnil9LlySMgCL9FHk19zxobvW2CEQYB/trG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZfhq5F8HYKBbSm7geKKfkJABMkKQSWgrHSxAVWNN0/7wCCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA=="
         )
 
@@ -65,7 +71,7 @@ class BlockchainClientTests: XCTestCase {
             testCase: #function + "#3",
             destination: "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh",
             amount: 0.001,
-            expectedFee: .init(transaction: 5000, accountBalances: 2039280),
+            expectedFee: .init(transaction: 5000, accountBalances: 2_039_280),
             expectedSerializedTransaction: "AdFz8FoWp+YjJVuR0hPx4CKcDdpV36IsfbQXfSrMDWXqSOzOIlRp2rY2b4lRgB8VcXqmwpxcXGDGxVGFdU4JMAEBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsXfmyqCexcvWjX327oQJDPaq1QcjeU6DhBOBHkowzTMxys0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sRvkyC6kCcd7AsWv0bpvAPPFAp4Byt86SKMMioFAVLcTG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZM+I2hl0m6ASxaD/BXAGtM5jr5pKui/izvz+3UR6SIT8CCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA=="
         )
 
@@ -77,9 +83,9 @@ class BlockchainClientTests: XCTestCase {
             expectedFee: .init(transaction: 5000, accountBalances: 0),
             expectedSerializedTransaction: "AYZTxeufMDUP3SaAKy1V0B7LsQfO/oUpkGW/VlbD5K9KdYHdumis1YARp5VmkOye3GHuH41gfQPVvq6cibyVfwYBAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKmdjDa7+mojnL/9tFXOHQHyRb2yoOh+Mrxn+Yekjd3s0AEDAwECAAkD6AMAAAAAAAA="
         )
-        
+
         // TESTS: SEND DIRECTLY TO SPL TOKEN ACCOUNT
-        
+
         // Test5: directly to spl token account
         try await doSendSPLTokenTest(
             testCase: #function + "#5",
@@ -89,7 +95,7 @@ class BlockchainClientTests: XCTestCase {
             expectedSerializedTransaction: "ATfyE+TZcxsXHnQzWgqgCpsJ3hVmYteZYBnsBS4KGNH5zJcw8QL49tWztgIssBXk8j5aW4jWi4mFWM7ZAbT/rw4BAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKldK0fNaK6EJyL45ciI7x9wC9uwOhoblHsR+lp+1bX0OAEDAwECAAkD6AMAAAAAAAA="
         )
     }
-    
+
     private func doSendSPLTokenTest(
         testCase: String,
         destination: String,
@@ -97,14 +103,13 @@ class BlockchainClientTests: XCTestCase {
         expectedFee: FeeAmount,
         expectedSerializedTransaction: String
     ) async throws {
-        
         // USDC
         let mintAddress = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
         let source = "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3"
-        
+
         let apiClient = MockAPIClient(testCase: testCase)
         let blockchainClient = BlockchainClient(apiClient: apiClient)
-        
+
         // Test1: for address that has no funds
         let tx = try await blockchainClient.prepareSendingSPLTokens(
             account: account,
@@ -115,34 +120,36 @@ class BlockchainClientTests: XCTestCase {
             amount: amount.toLamport(decimals: 6)
         )
             .preparedTransaction
-        
+
         XCTAssertEqual(tx.expectedFee, expectedFee)
-        
+
         let recentBlockhash = try await apiClient.getRecentBlockhash()
-        let serializedTransaction = try blockchainClient.signAndSerialize(preparedTransaction: tx, recentBlockhash: recentBlockhash)
+        let serializedTransaction = try blockchainClient.signAndSerialize(
+            preparedTransaction: tx,
+            recentBlockhash: recentBlockhash
+        )
         XCTAssertEqual(serializedTransaction, expectedSerializedTransaction)
     }
 }
 
 private class MockAPIClient: SolanaAPIClient {
-    
     let testCase: String
-    
+
     init(testCase: String) {
         self.testCase = testCase
     }
-    
+
     var endpoint: APIEndPoint {
         fatalError()
     }
-    
-    func getAccountInfo<T>(account: String) async throws -> BufferInfo<T>? where T : BufferLayout {
+
+    func getAccountInfo<T>(account: String) async throws -> BufferInfo<T>? where T: BufferLayout {
         let data: T
         let lamports: Lamports
         let owner: String
         let executable: Bool
         let rentEpoch: UInt64
-        
+
         switch account {
         case "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm":
             switch testCase {
@@ -163,7 +170,8 @@ private class MockAPIClient: SolanaAPIClient {
             }
         case "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch":
             switch testCase {
-            case "testPrepareSendingSPLTokens()#2", "testPrepareSendingSPLTokens()#4", "testPrepareSendingSPLTokens()#5":
+            case "testPrepareSendingSPLTokens()#2", "testPrepareSendingSPLTokens()#4",
+                 "testPrepareSendingSPLTokens()#5":
                 data = AccountInfo(
                     mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     owner: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
@@ -195,36 +203,41 @@ private class MockAPIClient: SolanaAPIClient {
         }
         return BufferInfo<T>(lamports: lamports, owner: owner, data: data, executable: executable, rentEpoch: rentEpoch)
     }
-    
-    func getFees(commitment: Commitment?) async throws -> Fee {
+
+    func getFees(commitment _: Commitment?) async throws -> Fee {
         let blockhash: String
         let lastValidSlot: UInt64
         switch testCase {
         case "testPrepareSendingNativeSOL()":
             blockhash = "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
-            lastValidSlot = 133389328
+            lastValidSlot = 133_389_328
         case "testPrepareSendingSPLTokens()#1":
             blockhash = "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
-            lastValidSlot = 133389328
+            lastValidSlot = 133_389_328
         case "testPrepareSendingSPLTokens()#2":
             blockhash = "3uRa2bbJgTKVEKmZqKRtfWfhZF5YMn4D9xE64NYvTh4v"
-            lastValidSlot = 133389328
+            lastValidSlot = 133_389_328
         case "testPrepareSendingSPLTokens()#3":
             blockhash = "4VXrgGDjah4rCo2bvqSWXJTLbaDkmn4NTXknLn9GzacN"
-            lastValidSlot = 133458521
+            lastValidSlot = 133_458_521
         case "testPrepareSendingSPLTokens()#4":
             blockhash = "Bc11qGhSE3Vham6cBWEUxhRVVSNtzkyisdGGXwh6hvnT"
-            lastValidSlot = 133461545
+            lastValidSlot = 133_461_545
         case "testPrepareSendingSPLTokens()#5":
             blockhash = "7GhCDV2MK7RVhYzD3iNZAVkCd9hYCgyqkgXdFbEFj9PD"
-            lastValidSlot = 133461991
+            lastValidSlot = 133_461_991
         default:
             fatalError()
         }
-        return .init(feeCalculator: .init(lamportsPerSignature: 5000), feeRateGovernor: nil, blockhash: blockhash, lastValidSlot: lastValidSlot)
+        return .init(
+            feeCalculator: .init(lamportsPerSignature: 5000),
+            feeRateGovernor: nil,
+            blockhash: blockhash,
+            lastValidSlot: lastValidSlot
+        )
     }
-    
-    func getRecentBlockhash(commitment: Commitment?) async throws -> String {
+
+    func getRecentBlockhash(commitment _: Commitment?) async throws -> String {
         switch testCase {
         case "testPrepareSendingNativeSOL()":
             return "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
@@ -242,116 +255,127 @@ private class MockAPIClient: SolanaAPIClient {
             fatalError()
         }
     }
-    
-    func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment?) async throws -> UInt64 {
-        2039280
+
+    func getMinimumBalanceForRentExemption(dataLength _: UInt64, commitment _: Commitment?) async throws -> UInt64 {
+        2_039_280
     }
-    
-    func getBalance(account: String, commitment: Commitment?) async throws -> UInt64 {
+
+    func getBalance(account _: String, commitment _: Commitment?) async throws -> UInt64 {
         fatalError()
     }
-    
-    func getBlockCommitment(block: UInt64) async throws -> BlockCommitment {
+
+    func getBlockCommitment(block _: UInt64) async throws -> BlockCommitment {
         fatalError()
     }
-    
-    func getBlockTime(block: UInt64) async throws -> Date {
+
+    func getBlockTime(block _: UInt64) async throws -> Date {
         fatalError()
     }
-    
+
     func getClusterNodes() async throws -> [ClusterNodes] {
         fatalError()
     }
-    
+
     func getBlockHeight() async throws -> UInt64 {
         fatalError()
     }
-    
-    func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64] {
+
+    func getConfirmedBlocksWithLimit(startSlot _: UInt64, limit _: UInt64) async throws -> [UInt64] {
         fatalError()
     }
-    
-    func getConfirmedBlock(slot: UInt64, encoding: String) async throws -> ConfirmedBlock {
+
+    func getConfirmedBlock(slot _: UInt64, encoding _: String) async throws -> ConfirmedBlock {
         fatalError()
     }
-    
-    func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) async throws -> [String] {
+
+    func getConfirmedSignaturesForAddress(account _: String, startSlot _: UInt64,
+                                          endSlot _: UInt64) async throws -> [String]
+    {
         fatalError()
     }
-    
-    func getEpochInfo(commitment: Commitment?) async throws -> EpochInfo {
+
+    func getEpochInfo(commitment _: Commitment?) async throws -> EpochInfo {
         fatalError()
     }
-    
-    func getSignatureStatuses(signatures: [String], configs: RequestConfiguration?) async throws -> [SignatureStatus?] {
+
+    func getSignatureStatuses(signatures _: [String],
+                              configs _: RequestConfiguration?) async throws -> [SignatureStatus?]
+    {
         fatalError()
     }
-    
-    func getSignatureStatus(signature: String, configs: RequestConfiguration?) async throws -> SignatureStatus {
+
+    func getSignatureStatus(signature _: String, configs _: RequestConfiguration?) async throws -> SignatureStatus {
         fatalError()
     }
-    
-    func getTokenAccountBalance(pubkey: String, commitment: Commitment?) async throws -> TokenAccountBalance {
+
+    func getTokenAccountBalance(pubkey _: String, commitment _: Commitment?) async throws -> TokenAccountBalance {
         fatalError()
     }
-    
-    func getTokenAccountsByDelegate(pubkey: String, mint: String?, programId: String?, configs: RequestConfiguration?) async throws -> [TokenAccount<AccountInfo>] {
+
+    func getTokenAccountsByDelegate(
+        pubkey _: String,
+        mint _: String?,
+        programId _: String?,
+        configs _: RequestConfiguration?
+    ) async throws -> [TokenAccount<AccountInfo>] {
         fatalError()
     }
-    
-    func getTokenAccountsByOwner(pubkey: String, params: OwnerInfoParams?, configs: RequestConfiguration?) async throws -> [TokenAccount<AccountInfo>] {
+
+    func getTokenAccountsByOwner(pubkey _: String, params _: OwnerInfoParams?,
+                                 configs _: RequestConfiguration?) async throws -> [TokenAccount<AccountInfo>]
+    {
         fatalError()
     }
-    
-    func getTokenLargestAccounts(pubkey: String, commitment: Commitment?) async throws -> [TokenAmount] {
+
+    func getTokenLargestAccounts(pubkey _: String, commitment _: Commitment?) async throws -> [TokenAmount] {
         fatalError()
     }
-    
-    func getTokenSupply(pubkey: String, commitment: Commitment?) async throws -> TokenAmount {
+
+    func getTokenSupply(pubkey _: String, commitment _: Commitment?) async throws -> TokenAmount {
         fatalError()
     }
-    
+
     func getVersion() async throws -> Version {
         fatalError()
     }
-    
-    func getVoteAccounts(commitment: Commitment?) async throws -> VoteAccounts {
+
+    func getVoteAccounts(commitment _: Commitment?) async throws -> VoteAccounts {
         fatalError()
     }
-    
+
     func minimumLedgerSlot() async throws -> UInt64 {
         fatalError()
     }
-    
-    func requestAirdrop(account: String, lamports: UInt64, commitment: Commitment?) async throws -> String {
+
+    func requestAirdrop(account _: String, lamports _: UInt64, commitment _: Commitment?) async throws -> String {
         fatalError()
     }
-    
-    func sendTransaction(transaction: String, configs: RequestConfiguration) async throws -> TransactionID {
+
+    func sendTransaction(transaction _: String, configs _: RequestConfiguration) async throws -> TransactionID {
         fatalError()
     }
-    
-    func simulateTransaction(transaction: String, configs: RequestConfiguration) async throws -> SimulationResult {
+
+    func simulateTransaction(transaction _: String, configs _: RequestConfiguration) async throws -> SimulationResult {
         fatalError()
     }
-    
-    func setLogFilter(filter: String) async throws -> String? {
+
+    func setLogFilter(filter _: String) async throws -> String? {
         fatalError()
     }
-    
+
     func validatorExit() async throws -> Bool {
         fatalError()
     }
-    
-    func getMultipleAccounts<T>(pubkeys: [String]) async throws -> [BufferInfo<T>] where T : BufferLayout {
+
+    func getMultipleAccounts<T>(pubkeys _: [String]) async throws -> [BufferInfo<T>] where T: BufferLayout {
         fatalError()
     }
-    
-    func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus> {
+
+    func observeSignatureStatus(signature _: String, timeout _: Int, delay _: Int) -> AsyncStream<TransactionStatus> {
         fatalError()
     }
-    
-    func getSignaturesForAddress(address: String, configs: RequestConfiguration?) async throws -> [SignatureInfo] {
+
+    func getSignaturesForAddress(address _: String, configs _: RequestConfiguration?) async throws -> [SignatureInfo] {
         fatalError()
     }
 }

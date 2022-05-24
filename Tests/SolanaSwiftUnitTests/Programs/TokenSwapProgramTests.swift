@@ -1,10 +1,9 @@
-import XCTest
 import SolanaSwift
+import XCTest
 
 class TokenSwapProgramTests: XCTestCase {
-    
     let publicKey: PublicKey = "11111111111111111111111111111111"
-    
+
     func testSwapInstruction() throws {
         let instruction = TokenSwapProgram.swapInstruction(
             tokenSwap: publicKey,
@@ -19,10 +18,10 @@ class TokenSwapProgramTests: XCTestCase {
             hostFeeAccount: publicKey,
             swapProgramId: publicKey,
             tokenProgramId: publicKey,
-            amountIn: 100000,
+            amountIn: 100_000,
             minimumAmountOut: 0
         )
-        
+
         XCTAssertEqual(instruction.keys.count, 11)
         XCTAssertEqual(instruction.keys[0], .readonly(publicKey: "11111111111111111111111111111111", isSigner: false))
         XCTAssertEqual(instruction.keys[1], .readonly(publicKey: "11111111111111111111111111111111", isSigner: false))
@@ -38,7 +37,7 @@ class TokenSwapProgramTests: XCTestCase {
         XCTAssertEqual(instruction.programId, publicKey)
         XCTAssertEqual(Base58.decode("tSBHVn49GSCW4DNB1EYv9M"), instruction.data)
     }
-    
+
     func testDepositInstruction() throws {
         let instruction = TokenSwapProgram.depositInstruction(
             tokenSwap: publicKey,
@@ -51,11 +50,11 @@ class TokenSwapProgramTests: XCTestCase {
             poolAccount: publicKey,
             tokenProgramId: publicKey,
             swapProgramId: publicKey,
-            poolTokenAmount: 507788,
+            poolTokenAmount: 507_788,
             maximumTokenA: 51,
             maximumTokenB: 1038
         )
-        
+
         XCTAssertEqual(instruction.keys.count, 9)
         XCTAssertEqual(instruction.keys[0], .readonly(publicKey: "11111111111111111111111111111111", isSigner: false))
         XCTAssertEqual(instruction.keys[1], .readonly(publicKey: "11111111111111111111111111111111", isSigner: false))
@@ -69,7 +68,7 @@ class TokenSwapProgramTests: XCTestCase {
         XCTAssertEqual(instruction.programId, publicKey)
         XCTAssertEqual(Base58.decode("22WQQtPPUknk68tx2dUGRL1Q4Vj2mkg6Hd"), instruction.data)
     }
-    
+
     func testWithdrawInstruction() throws {
         let instruction = TokenSwapProgram.withdrawInstruction(
             tokenSwap: publicKey,
@@ -83,11 +82,11 @@ class TokenSwapProgramTests: XCTestCase {
             userAccountB: publicKey,
             swapProgramId: publicKey,
             tokenProgramId: publicKey,
-            poolTokenAmount: 498409,
+            poolTokenAmount: 498_409,
             minimumTokenA: 49,
             minimumTokenB: 979
         )
-        
+
         XCTAssertEqual(instruction.keys.count, 10)
         XCTAssertEqual(instruction.keys[0], .readonly(publicKey: "11111111111111111111111111111111", isSigner: false))
         XCTAssertEqual(instruction.keys[1], .readonly(publicKey: "11111111111111111111111111111111", isSigner: false))

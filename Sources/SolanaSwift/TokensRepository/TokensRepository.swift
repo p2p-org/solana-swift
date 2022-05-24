@@ -1,21 +1,21 @@
 import Foundation
 
 public class TokensRepository: SolanaTokensRepository {
-
     // MARK: - Properties
+
     private static var tokenCache = Cache<String, Set<Token>>()
     private let tokenCacheKey = "TokenRepositoryTokensKey"
-    
+
     private let tokenListParser: TokensListParser
     private let endpoint: APIEndPoint
-    
+
     public init(endpoint: APIEndPoint, tokenListParser: TokensListParser = .init()) {
         self.endpoint = endpoint
         self.tokenListParser = tokenListParser
     }
-    
+
     // MARK: - Public Methods
-    
+
     /// Returns all tokens
     /// - Parameters:
     ///  - useCache: wether to use cached value or not, default - true

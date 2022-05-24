@@ -43,40 +43,40 @@ extension AccountInfo: BorshCodable {
             try PublicKey.NULL_PUBLICKEY_BYTES.forEach { try $0.serialize(to: &writer) }
         }
     }
-    
+
     public init(from reader: inout BinaryReader) throws {
-        self.mint = try .init(from: &reader)
-        self.owner = try .init(from: &reader)
-        self.lamports = try .init(from: &reader)
-        self.delegateOption = try .init(from: &reader)
-        let tempdelegate = try? PublicKey.init(from: &reader)
-        self.state = try .init(from: &reader)
-        self.isNativeOption = try .init(from: &reader)
-        self.isNativeRaw = try .init(from: &reader)
-        self.delegatedAmount = try .init(from: &reader)
-        self.closeAuthorityOption = try .init(from: &reader)
-        self.closeAuthority = try? PublicKey.init(from: &reader)
-        
+        mint = try .init(from: &reader)
+        owner = try .init(from: &reader)
+        lamports = try .init(from: &reader)
+        delegateOption = try .init(from: &reader)
+        let tempdelegate = try? PublicKey(from: &reader)
+        state = try .init(from: &reader)
+        isNativeOption = try .init(from: &reader)
+        isNativeRaw = try .init(from: &reader)
+        delegatedAmount = try .init(from: &reader)
+        closeAuthorityOption = try .init(from: &reader)
+        closeAuthority = try? PublicKey(from: &reader)
+
         if delegateOption == 0 {
-            self.delegate = nil
-            self.delegatedAmount = 0
+            delegate = nil
+            delegatedAmount = 0
         } else {
-            self.delegate = tempdelegate
+            delegate = tempdelegate
         }
-        
-        self.isInitialized = state != 0
-        self.isFrozen = state == 2
-        
+
+        isInitialized = state != 0
+        isFrozen = state == 2
+
         if isNativeOption == 1 {
-            self.rentExemptReserve = isNativeRaw
-            self.isNative = true
+            rentExemptReserve = isNativeRaw
+            isNative = true
         } else {
-            self.rentExemptReserve = nil
+            rentExemptReserve = nil
             isNative = false
         }
-        
+
         if closeAuthorityOption == 0 {
-            self.closeAuthority = nil
+            closeAuthority = nil
         }
-    }    
+    }
 }

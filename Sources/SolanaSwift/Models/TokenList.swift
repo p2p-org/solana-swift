@@ -19,7 +19,18 @@ public enum WrappingToken: String {
 }
 
 public struct Token: Hashable, Decodable {
-    public init(_tags: [String]?, chainId: Int, address: String, symbol: String, name: String, decimals: Decimals, logoURI: String?, tags: [TokenTag] = [], extensions: TokenExtensions?, isNative: Bool = false) {
+    public init(
+        _tags: [String]?,
+        chainId: Int,
+        address: String,
+        symbol: String,
+        name: String,
+        decimals: Decimals,
+        logoURI: String?,
+        tags: [TokenTag] = [],
+        extensions: TokenExtensions?,
+        isNative: Bool = false
+    ) {
         self._tags = _tags
         self.chainId = chainId
         self.address = address
@@ -31,9 +42,9 @@ public struct Token: Hashable, Decodable {
         self.extensions = extensions
         self.isNative = isNative
     }
-    
+
     let _tags: [String]?
-    
+
     public let chainId: Int
     public let address: String
     public let symbol: String
@@ -43,11 +54,11 @@ public struct Token: Hashable, Decodable {
     public var tags: [TokenTag] = []
     public let extensions: TokenExtensions?
     public private(set) var isNative = false
-    
+
     enum CodingKeys: String, CodingKey {
         case chainId, address, symbol, name, decimals, logoURI, extensions, _tags = "tags"
     }
-    
+
     public static func unsupported(
         mint: String?,
         decimals: Decimals = 0,
@@ -65,7 +76,7 @@ public struct Token: Hashable, Decodable {
             extensions: nil
         )
     }
-    
+
     public static var nativeSolana: Self {
         .init(
             _tags: [],
@@ -80,7 +91,7 @@ public struct Token: Hashable, Decodable {
             isNative: true
         )
     }
-    
+
     public static var renBTC: Self {
         .init(
             _tags: nil,
@@ -90,36 +101,53 @@ public struct Token: Hashable, Decodable {
             name: "renBTC",
             decimals: 8,
             logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
-            extensions: .init(website: "https://renproject.io/", bridgeContract: nil, assetContract: nil, address: nil, explorer: nil, twitter: nil, github: nil, medium: nil, tgann: nil, tggroup: nil, discord: nil, serumV3Usdt: nil, serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv", coingeckoId: "renbtc", imageUrl: nil, description: nil)
+            extensions: .init(
+                website: "https://renproject.io/",
+                bridgeContract: nil,
+                assetContract: nil,
+                address: nil,
+                explorer: nil,
+                twitter: nil,
+                github: nil,
+                medium: nil,
+                tgann: nil,
+                tggroup: nil,
+                discord: nil,
+                serumV3Usdt: nil,
+                serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv",
+                coingeckoId: "renbtc",
+                imageUrl: nil,
+                description: nil
+            )
         )
     }
-    
+
     public var wrappedBy: WrappingToken? {
-        if tags.contains(where: {$0.name == "wrapped-sollet"}) {
+        if tags.contains(where: { $0.name == "wrapped-sollet" }) {
             return .sollet
         }
-        
-        if tags.contains(where: {$0.name == "wrapped"}) &&
-            tags.contains(where: {$0.name == "wormhole"})
+
+        if tags.contains(where: { $0.name == "wrapped" }),
+           tags.contains(where: { $0.name == "wormhole" })
         {
             return .wormhole
         }
-        
+
         return nil
     }
-    
+
     public var isLiquidity: Bool {
-        tags.contains(where: {$0.name == "lp-token"})
+        tags.contains(where: { $0.name == "lp-token" })
     }
-    
+
     public var isUndefined: Bool {
         symbol.isEmpty
     }
-    
+
     public var isNativeSOL: Bool {
         symbol == "SOL" && isNative
     }
-    
+
     public var isRenBTC: Bool {
         address == PublicKey.renBTCMint.base58EncodedString ||
             address == PublicKey.renBTCMintDevnet.base58EncodedString

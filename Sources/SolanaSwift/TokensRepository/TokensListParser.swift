@@ -6,31 +6,31 @@ public enum TokensListParserError: Error {
 }
 
 public class TokensListParser {
-    
     // MARK: -
-    
+
     private let networkManager: NetworkManager
-    private let tokenListURL = URL(string: "https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json")
-    
+    private let tokenListURL =
+        URL(string: "https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json")
+
     public init(networkManager: NetworkManager = URLSession.shared) {
         self.networkManager = networkManager
     }
-    
+
     // MARK: -
-    
+
     public func parse(network: String) async throws -> Set<Token> {
         guard let url = tokenListURL else { throw TokensListParserError.invalidTokenlistURL }
         let urlRequest = URLRequest(url: url)
-        
+
         // check for cancellation
         try Task.checkCancellation()
-        
+
         // get data
         let data = try await networkManager.requestData(request: urlRequest)
-        
+
         // check again for cancellation
         try Task.checkCancellation()
-        
+
         // decode data in other thread because it's a very big list with a lot of tokens
         return try await Task {
             let tokenList: TokensList
@@ -40,7 +40,8 @@ public class TokensListParser {
                 // get json file
                 let bundle = Bundle(for: TokensListParser.self)
                 let path = bundle.path(forResource: network + ".tokens", ofType: "json")
-                let jsonData = try Data(contentsOf: URL(fileURLWithPath: path ?! TokensListParserError.invalidTokenlistPath))
+                let jsonData =
+                    try Data(contentsOf: URL(fileURLWithPath: path ?! TokensListParserError.invalidTokenlistPath))
                 tokenList = try JSONDecoder().decode(TokensList.self, from: jsonData)
             }
 
@@ -65,12 +66,29 @@ public class TokensListParser {
                         name: "renBTC",
                         decimals: 8,
                         logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
-                        extensions: .init(website: "https://renproject.io/", bridgeContract: nil, assetContract: nil, address: nil, explorer: nil, twitter: nil, github: nil, medium: nil, tgann: nil, tggroup: nil, discord: nil, serumV3Usdt: nil, serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv", coingeckoId: "renbtc", imageUrl: nil, description: nil)
+                        extensions: .init(
+                            website: "https://renproject.io/",
+                            bridgeContract: nil,
+                            assetContract: nil,
+                            address: nil,
+                            explorer: nil,
+                            twitter: nil,
+                            github: nil,
+                            medium: nil,
+                            tgann: nil,
+                            tggroup: nil,
+                            discord: nil,
+                            serumV3Usdt: nil,
+                            serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv",
+                            coingeckoId: "renbtc",
+                            imageUrl: nil,
+                            description: nil
+                        )
                     )
                 )
             }
             return Set(tokens)
         }
-            .value
+        .value
     }
 }

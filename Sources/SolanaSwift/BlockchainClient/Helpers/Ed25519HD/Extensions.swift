@@ -1,6 +1,7 @@
 import Foundation
 
 // MARK: - Derivation path
+
 extension String {
     var isValidDerivationPath: Bool {
         range(of: "^m(\\/[0-9]+'?)+$", options: .regularExpression, range: nil, locale: nil) != nil
@@ -12,6 +13,7 @@ extension String {
 }
 
 // MARK: - Bytes
+
 extension UInt32 {
     var edBytes: [UInt8] {
         var bigEndian = self.bigEndian

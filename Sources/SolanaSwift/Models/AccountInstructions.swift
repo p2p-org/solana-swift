@@ -16,15 +16,15 @@ public struct AccountInstructions {
         self.newWalletPubkey = newWalletPubkey
         self.secretKey = secretKey
     }
-    
+
     public let account: PublicKey
     public var instructions: [TransactionInstruction]
     public var cleanupInstructions: [TransactionInstruction]
     public let signers: [Account]
-    
+
     // additionally return new wallet address
     internal private(set) var newWalletPubkey: String?
-    
+
     // additionally return newAccount's secretkey
     internal private(set) var secretKey: Data?
 }

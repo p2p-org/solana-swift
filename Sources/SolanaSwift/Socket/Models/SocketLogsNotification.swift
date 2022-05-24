@@ -2,11 +2,12 @@ import Foundation
 
 public typealias SocketLogsNotification = Response<SocketLogsNotificationData>
 
-extension SocketLogsNotification {
-    public var logs: [String]? {
+public extension SocketLogsNotification {
+    var logs: [String]? {
         params?.result?.value.logs
     }
-    public var signature: String? {
+
+    var signature: String? {
         params?.result?.value.signature
     }
 }

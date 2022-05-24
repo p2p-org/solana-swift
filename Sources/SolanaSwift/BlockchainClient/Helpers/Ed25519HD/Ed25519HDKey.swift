@@ -1,7 +1,7 @@
 import Foundation
 import TweetNacl
 
-public struct Ed25519HDKey {
+public enum Ed25519HDKey {
     public typealias Hex = String
     public typealias Path = String
 
@@ -12,7 +12,7 @@ public struct Ed25519HDKey {
     }
 
     private static let ed25519Curve = "ed25519 seed"
-    public static let hardenedOffset = 0x80000000
+    public static let hardenedOffset = 0x8000_0000
 
     public static func getMasterKeyFromSeed(_ seed: Hex) -> Result<Keys, Error> {
         let hmacKey = ed25519Curve.bytes
@@ -20,7 +20,7 @@ public struct Ed25519HDKey {
         guard let entropy = hmacSha512(message: Data(hex: seed), key: Data(hmacKey)) else {
             return .failure(.hmacCanNotAuthenticate)
         }
-        let IL = Data(entropy[0..<32])
+        let IL = Data(entropy[0 ..< 32])
         let IR = Data(entropy[32...])
         return .success(Keys(key: IL, chainCode: IR))
     }
@@ -35,7 +35,7 @@ public struct Ed25519HDKey {
         guard let entropy = hmacSha512(message: data, key: keys.chainCode) else {
             return .failure(.hmacCanNotAuthenticate)
         }
-        let IL = Data(entropy[0..<32])
+        let IL = Data(entropy[0 ..< 32])
         let IR = Data(entropy[32...])
         return .success(Keys(key: IL, chainCode: IR))
     }
@@ -44,7 +44,7 @@ public struct Ed25519HDKey {
         let keyPair = try NaclSign.KeyPair.keyPair(fromSeed: privateKey)
         let signPk = keyPair.secretKey[32...]
         let zero = Data([UInt8(0)])
-        return withZeroBytes ? Data(zero + signPk): Data(signPk)
+        return withZeroBytes ? Data(zero + signPk) : Data(signPk)
     }
 
     public static func derivePath(_ path: Path, seed: Hex, offSet: Int = hardenedOffset) -> Result<Keys, Error> {
@@ -54,12 +54,12 @@ public struct Ed25519HDKey {
 
         return getMasterKeyFromSeed(seed).flatMap { keys in
             let segments = path.components(separatedBy: "/")[1...]
-                .map {$0.replacingDerive}
-                .map {Int($0)!}
-            return .success((keys:keys, segments: segments))
+                .map(\.replacingDerive)
+                .map { Int($0)! }
+            return .success((keys: keys, segments: segments))
         }.flatMap { (keys: Keys, segments: [Int]) in
             do {
-                let keys = try segments.reduce(keys, { try CKDPriv(keys: $0, index: UInt32($1+offSet)).get() })
+                let keys = try segments.reduce(keys) { try CKDPriv(keys: $0, index: UInt32($1 + offSet)).get() }
                 return .success(keys)
             } catch {
                 return .failure(.canNotGetMasterKeyFromSeed)

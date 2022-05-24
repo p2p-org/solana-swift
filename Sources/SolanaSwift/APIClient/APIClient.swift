@@ -1,12 +1,11 @@
 import Foundation
 
 public protocol SolanaAPIClient {
-    
     /// The endpoint that indicates the rpcpool address and network
     var endpoint: APIEndPoint { get }
 
     // MARK: -  API Methods
-    
+
     /// Returns all information associated with the account of provided Pubkey
     /// - Parameters:
     ///  - account: Pubkey of account to query, as base-58 encoded string
@@ -25,7 +24,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getbalance
     ///
     func getBalance(account: String, commitment: Commitment?) async throws -> UInt64
-    
+
     /// Returns commitment for particular block
     /// - Parameters:
     ///  - block:  block, identified by Slot
@@ -34,7 +33,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getblockcommitment
     ///
     func getBlockCommitment(block: UInt64) async throws -> BlockCommitment
-    
+
     /// Returns the estimated production time of a block
     /// - Parameters:
     ///  - block:  block, identified by Slot
@@ -43,21 +42,21 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getblocktime
     ///
     func getBlockTime(block: UInt64) async throws -> Date
-    
+
     /// Returns information about all the nodes participating in the cluster
     /// - Throws: APIClientError
     /// - Returns The result field will be an array of ClusterNodes
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getclusternodes
     ///
     func getClusterNodes() async throws -> [ClusterNodes]
-    
+
     /// Returns the current block height of the node
     /// - Throws: APIClientError
     /// - Returns Current block height
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getblockheight
     ///
     func getBlockHeight() async throws -> UInt64
-    
+
     /// Returns a list of confirmed blocks starting at the given slot
     /// - Parameters:
     ///  - startSlot: start_slot, as u64 integer
@@ -67,7 +66,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getconfirmedblockswithlimit
     ///
     func getConfirmedBlocksWithLimit(startSlot: UInt64, limit: UInt64) async throws -> [UInt64]
-    
+
     /// Returns identity and transaction information about a confirmed block in the ledger
     /// - Parameters:
     ///  - slot: slot, as u64 integer
@@ -90,7 +89,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getepochinfo
     ///
     func getEpochInfo(commitment: Commitment?) async throws -> EpochInfo
-    
+
     /// Returns a recent block hash from the ledger, a fee schedule that can be used to compute the cost of submitting a transaction using it, and the last slot in which the blockhash will be valid.
     /// - Parameters:
     ///  - commitment: Optional
@@ -99,7 +98,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getfees
     ///
     func getFees(commitment: Commitment?) async throws -> Fee
-    
+
     /// Returns minimum balance required to make account rent exempt
     /// - Parameters:
     ///  - dataLength: account data length
@@ -109,7 +108,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getminimumbalanceforrentexemption
     ///
     func getMinimumBalanceForRentExemption(dataLength: UInt64, commitment: Commitment?) async throws -> UInt64
-    
+
     /// Returns the statuses of a list of signatures. Unless the searchTransactionHistory configuration parameter is included,
     /// this method only searches the recent status cache of signatures,
     /// which retains statuses for all active slots plus MAX_RECENT_BLOCKHASHES rooted slots.
@@ -123,7 +122,7 @@ public protocol SolanaAPIClient {
     func getSignatureStatuses(signatures: [String], configs: RequestConfiguration?) async throws -> [SignatureStatus?]
     /// - SeeAlso getSignatureStatuses(signatures: , configs:) async throws -> [SignatureStatus?]
     func getSignatureStatus(signature: String, configs: RequestConfiguration?) async throws -> SignatureStatus
-    
+
     /// Returns the token balance of an SPL Token account
     /// - Parameters:
     ///  - pubkey: Pubkey of Token account to query, as base-58 encoded string
@@ -133,7 +132,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#gettokenaccountbalance
     ///
     func getTokenAccountBalance(pubkey: String, commitment: Commitment?) async throws -> TokenAccountBalance
-    
+
     /// Returns all SPL Token accounts by approved Delegate
     /// - Parameters:
     ///  - pubkey: Pubkey of account delegate to query, as base-58 encoded string
@@ -144,8 +143,13 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an array of TokenAccount<AccountInfo>
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#gettokenaccountsbydelegate
     ///
-    func getTokenAccountsByDelegate(pubkey: String, mint: String?, programId: String?, configs: RequestConfiguration?) async throws -> [TokenAccount<AccountInfo>]
-    
+    func getTokenAccountsByDelegate(
+        pubkey: String,
+        mint: String?,
+        programId: String?,
+        configs: RequestConfiguration?
+    ) async throws -> [TokenAccount<AccountInfo>]
+
     /// Returns all SPL Token accounts by token owner
     /// - Parameters:
     ///  - pubkey: Pubkey of account owner to query, as base-58 encoded string
@@ -155,8 +159,9 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an array of TokenAccount<AccountInfo>
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#gettokenaccountsbyowner
     ///
-    func getTokenAccountsByOwner(pubkey: String, params: OwnerInfoParams?, configs: RequestConfiguration?) async throws -> [TokenAccount<AccountInfo>]
-    
+    func getTokenAccountsByOwner(pubkey: String, params: OwnerInfoParams?, configs: RequestConfiguration?) async throws
+        -> [TokenAccount<AccountInfo>]
+
     /// Returns the 20 largest accounts of a particular SPL Token type
     /// - Parameters:
     ///  - pubkey: Pubkey of token Mint to query, as base-58 encoded string
@@ -165,8 +170,8 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an array of TokenAccount
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#gettokenlargestaccounts
     ///
-    func getTokenLargestAccounts(pubkey: String, commitment: Commitment?)  async throws -> [TokenAmount]
-    
+    func getTokenLargestAccounts(pubkey: String, commitment: Commitment?) async throws -> [TokenAmount]
+
     /// Returns the total supply of an SPL Token type
     /// - Parameters:
     ///  - pubkey: Pubkey of token Mint to query, as base-58 encoded string
@@ -176,14 +181,14 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#gettokensupply
     ///
     func getTokenSupply(pubkey: String, commitment: Commitment?) async throws -> TokenAmount
-    
+
     /// Returns the current solana versions running on the node
     /// - Throws: APIClientError
     /// - Returns The result field will be a Version
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getversion
     ///
     func getVersion() async throws -> Version
-    
+
     /// Returns the account info and associated stake for all the voting accounts in the current bank
     /// - Parameters:
     ///  - commitment: (optional) Commitment
@@ -192,7 +197,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getvoteaccounts
     ///
     func getVoteAccounts(commitment: Commitment?) async throws -> VoteAccounts
-    
+
     /// Returns the lowest slot that the node has information about in its ledger. This value may increase over time if the node is configured to purge older ledger data
     /// - Throws: APIClientError
     /// - Returns Minimum ledger slot
@@ -200,7 +205,7 @@ public protocol SolanaAPIClient {
     ///
     func minimumLedgerSlot() async throws -> UInt64
     func requestAirdrop(account: String, lamports: UInt64, commitment: Commitment?) async throws -> String
-    
+
     /// Submits a signed transaction to the cluster for processing.
     /// This method does not alter the transaction in any way; it relays the transaction created by clients to the node as-is.
     /// - Parameters:
@@ -211,7 +216,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#sendtransaction
     ///
     func sendTransaction(transaction: String, configs: RequestConfiguration) async throws -> TransactionID
-    
+
     /// Simulate sending a transaction
     /// - Parameters:
     ///  - serializedTransaction: fully-signed Transaction, as encoded string
@@ -223,7 +228,7 @@ public protocol SolanaAPIClient {
     func simulateTransaction(transaction: String, configs: RequestConfiguration) async throws -> SimulationResult
     func setLogFilter(filter: String) async throws -> String?
     func validatorExit() async throws -> Bool
-    
+
     /// Returns the account information for a list of Pubkeys
     /// - Parameters:
     ///  - pubkeys: An array of Pubkeys to query, as base-58 encoded strings
@@ -232,7 +237,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getmultipleaccounts
     ///
     func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>]
-    
+
     /// Observe status of a sending transaction by periodically calling getSignatureStatuses
     /// - Parameters:
     ///  - signature: signature of the transaction, as base-58 encoded strings
@@ -242,7 +247,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getsignaturestatuses
     ///
     func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus>
-    
+
     /// Returns a recent block hash from the ledger, and a fee schedule that can be used to compute the cost of submitting a transaction using it.
     /// - Parameters:
     ///  - commitment: (optional) Commitment
@@ -250,7 +255,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getrecentblockhash
     ///
     func getRecentBlockhash(commitment: Commitment?) async throws -> String
-    
+
     /// Returns signatures for confirmed transactions that include the given address in their accountKeys list.
     /// Returns signatures backwards in time from the provided signature or most recent confirmed block
     /// - Parameters:
@@ -260,7 +265,6 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getrecentblockhash
     ///
     func getSignaturesForAddress(address: String, configs: RequestConfiguration?) async throws -> [SignatureInfo]
-
 }
 
 public enum APIClientError: Error {

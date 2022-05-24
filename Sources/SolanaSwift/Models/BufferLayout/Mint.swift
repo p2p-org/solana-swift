@@ -14,17 +14,17 @@ public struct Mint: BufferLayout, Equatable, Hashable, Encodable {
 
 extension Mint: BorshCodable {
     public init(from reader: inout BinaryReader) throws {
-        self.mintAuthorityOption = try .init(from: &reader)
-        self.mintAuthority = try? PublicKey.init(from: &reader)
-        self.supply = try .init(from: &reader)
-        self.decimals = try .init(from: &reader)
-        self.isInitialized = try UInt8.init(from: &reader) == 1
-        self.freezeAuthorityOption = try .init(from: &reader)
-        let freezeAuthorityTemp = try? PublicKey.init(from: &reader)
+        mintAuthorityOption = try .init(from: &reader)
+        mintAuthority = try? PublicKey(from: &reader)
+        supply = try .init(from: &reader)
+        decimals = try .init(from: &reader)
+        isInitialized = try UInt8(from: &reader) == 1
+        freezeAuthorityOption = try .init(from: &reader)
+        let freezeAuthorityTemp = try? PublicKey(from: &reader)
         if freezeAuthorityOption == 0 {
-            self.freezeAuthority = nil
+            freezeAuthority = nil
         } else {
-            self.freezeAuthority = freezeAuthorityTemp
+            freezeAuthority = freezeAuthorityTemp
         }
     }
 

@@ -2,12 +2,14 @@ import XCTest
 @testable import SolanaSwift
 
 class TokensRepositoryTests: XCTestCase {
-    
     let endpoint: APIEndPoint = .defaultEndpoints.first!
-    
+
     func testTokenRepository() async throws {
         let mock = TokenRepositoryMockNetworkManager()
-        let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
+        let tokenRepository = TokensRepository(
+            endpoint: endpoint,
+            tokenListParser: TokensListParser(networkManager: mock)
+        )
         let list = try await tokenRepository.getTokensList()
         XCTAssertFalse(list.isEmpty)
         XCTAssertEqual(list.count, 1)
@@ -16,25 +18,34 @@ class TokensRepositoryTests: XCTestCase {
         XCTAssertEqual(list.first?.name, "Wrapped SOL")
         XCTAssertEqual(list.first?.decimals, 9)
     }
-    
+
     func testTokenRepositoryCacheWithNetworkError() async throws {
         // Putting to cache
         try? await {
             let mock = TokenRepositoryMockNetworkManager()
-            let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
+            let tokenRepository = TokensRepository(
+                endpoint: endpoint,
+                tokenListParser: TokensListParser(networkManager: mock)
+            )
             _ = try await tokenRepository.getTokensList()
         }()
-        
+
         let mock = TokenRepositoryMockNetworkManager(withError: true)
-        let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
+        let tokenRepository = TokensRepository(
+            endpoint: endpoint,
+            tokenListParser: TokensListParser(networkManager: mock)
+        )
         let list = try await tokenRepository.getTokensList()
         XCTAssertFalse(list.isEmpty)
         XCTAssertEqual(list.count, 1)
     }
-    
+
     func testTokenRepositoryNoCacheNetworkError() async throws {
         let mock = TokenRepositoryMockNetworkManager(withError: true)
-        let tokenRepository = TokensRepository(endpoint: endpoint, tokenListParser: TokensListParser(networkManager: mock))
+        let tokenRepository = TokensRepository(
+            endpoint: endpoint,
+            tokenListParser: TokensListParser(networkManager: mock)
+        )
         do {
             let list = try await tokenRepository.getTokensList(useCache: false)
             XCTAssertTrue(list.isEmpty)
@@ -48,17 +59,17 @@ class TokenRepositoryMockNetworkManager: NetworkManager {
     enum MockNetworkManagerError: Error {
         case some
     }
+
     let withError: Bool
     init(withError: Bool = false) {
         self.withError = withError
     }
-    
-    func requestData(request: URLRequest) async throws -> Data {
+
+    func requestData(request _: URLRequest) async throws -> Data {
         if withError { throw MockNetworkManagerError.some }
         return json.data(using: .utf8)!
     }
 }
-
 
 let json = """
 {

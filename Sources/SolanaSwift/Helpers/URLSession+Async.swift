@@ -17,7 +17,7 @@ extension URLSession {
             task.resume()
         }
     }
-    
+
     func data(for urlRequest: URLRequest) async throws -> (Data, URLResponse) {
         try await withCheckedThrowingContinuation { continuation in
             let task = self.dataTask(with: urlRequest) { data, response, error in
@@ -32,5 +32,4 @@ extension URLSession {
             task.resume()
         }
     }
-
 }

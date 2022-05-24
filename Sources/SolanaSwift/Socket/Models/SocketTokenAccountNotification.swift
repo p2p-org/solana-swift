@@ -2,8 +2,8 @@ import Foundation
 
 public typealias SocketTokenAccountNotification = Response<BufferInfoParsed<SocketTokenAccountNotificationData>>
 
-extension SocketTokenAccountNotification {
-    public var tokenAmount: TokenAmount? {
+public extension SocketTokenAccountNotification {
+    var tokenAmount: TokenAmount? {
         params?.result?.value.data?.parsed.info.tokenAmount
     }
 }

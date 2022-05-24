@@ -17,20 +17,21 @@ public enum SocketAction: String, CaseIterable {
 public struct SocketMethod: Equatable, RawRepresentable {
     public let entity: SocketEntity
     public let action: SocketAction
-    
+
     public init(_ entity: SocketEntity, _ action: SocketAction) {
         self.entity = entity
         self.action = action
     }
-    
+
     public var rawValue: String {
         entity.rawValue + action.rawValue.capitalizingFirstLetter()
     }
-    
+
     public init?(rawValue: String) {
         for action in SocketAction.allCases {
             if rawValue.hasSuffix(action.rawValue.capitalizingFirstLetter()),
-               let entity = SocketEntity(rawValue: rawValue.replacingOccurrences(of: action.rawValue.capitalizingFirstLetter(), with: ""))
+               let entity = SocketEntity(rawValue: rawValue
+                   .replacingOccurrences(of: action.rawValue.capitalizingFirstLetter(), with: ""))
             {
                 self.action = action
                 self.entity = entity
@@ -43,10 +44,10 @@ public struct SocketMethod: Equatable, RawRepresentable {
 
 private extension String {
     func capitalizingFirstLetter() -> String {
-      return prefix(1).uppercased() + self.lowercased().dropFirst()
+        prefix(1).uppercased() + lowercased().dropFirst()
     }
 
     mutating func capitalizeFirstLetter() {
-      self = self.capitalizingFirstLetter()
+        self = capitalizingFirstLetter()
     }
 }

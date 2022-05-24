@@ -7,18 +7,17 @@
 //
 import Foundation
 
-let BTCKeychainMainnetPrivateVersion: UInt32 = 0x0488ADE4
-let BTCKeychainMainnetPublicVersion: UInt32 = 0x0488B21E
+let BTCKeychainMainnetPrivateVersion: UInt32 = 0x0488_ADE4
+let BTCKeychainMainnetPublicVersion: UInt32 = 0x0488_B21E
 
-let BTCKeychainTestnetPrivateVersion: UInt32 = 0x04358394
-let BTCKeychainTestnetPublicVersion: UInt32 = 0x043587CF
+let BTCKeychainTestnetPrivateVersion: UInt32 = 0x0435_8394
+let BTCKeychainTestnetPublicVersion: UInt32 = 0x0435_87CF
 
 let BTCMasterKeychainPath = "m"
 let BTCKeychainHardenedSymbol = "'"
 let BTCKeychainPathSeparator = "/"
 
 public class Keychain: NSObject {
-
     public enum KeyDerivationError: Error {
         case indexInvalid
         case pathInvalid
@@ -38,9 +37,7 @@ public class Keychain: NSObject {
     var hardened = false
     var index: UInt32 = 0
 
-    override init() {
-
-    }
+    override init() {}
 
     public convenience init?(seedString: String, network: String) throws {
         guard let seedData = try? Mnemonic(phrase: seedString.components(separatedBy: " ")) else {
@@ -58,8 +55,8 @@ public class Keychain: NSObject {
     }
 
     public init(hmac: [UInt8]) {
-        privateKey = Data(hmac[0..<32])
-        chainCode = Data(hmac[32..<64])
+        privateKey = Data(hmac[0 ..< 32])
+        chainCode = Data(hmac[32 ..< 64])
     }
 
     public lazy var identifier: Data? = {
@@ -73,7 +70,7 @@ public class Keychain: NSObject {
 
     public lazy var fingerprint: UInt32 = {
         if let id = self.identifier {
-            return UInt32(bytes: id.bytes[0..<4])
+            return UInt32(bytes: id.bytes[0 ..< 4])
         }
         return 0
     }()
@@ -86,9 +83,8 @@ public class Keychain: NSObject {
     }()
 
     // MARK: - Extended private key
-    public lazy var extendedPrivateKey: String = {
-        self.extendedPrivateKeyData.ask_base58Check()
-    }()
+
+    public lazy var extendedPrivateKey: String = self.extendedPrivateKeyData.ask_base58Check()
 
     public lazy var extendedPrivateKeyData: Data = {
         guard self.privateKey != nil else {
@@ -110,9 +106,8 @@ public class Keychain: NSObject {
     }()
 
     // MARK: - Extended public key
-    public lazy var extendedPublicKey: String = {
-        self.extendedPublicKeyData.ask_base58Check()
-    }()
+
+    public lazy var extendedPublicKey: String = self.extendedPublicKeyData.ask_base58Check()
 
     public lazy var extendedPublicKeyData: Data = {
         guard self.publicKey != nil else {
@@ -143,7 +138,7 @@ public class Keychain: NSObject {
         let parentFPData = parentFingerprint.ask_hexToData()
         toReturn += parentFPData
 
-        let childIndex = hardened ? (0x80000000 | index) : index
+        let childIndex = hardened ? (0x8000_0000 | index) : index
         let childIndexData = childIndex.ask_hexToData()
         toReturn += childIndexData
 
@@ -157,7 +152,6 @@ public class Keychain: NSObject {
     }
 
     public func derivedKeychain(at path: String) throws -> Keychain {
-
         if path == BTCMasterKeychainPath || path == BTCKeychainPathSeparator || path == "" {
             return self
         }
@@ -187,8 +181,7 @@ public class Keychain: NSObject {
     }
 
     public func derivedKeychain(at index: UInt32, hardened: Bool = true) throws -> Keychain {
-
-        let edge: UInt32 = 0x80000000
+        let edge: UInt32 = 0x8000_0000
 
         guard (edge & UInt32(index)) == 0 else {
             throw KeyDerivationError.indexInvalid
@@ -221,7 +214,7 @@ public class Keychain: NSObject {
 
         let digestArray = hmacSha512(message: data, key: chCode)!.bytes
 
-        let factor = BInt(data: Data(digestArray[0..<32]))
+        let factor = BInt(data: Data(digestArray[0 ..< 32]))
         let curveOrder = BInt(hex: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141")
 
         let derivedKeychain = Keychain(hmac: digestArray)
@@ -238,5 +231,4 @@ public class Keychain: NSObject {
 
         return derivedKeychain
     }
-
 }

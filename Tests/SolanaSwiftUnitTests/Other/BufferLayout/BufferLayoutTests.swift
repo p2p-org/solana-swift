@@ -6,24 +6,26 @@
 //  Copyright © 2021 CocoaPods. All rights reserved.
 //
 
-import XCTest
 import SolanaSwift
+import XCTest
 
 class BufferLayoutTests: XCTestCase {
     // MARK: - Mint
+
     func testDecodingMint() throws {
         XCTAssertEqual(Mint.BUFFER_LENGTH, 82)
-        
-        let string = "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-        
+
+        let string =
+            "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+
         let data = Data(base64Encoded: string)!
-        
+
         var binaryReader = BinaryReader(bytes: data.bytes)
         let mintLayout = try Mint(from: &binaryReader)
-        
+
         XCTAssertEqual(mintLayout.mintAuthorityOption, 1)
         XCTAssertEqual(mintLayout.mintAuthority?.base58EncodedString, "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")
-        XCTAssertEqual(mintLayout.supply, 1000000000000)
+        XCTAssertEqual(mintLayout.supply, 1_000_000_000_000)
         XCTAssertEqual(mintLayout.decimals, 6)
         XCTAssertEqual(mintLayout.isInitialized, true)
         XCTAssertEqual(mintLayout.freezeAuthorityOption, 0)
@@ -31,20 +33,21 @@ class BufferLayoutTests: XCTestCase {
     }
 
     // MARK: - Account info
+
     func testDecodingAccountInfo() throws {
         XCTAssertEqual(AccountInfo.BUFFER_LENGTH, 165)
-        
-        let string = "BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        
+
+        let string =
+            "BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 
         let data = Data(base64Encoded: string)!
-        
+
         var binaryReader = BinaryReader(bytes: data.bytes)
         let accountInfo = try AccountInfo(from: &binaryReader)
-        
+
         XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", accountInfo.mint.base58EncodedString)
         XCTAssertEqual("BQWWFhzBdw2vKKBUX17NHeFbCoFQHfRARpdztPE2tDJ", accountInfo.owner.base58EncodedString)
-        XCTAssertEqual(accountInfo.lamports, 100000)
+        XCTAssertEqual(accountInfo.lamports, 100_000)
         XCTAssertEqual(accountInfo.delegateOption, 1)
         XCTAssertEqual("GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5", accountInfo.delegate?.base58EncodedString)
         XCTAssertEqual(accountInfo.isInitialized, true)
@@ -58,15 +61,16 @@ class BufferLayoutTests: XCTestCase {
         XCTAssertEqual(accountInfo.closeAuthorityOption, 0)
         XCTAssertEqual(accountInfo.closeAuthority?.base58EncodedString, nil)
     }
-    
+
     func testDecodingAccountInfo2() throws {
-        let string = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWq"
-        
+        let string =
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWq"
+
         let data = Data(base64Encoded: string)!
-        
+
         var binaryReader = BinaryReader(bytes: data.bytes)
         let accountInfo = try AccountInfo(from: &binaryReader)
-        
+
         XCTAssertEqual("11111111111111111111111111111111", accountInfo.mint.base58EncodedString)
         XCTAssertEqual("11111111111111111111111111111111", accountInfo.owner.base58EncodedString)
         XCTAssertEqual(accountInfo.lamports, 0)
@@ -82,13 +86,14 @@ class BufferLayoutTests: XCTestCase {
         XCTAssertEqual(accountInfo.delegatedAmount, 0)
         XCTAssertEqual(accountInfo.closeAuthorityOption, 1)
         XCTAssertEqual(accountInfo.closeAuthority?.base58EncodedString, "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5")
-        
-        let string2 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWq"
+
+        let string2 =
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWq"
         let data2 = Data(base64Encoded: string2)!
-        
+
         var binaryReader2 = BinaryReader(bytes: data2.bytes)
         let accountInfo2 = try AccountInfo(from: &binaryReader2)
-        
+
         XCTAssertEqual("11111111111111111111111111111111", accountInfo2.mint.base58EncodedString)
         XCTAssertEqual("11111111111111111111111111111111", accountInfo2.owner.base58EncodedString)
         XCTAssertEqual(accountInfo2.lamports, 0)
@@ -107,14 +112,16 @@ class BufferLayoutTests: XCTestCase {
     }
 
     // MARK: - TokenSwapInfo
+
     func testDecodingTokenSwapInfo() throws {
         XCTAssertEqual(TokenSwapInfo.BUFFER_LENGTH, 324)
-        
-        let string = "AQH/Bt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkg7XoTWySqouc9rBPiFviH2xU9/fRb+6P90QcOMKupqewjVdppkaFaD9TmikzQc7KAtp/LEF9bATPPnDdGT+7Kj7KrmDRVoZN9WTu3h9wgrrN83pVvcqGHLhOtWWeWCUjG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYZqhgojuhD2D9j0JH/1UU78OyY17yIzxSctOkEdQqtVncXgwwKhJB+PCDsVtlUWWQbPgBu+MNnFskXx8qDFMwSAeAAAAAAAAABAnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+
+        let string =
+            "AQH/Bt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkg7XoTWySqouc9rBPiFviH2xU9/fRb+6P90QcOMKupqewjVdppkaFaD9TmikzQc7KAtp/LEF9bATPPnDdGT+7Kj7KrmDRVoZN9WTu3h9wgrrN83pVvcqGHLhOtWWeWCUjG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYZqhgojuhD2D9j0JH/1UU78OyY17yIzxSctOkEdQqtVncXgwwKhJB+PCDsVtlUWWQbPgBu+MNnFskXx8qDFMwSAeAAAAAAAAABAnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         let data = Data(base64Encoded: string)!
         var binaryReader = BinaryReader(bytes: data.bytes)
         let swapInfo = try TokenSwapInfo(from: &binaryReader)
-        
+
         XCTAssertEqual(swapInfo.version, 1)
         XCTAssertEqual(swapInfo.isInitialized, true)
         XCTAssertEqual(swapInfo.nonce, 255)
@@ -136,10 +143,12 @@ class BufferLayoutTests: XCTestCase {
         XCTAssertEqual(swapInfo.curveType, 0)
         XCTAssertEqual(swapInfo.payer.base58EncodedString, "11111111111111111111111111111111")
     }
-    
+
     // MARK: - EmptyInfo
+
     func testDecodingEmptyInfo() throws {
-        let string = "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        let string =
+            "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
         let data = Data(base64Encoded: string)!
         var binaryReader = BinaryReader(bytes: data.bytes)
         let _ = try EmptyInfo(from: &binaryReader)

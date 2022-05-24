@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Chung Tran on 06/05/2022.
 //
@@ -17,7 +17,7 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
     var timedOutHandler: () -> Void
     var task: Task<Void, Error>!
     var currentStatus: TransactionStatus!
-    
+
     init(
         apiClient: SolanaAPIClient,
         signature: String,
@@ -33,13 +33,13 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
         self.responseHandler = responseHandler
         self.timedOutHandler = timedOutHandler
     }
-    
+
     func startMonitoring() {
         setStatus(.sending)
-        
+
         task = Task.retrying(
             where: { [weak self] error in
-                guard let self = self else {return false}
+                guard let self = self else { return false }
                 if let error = error as? TaskRetryingError, error == .timedOut {
                     self.timedOutHandler()
                     return false
@@ -50,10 +50,10 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
             retryDelay: TimeInterval(delay),
             timeoutInSeconds: timeout
         ) { [weak self] in
-            guard let self = self else {return}
+            guard let self = self else { return }
             try Task.checkCancellation()
             let status = try await self.apiClient.getSignatureStatus(signature: self.signature, configs: nil)
-            
+
             if let confirmations = status.confirmations, status.confirmationStatus == "confirmed" {
                 self.setStatus(.confirmed(numberOfConfirmations: confirmations))
             }
@@ -65,11 +65,11 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
             throw SolanaError.other("Transaction has not been confirmed")
         }
     }
-    
+
     func stopMonitoring() {
         task.cancel()
     }
-    
+
     func setStatus(_ transactionStatus: TransactionStatus) {
         currentStatus = transactionStatus
         responseHandler(transactionStatus)

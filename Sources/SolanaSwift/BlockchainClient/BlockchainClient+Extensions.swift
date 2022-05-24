@@ -1,6 +1,6 @@
 import Foundation
 
-extension SolanaBlockchainClient {
+public extension SolanaBlockchainClient {
     /// Prepare instructions for creating WSOL account and close it after finishing transaction
     /// to return funds back to native SOL account
     /// - Parameters:
@@ -9,7 +9,7 @@ extension SolanaBlockchainClient {
     ///   - payer: The payer of the transaction (usually the owner)
     ///   - mre: The min rent exemption (leave it nil if there is no pre-defined)
     /// - Returns: AccountInstructions that contains needed instructions, signers, .etc
-    public func prepareCreatingWSOLAccountAndCloseWhenDone(
+    func prepareCreatingWSOLAccountAndCloseWhenDone(
         from owner: PublicKey,
         amount: Lamports,
         payer: PublicKey,
@@ -18,17 +18,20 @@ extension SolanaBlockchainClient {
         let newAccount: Account
         let minRentExemption: Lamports
         async let requestNewAccount = Account(network: apiClient.endpoint.network)
-        
+
         if let mre = mre {
             minRentExemption = mre
             newAccount = try await requestNewAccount
         } else {
-            (minRentExemption, newAccount) = try await (
-                apiClient.getMinimumBalanceForRentExemption(dataLength: UInt64(AccountInfo.BUFFER_LENGTH), commitment: "recent"),
+            (minRentExemption, newAccount) = try await(
+                apiClient.getMinimumBalanceForRentExemption(
+                    dataLength: UInt64(AccountInfo.BUFFER_LENGTH),
+                    commitment: "recent"
+                ),
                 requestNewAccount
             )
         }
-        
+
         return .init(
             account: newAccount.publicKey,
             instructions: [
@@ -43,22 +46,22 @@ extension SolanaBlockchainClient {
                     account: newAccount.publicKey,
                     mint: .wrappedSOLMint,
                     owner: payer
-                )
+                ),
             ],
             cleanupInstructions: [
                 TokenProgram.closeAccountInstruction(
                     account: newAccount.publicKey,
                     destination: payer,
                     owner: payer
-                )
+                ),
             ],
             signers: [
-                newAccount
+                newAccount,
             ],
             secretKey: newAccount.secretKey
         )
     }
-    
+
     /// Prepare instructions for creating associated token account and close if needed
     /// - Parameters:
     ///   - owner: The owner of new WSOL account
@@ -66,7 +69,7 @@ extension SolanaBlockchainClient {
     ///   - feePayer: The payer of the transaction (usually the owner)
     ///   - closeAfterward: close after done or not
     /// - Returns: AccountInstructions that contains needed instructions, signers, .etc
-    public func prepareForCreatingAssociatedTokenAccount(
+    func prepareForCreatingAssociatedTokenAccount(
         owner: PublicKey,
         mint: PublicKey,
         feePayer: PublicKey,
@@ -76,10 +79,11 @@ extension SolanaBlockchainClient {
             walletAddress: owner,
             tokenMintAddress: mint
         )
-        
+
         let isAssociatedTokenAddressRegistered: Bool
         do {
-            let info: BufferInfo<AccountInfo>? = try await apiClient.getAccountInfo(account: associatedAddress.base58EncodedString)
+            let info: BufferInfo<AccountInfo>? = try await apiClient
+                .getAccountInfo(account: associatedAddress.base58EncodedString)
             if info?.owner == TokenProgram.id.base58EncodedString,
                info?.data.owner == owner
             {
@@ -94,7 +98,7 @@ extension SolanaBlockchainClient {
                 throw error
             }
         }
-        
+
         // cleanup intructions
         var cleanupInstructions = [TransactionInstruction]()
         if closeAfterward {
@@ -103,10 +107,10 @@ extension SolanaBlockchainClient {
                     account: associatedAddress,
                     destination: owner,
                     owner: owner
-                )
+                ),
             ]
         }
-        
+
         // if associated address is registered, there is no need to creating it again
         if isAssociatedTokenAddressRegistered {
             return .init(
@@ -114,7 +118,7 @@ extension SolanaBlockchainClient {
                 cleanupInstructions: []
             )
         }
-        
+
         // else create associated address
         return .init(
             account: associatedAddress,
@@ -124,7 +128,7 @@ extension SolanaBlockchainClient {
                         mint: mint,
                         owner: owner,
                         payer: feePayer
-                    )
+                    ),
             ],
             cleanupInstructions: cleanupInstructions,
             newWalletPubkey: associatedAddress.base58EncodedString

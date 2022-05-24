@@ -3,35 +3,38 @@ import Foundation
 /// Default implementation of SolanaBlockchainClient
 public class BlockchainClient: SolanaBlockchainClient {
     public var apiClient: SolanaAPIClient
-    
+
     public init(apiClient: SolanaAPIClient) {
         self.apiClient = apiClient
     }
-    
+
     public func prepareTransaction(instructions: [TransactionInstruction],
                                    signers: [Account],
                                    feePayer: PublicKey,
-                                   feeCalculator fc: FeeCalculator? = nil
-    ) async throws -> PreparedTransaction {
+                                   feeCalculator fc: FeeCalculator? = nil) async throws -> PreparedTransaction
+    {
         // form transaction
         let transaction = Transaction(instructions: instructions, recentBlockhash: nil, feePayer: feePayer)
-        
+
         let feeCalculator: FeeCalculator
         if let fc = fc {
             feeCalculator = fc
         } else {
-            let (lps, minRentExemption) = try await (
+            let (lps, minRentExemption) = try await(
                 apiClient.getFees(commitment: nil).feeCalculator?.lamportsPerSignature,
                 apiClient.getMinimumBalanceForRentExemption(span: 165)
             )
             let lamportsPerSignature = lps ?? 5000
-            feeCalculator = DefaultFeeCalculator(lamportsPerSignature: lamportsPerSignature, minRentExemption: minRentExemption)
+            feeCalculator = DefaultFeeCalculator(
+                lamportsPerSignature: lamportsPerSignature,
+                minRentExemption: minRentExemption
+            )
         }
         let expectedFee = try feeCalculator.calculateNetworkFee(transaction: transaction)
         // return formed transaction
         return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
     }
-    
+
     /// Create prepared transaction for sending SOL
     /// - Parameters:
     ///   - account
@@ -43,8 +46,8 @@ public class BlockchainClient: SolanaBlockchainClient {
     public func prepareSendingNativeSOL(from account: Account,
                                         to destination: String,
                                         amount: UInt64,
-                                        feePayer: PublicKey? = nil
-    ) async throws -> PreparedTransaction {
+                                        feePayer: PublicKey? = nil) async throws -> PreparedTransaction
+    {
         let feePayer = feePayer ?? account.publicKey
         let fromPublicKey = account.publicKey
         if fromPublicKey.base58EncodedString == destination {
@@ -53,14 +56,15 @@ public class BlockchainClient: SolanaBlockchainClient {
         var accountInfo: BufferInfo<EmptyInfo>?
         do {
             accountInfo = try await apiClient.getAccountInfo(account: destination)
-            guard accountInfo?.owner == SystemProgram.id.base58EncodedString else { throw SolanaError.other("Invalid account info") }
+            guard accountInfo?.owner == SystemProgram.id.base58EncodedString
+            else { throw SolanaError.other("Invalid account info") }
         } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
             // ignoring error
             accountInfo = nil
-        } catch let error {
+        } catch {
             throw error
         }
-        
+
         // form instruction
         let instruction = SystemProgram.transferInstruction(
             from: fromPublicKey,
@@ -68,10 +72,10 @@ public class BlockchainClient: SolanaBlockchainClient {
             lamports: amount
         )
         return try await prepareTransaction(instructions: [instruction],
-                                  signers: [account],
-                                  feePayer: feePayer)
+                                            signers: [account],
+                                            feePayer: feePayer)
     }
-    
+
     public func prepareSendingSPLTokens(
         account: Account,
         mintAddress: String,
@@ -81,7 +85,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         amount: UInt64,
         feePayer: PublicKey? = nil,
         transferChecked: Bool = false,
-        lamportsPerSignature: Lamports? = nil,
+        lamportsPerSignature _: Lamports? = nil,
         minRentExemption mre: Lamports? = nil
     ) async throws -> (preparedTransaction: PreparedTransaction, realDestination: String) {
         let feePayer = feePayer ?? account.publicKey
@@ -92,7 +96,10 @@ public class BlockchainClient: SolanaBlockchainClient {
         } else {
             minRenExemption = try await apiClient.getMinimumBalanceForRentExemption(span: AccountInfo.BUFFER_LENGTH)
         }
-        let splDestination = try await apiClient.findSPLTokenDestinationAddress(mintAddress: mintAddress, destinationAddress: destinationAddress)
+        let splDestination = try await apiClient.findSPLTokenDestinationAddress(
+            mintAddress: mintAddress,
+            destinationAddress: destinationAddress
+        )
 
         // get address
         let toPublicKey = splDestination.destination
