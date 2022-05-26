@@ -25,7 +25,7 @@ public extension SolanaSDK.ConfirmedTransaction {
 
 public extension SolanaSDK {
     struct ParsedInstruction: Decodable {
-        struct Parsed: Decodable {
+        public struct Parsed: Decodable {
             struct Info: Decodable {
                 let owner: String?
                 let account: String?
