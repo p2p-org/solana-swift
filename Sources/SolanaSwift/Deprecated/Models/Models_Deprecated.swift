@@ -12,8 +12,6 @@ public extension SolanaSDK {
     typealias Response = SolanaSwift.Response
     // Network
     typealias Network = SolanaSwift.Network
-    // Pool
-    typealias Pool = SolanaSwift.Pool
     // PreparedTransaction
     typealias PreparedTransaction = SolanaSwift.PreparedTransaction
     // PublicKey
