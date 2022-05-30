@@ -2,7 +2,8 @@ import Foundation
 
 public enum TokenProgram: SolanaBasicProgram {
     // MARK: - Nested type
-    public struct Index {
+
+    public enum Index {
         static let initalizeMint: UInt8 = 0
         static let initializeAccount: UInt8 = 1
         static let transfer: UInt8 = 3
@@ -12,24 +13,25 @@ public enum TokenProgram: SolanaBasicProgram {
         static let transferChecked: UInt8 = 12
         static let burnChecked: UInt8 = 15
     }
-    
+
     // MARK: - Properties
+
     public static var id: PublicKey {
         "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
     }
-    
+
     // MARK: - Instruction builders
+
     public static func initializeMintInstruction(
         mint: PublicKey,
         decimals: UInt8,
         authority: PublicKey,
         freezeAuthority: PublicKey?
     ) -> TransactionInstruction {
-        
         TransactionInstruction(
             keys: [
                 Account.Meta(publicKey: mint, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false)
+                Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false),
             ],
             programId: TokenProgram.id,
             data: [
@@ -37,29 +39,28 @@ public enum TokenProgram: SolanaBasicProgram {
                 decimals,
                 authority,
                 freezeAuthority != nil,
-                freezeAuthority?.bytes ?? Data(capacity: PublicKey.numberOfBytes).bytes
+                freezeAuthority?.bytes ?? Data(capacity: PublicKey.numberOfBytes).bytes,
             ]
         )
     }
-    
+
     public static func initializeAccountInstruction(
         account: PublicKey,
         mint: PublicKey,
         owner: PublicKey
     ) -> TransactionInstruction {
-        
         TransactionInstruction(
             keys: [
                 Account.Meta(publicKey: account, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: mint, isSigner: false, isWritable: false),
                 Account.Meta(publicKey: owner, isSigner: false, isWritable: false),
-                Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false)
+                Account.Meta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false),
             ],
             programId: TokenProgram.id,
             data: [Index.initializeAccount]
         )
     }
-    
+
     public static func transferInstruction(
         source: PublicKey,
         destination: PublicKey,
@@ -70,13 +71,13 @@ public enum TokenProgram: SolanaBasicProgram {
             keys: [
                 Account.Meta(publicKey: source, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: owner, isSigner: true, isWritable: true)
+                Account.Meta(publicKey: owner, isSigner: true, isWritable: true),
             ],
             programId: TokenProgram.id,
             data: [Index.transfer, amount]
         )
     }
-    
+
     public static func transferCheckedInstruction(
         source: PublicKey,
         mint: PublicKey,
@@ -89,10 +90,10 @@ public enum TokenProgram: SolanaBasicProgram {
         var keys = [
             Account.Meta(publicKey: source, isSigner: false, isWritable: true),
             Account.Meta(publicKey: mint, isSigner: false, isWritable: false),
-            Account.Meta(publicKey: destination, isSigner: false, isWritable: true)
+            Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
         ]
-        
-        if multiSigners.count == 0 {
+
+        if multiSigners.isEmpty {
             keys.append(.init(publicKey: owner, isSigner: true, isWritable: false))
         } else {
             keys.append(.init(publicKey: owner, isSigner: false, isWritable: false))
@@ -100,14 +101,14 @@ public enum TokenProgram: SolanaBasicProgram {
                 keys.append(.init(publicKey: signer, isSigner: true, isWritable: false))
             }
         }
-        
+
         return .init(
             keys: keys,
             programId: TokenProgram.id,
             data: [Index.transferChecked, amount, decimals]
         )
     }
-    
+
     public static func burnCheckedInstruction(
         mint: PublicKey,
         account: PublicKey,
@@ -125,11 +126,11 @@ public enum TokenProgram: SolanaBasicProgram {
             data: [
                 Index.burnChecked,
                 amount,
-                decimals
+                decimals,
             ]
         )
     }
-    
+
     public static func approveInstruction(
         account: PublicKey,
         delegate: PublicKey,
@@ -139,9 +140,9 @@ public enum TokenProgram: SolanaBasicProgram {
     ) -> TransactionInstruction {
         var keys = [
             Account.Meta(publicKey: account, isSigner: false, isWritable: true),
-            Account.Meta(publicKey: delegate, isSigner: false, isWritable: false)
+            Account.Meta(publicKey: delegate, isSigner: false, isWritable: false),
         ]
-        
+
         if multiSigners.isEmpty {
             keys.append(
                 Account.Meta(publicKey: owner, isSigner: true, isWritable: false)
@@ -150,39 +151,38 @@ public enum TokenProgram: SolanaBasicProgram {
             keys.append(
                 Account.Meta(publicKey: owner, isSigner: false, isWritable: false)
             )
-            
+
             for signer in multiSigners {
                 keys.append(
                     Account.Meta(publicKey: signer.publicKey, isSigner: true, isWritable: false)
                 )
             }
         }
-        
+
         return TransactionInstruction(
             keys: keys,
             programId: TokenProgram.id,
             data: [Index.approve, amount]
         )
     }
-    
+
     public static func mintToInstruction(
         mint: PublicKey,
         destination: PublicKey,
         authority: PublicKey,
         amount: UInt64
     ) -> TransactionInstruction {
-        
         TransactionInstruction(
             keys: [
                 Account.Meta(publicKey: mint, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: authority, isSigner: true, isWritable: true)
+                Account.Meta(publicKey: authority, isSigner: true, isWritable: true),
             ],
             programId: TokenProgram.id,
             data: [Index.mintTo, amount]
         )
     }
-    
+
     public static func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
@@ -192,13 +192,13 @@ public enum TokenProgram: SolanaBasicProgram {
             keys: [
                 Account.Meta(publicKey: account, isSigner: false, isWritable: true),
                 Account.Meta(publicKey: destination, isSigner: false, isWritable: true),
-                Account.Meta(publicKey: owner, isSigner: false, isWritable: false)
+                Account.Meta(publicKey: owner, isSigner: false, isWritable: false),
             ],
             programId: TokenProgram.id,
             data: [Index.closeAccount]
         )
     }
-    
+
     public static func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
@@ -209,9 +209,10 @@ public enum TokenProgram: SolanaBasicProgram {
             keys: [
                 .writable(publicKey: account, isSigner: false),
                 .writable(publicKey: destination, isSigner: false),
-                .readonly(publicKey: owner, isSigner: signers.isEmpty)
-            ] + signers.map {.readonly(publicKey: $0, isSigner: true)},
+                .readonly(publicKey: owner, isSigner: signers.isEmpty),
+            ] + signers.map { .readonly(publicKey: $0, isSigner: true) },
             programId: TokenProgram.id,
-            data: [Index.closeAccount])
+            data: [Index.closeAccount]
+        )
     }
 }

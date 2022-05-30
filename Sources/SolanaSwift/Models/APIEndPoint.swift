@@ -7,16 +7,16 @@ public struct APIEndPoint: Hashable, Codable {
         self.socketUrl = socketUrl ?? address.replacingOccurrences(of: "http", with: "ws")
         self.additionalQuery = additionalQuery
     }
-    
+
     public let address: String
     public var network: Network
     public var socketUrl: String
     public let additionalQuery: String?
-    
+
     public static var defaultEndpoints: [Self] {
         var endpoints: [Self] = [
             .init(address: "https://solana-api.projectserum.com", network: .mainnetBeta),
-            .init(address: "https://api.mainnet-beta.solana.com", network: .mainnetBeta)
+            .init(address: "https://api.mainnet-beta.solana.com", network: .mainnetBeta),
 //                .init(address: "https://datahub-proxy.p2p.org", network: .mainnetBeta),
 //                .init(address: "https://api.devnet.solana.com", network: .devnet),
 //                .init(address: "https://api.testnet.solana.com", network: .testnet)
@@ -25,12 +25,12 @@ public struct APIEndPoint: Hashable, Codable {
         endpoints.append(.init(address: "https://api.testnet.solana.com", network: .testnet))
         endpoints.append(.init(address: "https://api.devnet.solana.com", network: .devnet))
 //            #endif
-        
+
         return endpoints
     }
-    
+
     public func getURL() -> String {
-        var url = self.address
+        var url = address
         if let query = additionalQuery {
             url += "/" + query
         }

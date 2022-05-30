@@ -2,11 +2,12 @@ import Foundation
 
 public struct DerivablePath: Hashable, Codable {
     // MARK: - Nested type
+
     public enum DerivableType: String, CaseIterable, Codable {
         case bip44Change
         case bip44
         case deprecated
-        
+
         var prefix: String {
             switch self {
             case .deprecated:
@@ -16,18 +17,19 @@ public struct DerivablePath: Hashable, Codable {
             }
         }
     }
-    
+
     // MARK: - Properties
+
     public let type: DerivableType
     public let walletIndex: Int
     public let accountIndex: Int?
-    
+
     public init(type: DerivablePath.DerivableType, walletIndex: Int, accountIndex: Int? = nil) {
         self.type = type
         self.walletIndex = walletIndex
         self.accountIndex = accountIndex
     }
-    
+
     public static var `default`: Self {
         .init(
             type: .bip44Change,
@@ -35,7 +37,7 @@ public struct DerivablePath: Hashable, Codable {
             accountIndex: 0
         )
     }
-    
+
     public var rawValue: String {
         var value = type.prefix
         switch type {

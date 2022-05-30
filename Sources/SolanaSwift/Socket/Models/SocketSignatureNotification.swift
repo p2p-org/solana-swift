@@ -2,11 +2,12 @@ import Foundation
 
 public typealias SocketSignatureNotification = Response<SocketSignatureNotificationData>
 
-extension SocketSignatureNotification {
-    public var isConfirmed: Bool {
+public extension SocketSignatureNotification {
+    var isConfirmed: Bool {
         params?.result?.value.err == nil
     }
-    public var error: ResponseError? {
+
+    var error: ResponseError? {
         params?.result?.value.err
     }
 }

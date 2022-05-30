@@ -24,7 +24,7 @@ extension _AnyDecodable {
             #if canImport(Foundation)
                 self.init(NSNull())
             #else
-                self.init(Optional<Self>.none)
+                self.init(Self?.none)
             #endif
         } else if let bool = try? container.decode(Bool.self) {
             self.init(bool)
@@ -37,11 +37,14 @@ extension _AnyDecodable {
         } else if let string = try? container.decode(String.self) {
             self.init(string)
         } else if let array = try? container.decode([AnyDecodable].self) {
-            self.init(array.map { $0.value })
+            self.init(array.map(\.value))
         } else if let dictionary = try? container.decode([String: AnyDecodable].self) {
             self.init(dictionary.mapValues { $0.value })
         } else {
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "AnyDecodable value cannot be decoded")
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "AnyDecodable value cannot be decoded"
+            )
         }
     }
 }
@@ -49,10 +52,10 @@ extension _AnyDecodable {
 extension AnyDecodable: Equatable {
     public static func == (lhs: AnyDecodable, rhs: AnyDecodable) -> Bool {
         switch (lhs.value, rhs.value) {
-#if canImport(Foundation)
-        case is (NSNull, NSNull), is (Void, Void):
-            return true
-#endif
+        #if canImport(Foundation)
+            case is (NSNull, NSNull), is (Void, Void):
+                return true
+        #endif
         case let (lhs as Bool, rhs as Bool):
             return lhs == rhs
         case let (lhs as Int, rhs as Int):
@@ -156,9 +159,8 @@ extension AnyDecodable: Hashable {
     }
 }
 
-
 #if canImport(Foundation)
-import Foundation
+    import Foundation
 #endif
 
 /**
@@ -212,8 +214,8 @@ extension _AnyEncodable {
 
         switch value {
         #if canImport(Foundation)
-        case is NSNull:
-            try container.encodeNil()
+            case is NSNull:
+                try container.encodeNil()
         #endif
         case is Void:
             try container.encodeNil()
@@ -246,12 +248,12 @@ extension _AnyEncodable {
         case let string as String:
             try container.encode(string)
         #if canImport(Foundation)
-        case let number as NSNumber:
-            try encode(nsnumber: number, into: &container)
-        case let date as Date:
-            try container.encode(date)
-        case let url as URL:
-            try container.encode(url)
+            case let number as NSNumber:
+                try encode(nsnumber: number, into: &container)
+            case let date as Date:
+                try container.encode(date)
+            case let url as URL:
+                try container.encode(url)
         #endif
         case let array as [Any?]:
             try container.encode(array.map { AnyEncodable($0) })
@@ -260,41 +262,47 @@ extension _AnyEncodable {
         case let encodable as Encodable:
             try encodable.encode(to: encoder)
         default:
-            let context = EncodingError.Context(codingPath: container.codingPath, debugDescription: "AnyEncodable value cannot be encoded")
+            let context = EncodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "AnyEncodable value cannot be encoded"
+            )
             throw EncodingError.invalidValue(value, context)
         }
     }
 
     #if canImport(Foundation)
-    private func encode(nsnumber: NSNumber, into container: inout SingleValueEncodingContainer) throws {
-        switch Character(Unicode.Scalar(UInt8(nsnumber.objCType.pointee)))  {
-        case "B":
-            try container.encode(nsnumber.boolValue)
-        case "c":
-            try container.encode(nsnumber.int8Value)
-        case "s":
-            try container.encode(nsnumber.int16Value)
-        case "i", "l":
-            try container.encode(nsnumber.int32Value)
-        case "q":
-            try container.encode(nsnumber.int64Value)
-        case "C":
-            try container.encode(nsnumber.uint8Value)
-        case "S":
-            try container.encode(nsnumber.uint16Value)
-        case "I", "L":
-            try container.encode(nsnumber.uint32Value)
-        case "Q":
-            try container.encode(nsnumber.uint64Value)
-        case "f":
-            try container.encode(nsnumber.floatValue)
-        case "d":
-            try container.encode(nsnumber.doubleValue)
-        default:
-            let context = EncodingError.Context(codingPath: container.codingPath, debugDescription: "NSNumber cannot be encoded because its type is not handled")
-            throw EncodingError.invalidValue(nsnumber, context)
+        private func encode(nsnumber: NSNumber, into container: inout SingleValueEncodingContainer) throws {
+            switch Character(Unicode.Scalar(UInt8(nsnumber.objCType.pointee))) {
+            case "B":
+                try container.encode(nsnumber.boolValue)
+            case "c":
+                try container.encode(nsnumber.int8Value)
+            case "s":
+                try container.encode(nsnumber.int16Value)
+            case "i", "l":
+                try container.encode(nsnumber.int32Value)
+            case "q":
+                try container.encode(nsnumber.int64Value)
+            case "C":
+                try container.encode(nsnumber.uint8Value)
+            case "S":
+                try container.encode(nsnumber.uint16Value)
+            case "I", "L":
+                try container.encode(nsnumber.uint32Value)
+            case "Q":
+                try container.encode(nsnumber.uint64Value)
+            case "f":
+                try container.encode(nsnumber.floatValue)
+            case "d":
+                try container.encode(nsnumber.doubleValue)
+            default:
+                let context = EncodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription: "NSNumber cannot be encoded because its type is not handled"
+                )
+                throw EncodingError.invalidValue(nsnumber, context)
+            }
         }
-    }
     #endif
 }
 

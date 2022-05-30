@@ -3,10 +3,9 @@ import Task_retrying
 
 /// BlockchainClient that prepares and serialises transaction to send to blockchain
 public protocol SolanaBlockchainClient: AnyObject {
-    
     /// APIClient for handling network requests
     var apiClient: SolanaAPIClient { get set }
-    
+
     /// Prepare a transaction base on its instructions
     /// - Parameters:
     ///   - instructions: instructions of the transaction
@@ -21,14 +20,14 @@ public protocol SolanaBlockchainClient: AnyObject {
         feePayer: PublicKey,
         feeCalculator: FeeCalculator?
     ) async throws -> PreparedTransaction
-    
+
     /// Send transaction
     /// - Parameter preparedTransaction: a prepared transaction
     /// - Returns: Transaction id
     func sendTransaction(
         preparedTransaction: PreparedTransaction
     ) async throws -> String
-    
+
     /// Simulate transaction
     /// - Parameter preparedTransaction: a prepared transaction
     func simulateTransaction(
@@ -36,8 +35,8 @@ public protocol SolanaBlockchainClient: AnyObject {
     ) async throws -> SimulationResult
 }
 
-extension SolanaBlockchainClient {
-    func signAndSerialize(
+public extension SolanaBlockchainClient {
+    internal func signAndSerialize(
         preparedTransaction: PreparedTransaction,
         recentBlockhash: String
     ) throws -> String {
@@ -46,37 +45,49 @@ extension SolanaBlockchainClient {
         try preparedTransaction.sign()
         return try preparedTransaction.serialize()
     }
-    
-    public func sendTransaction(
+
+    func sendTransaction(
         preparedTransaction: PreparedTransaction
     ) async throws -> String {
         try await Task.retrying(
-            where: {$0.isBlockhashNotFoundError},
+            where: { $0.isBlockhashNotFoundError },
             maxRetryCount: 3,
             retryDelay: 1,
             timeoutInSeconds: 60
         ) {
             let recentBlockhash = try await self.apiClient.getRecentBlockhash()
-            let serializedTransaction = try self.signAndSerialize(preparedTransaction: preparedTransaction, recentBlockhash: recentBlockhash)
-            return try await self.apiClient.sendTransaction(transaction: serializedTransaction, configs: RequestConfiguration(encoding: "base64")!)
+            let serializedTransaction = try self.signAndSerialize(
+                preparedTransaction: preparedTransaction,
+                recentBlockhash: recentBlockhash
+            )
+            return try await self.apiClient.sendTransaction(
+                transaction: serializedTransaction,
+                configs: RequestConfiguration(encoding: "base64")!
+            )
         }
-            .value
+        .value
     }
-    
-    public func simulateTransaction(
+
+    func simulateTransaction(
         preparedTransaction: PreparedTransaction
     ) async throws -> SimulationResult {
         try await Task.retrying(
-            where: {$0.isBlockhashNotFoundError},
+            where: { $0.isBlockhashNotFoundError },
             maxRetryCount: 3,
             retryDelay: 1,
             timeoutInSeconds: 60
         ) {
             let recentBlockhash = try await self.apiClient.getRecentBlockhash()
-            let serializedTransaction = try self.signAndSerialize(preparedTransaction: preparedTransaction, recentBlockhash: recentBlockhash)
-            return try await self.apiClient.simulateTransaction(transaction: serializedTransaction, configs: RequestConfiguration(encoding: "base64")!)
+            let serializedTransaction = try self.signAndSerialize(
+                preparedTransaction: preparedTransaction,
+                recentBlockhash: recentBlockhash
+            )
+            return try await self.apiClient.simulateTransaction(
+                transaction: serializedTransaction,
+                configs: RequestConfiguration(encoding: "base64")!
+            )
         }
-            .value
+        .value
     }
 }
 
@@ -84,9 +95,9 @@ private extension Error {
     var isBlockhashNotFoundError: Bool {
         if let error = self as? SolanaError {
             switch error {
-            case .other(let message) where message == "Blockhash not found":
+            case let .other(message) where message == "Blockhash not found":
                 return true
-            case .invalidResponse(let response) where response.message == "Blockhash not found":
+            case let .invalidResponse(response) where response.message == "Blockhash not found":
                 return true
             default:
                 break

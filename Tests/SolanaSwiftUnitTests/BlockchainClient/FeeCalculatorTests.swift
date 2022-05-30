@@ -1,28 +1,28 @@
 //
 //  FeeCalculatorTests.swift
-//  
+//
 //
 //  Created by Chung Tran on 05/05/2022.
 //
 
-import XCTest
 import SolanaSwift
+import XCTest
 
 class FeeCalculatorTests: XCTestCase {
     var lamportsPerSignature: UInt64 { 5000 }
-    var minRentExemption: UInt64 { 2039280 }
-    
+    var minRentExemption: UInt64 { 2_039_280 }
+
     var feeCalculator: DefaultFeeCalculator!
-    
+
     override func setUpWithError() throws {
         feeCalculator = DefaultFeeCalculator(
             lamportsPerSignature: lamportsPerSignature,
             minRentExemption: minRentExemption
         )
     }
-    
+
     // MARK: - Testcases
-    
+
     func testTransactionFee() throws {
         // owner is the fee payer
         let transaction = createTransaction(instructions: [
@@ -30,12 +30,12 @@ class FeeCalculatorTests: XCTestCase {
                 from: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
                 to: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
                 lamports: 1000
-            )
+            ),
         ])
-        
+
         let fee = try feeCalculator.calculateNetworkFee(transaction: transaction).total
         XCTAssertEqual(fee, lamportsPerSignature)
-        
+
         // owner is not the fee payer
         let transaction2 = createTransaction(
             instructions: [
@@ -47,15 +47,15 @@ class FeeCalculatorTests: XCTestCase {
                     multiSigners: [],
                     amount: 10000,
                     decimals: 6
-                )
+                ),
             ],
             feePayer: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5"
         )
-        
+
         let fee2 = try feeCalculator.calculateNetworkFee(transaction: transaction2).total
         XCTAssertEqual(fee2, lamportsPerSignature * 2)
     }
-    
+
     func testAccountCreationFee() throws {
         // create and initialize
         let transaction = createTransaction(instructions: [
@@ -70,14 +70,14 @@ class FeeCalculatorTests: XCTestCase {
                 account: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
                 mint: .wrappedSOLMint,
                 owner: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-            )
+            ),
         ])
-        
+
         let fee = try feeCalculator.calculateNetworkFee(transaction: transaction)
         XCTAssertEqual(fee.transaction, lamportsPerSignature * 2)
         XCTAssertEqual(fee.accountBalances, minRentExemption)
         XCTAssertEqual(fee.deposit, 0)
-        
+
         // create, initialize and close
         let transaction2 = createTransaction(
             instructions: [
@@ -97,16 +97,17 @@ class FeeCalculatorTests: XCTestCase {
                     account: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
                     destination: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
                     owner: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-                )
+                ),
             ],
             feePayer: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" // fee payer is not the owner
         )
-        
+
         let fee2 = try feeCalculator.calculateNetworkFee(transaction: transaction2)
-        XCTAssertEqual(fee2.transaction, lamportsPerSignature * 3) // owner's signature, fee payer's signature, new account signature
+        XCTAssertEqual(fee2.transaction,
+                       lamportsPerSignature * 3) // owner's signature, fee payer's signature, new account signature
         XCTAssertEqual(fee2.accountBalances, 0)
         XCTAssertEqual(fee2.deposit, minRentExemption)
-        
+
         // create associated token
         let transaction3 = createTransaction(
             instructions: [
@@ -114,15 +115,15 @@ class FeeCalculatorTests: XCTestCase {
                     mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     owner: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
                     payer: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5"
-                )
+                ),
             ]
         )
-        
+
         let fee3 = try feeCalculator.calculateNetworkFee(transaction: transaction3)
         XCTAssertEqual(fee3.transaction, lamportsPerSignature * 2) // owner's signature, fee payer's signature
         XCTAssertEqual(fee3.accountBalances, minRentExemption)
         XCTAssertEqual(fee3.deposit, 0)
-        
+
         // create associated token and close
         let transaction4 = createTransaction(
             instructions: [
@@ -138,10 +139,10 @@ class FeeCalculatorTests: XCTestCase {
                     ),
                     destination: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
                     owner: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"
-                )
+                ),
             ]
         )
-        
+
         let fee4 = try feeCalculator.calculateNetworkFee(transaction: transaction4)
         XCTAssertEqual(fee4.transaction, lamportsPerSignature * 2) // owner's signature, fee payer's signature
         XCTAssertEqual(fee4.accountBalances, 0)
@@ -149,6 +150,7 @@ class FeeCalculatorTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
     private func createTransaction(instructions: [TransactionInstruction], feePayer: PublicKey? = nil) -> Transaction {
         Transaction(
             instructions: instructions,

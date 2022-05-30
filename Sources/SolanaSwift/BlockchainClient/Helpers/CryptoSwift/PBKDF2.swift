@@ -1,5 +1,5 @@
-import Foundation
 import CommonCrypto
+import Foundation
 
 func pbkdf2(hash: CCPBKDFAlgorithm, password: String, salt: Data, keyByteCount: Int, rounds: Int) -> Data? {
     let passwordData = password.data(using: String.Encoding.utf8)!
@@ -13,7 +13,8 @@ func pbkdf2(hash: CCPBKDFAlgorithm, password: String, salt: Data, keyByteCount: 
                 saltBytes, salt.count,
                 hash,
                 UInt32(rounds),
-                derivedKeyBytes, derivedKeyDataCount)
+                derivedKeyBytes, derivedKeyDataCount
+            )
         }
     }
 

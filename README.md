@@ -28,8 +28,9 @@ Demo wallet: [p2p-wallet](https://github.com/p2p-org/p2p-wallet-ios)
 ## Dependencies
 - [Deprecated] RxAlamofire
 - TweetNacl
-- CryptoSwift
-- Starscream
+- secp256k1.swift
+- [Deprecated] CryptoSwift
+- [Deprecated] Starscream
 
 ## Installation
 
