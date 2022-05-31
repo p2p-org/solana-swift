@@ -3,7 +3,7 @@ public protocol SolanaTokensRepository {
 }
 
 extension SolanaTokensRepository {
-    func getTokensList() async throws -> Set<Token> {
+    public func getTokensList() async throws -> Set<Token> {
         try await getTokensList(useCache: true)
     }
 }
