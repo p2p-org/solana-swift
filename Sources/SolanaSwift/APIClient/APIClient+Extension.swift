@@ -49,16 +49,8 @@ public extension SolanaAPIClient {
             tokenMintAddress: mintAddress
         )
 
-        do {
-            let bufferInfo: BufferInfo<AccountInfo>? = try await getAccountInfo(account: associatedTokenAccount
-                .base58EncodedString)
-            return bufferInfo?.data.mint == mintAddress
-        } catch {
-            if error.isEqualTo(.couldNotRetrieveAccountInfo) {
-                return false
-            }
-            throw error
-        }
+        let bufferInfo: BufferInfo<AccountInfo>? = try await getAccountInfo(account: associatedTokenAccount.base58EncodedString)
+        return bufferInfo?.data.mint == mintAddress
     }
 
     /// Method checks account validation
@@ -68,14 +60,7 @@ public extension SolanaAPIClient {
     /// - Returns wether account is valid
     ///
     func checkAccountValidation(account: String) async throws -> Bool {
-        do {
-            _ = try await getAccountInfo(account: account) as BufferInfo<EmptyInfo>?
-        } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
-            return false
-        } catch {
-            throw error
-        }
-        return true
+        (try await getAccountInfo(account: account) as BufferInfo<EmptyInfo>?) != nil
     }
 
     func findSPLTokenDestinationAddress(
@@ -85,7 +70,7 @@ public extension SolanaAPIClient {
         var address: String
         var accountInfo: BufferInfo<AccountInfo>?
         do {
-            accountInfo = try await getAccountInfo(account: destinationAddress)
+            accountInfo = try await getAccountInfoThrowable(account: destinationAddress)
             let toTokenMint = accountInfo?.data.mint.base58EncodedString
             // detect if destination address is already a SPLToken address
             if mintAddress == toTokenMint {
@@ -122,7 +107,7 @@ public extension SolanaAPIClient {
             // check if associated address is already registered
             let info: BufferInfo<AccountInfo>?
             do {
-                info = try await getAccountInfo(account: toPublicKey.base58EncodedString)
+                info = try await getAccountInfoThrowable(account: toPublicKey.base58EncodedString)
             } catch {
                 info = nil
             }
