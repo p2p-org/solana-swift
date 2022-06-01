@@ -53,7 +53,7 @@ class APIClientTests: XCTestCase {
         let req1: JSONRPCAPIClientRequest<AnyDecodable> = JSONRPCAPIClientRequest(method: "getBlockHeight", params: [])
         let req2: JSONRPCAPIClientRequest<AnyDecodable> = JSONRPCAPIClientRequest(method: "getConfirmedBlocksWithLimit",
                                                                                   params: [10])
-        let response = try await apiClient.request(with: [req1, req2])
+        let response = try await apiClient.batchRequest(with: [req1, req2])
         XCTAssert(response.count == 2)
         XCTAssert(response[0].result != nil)
         XCTAssert(response[1].result != nil)
@@ -64,7 +64,7 @@ class APIClientTests: XCTestCase {
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         let req1: JSONRPCAPIClientRequest<AnyDecodable> = JSONRPCAPIClientRequest(method: "getAccountInfo", params: [])
         let req2: JSONRPCAPIClientRequest<AnyDecodable> = JSONRPCAPIClientRequest(method: "getBalance", params: [])
-        let response = try await apiClient.request(with: [req1, req2])
+        let response = try await apiClient.batchRequest(with: [req1, req2])
         XCTAssert(response.count == 2)
         XCTAssert(response[0].result != nil)
         XCTAssert(response[1].result != nil)

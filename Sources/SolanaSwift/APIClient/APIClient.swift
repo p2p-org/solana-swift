@@ -279,11 +279,13 @@ public protocol SolanaAPIClient {
     ///   - commitment: "processed" is not supported. If parameter not provided, the default is "finalized".
     /// - Returns:
     /// - Throws:
-    func getTransaction(signature: String, commitment: Commitment?) async throws -> TransactionInfo?
-}
-
-public enum APIClientError: Error {
-    case cantEncodeParams
-    case invalidAPIURL
-    case cantDecodeResponse
+    func getTransaction(signature: String, commitment: Commitment?) async throws -> TransactionInfo
+    
+    // MARK: - Batch request
+    
+    /// Perform a multiple requests at once
+    /// - Parameter requests: the requests
+    /// - Returns: the result of mutiple requests
+    func batchRequest(with requests: [JSONRPCRequestEncoder.RequestType]) async throws -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>]
+    
 }

@@ -9,6 +9,7 @@ class APIClientExtensionsTests: XCTestCase {
 
     func testCheckAccountValidation() async throws {
         let mock = NetworkManagerMock1()
+        
         mock.prepare(name: "checkAccountValidation1")
         let apiClient = BaseAPIClientMock(endpoint: endpoint, networkManager: mock)
         // TODO:
@@ -135,13 +136,14 @@ class BaseAPIClientMock: JSONRPCAPIClient {
     private var getAccountInfoResponses = [
         "1": "{\"context\":{\"slot\":134254318},\"value\":{\"data\":[\"\",\"base64\"],\"executable\":false,\"lamports\":9984180,\"owner\":\"11111111111111111111111111111111\",\"rentEpoch\":310}}",
         "2": #"{"context":{"slot":134254375},"value":{"data":["xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWEn97kEVYkyppO43UtuZxDeKV73hCs+rPNfzL6PmRAKxebSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","base64"],"executable":false,"lamports":2039280,"owner":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","rentEpoch":310}}"#,
+        "3":#"{"context":{"slot":135918577},"value":null}"#
     ]
     override func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>? {
         var accountInfoResponseJSON: String = getAccountInfoResponses["2"]!
         if account == "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG" {
             accountInfoResponseJSON = getAccountInfoResponses["1"]!
         } else if account == "HnXJX1Bvps8piQwDYEYC6oea9GEkvQvahvRj3c97X9xr" {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            accountInfoResponseJSON = getAccountInfoResponses["3"]!
         }
         let decoder = try JSONDecoder()
             .decode(Rpc<BufferInfo<T>?>.self, from: accountInfoResponseJSON.data(using: .utf8)!)
