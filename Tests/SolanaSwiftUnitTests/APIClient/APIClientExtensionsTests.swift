@@ -74,6 +74,18 @@ class APIClientExtensionsTests: XCTestCase {
         XCTAssertEqual(res.count, 1)
         XCTAssertEqual(res.first?.pubkey, "9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4")
     }
+    
+    func testGetAccountInfoThrowable() async throws {
+        let mock = NetworkManagerMock1()
+        mock.prepare(name: "checkAccountValidation2")
+        let apiClient = BaseAPIClientMock(endpoint: endpoint, networkManager: mock)
+        
+        do {
+            let _: BufferInfo<AccountInfo> = try await apiClient.getAccountInfoThrowable(account: "djfijijasdf")
+        } catch {
+            XCTAssertTrue(error.isEqualTo(.couldNotRetrieveAccountInfo))
+        }
+    }
 }
 
 class NetworkManagerMock1: NetworkManager {

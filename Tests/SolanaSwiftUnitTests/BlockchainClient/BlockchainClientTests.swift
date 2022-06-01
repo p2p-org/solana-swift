@@ -378,4 +378,8 @@ private class MockAPIClient: SolanaAPIClient {
     func getSignaturesForAddress(address _: String, configs _: RequestConfiguration?) async throws -> [SignatureInfo] {
         fatalError()
     }
+    
+    func getTransaction(signature: String, commitment: Commitment?) async throws -> TransactionInfo? {
+        fatalError()
+    }
 }

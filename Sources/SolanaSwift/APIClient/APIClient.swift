@@ -79,6 +79,13 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getconfirmedblock
     ///
     func getConfirmedBlock(slot: UInt64, encoding: String) async throws -> ConfirmedBlock
+    
+    /// Get all confirmed signature for an address
+    /// - Parameters:
+    ///   - account: address that involved in transactions
+    ///   - startSlot: start slot
+    ///   - endSlot: end slot
+    /// - Returns: array of transactionSignatures
     func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) async throws -> [String]
 
     /// Returns information about the current epoch
@@ -265,6 +272,14 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getrecentblockhash
     ///
     func getSignaturesForAddress(address: String, configs: RequestConfiguration?) async throws -> [SignatureInfo]
+    
+    /// Returns transaction details for a confirmed transaction
+    /// - Parameters:
+    ///   - signature: transaction signature
+    ///   - commitment: "processed" is not supported. If parameter not provided, the default is "finalized".
+    /// - Returns:
+    /// - Throws:
+    func getTransaction(signature: String, commitment: Commitment?) async throws -> TransactionInfo?
 }
 
 public enum APIClientError: Error {
