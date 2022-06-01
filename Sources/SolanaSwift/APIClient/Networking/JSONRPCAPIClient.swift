@@ -19,7 +19,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     // MARK: -
     
     public func getTransaction(
-        signature: PublicKey,
+        signature: String,
         commitment: Commitment?
     ) async throws -> TransactionInfo? {
         let requestConfig = RequestConfiguration(commitment: commitment, encoding: "jsonParsed")
@@ -32,15 +32,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         let requestConfig = RequestConfiguration(encoding: "base64")
         let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
         let ret = try? await(request(with: req) as AnyResponse<Rpc<BufferInfo<T>?>>).result?.value
-        return ret
-    }
-    
-    public func getAccountInfoThrowable<T: BufferLayout>(account: String) async throws -> BufferInfo<T> {
-        let requestConfig = RequestConfiguration(encoding: "base64")
-        let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
-        guard let ret = try? await(request(with: req) as AnyResponse<Rpc<BufferInfo<T>?>>).result?.value else {
-            throw SolanaError.couldNotRetrieveAccountInfo
-        }
         return ret
     }
 

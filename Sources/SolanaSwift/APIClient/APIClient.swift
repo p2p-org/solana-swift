@@ -15,15 +15,6 @@ public protocol SolanaAPIClient {
     ///
     func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>?
 
-    /// Returns all information associated with the account of provided Pubkey
-    /// - Parameters:
-    ///  - account: Pubkey of account to query, as base-58 encoded string
-    /// - Throws: APIClientError and SolanaError.couldNotRetrieveAccountInfo
-    /// - Returns The result will be an BufferInfo
-    /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
-    @available(* , deprecated, renamed: "getAccountInfo")
-    func getAccountInfoThrowable<T: BufferLayout>(account: String) async throws -> BufferInfo<T>
-
     /// Returns the balance of the account of provided Pubkey
     /// - Parameters:
     ///  - account: Pubkey of account to query, as base-58 encoded string
@@ -88,6 +79,13 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getconfirmedblock
     ///
     func getConfirmedBlock(slot: UInt64, encoding: String) async throws -> ConfirmedBlock
+    
+    /// Get all confirmed signature for an address
+    /// - Parameters:
+    ///   - account: address that involved in transactions
+    ///   - startSlot: start slot
+    ///   - endSlot: end slot
+    /// - Returns: array of transactionSignatures
     func getConfirmedSignaturesForAddress(account: String, startSlot: UInt64, endSlot: UInt64) async throws -> [String]
 
     /// Returns information about the current epoch
@@ -281,7 +279,7 @@ public protocol SolanaAPIClient {
     ///   - commitment: "processed" is not supported. If parameter not provided, the default is "finalized".
     /// - Returns:
     /// - Throws:
-    func getTransaction(signature: PublicKey, commitment: Commitment?) async throws -> TransactionInfo?
+    func getTransaction(signature: String, commitment: Commitment?) async throws -> TransactionInfo?
 }
 
 public enum APIClientError: Error {

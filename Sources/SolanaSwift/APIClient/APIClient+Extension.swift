@@ -198,4 +198,18 @@ public extension SolanaAPIClient {
             }
         }
     }
+    
+    /// Returns all information associated with the account of provided Pubkey
+    /// - Parameters:
+    ///  - account: Pubkey of account to query, as base-58 encoded string
+    /// - Throws: APIClientError and SolanaError.couldNotRetrieveAccountInfo
+    /// - Returns The result will be an BufferInfo
+    /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
+    func getAccountInfoThrowable<T: BufferLayout>(account: String) async throws -> BufferInfo<T> {
+        let info: BufferInfo<T>? = try await getAccountInfo(account: account)
+        guard let info = info else {
+            throw SolanaError.couldNotRetrieveAccountInfo
+        }
+        return info
+    }
 }
