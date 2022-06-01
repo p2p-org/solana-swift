@@ -21,18 +21,16 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     public func getTransaction(
         signature: String,
         commitment: Commitment?
-    ) async throws -> TransactionInfo? {
-        let requestConfig = RequestConfiguration(commitment: commitment, encoding: "jsonParsed")
-        let req = RequestEncoder.RequestType(method: "getTransaction", params: [signature, requestConfig])
-        let ret = try? await(request(with: req) as AnyResponse<Rpc<TransactionInfo>>).result?.value
-        return ret
+    ) async throws -> TransactionInfo {
+        try await get(method: "getTransaction", params: [signature, RequestConfiguration(commitment: commitment, encoding: "jsonParsed")])
     }
     
     public func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>? {
-        let requestConfig = RequestConfiguration(encoding: "base64")
-        let req = RequestEncoder.RequestType(method: "getAccountInfo", params: [account, requestConfig])
-        let ret = try? await(request(with: req) as AnyResponse<Rpc<BufferInfo<T>?>>).result?.value
-        return ret
+        let response: Rpc<BufferInfo<T>?> = try await get(method: "getAccountInfo", params: [
+            account,
+            RequestConfiguration(encoding: "base64")
+        ])
+        return response.value
     }
 
     public func getBlockHeight() async throws -> UInt64 {
@@ -44,15 +42,11 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     public func getBalance(account: String, commitment: Commitment? = nil) async throws -> UInt64 {
-        let req = RequestEncoder.RequestType(
-            method: "getBalance",
-            params: [account, RequestConfiguration(commitment: commitment)]
-        )
-        let response: AnyResponse<Rpc<UInt64>> = try await request(with: req)
-        guard let result = response.result else {
-            throw APIClientError.cantDecodeResponse
-        }
-        return result.value
+        let response: Rpc<UInt64> = try await get(method: "getBalance", params: [
+            account,
+            RequestConfiguration(commitment: commitment)
+        ])
+        return response.value
     }
 
     public func getBlockCommitment(block: UInt64) async throws -> BlockCommitment {
@@ -60,10 +54,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     public func getBlockTime(block: UInt64) async throws -> Date {
-        let req = RequestEncoder.RequestType(method: "getBlockTime", params: [block])
-        let response: AnyResponse<Double> = try await request(with: req)
-        guard let resp = response.result else { throw APIClientError.cantDecodeResponse }
-        return Date(timeIntervalSince1970: TimeInterval(resp))
+        let response: Double = try await get(method: "getBlockTime", params: [block])
+        return Date(timeIntervalSince1970: TimeInterval(response))
     }
 
     public func getClusterNodes() async throws -> [ClusterNodes] {
@@ -123,9 +115,9 @@ public class JSONRPCAPIClient: SolanaAPIClient {
                                    configs _: RequestConfiguration? = nil) async throws -> SignatureStatus
     {
         guard let result = try await getSignatureStatuses(signatures: [signature]).first else {
-            throw APIClientError.cantDecodeResponse
+            throw APIClientError.invalidResponse
         }
-        return try result ?! APIClientError.cantDecodeResponse
+        return try result ?! APIClientError.invalidResponse
     }
 
     public func getTokenAccountBalance(pubkey: String,
@@ -288,19 +280,9 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         let result: Rpc<[BufferInfo<T>]> = try await get(method: "getMultipleAccounts", params: [pubkeys, configs])
         return result.value
     }
-
-    // MARK: - Private
-
-    private func get<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity {
-        let req = RequestEncoder.RequestType(method: method, params: params)
-        let response: AnyResponse<Entity> = try await request(with: req)
-        guard let result = response.result else {
-            throw APIClientError.cantDecodeResponse
-        }
-        return result
-    }
-
-    public func request(with requests: [RequestEncoder.RequestType]) async throws
+    
+    // MARK: - Batch requests
+    public func batchRequest(with requests: [RequestEncoder.RequestType]) async throws
     -> [AnyResponse<RequestEncoder.RequestType.Entity>] {
         let data = try await makeRequest(requests: requests)
         let response = try ResponseDecoder<[AnyResponse<AnyDecodable>]>().decode(with: data)
@@ -310,13 +292,19 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         return ret
     }
 
-    public func request<Entity: Decodable>(with request: RequestEncoder
-        .RequestType) async throws -> AnyResponse<Entity>
-    {
-        try ResponseDecoder<AnyResponse<Entity>>().decode(with: try await makeRequest(requests: [request]))
-    }
-
     // MARK: - Private
+
+    private func get<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity {
+        let request = RequestEncoder.RequestType(method: method, params: params)
+        let response: AnyResponse<Entity> = try ResponseDecoder<AnyResponse<Entity>>().decode(with: try await makeRequest(requests: [request]))
+        if let error = response.error {
+            throw APIClientError.responseError(error)
+        }
+        guard let result = response.result else {
+            throw APIClientError.invalidResponse
+        }
+        return result
+    }
 
     private func makeRequest(requests: [RequestEncoder.RequestType]) async throws -> Data {
         var encodedParams = Data()
