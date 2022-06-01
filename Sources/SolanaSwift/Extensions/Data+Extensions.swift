@@ -62,7 +62,7 @@ public extension Data {
 }
 
 extension Encodable {
-    var jsonString: String? {
+    public var jsonString: String? {
         guard let data = try? JSONEncoder().encode(self) else { return nil }
         return String(data: data, encoding: .utf8)
     }

@@ -15,6 +15,15 @@ public protocol SolanaAPIClient {
     ///
     func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>?
 
+    /// Returns all information associated with the account of provided Pubkey
+    /// - Parameters:
+    ///  - account: Pubkey of account to query, as base-58 encoded string
+    /// - Throws: APIClientError and SolanaError.couldNotRetrieveAccountInfo
+    /// - Returns The result will be an BufferInfo
+    /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
+    @available(* , deprecated, renamed: "getAccountInfo")
+    func getAccountInfoThrowable<T: BufferLayout>(account: String) async throws -> BufferInfo<T>
+
     /// Returns the balance of the account of provided Pubkey
     /// - Parameters:
     ///  - account: Pubkey of account to query, as base-58 encoded string
@@ -279,7 +288,7 @@ public protocol SolanaAPIClient {
     ///   - commitment: "processed" is not supported. If parameter not provided, the default is "finalized".
     /// - Returns:
     /// - Throws:
-    func getTransaction(signature: String, commitment: Commitment?) async throws -> TransactionInfo
+    func getTransaction(signature: String, commitment: Commitment?) async throws -> TransactionInfo?
     
     // MARK: - Batch request
     
