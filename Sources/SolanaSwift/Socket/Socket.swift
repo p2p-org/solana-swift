@@ -241,7 +241,6 @@ public class Socket: NSObject, SolanaSocket {
             } catch {
                 delegate?.error(error: error)
             }
-            try await readMessage()
         case let .data(data):
             print("Received binary message: \(data)")
         @unknown default:
@@ -273,8 +272,11 @@ extension Socket: URLSessionWebSocketDelegate {
             Logger.log(event: .event, message: "Socket connected")
         }
 
-        asyncTask = Task { [weak self] in
-            try await self?.readMessage()
+        asyncTask = Task.detached { [weak self] in
+            while true {
+                guard let self = self else { break }
+                try await self.readMessage()
+            }
         }
     }
 

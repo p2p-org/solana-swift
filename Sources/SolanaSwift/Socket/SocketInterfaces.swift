@@ -36,3 +36,25 @@ public protocol SolanaSocketEventsDelegate: AnyObject {
     func disconnected(reason: String, code: Int)
     func error(error: Error?)
 }
+
+public extension SolanaSocketEventsDelegate {
+    func connected() {}
+    
+    func nativeAccountNotification(notification: SocketNativeAccountNotification) {}
+    
+    func tokenAccountNotification(notification: SocketTokenAccountNotification) {}
+    
+    func programNotification(notification: SocketProgramAccountNotification) {}
+    
+    func signatureNotification(notification: SocketSignatureNotification) {}
+    
+    func logsNotification(notification: SocketLogsNotification) {}
+    
+    func unsubscribed(id: String) {}
+    
+    func subscribed(socketId: UInt64, id: String) {}
+    
+    func disconnected(reason: String, code: Int) {}
+    
+    func error(error: Error?) {}
+}
