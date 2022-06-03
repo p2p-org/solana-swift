@@ -212,4 +212,9 @@ public extension SolanaAPIClient {
         }
         return info
     }
+    
+    /// Get fee per signature
+    func getLamportsPerSignature() async throws -> UInt64? {
+        try await getFees(commitment: nil).feeCalculator?.lamportsPerSignature
+    }
 }
