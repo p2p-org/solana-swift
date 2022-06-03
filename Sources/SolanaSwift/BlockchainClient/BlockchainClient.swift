@@ -14,7 +14,7 @@ public class BlockchainClient: SolanaBlockchainClient {
                                    feeCalculator fc: FeeCalculator? = nil) async throws -> PreparedTransaction
     {
         // form transaction
-        let transaction = Transaction(instructions: instructions, recentBlockhash: nil, feePayer: feePayer)
+        var transaction = Transaction(instructions: instructions, recentBlockhash: nil, feePayer: feePayer)
 
         let feeCalculator: FeeCalculator
         if let fc = fc {
@@ -31,6 +31,12 @@ public class BlockchainClient: SolanaBlockchainClient {
             )
         }
         let expectedFee = try feeCalculator.calculateNetworkFee(transaction: transaction)
+        
+        let blockhash = try await apiClient.getRecentBlockhash()
+        transaction.recentBlockhash = blockhash
+
+        try transaction.sign(signers: signers)
+        
         // return formed transaction
         return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
     }
