@@ -254,7 +254,7 @@ class APIClientTests: XCTestCase {
         XCTAssertEqual(result.first?.account.owner, TokenProgram.id.base58EncodedString)
     }
     
-<<<<<<< Updated upstream
+
     func testSendTransactionError1() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["sendTransactionError1"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
@@ -267,7 +267,7 @@ class APIClientTests: XCTestCase {
         }
         
     }
-=======
+
     func testGetTokenAccountBalance() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getTokenAccountBalance"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
@@ -277,8 +277,7 @@ class APIClientTests: XCTestCase {
         XCTAssertEqual(result.uiAmount, 491.717631607)
         XCTAssertEqual(result.uiAmountString, "491.717631607")
     }
-    
->>>>>>> Stashed changes
+
 }
 
 // MARK: - Mocks
@@ -328,9 +327,6 @@ var NetworkManagerMockJSON = [
     "getSignatureStatuses": #"{"jsonrpc":"2.0","result":{"context":{"slot":82},"value":[{"slot":72,"confirmations":10,"err":null,"status":{"Ok":null},"confirmationStatus":"confirmed"},null]},"id":1}"#,
     "getSignatureForAddress": "{\"jsonrpc\":\"2.0\",\"result\":[{\"blockTime\":1652351736,\"confirmationStatus\":\"finalized\",\"err\":null,\"memo\":null,\"signature\":\"31vx5MqPX1cxzfwGEWjaHuHnmSo9vwrtwBNXyTJjxtfbzkzqWr4sY8JE5Mq5ZZK7aokps9UjhHcNuJTF82FP2ekM\",\"slot\":133510309}],\"id\":\"6D72B578-401C-449E-A89F-2E31EA441A47\"}\n",
     "getTokenAccountsByOwner": "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":134133059},\"value\":[{\"account\":{\"data\":[\"KLrvuAuq+8gDEGl28m80PrYteWuPlqjGuBpCW5rA84gJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":309},\"pubkey\":\"9nuVPk3KR7oUXmDsHL7irue2Nxaj3ejvuBXoaEcXMmN7\"},{\"account\":{\"data\":[\"ppdSk884LShYnHoHm7XiDlZ28iJVm9BHPgrAEfxU44AJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":309},\"pubkey\":\"9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4\"}]},\"id\":\"0891812F-1F8B-4927-80F7-C7C1C1D990B3\"}\n",
-<<<<<<< Updated upstream
-    "sendTransactionError1": #"{"jsonrpc":"2.0","error":{"code":-32003,"message":"Transaction precompile verification failure InvalidAccountIndex"},"id":"7DEDE6E5-95E7-4866-BFC0-B4C10A76B457"}"#
-=======
+    "sendTransactionError1": #"{"jsonrpc":"2.0","error":{"code":-32003,"message":"Transaction precompile verification failure InvalidAccountIndex"},"id":"7DEDE6E5-95E7-4866-BFC0-B4C10A76B457"}"#,
     "getTokenAccountBalance": #"{"jsonrpc":"2.0","result":{"context":{"slot":135942588},"value":{"amount":"491717631607","decimals":9,"uiAmount":491.717631607,"uiAmountString":"491.717631607"}},"id":"3D9E7B6E-B48D-40EF-B656-EA3054227CCD"}"#
->>>>>>> Stashed changes
 ]
