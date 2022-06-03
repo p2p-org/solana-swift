@@ -36,19 +36,24 @@ let package = Package(
             dependencies: [
                 "secp256k1",
                 "TweetNacl",
-                "Task_retrying",
-                "LoggerSwift",
+                "Task_retrying"
             ]
 //            resources: [ .process("Resources") ]
         ),
         .testTarget(
             name: "SolanaSwiftUnitTests",
-            dependencies: ["SolanaSwift"]
+            dependencies: [
+                "SolanaSwift",
+                "LoggerSwift"
+            ]
 //            resources: [ .process("Resources") ]
         ),
         .testTarget(
             name: "SolanaSwiftIntegrationTests",
-            dependencies: ["SolanaSwift"]
+            dependencies: [
+                "SolanaSwift",
+                "LoggerSwift"
+            ]
 //            resources: [ .process("Resources") ]
         ),
     ]
