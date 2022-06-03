@@ -291,14 +291,14 @@ public struct Supply: Decodable {
 }
 
 public struct TokenAccountBalance: Codable, Equatable, Hashable {
-    init(uiAmount: Float64?, amount: String, decimals: UInt8?, uiAmountString: String?) {
+    public init(uiAmount: Float64?, amount: String, decimals: UInt8?, uiAmountString: String?) {
         self.uiAmount = uiAmount
         self.amount = amount
         self.decimals = decimals
         self.uiAmountString = uiAmountString
     }
 
-    init(amount: String, decimals: UInt8?) {
+    public init(amount: String, decimals: UInt8?) {
         uiAmount = UInt64(amount)?.convertToBalance(decimals: decimals)
         self.amount = amount
         self.decimals = decimals

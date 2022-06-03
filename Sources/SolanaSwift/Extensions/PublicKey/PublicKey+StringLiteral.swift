@@ -1,10 +1,3 @@
-//
-//  PublicKey+StringLiteral.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 16/08/2021.
-//
-
 import Foundation
 
 extension PublicKey: ExpressibleByStringLiteral,
