@@ -1,4 +1,5 @@
 import Foundation
+import LoggerSwift
 
 public protocol SolanaSocket {
     /// Connection status of the socket

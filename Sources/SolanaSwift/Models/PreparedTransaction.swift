@@ -1,4 +1,5 @@
 import Foundation
+import LoggerSwift
 
 public struct PreparedTransaction {
     public init(transaction: Transaction, signers: [Account], expectedFee: FeeAmount) {
