@@ -41,7 +41,7 @@ pod 'SolanaSwift', '~> 2.0.1'
 
 ## How to use
 * From v2.0.0 we officially omited Rx library and a lot of dependencies, thus we also adopt swift concurrency to `solana-swift`
-* For those who still use `SolanaSDK` class, follow [this link](https://github.com/p2p-org/solana-swift/blob/1.3.8/README.md)
+* For those who still use `SolanaSDK` class, follow [this link](https://github.com/p2p-org/solana-swift/blob/deprecated/1.3.8/README.md)
 
 ### Import
 ```swift
