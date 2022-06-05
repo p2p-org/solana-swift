@@ -118,14 +118,19 @@ let result = try await apiClient.getBlockHeight()
 guard let account = try? accountStorage.account?.publicKey.base58EncodedString else { throw SolanaError.unauthorized }
 let balance = try await apiClient.getBalance(account: account, commitment: "recent")
 ```
+
+Wait for confirmation method.
+
+```swift
 // Wait for confirmation
 let signature = try await blockChainClient.sendTransaction(...)
 try await apiClient.waitForConfirmation(signature: signature, ignoreStatus: true) // transaction will be mark as confirmed after timeout no matter what status is when ignoreStatus = true
 let signature2 = try await blockchainClient.sendTransaction(/* another transaction that requires first transaction to be completed */)
+```
 
-// Observe signature status with `observeSignatureStatus` method
-In stead of using socket to observe signature status, which is not really reliable (socket often returns signature status == `finalized` when it is not fully finalized), we observe its status by periodically sending `getSignatureStatuses` (with `observeSignatureStatus` method)
+Observe signature status. In stead of using socket to observe signature status, which is not really reliable (socket often returns signature status == `finalized` when it is not fully finalized), we observe its status by periodically sending `getSignatureStatuses` (with `observeSignatureStatus` method)
 ```swift
+// Observe signature status with `observeSignatureStatus` method
 var statuses = [TransactionStatus]()
 for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoijvaij", timeout: 60, delay: 3) {
     print(status)
