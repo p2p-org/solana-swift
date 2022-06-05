@@ -7,12 +7,20 @@ public class BlockchainClient: SolanaBlockchainClient {
     public init(apiClient: SolanaAPIClient) {
         self.apiClient = apiClient
     }
-
-    public func prepareTransaction(instructions: [TransactionInstruction],
-                                   signers: [Account],
-                                   feePayer: PublicKey,
-                                   feeCalculator fc: FeeCalculator? = nil) async throws -> PreparedTransaction
-    {
+    
+    /// Prepare a transaction to be sent using SolanaBlockchainClient
+    /// - Parameters:
+    ///   - instructions: the instructions of the transaction
+    ///   - signers: the signers of the transaction
+    ///   - feePayer: the feePayer of the transaction
+    ///   - feeCalculator: (Optional) fee custom calculator for calculating fee
+    /// - Returns: PreparedTransaction, can be sent or simulated using SolanaBlockchainClient
+    public func prepareTransaction(
+        instructions: [TransactionInstruction],
+        signers: [Account],
+        feePayer: PublicKey,
+        feeCalculator fc: FeeCalculator? = nil
+    ) async throws -> PreparedTransaction {
         // form transaction
         var transaction = Transaction(instructions: instructions, recentBlockhash: nil, feePayer: feePayer)
 
@@ -48,12 +56,13 @@ public class BlockchainClient: SolanaBlockchainClient {
     ///   - amount: amount in lamports
     ///   - feePayer: customm fee payer, can be omited if the authorized user is the payer
     ///    - recentBlockhash optional
-    /// - Returns: PreparedTransaction, can be send either directly or via custom fee relayer
-    public func prepareSendingNativeSOL(from account: Account,
-                                        to destination: String,
-                                        amount: UInt64,
-                                        feePayer: PublicKey? = nil) async throws -> PreparedTransaction
-    {
+    /// - Returns: PreparedTransaction, can be sent or simulated using SolanaBlockchainClient
+    public func prepareSendingNativeSOL(
+        from account: Account,
+        to destination: String,
+        amount: UInt64,
+        feePayer: PublicKey? = nil
+    ) async throws -> PreparedTransaction {
         let feePayer = feePayer ?? account.publicKey
         let fromPublicKey = account.publicKey
         if fromPublicKey.base58EncodedString == destination {
@@ -81,7 +90,19 @@ public class BlockchainClient: SolanaBlockchainClient {
                                             signers: [account],
                                             feePayer: feePayer)
     }
-
+    
+    /// Prepare for sending any SPLToken
+    /// - Parameters:
+    ///   - account: user's account to send from
+    ///   - mintAddress: mint address of sending token
+    ///   - decimals: decimals of the sending token
+    ///   - fromPublicKey: the concrete spl token address in user's account
+    ///   - destinationAddress: the destination address, can be token address or native Solana address
+    ///   - amount: amount to be sent
+    ///   - feePayer: (Optional) if the transaction would be paid by another user
+    ///   - transferChecked: (Default: false) use transferChecked instruction instead of transfer transaction
+    ///   - minRentExemption: (Optional) pre-calculated min rent exemption, will be fetched if not provided
+    /// - Returns: (preparedTransaction: PreparedTransaction, realDestination: String), preparedTransaction can be sent or simulated using SolanaBlockchainClient, the realDestination is the real spl address of destination. Can be different from destinationAddress if destinationAddress is a native Solana address
     public func prepareSendingSPLTokens(
         account: Account,
         mintAddress: String,
@@ -91,7 +112,6 @@ public class BlockchainClient: SolanaBlockchainClient {
         amount: UInt64,
         feePayer: PublicKey? = nil,
         transferChecked: Bool = false,
-        lamportsPerSignature _: Lamports? = nil,
         minRentExemption mre: Lamports? = nil
     ) async throws -> (preparedTransaction: PreparedTransaction, realDestination: String) {
         let feePayer = feePayer ?? account.publicKey

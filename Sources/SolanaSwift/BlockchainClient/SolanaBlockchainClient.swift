@@ -36,16 +36,9 @@ public protocol SolanaBlockchainClient: AnyObject {
 }
 
 public extension SolanaBlockchainClient {
-    internal func signAndSerialize(
-        preparedTransaction: PreparedTransaction,
-        recentBlockhash: String
-    ) throws -> String {
-        var preparedTransaction = preparedTransaction
-        preparedTransaction.transaction.recentBlockhash = recentBlockhash
-        try preparedTransaction.sign()
-        return try preparedTransaction.serialize()
-    }
-
+    /// Send preparedTransaction
+    /// - Parameter preparedTransaction: preparedTransaction to be sent
+    /// - Returns: Transaction signature
     func sendTransaction(
         preparedTransaction: PreparedTransaction
     ) async throws -> String {
@@ -68,6 +61,10 @@ public extension SolanaBlockchainClient {
         .value
     }
 
+    
+    /// Simulate transaction (for testing purpose)
+    /// - Parameter preparedTransaction: preparedTransaction to be simulated
+    /// - Returns: The result of Simulation
     func simulateTransaction(
         preparedTransaction: PreparedTransaction
     ) async throws -> SimulationResult {
@@ -88,6 +85,23 @@ public extension SolanaBlockchainClient {
             )
         }
         .value
+    }
+    
+    // MARK: - Helpers
+    
+    /// Sign and serialize transaction (for testing purpose)
+    /// - Parameters:
+    ///   - preparedTransaction: preparedTransaction
+    ///   - recentBlockhash: recentBlockhash
+    /// - Returns: serializedTransaction
+    internal func signAndSerialize(
+        preparedTransaction: PreparedTransaction,
+        recentBlockhash: String
+    ) throws -> String {
+        var preparedTransaction = preparedTransaction
+        preparedTransaction.transaction.recentBlockhash = recentBlockhash
+        try preparedTransaction.sign()
+        return try preparedTransaction.serialize()
     }
 }
 
