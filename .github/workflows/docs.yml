@@ -2,7 +2,7 @@ name: Swift
 
 on:
   push:
-    branches: [ refactor/pwn-3297 ]
+    branches: [ main ]
     paths:
       - 'Sources/**/*'
 
