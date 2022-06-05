@@ -8,13 +8,15 @@ Solana-blockchain client, written in pure swift.
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://p2p-org.github.io/solana-swift/documentation/solanaswift)
 
 ## Features
+- [x] Supported swift concurrency (from 2.0.0)
 - [x] Key pairs generation
-- [x] Networking with POST methods for comunicating with solana-based networking system
+- [x] Solana JSON RPC API
 - [x] Create, sign transactions
+- [x] Send, simulate transactions
+- [x] Solana token list
 - [x] Socket communication
-- [x] Orca swap
-- [x] Serum DEX Swap
-- [x] RenVM (Support: Bitcoin)
+- [x] OrcaSwapSwift
+- [x] RenVMSwift
 
 ## Example
 
@@ -23,7 +25,6 @@ Demo wallet: [p2p-wallet](https://github.com/p2p-org/p2p-wallet-ios)
 
 ## Requirements
 - iOS 13 or later
-- [Deprecated] RxSwift
 
 ## Dependencies
 - TweetNacl
@@ -35,12 +36,12 @@ SolanaSwift is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'SolanaSwift', '~> 2.0.0'
+pod 'SolanaSwift', '~> 2.0.1'
 ```
 
 ## How to use
-* From v2.0.0 we officially omited Rx library from dependencies and adopt swift concurrency to `solana-swift`
-* For those who still use `SolanaSDK` class, see [How to use SolanaSDK (Deprecated) section](#how-to-use-solanasdk-deprecated)
+* From v2.0.0 we officially omited Rx library and a lot of dependencies, thus we also adopt swift concurrency to `solana-swift`
+* For those who still use `SolanaSDK` class, follow [this link](https://github.com/p2p-org/solana-swift/blob/1.3.8/README.md)
 
 ### Import
 ```swift
@@ -98,7 +99,8 @@ accountStorage.save(account)
 ```
 
 ### Solana RPC Client
-APIClient for [Solana JSON RPC API](https://docs.solana.com/developing/clients/jsonrpc-api). [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/solanaapiclient)
+APIClient for [Solana JSON RPC API](https://docs.solana.com/developing/clients/jsonrpc-api). See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/solanaapiclient)
+
 Example: 
 ```swift
 import SolanaSwift
@@ -116,6 +118,10 @@ let result = try await apiClient.getBlockHeight()
 guard let account = try? accountStorage.account?.publicKey.base58EncodedString else { throw SolanaError.unauthorized }
 let balance = try await apiClient.getBalance(account: account, commitment: "recent")
 ```
+// Wait for confirmation
+let signature = try await blockChainClient.sendTransaction(...)
+try await apiClient.waitForConfirmation(signature: signature, ignoreStatus: true) // transaction will be mark as confirmed after timeout no matter what status is when ignoreStatus = true
+let signature2 = try await blockchainClient.sendTransaction(/* another transaction that requires first transaction to be completed */)
 
 // Observe signature status with `observeSignatureStatus` method
 In stead of using socket to observe signature status, which is not really reliable (socket often returns signature status == `finalized` when it is not fully finalized), we observe its status by periodically sending `getSignatureStatuses` (with `observeSignatureStatus` method)
@@ -131,7 +137,7 @@ for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoij
 ```
 
 ### Solana Blockchain Client
-Prepare, send and simulate transactions. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/solanablockchainclient)
+Prepare, send and simulate transactions. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/solanablockchainclient)
 
 Example: 
 ```swift
@@ -176,14 +182,14 @@ blockchainClient.sendTransaction(
 
 ### Solana Program
 List of default programs and pre-defined method that live on Solana network:
-1. SystemProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/systemprogram)
-2. TokenProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokenprogram)
-3. AssociatedTokenProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/associatedtokenprogram)
-4. OwnerValidationProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/ownervalidationprogram)
-5. TokenSwapProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokenswapprogram)
+1. SystemProgram. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/systemprogram)
+2. TokenProgram. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokenprogram)
+3. AssociatedTokenProgram. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/associatedtokenprogram)
+4. OwnerValidationProgram. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/ownervalidationprogram)
+5. TokenSwapProgram. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokenswapprogram)
 
 ### Solana Tokens Repository
-Tokens repository usefull when you need to get a list of tokens. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokensrepository)
+Tokens repository usefull when you need to get a list of tokens. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokensrepository)
 
 Example:
 ```swift
@@ -191,110 +197,6 @@ let tokenRepository = TokensRepository(endpoint: endpoint)
 let list = try await tokenRepository.getTokensList()
 ```
 TokenRepository be default uses cache not to make extra calls, it can disabled manually `.getTokensList(useCache: false)`
-
-
-## How to use SolanaSDK (Deprecated)
-* [Deprecated] Every class or struct is defined within namespace `SolanaSDK`, for example: `SolanaSDK.Account`, `SolanaSDK.Error`.
-
-* Import
-```swift
-import SolanaSwift
-```
-
-* Create an `SolanaAccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The "`CustomAccountStorage`" must conform to protocol `SolanaAccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK.Account? { get thrrows }` for retrieving user's account.
-
-Example:
-```swift
-import SolanaSwift
-import KeychainSwift
-struct KeychainAccountStorage: SolanaAccountStorage {
-    let tokenKey = <YOUR_KEY_TO_STORE_IN_KEYCHAIN>
-    func save(_ account: Account) throws {
-        let data = try JSONEncoder().encode(account)
-        keychain.set(data, forKey: tokenKey)
-    }
-    
-    var account: Account? {
-        get throws {
-            guard let data = keychain.getData(tokenKey) else {return nil}
-            return try JSONDecoder().decode(SolanaSDK.Account.self, from: data)
-        }
-    }
-}
-
-struct InMemoryAccountStorage: SolanaAccountStorage {
-    private var _account: SolanaSDK.Account?
-    func save(_ account: Account) throws {
-        _account = account
-    }
-    
-    var account: Account? {
-        get throws {
-            _account
-        }
-    }
-}
-```
-* [Deprecated] Creating an instance of `SolanaSDK`:
-```swift
-let solanaSDK = SolanaSDK(endpoint: <YOUR_API_ENDPOINT>, accountStorage: KeychainAccountStorage.shared) // endpoint example: https://api.mainnet-beta.solana.com
-```
-* Creating an account:
-```swift
-let mnemonic = Mnemonic()
-let account = try SolanaSDK.Account(phrase: mnemonic.phrase, network: .mainnetBeta, derivablePath: .default)
-try solanaSDK.accountStorage.save(account)
-```
-* Send pre-defined POST methods, which return a `RxSwift.Single`. [List of predefined methods](https://github.com/p2p-org/solana-swift/blob/main/SolanaSwift/Classes/Generated/SolanaSDK%2BGeneratedMethods.swift):
-
-Example:
-```swift
-solanaSDK.getBalance(account: account, commitment: "recent")
-    .subscribe(onNext: {balance in
-        print(balance)
-    })
-    .disposed(by: disposeBag)
-```
-* Send token:
-```swift
-solanaSDK.sendNativeSOL(
-    to destination: String,
-    amount: UInt64,
-    isSimulation: Bool = false
-)
-    .subscribe(onNext: {result in
-        print(result)
-    })
-    .disposed(by: disposeBag)
-    
-solanaSDK.sendSPLTokens(
-    mintAddress: String,
-    decimals: Decimals,
-    from fromPublicKey: String,
-    to destinationAddress: String,
-    amount: UInt64,
-    isSimulation: Bool = false
-)
-    .subscribe(onNext: {result in
-        print(result)
-    })
-    .disposed(by: disposeBag)
-```
-* Send custom method, which was not defined by using method `request<T: Decodable>(method:, path:, bcMethod:, parameters:) -> Single<T>`
-
-Example:
-```swift
-(solanaSDK.request(method: .post, bcMethod: "aNewMethodThatReturnsAString", parameters: []) as Single<String>)
-```
-* Subscribe and observe socket events:
-```swift
-// accountNotifications
-solanaSDK.subscribeAccountNotification(account: <ACCOUNT_PUBLIC_KEY>, isNative: <BOOL>) // isNative = true if you want to observe native solana account
-solanaSDK.observeAccountNotifications() // return an Observable<(pubkey: String, lamports: Lamports)>
-
-// signatureNotifications
-solanaSDK.observeSignatureNotification(signature: <SIGNATURE>) // return an Completable
-```
 
 ## How to use OrcaSwap
 OrcaSwap has been moved to new library [OrcaSwapSwift](https://github.com/p2p-org/OrcaSwapSwift) 
@@ -306,8 +208,6 @@ RenVM has been moved to new library [RenVMSwift](https://github.com/p2p-org/RenV
 SerumSwap has been moved to new library [SerumSwapSwift](https://github.com/p2p-org/SerumSwapSwift)
 
 ## Contribution
-- For supporting new methods, data types, edit `SolanaSDK+Methods` or `SolanaSDK+Models`
-- For testing, run `Example` project and creating test using `RxBlocking`
 - Welcome to contribute, feel free to change and open a PR.
 
 ## Author
