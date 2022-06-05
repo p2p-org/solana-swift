@@ -26,11 +26,8 @@ Demo wallet: [p2p-wallet](https://github.com/p2p-org/p2p-wallet-ios)
 - [Deprecated] RxSwift
 
 ## Dependencies
-- [Deprecated] RxAlamofire
 - TweetNacl
 - secp256k1.swift
-- [Deprecated] CryptoSwift
-- [Deprecated] Starscream
 
 ## Installation
 
@@ -38,11 +35,11 @@ SolanaSwift is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'SolanaSwift', :git => 'https://github.com/p2p-org/solana-swift.git'
+pod 'SolanaSwift', '~> 2.0.0'
 ```
 
 ## How to use
-* From v2.0.0 we officially ditch Rx library from dependencies and adopt swift concurrency to `solana-swift`
+* From v2.0.0 we officially omited Rx library from dependencies and adopt swift concurrency to `solana-swift`
 * For those who still use `SolanaSDK` class, see [How to use SolanaSDK (Deprecated) section](#how-to-use-solanasdk-deprecated)
 
 ### Import
@@ -117,8 +114,8 @@ let apiClient = JSONRPCAPIClient(endpoint: endpoint)
 let result = try await apiClient.getBlockHeight()
 
 // To get balance of the current account
-guard let account = try? accountStorage.account?.publicKey else { throw SolanaError.unauthorized }
-let balance = try await apiClient.getBalance(account: try accountStorage.account, commitment: "recent")
+guard let account = try? accountStorage.account?.publicKey.base58EncodedString else { throw SolanaError.unauthorized }
+let balance = try await apiClient.getBalance(account: account, commitment: "recent")
 ```
 
 // Observe signature status with `observeSignatureStatus` method
@@ -143,31 +140,42 @@ Example:
 ```swift
 import SolanaSwift
 
-/// Prepare Sending SPL Tokens
-let fee = try await api.getFees(commitment: nil)
-let bc = BlockchainClient(apiClient: JSONRPCAPIClient(endpoint: endpoint))
-try await bc.prepareSendingSPLTokens(account: account,
-                                     mintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
-                                     decimals: 6,
-                                     from: "DjY1uZozQTPz9c6WsjpPC3jXWp7u98KzyuyQTRzcGHFk",
-                                     to: destination,
-                                     amount: Double(0.001).toLamport(decimals: 6),
-                                     fee: fee,
-                                     feePayer: "B4PdyoVU39hoCaiTLPtN9nJxy6rEpbciE3BNPvHkCeE2",
-                                     recentBlockhash: "F8wk1XcFVcd5M3UDx8S2jy3mEhSVkeBgYw979Mp2fF4")
+let blockchainClient = BlockchainClient(apiClient: JSONRPCAPIClient(endpoint: endpoint))
 
-/// Prepare Sending SPL Tokens
-feeCalculator = DefaultFeeCalculator(lamportsPerSignature: lamportsPerSignature, minRentExemption: minRentExemption)
+/// Prepare any transaction
+let preparedTransaction = try await blockchainClient.prepareTransaction(
+    instructions: [...],
+    signers: [...],
+    feePayer: ...
+)
 
-let recentBlockhash = try await apiClient.getRecentBlockhash(commitment: nil)
-try await blockchain.prepareSendingNativeSOL(account: account,
-                                             to: toPublicKey,
-                                             amount: 0,
-                                             feePayer: feePayerPublicKey,
-                                             recentBlockhash: "F8wk1XcFVcd5M3UDx8S2jy3mEhSVkeBgYw979Mp2fF4",
-                                             feeCalculator: feeCalculator)
+/// SPECIAL CASE: Prepare Sending SPL Tokens
+let preparedTransaction = try await blockchainClient.prepareSendingNativeSOL(
+    account: account,
+    to: toPublicKey,
+    amount: 0
+)
+
+/// SPECIAL CASE: Sending SPL Tokens
+let preparedTransactions = try await blockchainClient.prepareSendingSPLTokens(
+    account: account,
+    mintAddress: <SPL TOKEN MINT ADDRESS>,  // USDC mint
+    decimals: 6,
+    from: <YOUR SPL TOKEN ADDRESS>, // Your usdc address
+    to: destination,
+    amount: <AMOUNT IN LAMPORTS>
+)
+
+/// Simulate or send
+
+blockchainClient.simulateTransaction(
+    preparedTransaction: preparedTransaction
+)
+
+blockchainClient.sendTransaction(
+    preparedTransaction: preparedTransaction
+)
 ```
-
 
 ### Solana Tokens Repository
 Tokens repository usefull when you need to get a list of tokens
