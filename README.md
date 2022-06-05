@@ -141,6 +141,13 @@ for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoij
 // statuses.last == .finalized // the signature is confirmed by all nodes
 ```
 
+For the method that is not listed, use generic method `request(method:params:)` or `request(method:)` without params.
+
+```swift
+let result: String = try await apiClient.request(method: "getHealth")
+XCTAssertEqual(result, "ok")
+```
+
 ### Solana Blockchain Client
 Prepare, send and simulate transactions. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/solanablockchainclient)
 
