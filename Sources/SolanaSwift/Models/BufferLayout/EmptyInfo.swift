@@ -1,12 +1,10 @@
-//
-//  EmptyInfo.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 13/04/2021.
-//
-
 import Foundation
 
-extension SolanaSDK {
-    public struct EmptyInfo: DecodableBufferLayout {}
+public struct EmptyInfo: BufferLayout {
+    public static var BUFFER_LENGTH: UInt64 = 0
+}
+
+extension EmptyInfo: BorshCodable {
+    public init(from _: inout BinaryReader) throws {}
+    public func serialize(to _: inout Data) throws {}
 }

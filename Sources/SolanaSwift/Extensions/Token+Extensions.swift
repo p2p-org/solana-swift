@@ -7,16 +7,16 @@
 
 import Foundation
 
-extension Array where Element == SolanaSDK.Token {
-    public func excludingSpecialTokens() -> Self {
+public extension Array where Element == Token {
+    func excludingSpecialTokens() -> Self {
         var currentAddresses: Set<String> = []
 
         return filter { token in
             currentAddresses.insert(token.address).inserted &&
-                !token.tags.contains(where: {$0.name == "nft"}) &&
-                !token.tags.contains(where: {$0.name == "leveraged"}) &&
-                !token.tags.contains(where: {$0.name == "bull"}) &&
-                !token.tags.contains(where: {$0.name == "lp-token"})
+                !token.tags.contains(where: { $0.name == "nft" }) &&
+                !token.tags.contains(where: { $0.name == "leveraged" }) &&
+                !token.tags.contains(where: { $0.name == "bull" }) &&
+                !token.tags.contains(where: { $0.name == "lp-token" })
         }
     }
 }

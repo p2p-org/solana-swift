@@ -1,61 +1,82 @@
-//
-//  AccountInfo2.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 05/08/2021.
-//
-
 import Foundation
-import Runtime
 
-extension SolanaSDK {
-    public struct AccountInfo: DecodableBufferLayout {
-        public let mint: PublicKey
-        public let owner: PublicKey
-        public let lamports: UInt64
-        public let delegateOption: UInt32
-        public var delegate: PublicKey?
-        public let state: UInt8
-        public let isNativeOption: UInt32
-        public let isNativeRaw: UInt64
-        public var delegatedAmount: UInt64
-        public let closeAuthorityOption: UInt32
-        public var closeAuthority: PublicKey?
-        
-        // non-parsing
-        public var isInitialized: Bool {
-            state != 0
+public struct AccountInfo: BufferLayout {
+    public static let BUFFER_LENGTH: UInt64 = 165
+
+    public let mint: PublicKey
+    public let owner: PublicKey
+    public let lamports: UInt64
+    public let delegateOption: UInt32
+    // swiftlint:disable all
+    public var delegate: PublicKey?
+    public let isInitialized: Bool
+    public let isFrozen: Bool
+    public let state: UInt8
+    public let isNativeOption: UInt32
+    public let rentExemptReserve: UInt64?
+    public let isNativeRaw: UInt64
+    public let isNative: Bool
+    public var delegatedAmount: UInt64
+    public let closeAuthorityOption: UInt32
+    public var closeAuthority: PublicKey?
+}
+
+extension AccountInfo: BorshCodable {
+    public func serialize(to writer: inout Data) throws {
+        try mint.serialize(to: &writer)
+        try owner.serialize(to: &writer)
+        try lamports.serialize(to: &writer)
+        try delegateOption.serialize(to: &writer)
+        if let delegate = delegate {
+            try delegate.serialize(to: &writer)
+        } else {
+            try PublicKey.NULL_PUBLICKEY_BYTES.forEach { try $0.serialize(to: &writer) }
         }
-        public var isFrozen: Bool {
-            state == 2
+        try state.serialize(to: &writer)
+        try isNativeOption.serialize(to: &writer)
+        try isNativeRaw.serialize(to: &writer)
+        try delegatedAmount.serialize(to: &writer)
+        try closeAuthorityOption.serialize(to: &writer)
+        if let closeAuthority = closeAuthority {
+            try closeAuthority.serialize(to: &writer)
+        } else {
+            try PublicKey.NULL_PUBLICKEY_BYTES.forEach { try $0.serialize(to: &writer) }
         }
-        
-        public var rentExemptReserve: UInt64? {
-            if isNativeOption == 1 {
-                return isNativeRaw
-            }
-            return nil
+    }
+
+    public init(from reader: inout BinaryReader) throws {
+        mint = try .init(from: &reader)
+        owner = try .init(from: &reader)
+        lamports = try .init(from: &reader)
+        delegateOption = try .init(from: &reader)
+        let tempdelegate = try? PublicKey(from: &reader)
+        state = try .init(from: &reader)
+        isNativeOption = try .init(from: &reader)
+        isNativeRaw = try .init(from: &reader)
+        delegatedAmount = try .init(from: &reader)
+        closeAuthorityOption = try .init(from: &reader)
+        closeAuthority = try? PublicKey(from: &reader)
+
+        if delegateOption == 0 {
+            delegate = nil
+            delegatedAmount = 0
+        } else {
+            delegate = tempdelegate
         }
-        
-        public var isNative: Bool {
-            isNativeOption == 1
+
+        isInitialized = state != 0
+        isFrozen = state == 2
+
+        if isNativeOption == 1 {
+            rentExemptReserve = isNativeRaw
+            isNative = true
+        } else {
+            rentExemptReserve = nil
+            isNative = false
         }
-        
-        public static func injectOtherProperties(typeInfo: TypeInfo, currentInstance: inout SolanaSDK.AccountInfo) throws {
-            if currentInstance.delegateOption == 0 {
-                currentInstance.delegate = nil
-                currentInstance.delegatedAmount = 0
-            }
-            
-            if currentInstance.closeAuthorityOption == 0 {
-                currentInstance.closeAuthority = nil
-            }
-        }
-        
-        public static var BUFFER_LENGTH: Int { 165 }
-        
-        public static var span: UInt64 {
-            UInt64(BUFFER_LENGTH)
+
+        if closeAuthorityOption == 0 {
+            closeAuthority = nil
         }
     }
 }

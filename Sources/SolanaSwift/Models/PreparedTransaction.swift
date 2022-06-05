@@ -1,35 +1,38 @@
 import Foundation
+import LoggerSwift
 
-extension SolanaSDK {
-    public struct PreparedTransaction {
-        public init(transaction: SolanaSDK.Transaction, signers: [SolanaSDK.Account], expectedFee: FeeAmount) {
-            self.transaction = transaction
-            self.signers = signers
-            self.expectedFee = expectedFee
-        }
-        
-        public var transaction: Transaction
-        public var signers: [Account]
-        public var expectedFee: FeeAmount
-        
-        public func serialize() throws -> String {
-            var transaction = transaction
-            let serializedTransaction = try transaction.serialize().bytes.toBase64()
-            #if DEBUG
-            Logger.log(message: serializedTransaction, event: .info)
+public struct PreparedTransaction {
+    public init(transaction: Transaction, signers: [Account], expectedFee: FeeAmount) {
+        self.transaction = transaction
+        self.signers = signers
+        self.expectedFee = expectedFee
+    }
+
+    public var transaction: Transaction
+    public var signers: [Account]
+    public var expectedFee: FeeAmount
+
+    public mutating func sign() throws {
+        try transaction.sign(signers: signers)
+    }
+
+    public func serialize() throws -> String {
+        var transaction = transaction
+        let serializedTransaction = try transaction.serialize().bytes.toBase64()
+        #if DEBUG
+            Logger.log(event: .info, message: serializedTransaction)
             if let decodedTransaction = transaction.jsonString {
-                Logger.log(message: decodedTransaction, event: .info)
+                Logger.log(event: .info, message: decodedTransaction)
             }
-            #endif
-            return serializedTransaction
+        #endif
+        return serializedTransaction
+    }
+
+    public func findSignature(publicKey: PublicKey) throws -> String {
+        guard let signature = transaction.findSignature(pubkey: publicKey)?.signature
+        else {
+            throw SolanaError.other("Signature not found")
         }
-        
-        public func findSignature(publicKey: PublicKey) throws -> String {
-            guard let signature = transaction.findSignature(pubkey: publicKey)?.signature
-            else {
-                throw Error.other("Signature not found")
-            }
-            return Base58.encode(signature.bytes)
-        }
+        return Base58.encode(signature.bytes)
     }
 }

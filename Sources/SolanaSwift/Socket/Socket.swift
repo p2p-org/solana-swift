@@ -1,263 +1,300 @@
-//
-//  Socket.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 03/12/2020.
-//
-
 import Foundation
-import RxSwift
-import Starscream
-import RxCocoa
+import LoggerSwift
 
-extension SolanaSDK {
-    public class Socket {
-        // MARK: - Properties
-        private let disposeBag = DisposeBag()
-        let socket: WebSocket
-        var wsHeartBeat: Timer!
-        
-        // MARK: - Subscriptions
-        private var subscribers = [Subscriber]()
-        private var accountSubscriptions = [Subscription]()
-        
-        // MARK: - Subjects
-        let status = BehaviorRelay<Status>(value: .initializing)
-        let dataSubject = PublishSubject<Data>()
-        var socketDidConnect: Completable {
-            status.filter{$0 == .connected}.take(1).asSingle().asCompletable()
-        }
+public protocol SolanaSocket {
+    /// Connection status of the socket
+    var isConnected: Bool { get }
 
-        // MARK: - Initializer
-        public init(endpoint: String) {
-            var request = URLRequest(url: URL(string: endpoint)!)
-            request.timeoutInterval = 5
-            if #available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) {
-                socket = WebSocket(request: request, engine: NativeEngine())
-            } else {
-                socket = WebSocket(request: request)
+    /// Delegation
+    var delegate: SolanaSocketEventsDelegate? { get set }
+
+    /// Connect to socket
+    func connect()
+
+    /// Disconnect from socket
+    func disconnect()
+
+    /// Subscribe to an entity ('account', 'program', 'signature', for example)
+    /// - Parameters:
+    ///   - type: type of entity, '.account', '.program',...
+    ///   - params: params to be sent
+    /// - Returns: id of the request
+    @discardableResult func subscribe<T: Encodable>(type: SocketEntity, params: T, commitment: String) async throws
+        -> String
+
+    /// Unsubscribe to an entity ('account', 'program', 'signature', for example)
+    /// - Parameters:
+    ///   - type: type of entity, '.account', '.program',...
+    ///   - socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult func unsubscribe(type: SocketEntity, socketId: UInt64) async throws -> String
+}
+
+public extension SolanaSocket {
+    /// Subscribe to `accountNotification`
+    /// - Parameter publickey: account to be subscribed
+    /// - Returns: id of the request
+    @discardableResult func accountSubscribe(publickey: String, commitment: String = "recent") async throws -> String {
+        try await subscribe(type: .account, params: publickey, commitment: commitment)
+    }
+
+    /// Subscribe to `signatureNotification`
+    /// - Parameter signature: signature to be subscribed
+    /// - Returns: id of the request
+    @discardableResult func signatureSubscribe(signature: String,
+                                               commitment: String = "confirmed") async throws -> String
+    {
+        try await subscribe(type: .signature, params: signature, commitment: commitment)
+    }
+
+    /// Subscribe to `logsNotification`
+    /// - Parameter mentions: accounts to be subscribed
+    /// - Returns: id of the request
+    @discardableResult func logsSubscribe(mentions: [String], commitment: String = "confirmed") async throws -> String {
+        try await subscribe(type: .logs, params: ["mentions": mentions], commitment: commitment)
+    }
+
+    /// Subscribe to all events
+    /// - Returns: id of the request
+    @discardableResult func logsSubscribeAll(commitment: String = "confirmed") async throws -> String {
+        try await subscribe(type: .logs, params: "all", commitment: commitment)
+    }
+
+    /// Subscribe to `programNotification`
+    /// - Parameter publickey: program to be subscribed
+    /// - Returns: id of the request
+    @discardableResult func programSubscribe(publickey: String,
+                                             commitment: String = "confirmed") async throws -> String
+    {
+        try await subscribe(type: .program, params: publickey, commitment: commitment)
+    }
+}
+
+public class Socket: NSObject, SolanaSocket {
+    // MARK: - Properties
+
+    /// Connection status of the socket
+    public var isConnected: Bool = false
+
+    /// Socket task to handle socket event
+    private var task: WebSocketTask!
+
+    /// Enable/disable logging
+    private let enableDebugLogs: Bool
+
+    /// Timer to send pings to prevent idie time out
+    private var wsHeartBeat: Timer!
+
+    /// Async task to keep track of asynchronous receiving task
+    private var asyncTask: Task<Void, Error>?
+
+    /// Delegation
+    public weak var delegate: SolanaSocketEventsDelegate?
+
+    // MARK: - Initializers
+
+    /// Initializer for Socket
+    /// - Parameters:
+    ///   - url: url of the socket
+    ///   - enableDebugLogs: enable/disable logging
+    ///   - socketTaskProviderType: type of task provider, default is `URLSession.self`
+    public init<T: WebSocketTaskProvider>(
+        url: URL,
+        enableDebugLogs: Bool,
+        socketTaskProviderType _: T.Type
+    ) {
+        self.enableDebugLogs = enableDebugLogs
+        super.init()
+        let urlSession = T(configuration: .default, delegate: self, delegateQueue: .current!)
+        task = urlSession.createWebSocketTask(with: url)
+    }
+
+    /// Convenience initializer for socket using `URLSession` as `WebSocketTaskProvider`
+    /// - Parameters:
+    ///   - url: url of the socket
+    ///   - enableDebugLogs: enable/disable logging
+    public convenience init(
+        url: URL,
+        enableDebugLogs: Bool
+    ) {
+        self.init(url: url, enableDebugLogs: enableDebugLogs, socketTaskProviderType: URLSession.self)
+    }
+
+    deinit {
+        disconnect()
+    }
+
+    // MARK: - Methods
+
+    /// Connect to socket
+    public func connect() {
+        task.resume()
+    }
+
+    /// Disconnect from socket
+    public func disconnect() {
+        delegate?.disconnected(reason: "", code: 0)
+
+        asyncTask?.cancel()
+        task.cancel()
+        delegate = nil
+        wsHeartBeat?.invalidate()
+        wsHeartBeat = nil
+    }
+
+    /// Subscribe to an entity ('account', 'program', 'signature', for example)
+    /// - Parameters:
+    ///   - type: type of entity, '.account', '.program',...
+    ///   - params: params to be sent
+    /// - Returns: id of the request
+    @discardableResult public func subscribe<T: Encodable>(type entity: SocketEntity, params: T,
+                                                           commitment: String) async throws -> String
+    {
+        let method: SocketMethod = .init(entity, .subscribe)
+        let params: [Encodable] = [params, ["commitment": commitment, "encoding": "base64"]]
+        let request = RequestAPI(method: method.rawValue, params: params)
+        return try await writeToSocket(request: request)
+    }
+
+    /// Unsubscribe to an entity ('account', 'program', 'signature', for example)
+    /// - Parameters:
+    ///   - type: type of entity, '.account', '.program',...
+    ///   - socketId: id of the subscription
+    /// - Returns: id of the request
+    @discardableResult public func unsubscribe(type entity: SocketEntity, socketId: UInt64) async throws -> String {
+        let method: SocketMethod = .init(entity, .unsubscribe)
+        let params: [Encodable] = [socketId]
+        let request = RequestAPI(method: method.rawValue, params: params)
+        return try await writeToSocket(request: request)
+    }
+
+    /// Emit message to socket
+    /// - Parameter request: request to be sent
+    /// - Returns: request id
+    @discardableResult private func writeToSocket(request: RequestAPI) async throws -> String {
+        guard let jsonData = try? JSONEncoder().encode(request) else {
+            throw SocketError.couldNotSerialize
+        }
+        if enableDebugLogs {
+            Logger.log(event: .request, message: "\(String(data: jsonData, encoding: .utf8) ?? "")")
+        }
+        try await task.send(.data(jsonData))
+        return request.id
+    }
+
+    /// Read message from socket one at a time
+    private func readMessage() async throws {
+        try Task.checkCancellation()
+        let message = try await task.receive()
+        switch message {
+        case let .string(text):
+            if enableDebugLogs {
+                Logger.log(event: .event, message: "Receive string from socket: \(text)")
             }
-            defer {socket.delegate = self}
-        }
-        
-        deinit {
-            disconnect()
-        }
-        
-        // MARK: - Socket actions
-        /// Connect to Solana's websocket
-        public func connect() {
-            // connecting
-            status.accept(.connecting)
-            
-            // connect
-            socket.connect()
-        }
-        
-        /// Disconnect from Solana's websocket
-        public func disconnect() {
-            unsubscribeToAllSubscriptions()
-            status.accept(.disconnected)
-            socket.disconnect()
-        }
-        
-        public var isConnected: Bool {
-            status.value == .connected
-        }
-        
-        // MARK: - Account notifications
-        public func subscribeAccountNotification(account: String, isNative: Bool) {
-            let subscriber = Subscriber(pubkey: account, isNative: isNative)
-            
-            // check if subscriptions exists
-            guard !accountSubscriptions.contains(where: {$0.account == subscriber.pubkey })
-            else {
-                // already registered
-                return
-            }
-            
-            // if account was not registered, add account to self.accounts
-            if !subscribers.contains(subscriber) {
-                subscribers.append(subscriber)
-            }
-            
-            // add subscriptions
-            let id = write(
-                method: .init(.account, .subscribe),
-                params: [
-                    subscriber.pubkey,
-                    ["encoding":"jsonParsed", "commitment": "recent"]
-                ]
-            )
-            subscribe(id: id)
-                .subscribe(onSuccess: {[weak self] subscriptionId in
-                    guard let strongSelf = self else {return}
-                    if strongSelf.accountSubscriptions.contains(where: {$0.account == subscriber.pubkey})
-                    {
-                        strongSelf.accountSubscriptions.removeAll(where: {$0.account == subscriber.pubkey})
-                    }
-                    strongSelf.accountSubscriptions.append(.init(entity: .account, id: subscriptionId, account: subscriber.pubkey))
-                })
-                .disposed(by: disposeBag)
-        }
-        
-        public func observeAccountNotifications() -> Observable<(pubkey: String, lamports: Lamports)>
-        {
-            observeNotification(.account)
-                .flatMap { [weak self] data -> Observable<(pubkey: String, lamports: Lamports)> in
-                    guard let self = self else {throw SolanaSDK.Error.unknown}
-                    return self.decodeDataToAccountNotification(data: data)
-                }
-        }
-        
-        // MARK: - Signature notifications
-        public func observeSignatureNotification(signature: String) -> Completable
-        {
-            let id = write(
-                method: .init(.signature, .subscribe),
-                params: [signature, ["commitment": "confirmed"]]
-            )
-            
-            return subscribe(id: id)
-                .flatMapCompletable {[weak self] subscription in
-                    self?.dataSubject
-                        .filter {data in
-                            guard let response = try? JSONDecoder().decode(Response<SignatureNotification>.self, from: data),
-                                  response.method == "signatureNotification",
-                                  response.params?.subscription == subscription
-                            else {
-                                return false
-                            }
-                            return true
+            guard let data = text.data(using: .utf8) else { return }
+            do {
+                // TODO: Fix this mess code
+                let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
+                if let jsonType = jsonResponse["method"] as? String,
+                   let type = SocketMethod(rawValue: jsonType),
+                   type.action == .notification
+                {
+                    switch type.entity {
+                    case .account:
+                        if let notification = try? JSONDecoder()
+                            .decode(SocketNativeAccountNotification.self, from: data)
+                        {
+                            delegate?.nativeAccountNotification(notification: notification)
+                        } else {
+                            let notification = try JSONDecoder().decode(SocketTokenAccountNotification.self, from: data)
+                            delegate?.tokenAccountNotification(notification: notification)
                         }
-                        .take(1)
-                        .asSingle()
-                        .asCompletable()
-                    ?? .empty()
-                }
-                
-        }
-        
-        @discardableResult
-        public func write(method: Method, params: [Encodable]) -> String {
-            let requestAPI = RequestAPI(
-                method: method.rawValue,
-                params: params
-            )
-            write(requestAPI: requestAPI)
-            return requestAPI.id
-        }
-        
-        // MARK: - Helpers
-        /// Subscribe to accountNotification from all accounts in the queue
-        func subscribeToAllAccounts() {
-            subscribers.forEach {subscribeAccountNotification(account: $0.pubkey, isNative: $0.isNative)}
-        }
-        
-        /// Unsubscribe to all current subscriptions
-        func unsubscribeToAllSubscriptions() {
-            for subscription in accountSubscriptions {
-                write(method: .init(subscription.entity, .unsubscribe), params: [subscription.id])
-            }
-            accountSubscriptions = []
-        }
-        
-        private func subscribe(id: String) -> Single<UInt64> {
-            dataSubject
-                .filter { data in
-                    guard let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
-                        else {
-                            return false
+
+                    case .signature:
+                        let notification = try JSONDecoder().decode(SocketSignatureNotification.self, from: data)
+                        delegate?.signatureNotification(notification: notification)
+                    case .logs:
+                        let notification = try JSONDecoder().decode(SocketLogsNotification.self, from: data)
+                        delegate?.logsNotification(notification: notification)
+                    case .program:
+                        let notification = try JSONDecoder().decode(SocketProgramAccountNotification.self, from: data)
+                        delegate?.programNotification(notification: notification)
+                    default:
+                        break
                     }
-                    return (json["id"] as? String) == id
-                }
-                .map { data in
-                    guard let subscription = try JSONDecoder().decode(Response<UInt64>.self, from: data).result
-                    else {
-                        throw Error.other("Subscription is not valid")
+
+                } else {
+                    if let subscription = try? JSONDecoder().decode(SocketSubscriptionResponse.self, from: data),
+                       let socketId = subscription.result,
+                       let id = subscription.id
+                    {
+                        delegate?.subscribed(socketId: socketId, id: id)
                     }
-                    return subscription
-                }
-                .take(1)
-                .asSingle()
-        }
-        
-        private func observeNotification(_ entity: Entity, subscription: UInt64? = nil) -> Observable<Data>
-        {
-            dataSubject
-                .filter { data in
-                    guard let json = (try? JSONSerialization.jsonObject(with: data, options: .mutableLeaves)) as? [String: Any]
-                        else {
-                            return false
+
+                    if let subscription = try? JSONDecoder().decode(SocketUnsubscriptionResponse.self, from: data),
+                       subscription.result == true,
+                       let id = subscription.id
+                    {
+                        delegate?.unsubscribed(id: id)
                     }
-                    return (json["method"] as? String) == entity.notificationMethodName
                 }
-        }
-        
-        private func write(requestAPI: RequestAPI, completion: (() -> ())? = nil) {
-            // closure for writing
-            let writeAndLog: () -> Void = { [weak self] in
-                do {
-                    let data = try JSONEncoder().encode(requestAPI)
-                    guard let string = String(data: data, encoding: .utf8) else {
-                        throw Error.other("Request is invalid \(requestAPI)")
-                    }
-                    Logger.log(message: string, event: .request)
-                    self?.socket.write(string: string, completion: {
-                        completion?()
-                    })
-                } catch {
-                    Logger.log(message: "\(requestAPI.method) failed: \(error)", event: .event)
-                }
+            } catch {
+                delegate?.error(error: error)
             }
-            
-            // auto reconnect
-            if status.value != .connected {
-                socket.connect()
-                status.filter {$0 == .connected}
-                    .take(1).asSingle()
-                    .subscribe(onSuccess: { _ in
-                        writeAndLog()
-                    })
-                    .disposed(by: disposeBag)
-            } else {
-                writeAndLog()
+        case let .data(data):
+            print("Received binary message: \(data)")
+        @unknown default:
+            fatalError()
+        }
+    }
+
+    private func ping() {
+        Logger.log(event: .request, message: "Ping socket")
+        task.sendPing { error in
+            if let error = error {
+                print("Ping failed: \(error)")
             }
         }
-        
-        func decodeDataToAccountNotification(data: Data) -> Observable<(pubkey: String, lamports: Lamports)>
-        {
-            let decoder = JSONDecoder()
-            
-            var account: String?
-            var lamports: SolanaSDK.Lamports?
-            
-            if let result = try? decoder
-                .decode(NativeAccountNotification.self, from: data),
-               let subscription = accountSubscriptions.first(where: {$0.id == result.params?.subscription}),
-               let subscriber = subscribers.first(where: {$0.pubkey == subscription.account}),
-               subscriber.isNative
-            {
-                account = accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
-                lamports = result.params?.result?.value.lamports
-            } else if let result = try? decoder
-                .decode(TokenAccountNotification.self, from: data),
-                      let subscription = accountSubscriptions.first(where: {$0.id == result.params?.subscription}),
-                      let subscriber = subscribers.first(where: {$0.pubkey == subscription.account}),
-                      !subscriber.isNative
-            {
-                account = accountSubscriptions.first(where: {$0.id == result.params?.subscription})?.account
-                let string = result.params?.result?.value.data.parsed.info.tokenAmount.amount ?? "0"
-                lamports = Lamports(string)
-            }
-            
-            if let pubkey = account,
-               let lamports = lamports
-            {
-                return .just((pubkey: pubkey, lamports: lamports))
-            }
-            
-            return .empty()
+    }
+}
+
+extension Socket: URLSessionWebSocketDelegate {
+    public func urlSession(_: URLSession, webSocketTask _: URLSessionWebSocketTask, didOpenWithProtocol _: String?) {
+        isConnected = true
+        wsHeartBeat?.invalidate()
+        wsHeartBeat = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+            // Ping server every 5s to prevent idle timeouts
+            self?.ping()
         }
+        delegate?.connected()
+
+        if enableDebugLogs {
+            Logger.log(event: .event, message: "Socket connected")
+        }
+
+        asyncTask = Task.detached { [weak self] in
+            while true {
+                guard let self = self else { break }
+                try await self.readMessage()
+            }
+        }
+    }
+
+    public func urlSession(
+        _: URLSession,
+        webSocketTask _: URLSessionWebSocketTask,
+        didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
+        reason: Data?
+    ) {
+        isConnected = false
+        wsHeartBeat?.invalidate()
+        task.resume()
+        delegate?.disconnected(reason: reason?.jsonString ?? "", code: closeCode.rawValue)
+
+        if enableDebugLogs {
+            Logger.log(event: .event, message: "Socket disconnected")
+        }
+
+        asyncTask?.cancel()
     }
 }

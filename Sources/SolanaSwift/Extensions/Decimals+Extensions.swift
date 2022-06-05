@@ -7,6 +7,6 @@
 
 import Foundation
 
-extension SolanaSDK.Decimals {
-    static var SOL: SolanaSDK.Decimals { 9 }
+public extension Decimals {
+    static var SOL: Decimals { 9 }
 }
