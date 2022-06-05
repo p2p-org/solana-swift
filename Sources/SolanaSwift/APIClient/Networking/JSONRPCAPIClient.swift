@@ -281,6 +281,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         return result.value
     }
     
+    public func request<Entity>(method: String, params: [Encodable]) async throws -> Entity where Entity : Decodable {
+        try await get(method: method, params: params)
+    }
+    
     // MARK: - Batch requests
     public func batchRequest(with requests: [RequestEncoder.RequestType]) async throws
     -> [AnyResponse<RequestEncoder.RequestType.Entity>] {

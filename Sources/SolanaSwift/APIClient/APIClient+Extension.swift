@@ -217,4 +217,9 @@ public extension SolanaAPIClient {
     func getLamportsPerSignature() async throws -> UInt64? {
         try await getFees(commitment: nil).feeCalculator?.lamportsPerSignature
     }
+    
+    /// Convenience method for request(method:params:) with no params
+    func request<Entity>(method: String) async throws -> Entity where Entity : Decodable {
+        try await request(method: method, params: [])
+    }
 }

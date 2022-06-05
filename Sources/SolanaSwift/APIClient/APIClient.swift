@@ -290,6 +290,14 @@ public protocol SolanaAPIClient {
     /// - Throws:
     func getTransaction(signature: String, commitment: Commitment?) async throws -> TransactionInfo?
     
+    
+    /// Generic methods for methods that is not on the list above
+    /// - Parameters:
+    ///   - method: name of the method
+    ///   - params: the parameters
+    /// - Returns: result of the request
+    func request<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity
+    
     // MARK: - Batch request
     
     /// Perform a multiple requests at once

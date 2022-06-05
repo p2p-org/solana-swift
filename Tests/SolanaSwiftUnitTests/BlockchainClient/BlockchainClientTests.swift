@@ -383,6 +383,10 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
     
+    func request<Entity>(method: String, params: [Encodable]) async throws -> Entity where Entity : Decodable {
+        fatalError()
+    }
+    
     func batchRequest(with requests: [JSONRPCRequestEncoder.RequestType]) async throws -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>] {
         fatalError()
     }
