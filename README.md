@@ -64,10 +64,8 @@ struct KeychainAccountStorage: SolanaAccountStorage {
     }
     
     var account: Account? {
-        get throws {
-            guard let data = keychain.getData(tokenKey) else {return nil}
-            return try JSONDecoder().decode(SolanaSDK.Account.self, from: data)
-        }
+        guard let data = keychain.getData(tokenKey) else {return nil}
+        return try JSONDecoder().decode(SolanaSDK.Account.self, from: data)
     }
 }
 
@@ -78,9 +76,7 @@ struct InMemoryAccountStorage: SolanaAccountStorage {
     }
     
     var account: Account? {
-        get throws {
-            _account
-        }
+        _account
     }
 }
 ```
