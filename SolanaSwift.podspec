@@ -42,6 +42,6 @@ Solana-blockchain client, written in pure swift, which supports keypair generati
   # s.frameworks = 'UIKit', 'MapKit'
   s.dependency 'secp256k1.swift', '~> 0.1.0'
   s.dependency 'TweetNacl', '~> 1.0.2'
-  s.dependency 'Task_retrying', '~> 1.0.2'
+  s.dependency 'Task_retrying', '~> 1.0.3'
   s.dependency 'LoggerSwift', '~> 1.0.2'
 end
