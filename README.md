@@ -32,11 +32,22 @@ Demo wallet: [p2p-wallet](https://github.com/p2p-org/p2p-wallet-ios)
 
 ## Installation
 
+### Cocoapods
 SolanaSwift is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
 pod 'SolanaSwift', '~> 2.0.1'
+```
+
+### Swift package manager
+```swift
+...
+dependencies: [
+    ...
+    .package(url: "https://github.com/p2p-org/solana-swift", from: "2.0.1")
+],
+...
 ```
 
 ## How to use
