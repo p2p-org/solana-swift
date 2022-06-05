@@ -98,8 +98,7 @@ accountStorage.save(account)
 ```
 
 ### Solana RPC Client
-Make an API call to Solana using JSONRPC Client
-
+APIClient for [Solana JSON RPC API](https://docs.solana.com/developing/clients/jsonrpc-api). [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/solanaapiclient)
 Example: 
 ```swift
 import SolanaSwift
@@ -131,10 +130,8 @@ for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoij
 // statuses.last == .finalized // the signature is confirmed by all nodes
 ```
 
-The full list of supported methods available in `APIClient/APIClient.swift`
-
 ### Solana Blockchain Client
-Prepare, send and simulate transactions
+Prepare, send and simulate transactions. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/solanablockchainclient)
 
 Example: 
 ```swift
@@ -142,7 +139,7 @@ import SolanaSwift
 
 let blockchainClient = BlockchainClient(apiClient: JSONRPCAPIClient(endpoint: endpoint))
 
-/// Prepare any transaction
+/// Prepare any transaction, use any Solana program to create instructions, see section Solana program. 
 let preparedTransaction = try await blockchainClient.prepareTransaction(
     instructions: [...],
     signers: [...],
@@ -177,8 +174,16 @@ blockchainClient.sendTransaction(
 )
 ```
 
+### Solana Program
+List of default programs and pre-defined method that live on Solana network:
+1. SystemProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/systemprogram)
+2. TokenProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokenprogram)
+3. AssociatedTokenProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/associatedtokenprogram)
+4. OwnerValidationProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/ownervalidationprogram)
+5. TokenSwapProgram. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokenswapprogram)
+
 ### Solana Tokens Repository
-Tokens repository usefull when you need to get a list of tokens
+Tokens repository usefull when you need to get a list of tokens. [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokensrepository)
 
 Example:
 ```swift
