@@ -61,7 +61,7 @@ import SolanaSwift
 ```
 
 ### AccountStorage
-Create an `SolanaAccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The "`CustomAccountStorage`" must conform to protocol `SolanaAccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: SolanaSDK.Account? { get thrrows }` for retrieving user's account.
+Create an `SolanaAccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The "`CustomAccountStorage`" must conform to protocol `SolanaAccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: Account? { get thrrows }` for retrieving user's account.
 
 Example:
 ```swift
@@ -76,12 +76,12 @@ struct KeychainAccountStorage: SolanaAccountStorage {
     
     var account: Account? {
         guard let data = keychain.getData(tokenKey) else {return nil}
-        return try JSONDecoder().decode(SolanaSDK.Account.self, from: data)
+        return try JSONDecoder().decode(Account.self, from: data)
     }
 }
 
 struct InMemoryAccountStorage: SolanaAccountStorage {
-    private var _account: SolanaSDK.Account?
+    private var _account: Account?
     func save(_ account: Account) throws {
         _account = account
     }
