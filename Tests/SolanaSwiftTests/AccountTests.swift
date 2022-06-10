@@ -67,5 +67,14 @@ class AccountTests: XCTestCase {
         let account24 = try SolanaSDK.Account(phrase: phrase24, network: .mainnetBeta)
         XCTAssertEqual(account24.publicKey.base58EncodedString, "9avcmC97zLPwHKXiDz6GpXyjvPn9VcN3ggqM5gsRnjvv")
     }
+    
+    func testCreatingKeypairPerformance() throws {
+        let phrase12 = "miracle pizza supply useful steak border same again youth silver access hundred"
+            .components(separatedBy: " ")
+        
+        measure {
+            _ = try! SolanaSDK.Account(phrase: phrase12, network: .mainnetBeta)
+        }
+    }
 
 }

@@ -67,4 +67,10 @@ class RestAPIGetAccountInfoTests: RestAPITests {
         let exist2 = try solanaSDK.checkIfAssociatedTokenAccountExists(owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM", mint: "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk").toBlocking().first()!
         XCTAssertFalse(exist2)
     }
+    
+    func testGetAccountInfoPerformance() throws {
+        measure {
+            _ = try! solanaSDK.getAccountInfo(account: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", decodedTo: SolanaSDK.Mint.self).toBlocking().first()?.data
+        }
+    }
 }
