@@ -3,15 +3,19 @@ import Foundation
 public class TokensRepository: SolanaTokensRepository {
     // MARK: - Properties
 
-    private static var tokenCache = Cache<String, Set<Token>>()
-    private let tokenCacheKey = "TokenRepositoryTokensKey"
+    private let cache: SolanaTokensRepositoryCache
 
     private let tokenListParser: TokensListParser
     private let endpoint: APIEndPoint
 
-    public init(endpoint: APIEndPoint, tokenListParser: TokensListParser = .init()) {
+    public init(
+        endpoint: APIEndPoint,
+        tokenListParser: TokensListParser = .init(),
+        cache: SolanaTokensRepositoryCache = InMemoryTokensRepositoryCache()
+    ) {
         self.endpoint = endpoint
         self.tokenListParser = tokenListParser
+        self.cache = cache
     }
 
     // MARK: - Public Methods
@@ -23,11 +27,11 @@ public class TokensRepository: SolanaTokensRepository {
     /// - Returns Set of tokens
     ///
     public func getTokensList(useCache: Bool = true) async throws -> Set<Token> {
-        if useCache, let tokens = await TokensRepository.tokenCache.value(forKey: tokenCacheKey) {
+        if useCache, let tokens = await cache.getTokens() {
             return tokens
         }
         let tokenlist = try await tokenListParser.parse(network: endpoint.network.rawValue)
-        await TokensRepository.tokenCache.insert(tokenlist, forKey: tokenCacheKey)
+        await cache.save(tokens: tokenlist)
         return tokenlist
     }
 }
