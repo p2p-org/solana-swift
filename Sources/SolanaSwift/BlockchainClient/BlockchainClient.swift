@@ -71,7 +71,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         var accountInfo: BufferInfo<EmptyInfo>?
         do {
             accountInfo = try await apiClient.getAccountInfo(account: destination)
-            guard accountInfo?.owner == SystemProgram.id.base58EncodedString
+            guard accountInfo == nil || accountInfo?.owner == SystemProgram.id.base58EncodedString
             else { throw SolanaError.other("Invalid account info") }
         } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
             // ignoring error

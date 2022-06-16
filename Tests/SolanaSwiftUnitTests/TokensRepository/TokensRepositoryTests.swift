@@ -20,12 +20,14 @@ class TokensRepositoryTests: XCTestCase {
     }
 
     func testTokenRepositoryCacheWithNetworkError() async throws {
+        let cache = InMemoryTokensRepositoryCache()
         // Putting to cache
         try? await {
             let mock = TokenRepositoryMockNetworkManager()
             let tokenRepository = TokensRepository(
                 endpoint: endpoint,
-                tokenListParser: TokensListParser(networkManager: mock)
+                tokenListParser: TokensListParser(networkManager: mock),
+                cache: cache
             )
             _ = try await tokenRepository.getTokensList()
         }()
@@ -33,7 +35,8 @@ class TokensRepositoryTests: XCTestCase {
         let mock = TokenRepositoryMockNetworkManager(withError: true)
         let tokenRepository = TokensRepository(
             endpoint: endpoint,
-            tokenListParser: TokensListParser(networkManager: mock)
+            tokenListParser: TokensListParser(networkManager: mock),
+            cache: cache
         )
         let list = try await tokenRepository.getTokensList()
         XCTAssertFalse(list.isEmpty)

@@ -44,6 +44,31 @@ class BlockchainClientTests: XCTestCase {
             "AYqN18ZDaJtv61HxaIUnmtK0f+ST/HaO3YzAOBjwtG9Qf/Td58DSe5zS5nyx9InT+UyLIZbb4nFE/XYrWfHKCwQBAAEDJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsVQai+mnMv4ueKX0uXJIyAIv0UeTX3PGhu9bYIRBgH+2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuN92Q8S3ViiBKFjrCz0SjRSx6JhG5pY6fuBlpw98caYBAgIAAQwCAAAAZAAAAAAAAAA="
         )
     }
+    
+    func testPrepareSendingNativeSOLToNewlyCreatedAccount() async throws {
+        let toPublicKey = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
+        let apiClient = MockAPIClient(testCase: #function)
+        let blockchain = BlockchainClient(apiClient: apiClient)
+
+        let tx = try await blockchain.prepareSendingNativeSOL(
+            from: account,
+            to: toPublicKey,
+            amount: 100,
+            feePayer: account.publicKey
+        )
+
+        let recentBlockhash = try await apiClient.getRecentBlockhash()
+        let serializedTransaction = try blockchain.signAndSerialize(
+            preparedTransaction: tx,
+            recentBlockhash: recentBlockhash
+        )
+
+        XCTAssertEqual(tx.expectedFee, .init(transaction: 5000, accountBalances: 0))
+        XCTAssertEqual(
+            serializedTransaction,
+            "AYqN18ZDaJtv61HxaIUnmtK0f+ST/HaO3YzAOBjwtG9Qf/Td58DSe5zS5nyx9InT+UyLIZbb4nFE/XYrWfHKCwQBAAEDJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsVQai+mnMv4ueKX0uXJIyAIv0UeTX3PGhu9bYIRBgH+2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuN92Q8S3ViiBKFjrCz0SjRSx6JhG5pY6fuBlpw98caYBAgIAAQwCAAAAZAAAAAAAAAA="
+        )
+    }
 
     func testPrepareSendingSPLTokens() async throws {
         // TESTS: SEND TO NATIVE SOL ACCOUNT (AUTO FIND AND CHECK SPL TOKEN ACCOUNT FROM OWNER NATIVE SOL ACCOUNT)
@@ -159,6 +184,8 @@ private class MockAPIClient: SolanaAPIClient {
                 owner = SystemProgram.id.base58EncodedString
                 executable = true
                 rentEpoch = 0
+            case "testPrepareSendingNativeSOLToNewlyCreatedAccount()":
+                return nil
             case "testPrepareSendingSPLTokens()#1":
                 throw SolanaError.couldNotRetrieveAccountInfo
             case "testPrepareSendingSPLTokens()#2":
@@ -198,6 +225,8 @@ private class MockAPIClient: SolanaAPIClient {
             throw SolanaError.couldNotRetrieveAccountInfo
         case "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh":
             throw SolanaError.couldNotRetrieveAccountInfo
+        case "":
+            return nil
         default:
             fatalError()
         }
@@ -210,6 +239,9 @@ private class MockAPIClient: SolanaAPIClient {
         switch testCase {
         case "testPrepareSendingNativeSOL()":
             blockhash = "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
+            lastValidSlot = 133_389_328
+        case "testPrepareSendingNativeSOLToNewlyCreatedAccount()":
+            blockhash = "7GhCDV2MK7RVhYzD3iNZAVkCd9hYCgyqkgXdFbEFj9PD"
             lastValidSlot = 133_389_328
         case "testPrepareSendingSPLTokens()#1":
             blockhash = "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
@@ -226,6 +258,7 @@ private class MockAPIClient: SolanaAPIClient {
         case "testPrepareSendingSPLTokens()#5":
             blockhash = "7GhCDV2MK7RVhYzD3iNZAVkCd9hYCgyqkgXdFbEFj9PD"
             lastValidSlot = 133_461_991
+        
         default:
             fatalError()
         }
@@ -240,6 +273,8 @@ private class MockAPIClient: SolanaAPIClient {
     func getRecentBlockhash(commitment _: Commitment?) async throws -> String {
         switch testCase {
         case "testPrepareSendingNativeSOL()":
+            return "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
+        case "testPrepareSendingNativeSOLToNewlyCreatedAccount()":
             return "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"
         case "testPrepareSendingSPLTokens()#1":
             return "9VG1E6DTdjRRx2JpbXrH9QPTQQ6FRjakvStttnmSV7fR"
