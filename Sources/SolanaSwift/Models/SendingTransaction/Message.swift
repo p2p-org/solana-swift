@@ -65,7 +65,7 @@ public extension Transaction {
             let numReadonlySignedAccounts = data.popFirst()!
             let numReadonlyUnsignedAccounts = data.popFirst()!
 
-            let accountCount = try data.decodeLength()
+            let accountCount = data.decodeLength()
             var accountKeys: [PublicKey] = []
             for _ in stride(from: 0, through: accountCount - 1, by: 1) {
                 let account = data.prefix(PublicKey.numberOfBytes)
@@ -77,15 +77,15 @@ public extension Transaction {
             print(Base58.encode(recentBlockhash.bytes))
             data = data.dropFirst(PublicKey.numberOfBytes)
 
-            let instructionCount = try data.decodeLength()
+            let instructionCount = data.decodeLength()
             print(instructionCount)
             var instructions: [CompiledInstruction] = []
             for _ in stride(from: 0, through: instructionCount - 1, by: 1) {
                 let programIdIndex = data.popFirst()!
-                let accountCount = try data.decodeLength()
+                let accountCount = data.decodeLength()
                 let accounts = data.prefix(accountCount)
                 data = data.dropFirst(accountCount)
-                let dataLength = try data.decodeLength()
+                let dataLength = data.decodeLength()
                 let dataSlice = data.prefix(dataLength)
                 data = data.suffix(dataLength)
                 instructions.append(

@@ -10,12 +10,7 @@ import SolanaSwift
 import XCTest
 
 class EncodingTests: XCTestCase {
-    func testCodingBytesLength() throws {
-        let bytes = Data([5, 3, 1, 2, 3, 7, 8, 5, 4])
-        XCTAssertEqual(bytes.decodedLength, 5)
-        let bytes2 = Data([74, 174, 189, 206, 113, 78, 60, 226, 136, 170])
-        XCTAssertEqual(bytes2.decodedLength, 74)
-
+    func testEncodingBytesLength() throws {
         XCTAssertEqual(Data([0]), Data.encodeLength(0))
         XCTAssertEqual(Data([1]), Data.encodeLength(1))
         XCTAssertEqual(Data([5]), Data.encodeLength(5))
@@ -25,5 +20,57 @@ class EncodingTests: XCTestCase {
         XCTAssertEqual(Data([0x80, 0x02]), Data.encodeLength(256))
         XCTAssertEqual(Data([0xFF, 0xFF, 0x01]), Data.encodeLength(32767))
         XCTAssertEqual(Data([0x80, 0x80, 0x80, 0x01]), Data.encodeLength(2_097_152))
+    }
+
+    func test_givenBytes_whenDecodeLength_thenReturnsExpectedLength() throws {
+
+        // given
+        var bytes = Data([5, 3, 1, 2, 3, 7, 8, 5, 4])
+
+        // when
+        let result = bytes.decodeLength()
+
+        // then
+        XCTAssertEqual(result, 5)
+    }
+
+    func test_givenBytes_whenDecodeLengthTwice_thenReturnsExpectedLengths() throws {
+
+        // given
+        var bytes = Data([5, 0xf3, 1, 2, 3, 7, 8, 5, 4])
+
+        // when
+        let result1 = bytes.decodeLength()
+        let result2 = bytes.decodeLength()
+
+        // then
+        XCTAssertEqual(result1, 5)
+        XCTAssertEqual(result2, 0xf3)
+    }
+
+    func test_givenBytes_whenDecodeLength_thenRemovesFirstByte() throws {
+
+        // given
+        var bytes = Data([5, 1, 2, 3, 7, 8, 3, 4])
+        let numberOfBytes = bytes.count
+
+        // when
+        _ = bytes.decodeLength()
+
+        // then
+        XCTAssertFalse(bytes.contains(5))
+        XCTAssertEqual(bytes.count, numberOfBytes - 1)
+    }
+
+    func test_givenZeroBytes_whenDecodeLength_thenReturnsZero() throws {
+
+        // given
+        var bytes = Data()
+
+        // when
+        let result = bytes.decodeLength()
+
+        // then
+        XCTAssertEqual(result, 0)
     }
 }
