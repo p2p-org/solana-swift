@@ -61,33 +61,31 @@ public extension Transaction {
         static func from(data: Data) throws -> Message {
             var data = data
 
-            let numRequiredSignatures = data.popFirst()!
-            let numReadonlySignedAccounts = data.popFirst()!
-            let numReadonlyUnsignedAccounts = data.popFirst()!
+            let numRequiredSignatures = data.removeFirst()
+            let numReadonlySignedAccounts = data.removeFirst()
+            let numReadonlyUnsignedAccounts = data.removeFirst()
 
             let accountCount = data.decodeLength()
             var accountKeys: [PublicKey] = []
-            for _ in stride(from: 0, through: accountCount - 1, by: 1) {
+            for _ in 0..<accountCount {
                 let account = data.prefix(PublicKey.numberOfBytes)
                 data = data.dropFirst(PublicKey.numberOfBytes)
                 accountKeys.append(try PublicKey(string: Base58.encode(account.bytes)))
             }
 
             let recentBlockhash = data.prefix(PublicKey.numberOfBytes)
-            print(Base58.encode(recentBlockhash.bytes))
             data = data.dropFirst(PublicKey.numberOfBytes)
 
             let instructionCount = data.decodeLength()
-            print(instructionCount)
             var instructions: [CompiledInstruction] = []
-            for _ in stride(from: 0, through: instructionCount - 1, by: 1) {
-                let programIdIndex = data.popFirst()!
+            for _ in 0..<instructionCount {
+                let programIdIndex = data.removeFirst()
                 let accountCount = data.decodeLength()
                 let accounts = data.prefix(accountCount)
                 data = data.dropFirst(accountCount)
                 let dataLength = data.decodeLength()
                 let dataSlice = data.prefix(dataLength)
-                data = data.suffix(dataLength)
+                data = data.dropFirst(dataLength)
                 instructions.append(
                     CompiledInstruction(
                         programIdIndex: programIdIndex,
@@ -157,7 +155,7 @@ public extension Transaction {
 public extension Transaction.Message {
     // MARK: - Nested type
 
-    struct Header: Decodable {
+    struct Header: Decodable, Equatable {
         static let LENGTH = 3
 
         var numRequiredSignatures: Int = 0
