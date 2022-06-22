@@ -9,34 +9,34 @@ import Foundation
 
 public extension Data {
     var decodedLength: Int {
-        var len = 0
-        var size = 0
+        var len: UInt8 = 0
+        var size: UInt8 = 0
         var bytes = self
         while true {
             guard let elem = bytes.first else { break }
             bytes = bytes.dropFirst()
-            len = len | ((Int(elem) & 0x7F) << (size * 7))
+            len |= (elem & 0x7F) << (size * 7)
             size += 1
-            if Int16(elem) & 0x80 == 0 {
+            if elem & 0x80 == 0 {
                 break
             }
         }
-        return len
+        return Int(len)
     }
 
-    mutating func decodeLength() throws -> Int {
-        var len = 0
-        var size = 0
+    mutating func decodeLength() -> Int {
+        var len: UInt8 = 0
+        var size: UInt8 = 0
         while true {
             guard let elem = bytes.first else { break }
             _ = popFirst()
-            len = len | ((Int(elem) & 0x7F) << (size * 7))
+            len |= (elem & 0x7F) << (size * 7)
             size += 1
-            if Int16(elem) & 0x80 == 0 {
+            if elem & 0x80 == 0 {
                 break
             }
         }
-        return len
+        return Int(len)
     }
 
     static func encodeLength(_ len: Int) -> Data {

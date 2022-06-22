@@ -353,7 +353,7 @@ public struct Transaction: Encodable {
     public static func from(data: Data) throws -> Transaction {
         var data = data
         var signatures: [String] = []
-        let signatureCount = try data.decodeLength()
+        let signatureCount = data.decodeLength()
 
         for _ in stride(from: 0, through: signatureCount - 1, by: 1) {
             let signatureData = data.prefix(Transaction.SIGNATURE_LENGTH)
