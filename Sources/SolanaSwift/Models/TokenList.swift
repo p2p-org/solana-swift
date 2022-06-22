@@ -155,20 +155,20 @@ public struct Token: Hashable, Decodable {
 }
 
 public struct TokenExtensions: Hashable, Decodable {
-    let website: String?
-    let bridgeContract: String?
-    let assetContract: String?
-    let address: String?
-    let explorer: String?
-    let twitter: String?
-    let github: String?
-    let medium: String?
-    let tgann: String?
-    let tggroup: String?
-    let discord: String?
-    let serumV3Usdt: String?
-    let serumV3Usdc: String?
-    let coingeckoId: String?
-    let imageUrl: String?
-    let description: String?
+    public let website: String?
+    public let bridgeContract: String?
+    public let assetContract: String?
+    public let address: String?
+    public let explorer: String?
+    public let twitter: String?
+    public let github: String?
+    public let medium: String?
+    public let tgann: String?
+    public let tggroup: String?
+    public let discord: String?
+    public let serumV3Usdt: String?
+    public let serumV3Usdc: String?
+    public let coingeckoId: String?
+    public let imageUrl: String?
+    public let description: String?
 }
