@@ -93,6 +93,24 @@ public struct Transaction: Encodable {
 
     // MARK: - Signing
 
+    public mutating func partialSign(signers: [Account]) throws {
+        guard !signers.isEmpty else { throw SolanaError.invalidRequest(reason: "No signers") }
+
+        // unique signers
+        let signers = signers.reduce([Account]()) { signers, signer in
+            var uniqueSigners = signers
+            if !uniqueSigners.contains(where: { $0.publicKey == signer.publicKey }) {
+                uniqueSigners.append(signer)
+            }
+            return uniqueSigners
+        }
+
+        // construct message
+        let message = try compile()
+
+        try partialSign(message: message, signers: signers)
+    }
+
     private mutating func partialSign(message: Message, signers: [Account]) throws {
         let signData = try message.serialize()
 
