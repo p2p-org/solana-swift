@@ -33,7 +33,6 @@ class APIClientTests: XCTestCase {
         } catch let error as SolanaError {
             XCTAssertTrue(error == .couldNotRetrieveAccountInfo)
         } catch let err {
-            print(err)
             XCTAssertTrue(false)
         }
     }
@@ -347,7 +346,6 @@ var NetworkManagerMockJSON = [
     "batch1": "[{\"jsonrpc\":\"2.0\",\"result\":119396901,\"id\":\"45ECD42F-D53C-4A02-8621-52D88840FFC1\"},{\"jsonrpc\":\"2.0\",\"result\":[131421172,131421173,131421174,131421175,131421176,131421177,131421178,131421179,131421180,131421181],\"id\":\"A5A1EB9D-CC05-496F-8582-2B8D610859DB\"}]",
     "batch2": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131421172},\"value\":{\"data\":[\"xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWF9P8kKbTPTsQZqMMzOan8jwyOl0jQaxrCPh8bU1ysTa96DDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":304}},\"id\":\"6B1C0860-44BE-4FA9-9F57-CB14BC7636BB\"},{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":123456},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}]",
     "batch3": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":1},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"},{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":2},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}, {\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":3},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}]",
-//    "batch4": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":1},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"},{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32005,\"message\":\"Node is unhealthy\",\"data\":{}},\"id\":1}]",
     "batch4": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":1},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"},{\"jsonrpc\":\"2.0\",\"result\":119396901,\"id\":\"45ECD42F-D53C-4A02-8621-52D88840FFC1\"}, {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32005,\"message\":\"Node is unhealthy\",\"data\":{}},\"id\":1}]",
     "getBalance": "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":123456},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}\n",
     "getBalance_1": "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":123456},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}\n",
