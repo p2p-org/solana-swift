@@ -158,6 +158,7 @@ class BlockchainClientTests: XCTestCase {
 }
 
 private class MockAPIClient: SolanaAPIClient {
+    
     let testCase: String
 
     init(testCase: String) {
@@ -423,6 +424,10 @@ private class MockAPIClient: SolanaAPIClient {
     }
     
     func batchRequest(with requests: [JSONRPCRequestEncoder.RequestType]) async throws -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>] {
+        fatalError()
+    }
+    
+    func batchRequest<Entity>(method: String, params: [[Encodable]]) async throws -> [Entity?] where Entity : Decodable {
         fatalError()
     }
 }
