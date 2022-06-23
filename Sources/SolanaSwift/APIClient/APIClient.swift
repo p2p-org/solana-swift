@@ -304,5 +304,13 @@ public protocol SolanaAPIClient {
     /// - Parameter requests: the requests
     /// - Returns: the result of mutiple requests
     func batchRequest(with requests: [JSONRPCRequestEncoder.RequestType]) async throws -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>]
+   
+    /// Perform a multiple same returning type requests at once
+    ///
+    /// - Experiment: Will be changed in future.
+    /// - Parameter method: method name
+    /// - Parameter params: params
+    /// - Returns: the result of mutiple requests
+    func batchRequest<Entity: Decodable>(method: String, params: [[Encodable]]) async throws -> [Entity?]
     
 }
