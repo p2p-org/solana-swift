@@ -295,7 +295,13 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         }
         return ret
     }
-
+    
+    public func batchRequest<Entity: Decodable>(method: String, params: [[Encodable]]) async throws -> [Entity?] {
+        let data = try await makeRequest(requests: params.map { args in  .init(method: method, params: args) })
+        let response = try ResponseDecoder<[AnyResponse<Entity>]>().decode(with: data)
+        return response.map { $0.result }
+    }
+    
     // MARK: - Private
 
     private func get<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity {
