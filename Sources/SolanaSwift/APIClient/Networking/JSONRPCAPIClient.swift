@@ -297,6 +297,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
     
     public func batchRequest<Entity: Decodable>(method: String, params: [[Encodable]]) async throws -> [Entity?] {
+        if params.isEmpty { return [] }
+        
         let data = try await makeRequest(requests: params.map { args in  .init(method: method, params: args) })
         let response = try ResponseDecoder<[AnyResponse<Entity>]>().decode(with: data)
         return response.map { $0.result }
@@ -306,7 +308,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
 
     private func get<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity {
         let request = RequestEncoder.RequestType(method: method, params: params)
-        let response: AnyResponse<Entity> = try ResponseDecoder<AnyResponse<Entity>>().decode(with: try await makeRequest(requests: [request]))
+        let response: AnyResponse<Entity> = try ResponseDecoder<AnyResponse<Entity>>().decode(with: try await makeRequest(request: request))
         if let error = response.error {
             throw APIClientError.responseError(error)
         }
@@ -315,15 +317,28 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         }
         return result
     }
+    
+    private func makeRequest(request: RequestEncoder.RequestType) async throws  -> Data {
+        var encodedParams = Data()
+        do {
+            encodedParams += try RequestEncoder(request: request).encoded()
+        } catch {
+            throw APIClientError.cantEncodeParams
+        }
+        try Task.checkCancellation()
+        let responseData = try await networkManager.requestData(request: try urlRequest(data: encodedParams))
+
+        // log
+        Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
+
+        return responseData
+        
+    }
 
     private func makeRequest(requests: [RequestEncoder.RequestType]) async throws -> Data {
         var encodedParams = Data()
         do {
-            if requests.count == 1, let request = requests.first {
-                encodedParams += try RequestEncoder(request: request).encoded()
-            } else {
-                encodedParams += try RequestEncoder(requests: requests).encoded()
-            }
+            encodedParams += try RequestEncoder(requests: requests).encoded()
         } catch {
             throw APIClientError.cantEncodeParams
         }

@@ -1,3 +1,7 @@
+## 2.2.1
+
+- Fix batch loading with zero and one element
+
 ## 2.2.0
 
 - Improve batch loading with same request type

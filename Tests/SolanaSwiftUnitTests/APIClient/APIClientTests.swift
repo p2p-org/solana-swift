@@ -1,5 +1,5 @@
-import XCTest
 @testable import SolanaSwift
+import XCTest
 
 class APIClientTests: XCTestCase {
     let endpoint = APIEndPoint(
@@ -69,25 +69,40 @@ class APIClientTests: XCTestCase {
         XCTAssert(response[0].result != nil)
         XCTAssert(response[1].result != nil)
     }
-    
+
     func testBatch3Request() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["batch3"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let response: [Rpc<UInt64>?] = try await apiClient.batchRequest(method: "getBalance", params: [[],[],[]])
+        let response: [Rpc<UInt64>?] = try await apiClient.batchRequest(method: "getBalance", params: [[], [], []])
         XCTAssert(response.count == 3)
         XCTAssertEqual(response[0]?.value, 1)
         XCTAssertEqual(response[1]?.value, 2)
         XCTAssertEqual(response[2]?.value, 3)
     }
-    
+
     func testBatch4Request() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["batch4"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let response: [Rpc<UInt64>?] = try await apiClient.batchRequest(method: "getBalance", params: [[],[],[]])
+        let response: [Rpc<UInt64>?] = try await apiClient.batchRequest(method: "getBalance", params: [[], [], []])
         XCTAssert(response.count == 3)
         XCTAssertEqual(response[0]?.value, 1)
         XCTAssertEqual(response[1]?.value, nil)
         XCTAssertEqual(response[2]?.value, nil)
+    }
+
+    func testSingleBatchRequest() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["singleBatch"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let response: [Rpc<UInt64>?] = try await apiClient.batchRequest(method: "getBalance", params: [[]])
+        XCTAssert(response.count == 1)
+        XCTAssertEqual(response[0]?.value, 1)
+    }
+
+    func testEmptyBatchRequest() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["emptySingleBatch"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let response: [Rpc<UInt64>?] = try await apiClient.batchRequest(method: "getBalance", params: [])
+        XCTAssert(response.count == 0)
     }
 
     func testGetBalance() async throws {
@@ -273,19 +288,17 @@ class APIClientTests: XCTestCase {
         )
         XCTAssertEqual(result.first?.account.owner, TokenProgram.id.base58EncodedString)
     }
-    
 
     func testSendTransactionError1() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["sendTransactionError1"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         do {
             _ = try await apiClient.sendTransaction(transaction: "ijaisjdfi")
-        } catch APIClientError.responseError(let errorDetail) {
+        } catch let APIClientError.responseError(errorDetail) {
             XCTAssertEqual(errorDetail, .init(code: -32003, message: "Transaction precompile verification failure InvalidAccountIndex", data: nil))
         } catch {
             XCTAssertFalse(true)
         }
-        
     }
 
     func testGetTokenAccountBalance() async throws {
@@ -297,24 +310,23 @@ class APIClientTests: XCTestCase {
         XCTAssertEqual(result.uiAmount, 491.717631607)
         XCTAssertEqual(result.uiAmountString, "491.717631607")
     }
-    
+
     func testGenericRequest1() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getHealth"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         let result: String = try await apiClient.request(method: "getHealth")
         XCTAssertEqual(result, "ok")
     }
-    
+
     func testGenericRequest2() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getHealthError"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         do {
             let _: String = try await apiClient.request(method: "getHealth")
         } catch {
-            XCTAssertEqual((error as! APIClientError), .responseError(.init(code: -32005, message: "Node is unhealthy", data: .init(logs: nil, numSlotsBehind: nil))))
+            XCTAssertEqual(error as! APIClientError, .responseError(.init(code: -32005, message: "Node is unhealthy", data: .init(logs: nil, numSlotsBehind: nil))))
         }
     }
-
 }
 
 // MARK: - Mocks
@@ -347,6 +359,8 @@ var NetworkManagerMockJSON = [
     "batch2": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131421172},\"value\":{\"data\":[\"xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWF9P8kKbTPTsQZqMMzOan8jwyOl0jQaxrCPh8bU1ysTa96DDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":304}},\"id\":\"6B1C0860-44BE-4FA9-9F57-CB14BC7636BB\"},{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":123456},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}]",
     "batch3": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":1},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"},{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":2},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}, {\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":3},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}]",
     "batch4": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":1},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"},{\"jsonrpc\":\"2.0\",\"result\":119396901,\"id\":\"45ECD42F-D53C-4A02-8621-52D88840FFC1\"}, {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32005,\"message\":\"Node is unhealthy\",\"data\":{}},\"id\":1}]",
+    "singleBatch": "[{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":1},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}]",
+    "emptySingleBatch": "",
     "getBalance": "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":123456},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}\n",
     "getBalance_1": "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":131647712},\"value\":123456},\"id\":\"5D174E0A-0826-428A-9EEA-7B75A854671E\"}\n",
     "getBlockCommitment": "{\"jsonrpc\":\"2.0\",\"result\":{\"commitment\":null,\"totalStake\":394545529101613343},\"id\":\"BB79B171-937B-4EB1-9D13-EC961F186D75\"}\n",
@@ -369,5 +383,5 @@ var NetworkManagerMockJSON = [
     "sendTransactionError1": #"{"jsonrpc":"2.0","error":{"code":-32003,"message":"Transaction precompile verification failure InvalidAccountIndex"},"id":"7DEDE6E5-95E7-4866-BFC0-B4C10A76B457"}"#,
     "getTokenAccountBalance": #"{"jsonrpc":"2.0","result":{"context":{"slot":135942588},"value":{"amount":"491717631607","decimals":9,"uiAmount":491.717631607,"uiAmountString":"491.717631607"}},"id":"3D9E7B6E-B48D-40EF-B656-EA3054227CCD"}"#,
     "getHealth": #"{ "jsonrpc": "2.0", "result": "ok", "id": 1 }"#,
-    "getHealthError": #"{"jsonrpc":"2.0","error":{"code":-32005,"message":"Node is unhealthy","data":{}},"id":1}"#
+    "getHealthError": #"{"jsonrpc":"2.0","error":{"code":-32005,"message":"Node is unhealthy","data":{}},"id":1}"#,
 ]
