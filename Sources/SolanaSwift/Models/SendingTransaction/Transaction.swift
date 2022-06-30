@@ -413,6 +413,11 @@ public extension Transaction {
         enum CodingKeys: String, CodingKey {
             case signature, publicKey
         }
+        
+        public init(signature: Data?, publicKey: PublicKey) {
+            self.signature = signature
+            self.publicKey = publicKey
+        }
 
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
