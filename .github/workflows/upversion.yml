@@ -15,4 +15,5 @@ jobs:
 
     - name: upversion
       run: |
+        brew install gnu-sed
         ./upversion ${{ github.event.inputs.version }}
