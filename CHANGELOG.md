@@ -1,3 +1,7 @@
+## 2.2.2
+
+- Publish init SendingTransaction with Signature
+
 ## 2.2.1
 
 - Fix batch loading with zero and one element
