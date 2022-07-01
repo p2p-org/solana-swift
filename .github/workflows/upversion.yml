@@ -1,4 +1,4 @@
-name: Swift
+name: Up version
 
 on:
   workflow_dispatch:

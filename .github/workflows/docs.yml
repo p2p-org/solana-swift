@@ -1,4 +1,4 @@
-name: Swift
+name: Create documentation
 
 on:
   push:

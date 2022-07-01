@@ -1,4 +1,4 @@
-name: On pull request
+name: Run unit test
 
 on: 
   pull_request:
