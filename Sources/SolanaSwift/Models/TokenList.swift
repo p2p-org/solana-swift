@@ -87,7 +87,7 @@ public struct Token: Hashable, Decodable {
             decimals: 9,
             logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
             tags: [],
-            extensions: nil,
+            extensions: TokenExtensions(coingeckoId: "solana"),
             isNative: true
         )
     }
@@ -103,21 +103,8 @@ public struct Token: Hashable, Decodable {
             logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
             extensions: .init(
                 website: "https://renproject.io/",
-                bridgeContract: nil,
-                assetContract: nil,
-                address: nil,
-                explorer: nil,
-                twitter: nil,
-                github: nil,
-                medium: nil,
-                tgann: nil,
-                tggroup: nil,
-                discord: nil,
-                serumV3Usdt: nil,
                 serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv",
-                coingeckoId: "renbtc",
-                imageUrl: nil,
-                description: nil
+                coingeckoId: "renbtc"
             )
         )
     }
@@ -171,4 +158,40 @@ public struct TokenExtensions: Hashable, Decodable {
     public let coingeckoId: String?
     public let imageUrl: String?
     public let description: String?
+
+    public init(
+        website: String? = nil,
+        bridgeContract: String? = nil,
+        assetContract: String? = nil,
+        address: String? = nil,
+        explorer: String? = nil,
+        twitter: String? = nil,
+        github: String? = nil,
+        medium: String? = nil,
+        tgann: String? = nil,
+        tggroup: String? = nil,
+        discord: String? = nil,
+        serumV3Usdt: String? = nil,
+        serumV3Usdc: String? = nil,
+        coingeckoId: String?,
+        imageUrl: String? = nil,
+        description: String? = nil
+    ) {
+        self.website = website
+        self.bridgeContract = bridgeContract
+        self.assetContract = assetContract
+        self.address = address
+        self.explorer = explorer
+        self.twitter = twitter
+        self.github = github
+        self.medium = medium
+        self.tgann = tgann
+        self.tggroup = tggroup
+        self.discord = discord
+        self.serumV3Usdt = serumV3Usdt
+        self.serumV3Usdc = serumV3Usdc
+        self.coingeckoId = coingeckoId
+        self.imageUrl = imageUrl
+        self.description = description
+    }
 }
