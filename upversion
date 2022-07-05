@@ -5,10 +5,11 @@ set -e
 
 # check if CHANGELOG was added
 log=`sed -n '/^## '$1'/p;q' CHANGELOG.md`
-if [ -z "$log" ] then
-  echo "CHANGELOG added, releasing version $1"
-else
+if [ -z "$log" ]
+then
   echo "CHANGELOG for version $1 must be added! (The CHANGELOG.md file must start with '## $1')"; exit 1;
+else
+  echo "CHANGELOG added, releasing version $1"
 fi
 
 # set version in README.md
