@@ -5,7 +5,11 @@ set -e
 
 # check if CHANGELOG was added
 log=`sed -n '/^## '$1'/p;q' CHANGELOG.md`
-[ -z "$log" ] && echo "CHANGELOG for version $1 must be added! (The CHANGELOG.md file must start with '## $1')"; exit 1;
+if [ -z "$log" ] then
+  echo "CHANGELOG added, releasing version $1"
+else
+  echo "CHANGELOG for version $1 must be added! (The CHANGELOG.md file must start with '## $1')"; exit 1;
+fi
 
 # set version in README.md
 gsed -i 's/pod '\'SolanaSwift\'', '\''~> '.*''\''/pod '\'SolanaSwift\'', '\''~> '$1'\'\''/g' README.md
