@@ -1,3 +1,7 @@
+## 2.2.2
+
+- Update coingeko id for SOL and renBTC
+
 ## 2.2.1
 
 - Publish init SendingTransaction with Signature
