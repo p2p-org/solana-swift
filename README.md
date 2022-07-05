@@ -149,10 +149,10 @@ for try await status in apiClient.observeSignatureStatus(signature: "jaiojsdfoij
 // statuses.last == .finalized // the signature is confirmed by all nodes
 ```
 
-Batch suppport
+Batch support
 
 ```swift
-// Batch request with different type
+// Batch request with different types
 let req1: JSONRPCAPIClientRequest<AnyDecodable> = JSONRPCAPIClientRequest(method: "getAccountInfo", params: ["63ionHTAM94KaSujUCg23hfg7TLharchq5BYXdLGqia1"])
 let req2: JSONRPCAPIClientRequest<AnyDecodable> = JSONRPCAPIClientRequest(method: "getBalance", params: ["63ionHTAM94KaSujUCg23hfg7TLharchq5BYXdLGqia1"])
 let response = try await apiClient.batchRequest(with: [req1, req2])
