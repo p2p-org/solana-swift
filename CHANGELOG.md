@@ -1,3 +1,7 @@
+## 2.3.0
+
+- Added support for socket encoding response
+
 ## 2.2.2
 
 - Update coingeko id for SOL and renBTC

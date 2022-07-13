@@ -19,7 +19,7 @@ public protocol SolanaSocket {
     ///   - type: type of entity, '.account', '.program',...
     ///   - params: params to be sent
     /// - Returns: id of the request
-    @discardableResult func subscribe<T: Encodable>(type: SocketEntity, params: T, commitment: String) async throws
+    @discardableResult func subscribe<T: Encodable>(type: SocketEntity, params: T, commitment: String, encoding: String) async throws
         -> String
 
     /// Unsubscribe to an entity ('account', 'program', 'signature', for example)
@@ -35,7 +35,7 @@ public extension SolanaSocket {
     /// - Parameter publickey: account to be subscribed
     /// - Returns: id of the request
     @discardableResult func accountSubscribe(publickey: String, commitment: String = "recent") async throws -> String {
-        try await subscribe(type: .account, params: publickey, commitment: commitment)
+        try await subscribe(type: .account, params: publickey, commitment: commitment, encoding: "jsonParsed")
     }
 
     /// Subscribe to `signatureNotification`
@@ -44,20 +44,20 @@ public extension SolanaSocket {
     @discardableResult func signatureSubscribe(signature: String,
                                                commitment: String = "confirmed") async throws -> String
     {
-        try await subscribe(type: .signature, params: signature, commitment: commitment)
+        try await subscribe(type: .signature, params: signature, commitment: commitment, encoding: "base64")
     }
 
     /// Subscribe to `logsNotification`
     /// - Parameter mentions: accounts to be subscribed
     /// - Returns: id of the request
     @discardableResult func logsSubscribe(mentions: [String], commitment: String = "confirmed") async throws -> String {
-        try await subscribe(type: .logs, params: ["mentions": mentions], commitment: commitment)
+        try await subscribe(type: .logs, params: ["mentions": mentions], commitment: commitment, encoding: "base64")
     }
 
     /// Subscribe to all events
     /// - Returns: id of the request
     @discardableResult func logsSubscribeAll(commitment: String = "confirmed") async throws -> String {
-        try await subscribe(type: .logs, params: "all", commitment: commitment)
+        try await subscribe(type: .logs, params: "all", commitment: commitment, encoding: "base64")
     }
 
     /// Subscribe to `programNotification`
@@ -66,7 +66,7 @@ public extension SolanaSocket {
     @discardableResult func programSubscribe(publickey: String,
                                              commitment: String = "confirmed") async throws -> String
     {
-        try await subscribe(type: .program, params: publickey, commitment: commitment)
+        try await subscribe(type: .program, params: publickey, commitment: commitment, encoding: "base64")
     }
 }
 
@@ -147,11 +147,13 @@ public class Socket: NSObject, SolanaSocket {
     ///   - type: type of entity, '.account', '.program',...
     ///   - params: params to be sent
     /// - Returns: id of the request
-    @discardableResult public func subscribe<T: Encodable>(type entity: SocketEntity, params: T,
-                                                           commitment: String) async throws -> String
-    {
+    @discardableResult public func subscribe<T: Encodable>(
+        type entity: SocketEntity, params: T,
+        commitment: String,
+        encoding: String
+    ) async throws -> String {
         let method: SocketMethod = .init(entity, .subscribe)
-        let params: [Encodable] = [params, ["commitment": commitment, "encoding": "base64"]]
+        let params: [Encodable] = [params, ["commitment": commitment, "encoding": encoding]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
