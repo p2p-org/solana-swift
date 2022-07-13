@@ -148,10 +148,6 @@ public struct ProgramAccounts<T: BufferLayout>: Decodable {
             case let .success(account):
                 accounts.append(account)
             case let .failure(error):
-//                Logger.log(
-//                    event: .error,
-//                    message: "Error decoding an account in program accounts list: \(error.localizedDescription)"
-//                )
                 Logger.log(
                     event: "Program Accounts",
                     message: "Error decoding an account in program accounts list: \(error.localizedDescription)",

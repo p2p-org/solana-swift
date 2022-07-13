@@ -8,7 +8,6 @@ class SocketTests: XCTestCase {
     override func setUpWithError() throws {
         socket = Socket(
             url: SocketTestsHelper.url,
-            enableDebugLogs: true,
             socketTaskProviderType: MockSocketTaskProvider.self
         )
     }

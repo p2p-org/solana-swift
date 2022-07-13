@@ -21,10 +21,8 @@ public struct PreparedTransaction {
         var transaction = transaction
         let serializedTransaction = try transaction.serialize().bytes.toBase64()
         #if DEBUG
-//            Logger.log(event: .info, message: serializedTransaction)
         Logger.log(event: "serializedTransaction", message: serializedTransaction, logLevel: .debug)
             if let decodedTransaction = transaction.jsonString {
-//                Logger.log(event: .info, message: decodedTransaction)
                 Logger.log(event: "decodedTransaction", message: decodedTransaction, logLevel: .debug)
             }
         #endif

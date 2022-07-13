@@ -349,7 +349,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         let responseData = try await networkManager.requestData(request: try urlRequest(data: encodedParams))
 
         // log
-//        Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
         Logger.log(event: "response", message: String(data: responseData, encoding: .utf8) ?? "", logLevel: .debug)
 
         return responseData
@@ -372,7 +371,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         let responseData = try await networkManager.requestData(request: try urlRequest(data: encodedParams))
 
         // log
-//        Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
         Logger.log(event: "response", message: String(data: responseData, encoding: .utf8) ?? "", logLevel: .debug)
 
         return responseData
@@ -386,7 +384,6 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         urlRequest.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
 
         // log
-//        Logger.log(event: .request, message: urlRequest.cURL())
         Logger.log(event: "request", message: urlRequest.cURL(), logLevel: .debug)
 
         return urlRequest
