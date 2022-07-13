@@ -209,7 +209,11 @@ public class JSONRPCAPIClient: SolanaAPIClient {
                     {
                         message = readableMessage
                     }
-
+                    Logger.log(
+                        event: "SolanaSwift: sendTransaction",
+                        message: (message ?? "") + "\n " + (response.data?.logs?.joined(separator: " ") ?? ""),
+                        logLevel: .error
+                    )
                     throw SolanaError
                         .invalidResponse(ResponseError(code: response.code, message: message, data: response.data))
                 default:
@@ -308,11 +312,22 @@ public class JSONRPCAPIClient: SolanaAPIClient {
 
     private func get<Entity: Decodable>(method: String, params: [Encodable]) async throws -> Entity {
         let request = RequestEncoder.RequestType(method: method, params: params)
-        let response: AnyResponse<Entity> = try ResponseDecoder<AnyResponse<Entity>>().decode(with: try await makeRequest(request: request))
+        let data = try await makeRequest(request: request)
+        let response: AnyResponse<Entity> = try ResponseDecoder<AnyResponse<Entity>>().decode(with: data)
         if let error = response.error {
+            Logger.log(
+                event: "SolanaSwift: get<Entity>",
+                message: (String(data: data, encoding: .utf8) ?? "") + "\n" + (error.message ?? ""),
+                logLevel: .error
+            )
             throw APIClientError.responseError(error)
         }
         guard let result = response.result else {
+            Logger.log(
+                event: "SolanaSwift: get<Entity>",
+                message: String(data: data, encoding: .utf8),
+                logLevel: .error
+            )
             throw APIClientError.invalidResponse
         }
         return result
@@ -323,13 +338,19 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         do {
             encodedParams += try RequestEncoder(request: request).encoded()
         } catch {
+            Logger.log(
+                event: "SolanaSwift: makeRequest",
+                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8))",
+                logLevel: .error
+            )
             throw APIClientError.cantEncodeParams
         }
         try Task.checkCancellation()
         let responseData = try await networkManager.requestData(request: try urlRequest(data: encodedParams))
 
         // log
-        Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
+//        Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
+        Logger.log(event: "response", message: String(data: responseData, encoding: .utf8) ?? "", logLevel: .debug)
 
         return responseData
         
@@ -340,13 +361,19 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         do {
             encodedParams += try RequestEncoder(requests: requests).encoded()
         } catch {
+            Logger.log(
+                event: "SolanaSwift: makeRequest",
+                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8))",
+                logLevel: .error
+            )
             throw APIClientError.cantEncodeParams
         }
         try Task.checkCancellation()
         let responseData = try await networkManager.requestData(request: try urlRequest(data: encodedParams))
 
         // log
-        Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
+//        Logger.log(event: .response, message: String(data: responseData, encoding: .utf8) ?? "")
+        Logger.log(event: "response", message: String(data: responseData, encoding: .utf8) ?? "", logLevel: .debug)
 
         return responseData
     }
@@ -359,7 +386,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         urlRequest.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
 
         // log
-        Logger.log(event: .request, message: urlRequest.cURL())
+//        Logger.log(event: .request, message: urlRequest.cURL())
+        Logger.log(event: "request", message: urlRequest.cURL(), logLevel: .debug)
 
         return urlRequest
     }
