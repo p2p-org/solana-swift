@@ -37,7 +37,7 @@ SolanaSwift is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'SolanaSwift', '~> 2.2.2'
+pod 'SolanaSwift', '~> 2.3.0'
 ```
 
 ### Swift package manager
@@ -45,7 +45,7 @@ pod 'SolanaSwift', '~> 2.2.2'
 ...
 dependencies: [
     ...
-    .package(url: "https://github.com/p2p-org/solana-swift", from: "2.2.2")
+    .package(url: "https://github.com/p2p-org/solana-swift", from: "2.3.0")
 ],
 ...
 ```
