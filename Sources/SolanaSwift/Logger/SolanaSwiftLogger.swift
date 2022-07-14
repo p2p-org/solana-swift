@@ -13,15 +13,9 @@ public protocol SolanaSwiftLogger {
 
 public class Logger {
     
+    // MARK: -
+    
     private static var loggers: [SolanaSwiftLogger] = []
-    
-    // MARK: -
-    
-    static let shared = Logger()
-    
-    private init() {}
-    
-    // MARK: -
     
     public static func setLoggers(_ loggers: [SolanaSwiftLogger]) {
         self.loggers = loggers
