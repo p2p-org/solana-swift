@@ -26,7 +26,7 @@ pod lib lint SolanaSwift.podspec --allow-warnings
 git add 'SolanaSwift.podspec' 'README.md'
 git commit -m "feat: upversion to '$1'"
 git tag ''$1''
-git push origin main --tags --force
+git push origin main --tags
 
 # upload in cocoapods
 pod trunk push SolanaSwift.podspec --allow-warnings
