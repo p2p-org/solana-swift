@@ -1,5 +1,4 @@
 import Foundation
-import LoggerSwift
 
 /// The prepared transaction that can be sent or simulate in SolanaBlockchainClient
 public struct PreparedTransaction {

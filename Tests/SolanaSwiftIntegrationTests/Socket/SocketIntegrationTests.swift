@@ -1,5 +1,4 @@
 import Combine
-import LoggerSwift
 import SolanaSwift
 import XCTest
 

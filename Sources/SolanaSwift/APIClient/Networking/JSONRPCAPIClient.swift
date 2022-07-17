@@ -1,5 +1,4 @@
 import Foundation
-import LoggerSwift
 
 /// JSON RPC
 public class JSONRPCAPIClient: SolanaAPIClient {
