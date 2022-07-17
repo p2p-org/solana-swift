@@ -1,3 +1,7 @@
+## 2.4.0
+
+- Replacing LoggerSwift with abstraction
+
 ## 2.3.0
 
 - Added support for socket encoding response

@@ -23,7 +23,6 @@ let package = Package(
         .package(name: "TweetNacl", url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git", from: "1.0.2"),
 
         .package(name: "Task_retrying", url: "https://github.com/bigearsenal/task-retrying-swift.git", from: "1.0.3"),
-        .package(name: "LoggerSwift", url: "https://github.com/bigearsenal/loggerswift.git", from: "1.0.2"),
 
         // Docs generator
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
@@ -36,8 +35,7 @@ let package = Package(
             dependencies: [
                 "secp256k1",
                 "TweetNacl",
-                "Task_retrying",
-                "LoggerSwift",
+                "Task_retrying"
             ]
 //            resources: [ .process("Resources") ]
         ),

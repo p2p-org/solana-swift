@@ -60,6 +60,23 @@ dependencies: [
 import SolanaSwift
 ```
 
+### Logger
+Create a logger that confirm to SolanaSwiftLogger
+```swift
+import SolanaSwift
+
+class MyCustomLogger: SolanaSwiftLogger {
+    func log(event: String, data: String?, logLevel: SolanaSwiftLoggerLogLevel) {
+        // Custom log goes here
+    }
+}
+
+// AppDelegate or somewhere eles
+
+let customLogger: SolanaSwiftLogger = MyCustomLogger()
+SolanaSwift.Logger.setLoggers([customLogger])
+```
+
 ### AccountStorage
 Create an `SolanaAccountStorage` for saving account's `keyPairs` (public and private key), for example: `KeychainAccountStorage` for saving into `Keychain` in production, or `InMemoryAccountStorage` for temporarily saving into memory for testing. The "`CustomAccountStorage`" must conform to protocol `SolanaAccountStorage`, which has 2 requirements: function for saving `save(_ account:) throws` and computed property `account: Account? { get thrrows }` for retrieving user's account.
 

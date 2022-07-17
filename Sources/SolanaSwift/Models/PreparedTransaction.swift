@@ -1,5 +1,4 @@
 import Foundation
-import LoggerSwift
 
 /// The prepared transaction that can be sent or simulate in SolanaBlockchainClient
 public struct PreparedTransaction {
@@ -21,9 +20,9 @@ public struct PreparedTransaction {
         var transaction = transaction
         let serializedTransaction = try transaction.serialize().bytes.toBase64()
         #if DEBUG
-            Logger.log(event: .info, message: serializedTransaction)
+        Logger.log(event: "serializedTransaction", message: serializedTransaction, logLevel: .debug)
             if let decodedTransaction = transaction.jsonString {
-                Logger.log(event: .info, message: decodedTransaction)
+                Logger.log(event: "decodedTransaction", message: decodedTransaction, logLevel: .debug)
             }
         #endif
         return serializedTransaction
@@ -32,6 +31,7 @@ public struct PreparedTransaction {
     public func findSignature(publicKey: PublicKey) throws -> String {
         guard let signature = transaction.findSignature(pubkey: publicKey)?.signature
         else {
+            Logger.log(event: "SolanaSwift: findSignature", message: "Signature not found", logLevel: .error)
             throw SolanaError.other("Signature not found")
         }
         return Base58.encode(signature.bytes)

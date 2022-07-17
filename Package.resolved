@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "LoggerSwift",
-        "repositoryURL": "https://github.com/bigearsenal/loggerswift.git",
-        "state": {
-          "branch": null,
-          "revision": "779dbd11a9a2fea3c82943f69a30ca75f4596fc8",
-          "version": "1.0.2"
-        }
-      },
-      {
         "package": "secp256k1",
         "repositoryURL": "https://github.com/Boilertalk/secp256k1.swift.git",
         "state": {

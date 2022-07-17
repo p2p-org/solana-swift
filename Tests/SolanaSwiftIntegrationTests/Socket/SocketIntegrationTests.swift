@@ -1,5 +1,4 @@
 import Combine
-import LoggerSwift
 import SolanaSwift
 import XCTest
 
@@ -7,7 +6,7 @@ class SocketIntegrationTests: XCTestCase {
     var socket: Socket!
 
     override func setUpWithError() throws {
-        socket = Socket(url: .init(string: "wss://api.mainnet-beta.solana.com")!, enableDebugLogs: true)
+        socket = Socket(url: .init(string: "wss://api.mainnet-beta.solana.com")!)
     }
 
     override func tearDownWithError() throws {
@@ -53,22 +52,22 @@ class SocketIntegrationTests: XCTestCase {
             }
         }
         delegate.onSubscribed = { subscriptionId, id in
-            Logger.log(event: .response, message: "subscriptionId: \(subscriptionId), id: \(id)")
+            Logger.log(event: "response", message: "subscriptionId: \(subscriptionId), id: \(id)")
         }
         delegate.onNativeAccountNotification = { notification in
-            Logger.log(event: .response, message: "lamports: \(String(describing: notification.lamports))")
+            Logger.log(event: "response", message: "lamports: \(String(describing: notification.lamports))")
         }
         delegate.onTokenAccountNotification = { notification in
-            Logger.log(event: .response, message: "\(notification)")
+            Logger.log(event: "response", message: "\(notification)")
         }
         delegate.onSignatureNotification = { notification in
-            Logger.log(event: .response, message: "\(notification)")
+            Logger.log(event: "response", message: "\(notification)")
         }
         delegate.onLogsNotification = { notification in
-            Logger.log(event: .response, message: "\(notification)")
+            Logger.log(event: "response", message: "\(notification)")
         }
         delegate.onProgramNotification = { notification in
-            Logger.log(event: .response, message: "\(notification)")
+            Logger.log(event: "response", message: "\(notification)")
         }
         delegate.onDisconnected = {
             expectation.fulfill()

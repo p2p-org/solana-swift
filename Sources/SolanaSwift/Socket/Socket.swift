@@ -1,5 +1,4 @@
 import Foundation
-import LoggerSwift
 
 public protocol SolanaSocket {
     /// Connection status of the socket
@@ -79,9 +78,6 @@ public class Socket: NSObject, SolanaSocket {
     /// Socket task to handle socket event
     private var task: WebSocketTask!
 
-    /// Enable/disable logging
-    private let enableDebugLogs: Bool
-
     /// Timer to send pings to prevent idie time out
     private var wsHeartBeat: Timer!
 
@@ -100,10 +96,8 @@ public class Socket: NSObject, SolanaSocket {
     ///   - socketTaskProviderType: type of task provider, default is `URLSession.self`
     public init<T: WebSocketTaskProvider>(
         url: URL,
-        enableDebugLogs: Bool,
         socketTaskProviderType _: T.Type
     ) {
-        self.enableDebugLogs = enableDebugLogs
         super.init()
         let urlSession = T(configuration: .default, delegate: self, delegateQueue: .current!)
         task = urlSession.createWebSocketTask(with: url)
@@ -114,10 +108,9 @@ public class Socket: NSObject, SolanaSocket {
     ///   - url: url of the socket
     ///   - enableDebugLogs: enable/disable logging
     public convenience init(
-        url: URL,
-        enableDebugLogs: Bool
+        url: URL
     ) {
-        self.init(url: url, enableDebugLogs: enableDebugLogs, socketTaskProviderType: URLSession.self)
+        self.init(url: url, socketTaskProviderType: URLSession.self)
     }
 
     deinit {
@@ -177,9 +170,7 @@ public class Socket: NSObject, SolanaSocket {
         guard let jsonData = try? JSONEncoder().encode(request) else {
             throw SocketError.couldNotSerialize
         }
-        if enableDebugLogs {
-            Logger.log(event: .request, message: "\(String(data: jsonData, encoding: .utf8) ?? "")")
-        }
+        Logger.log(event: "request", message: "\(String(data: jsonData, encoding: .utf8) ?? "")", logLevel: .info)
         try await task.send(.data(jsonData))
         return request.id
     }
@@ -190,9 +181,7 @@ public class Socket: NSObject, SolanaSocket {
         let message = try await task.receive()
         switch message {
         case let .string(text):
-            if enableDebugLogs {
-                Logger.log(event: .event, message: "Receive string from socket: \(text)")
-            }
+            Logger.log(event: "event", message: "Receive string from socket: \(text)", logLevel: .debug)
             guard let data = text.data(using: .utf8) else { return }
             do {
                 // TODO: Fix this mess code
@@ -251,7 +240,7 @@ public class Socket: NSObject, SolanaSocket {
     }
 
     private func ping() {
-        Logger.log(event: .request, message: "Ping socket")
+        Logger.log(event: "request", message: "Ping socket", logLevel: .debug)
         task.sendPing { error in
             if let error = error {
                 print("Ping failed: \(error)")
@@ -270,9 +259,7 @@ extension Socket: URLSessionWebSocketDelegate {
         }
         delegate?.connected()
 
-        if enableDebugLogs {
-            Logger.log(event: .event, message: "Socket connected")
-        }
+        Logger.log(event: "urlSession", message: "Socket disconnected", logLevel: .debug)
 
         asyncTask = Task.detached { [weak self] in
             while true {
@@ -293,9 +280,7 @@ extension Socket: URLSessionWebSocketDelegate {
         task.resume()
         delegate?.disconnected(reason: reason?.jsonString ?? "", code: closeCode.rawValue)
 
-        if enableDebugLogs {
-            Logger.log(event: .event, message: "Socket disconnected")
-        }
+        Logger.log(event: "urlSession", message: "Socket disconnected", logLevel: .debug)
 
         asyncTask?.cancel()
     }
