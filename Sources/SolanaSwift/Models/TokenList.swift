@@ -108,6 +108,19 @@ public struct Token: Hashable, Decodable {
             )
         )
     }
+    
+    public static var usdc: Self {
+        .init(
+            _tags: nil,
+            chainId: 101,
+            address: PublicKey.usdcMint.base58EncodedString,
+            symbol: "USDC",
+            name: "USDC",
+            decimals: 8,
+            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
+            extensions: .init(coingeckoId: "usd-coin")
+        )
+    }
 
     public var wrappedBy: WrappingToken? {
         if tags.contains(where: { $0.name == "wrapped-sollet" }) {
