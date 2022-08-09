@@ -14,4 +14,13 @@ public enum TransactionStatus: Equatable, Hashable {
             return 0
         }
     }
+    
+    public var slot: UInt64? {
+        switch self {
+        case let .confirmed(_, slot):
+            return slot
+        default:
+            return nil
+        }
+    }
 }
