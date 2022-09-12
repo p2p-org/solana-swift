@@ -1,3 +1,9 @@
+## 2.5.0
+
+- Add usdc to TokenList
+- Add slot info to TransactionStatus
+- Add option skipPreflight to RequestModels
+
 ## 2.4.0
 
 - Replacing LoggerSwift with abstraction
