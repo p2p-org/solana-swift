@@ -7,6 +7,7 @@ public struct Wallet: Hashable {
     public var lamports: UInt64?
     public var token: Token
     public var userInfo: AnyHashable?
+    public let supply: UInt64?
 
     public var isNativeSOL: Bool {
         token.isNativeSOL
@@ -14,9 +15,10 @@ public struct Wallet: Hashable {
 
     // MARK: - Initializer
 
-    public init(pubkey: String? = nil, lamports: UInt64? = nil, token: Token) {
+    public init(pubkey: String? = nil, lamports: UInt64? = nil, supply: UInt64? = nil, token: Token) {
         self.pubkey = pubkey
         self.lamports = lamports
+        self.supply = supply
         self.token = token
     }
 
