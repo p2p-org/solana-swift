@@ -169,7 +169,8 @@ public extension SolanaAPIClient {
                 supply: $1.value.supply,
                 token: .unsupported(
                     mint: unknownAccounts[$0].1.mint.base58EncodedString,
-                    decimals: $1.value.decimals
+                    decimals: $1.value.decimals,
+                    supply: $1.value.supply
                 )
             )
         }
