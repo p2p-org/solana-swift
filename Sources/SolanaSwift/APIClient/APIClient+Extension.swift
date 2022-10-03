@@ -168,7 +168,8 @@ public extension SolanaAPIClient {
                 lamports: unknownAccounts[$0].1.lamports,
                 token: .unsupported(
                     mint: unknownAccounts[$0].1.mint.base58EncodedString,
-                    decimals: $1.value.decimals
+                    decimals: $1.value.decimals,
+                    supply: $1.value.supply
                 )
             )
         }

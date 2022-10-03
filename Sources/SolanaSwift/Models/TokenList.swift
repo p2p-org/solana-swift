@@ -29,7 +29,8 @@ public struct Token: Hashable, Decodable {
         logoURI: String?,
         tags: [TokenTag] = [],
         extensions: TokenExtensions?,
-        isNative: Bool = false
+        isNative: Bool = false,
+        supply: UInt64? = nil
     ) {
         self._tags = _tags
         self.chainId = chainId
@@ -41,6 +42,7 @@ public struct Token: Hashable, Decodable {
         self.tags = tags
         self.extensions = extensions
         self.isNative = isNative
+        self.supply = supply
     }
 
     let _tags: [String]?
@@ -53,16 +55,18 @@ public struct Token: Hashable, Decodable {
     public let logoURI: String?
     public var tags: [TokenTag] = []
     public let extensions: TokenExtensions?
+    public let supply: UInt64?
     public private(set) var isNative = false
 
     enum CodingKeys: String, CodingKey {
-        case chainId, address, symbol, name, decimals, logoURI, extensions, _tags = "tags"
+        case chainId, address, symbol, name, decimals, logoURI, extensions, _tags = "tags", supply
     }
 
     public static func unsupported(
         mint: String?,
         decimals: Decimals = 0,
-        symbol: String = ""
+        symbol: String = "",
+        supply: UInt64? = nil
     ) -> Token {
         Token(
             _tags: [],
@@ -73,7 +77,8 @@ public struct Token: Hashable, Decodable {
             decimals: decimals,
             logoURI: nil,
             tags: [],
-            extensions: nil
+            extensions: nil,
+            supply: supply
         )
     }
 
