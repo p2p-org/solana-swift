@@ -166,6 +166,7 @@ public extension SolanaAPIClient {
             Wallet(
                 pubkey: unknownAccounts[$0].0,
                 lamports: unknownAccounts[$0].1.lamports,
+                supply: $1.value.supply,
                 token: .unsupported(
                     mint: unknownAccounts[$0].1.mint.base58EncodedString,
                     decimals: $1.value.decimals
