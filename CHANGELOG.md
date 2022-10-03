@@ -1,3 +1,7 @@
+## 2.5.1
+
+- Add supply property for struct Wallet
+
 ## 2.5.0
 
 - Add usdc to TokenList
