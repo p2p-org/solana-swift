@@ -127,6 +127,32 @@ public struct Token: Hashable, Decodable {
         )
     }
 
+    public static var usdt: Self {
+        .init(
+            _tags: nil,
+            chainId: 101,
+            address: PublicKey.usdtMint.base58EncodedString,
+            symbol: "USDT",
+            name: "USDT",
+            decimals: 9,
+            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/D3KdBta3p53RV5FoahnJM5tP45h6Fd3AyFYgXTJvGCaK/logo.svg",
+            extensions: .init(coingeckoId: "tether")
+        )
+    }
+
+    public static var eth: Self {
+        .init(
+            _tags: nil,
+            chainId: 101,
+            address: PublicKey.usdtMint.base58EncodedString,
+            symbol: "ETH",
+            name: "Ether (Portal)",
+            decimals: 9,
+            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs/logo.png",
+            extensions: .init(coingeckoId: "ethereum")
+        )
+    }
+
     public var wrappedBy: WrappingToken? {
         if tags.contains(where: { $0.name == "wrapped-sollet" }) {
             return .sollet
