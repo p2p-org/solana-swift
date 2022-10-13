@@ -134,7 +134,7 @@ public struct Token: Hashable, Decodable {
             address: PublicKey.usdtMint.base58EncodedString,
             symbol: "USDT",
             name: "USDT",
-            decimals: 9,
+            decimals: 6,
             logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/D3KdBta3p53RV5FoahnJM5tP45h6Fd3AyFYgXTJvGCaK/logo.svg",
             extensions: .init(coingeckoId: "tether")
         )
@@ -144,10 +144,10 @@ public struct Token: Hashable, Decodable {
         .init(
             _tags: nil,
             chainId: 101,
-            address: PublicKey.usdtMint.base58EncodedString,
+            address: "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
             symbol: "ETH",
             name: "Ether (Portal)",
-            decimals: 9,
+            decimals: 8,
             logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs/logo.png",
             extensions: .init(coingeckoId: "ethereum")
         )
