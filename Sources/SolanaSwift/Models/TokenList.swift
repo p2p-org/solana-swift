@@ -135,7 +135,7 @@ public struct Token: Hashable, Decodable {
             symbol: "USDT",
             name: "USDT",
             decimals: 6,
-            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/D3KdBta3p53RV5FoahnJM5tP45h6Fd3AyFYgXTJvGCaK/logo.svg",
+            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg",
             extensions: .init(coingeckoId: "tether")
         )
     }
