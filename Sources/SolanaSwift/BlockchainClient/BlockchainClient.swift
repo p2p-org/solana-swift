@@ -43,7 +43,10 @@ public class BlockchainClient: SolanaBlockchainClient {
         let blockhash = try await apiClient.getRecentBlockhash()
         transaction.recentBlockhash = blockhash
 
-        try transaction.sign(signers: signers)
+        // if any signers, sign
+        if !signers.isEmpty {
+            try transaction.sign(signers: signers)
+        }
         
         // return formed transaction
         return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
