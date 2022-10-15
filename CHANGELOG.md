@@ -1,3 +1,8 @@
+## 2.5.2
+
+- Add convenience variables for common tokens (ETH, USDT)
+- Make signing in method prepare transaction optional if signers is not provided
+
 ## 2.5.1
 
 - Add supply property for struct Wallet
