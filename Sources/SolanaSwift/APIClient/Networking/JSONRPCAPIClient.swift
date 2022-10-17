@@ -222,6 +222,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
             throw error
         }
     }
+    
+    public func getRecentPerformanceSamples(limit: [UInt]) async throws -> [PerfomanceSamples] {
+        try await get(method: "getRecentPerformanceSamples", params: limit)
+    }
 
     public func getSignaturesForAddress(address: String,
                                         configs: RequestConfiguration? = nil) async throws -> [SignatureInfo]

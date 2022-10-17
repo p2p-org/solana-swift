@@ -349,3 +349,10 @@ public struct VoteAccount: Decodable {
     public let activatedStake: UInt64
     public let votePubkey: String
 }
+
+public struct PerfomanceSamples: Decodable {
+    public let numSlots: Int
+    public let numTransactions: Int
+    public let samplePeriodSecs: Int
+    public let slot: Int
+}
