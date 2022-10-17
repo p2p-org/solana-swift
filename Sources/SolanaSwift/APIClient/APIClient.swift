@@ -313,4 +313,12 @@ public protocol SolanaAPIClient {
     /// - Returns: the result of mutiple requests
     func batchRequest<Entity: Decodable>(method: String, params: [[Encodable]]) async throws -> [Entity?]
     
+    /// Returns a list of recent performance samples, in reverse slot order.
+    /// Performance samples are taken every 60 seconds and include the number of transactions and slots that occur in a given time window.
+    /// - Parameters:
+    ///  - limit: number of samples to return (maximum 720)
+    /// - Throws: APIClientError
+    /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getrecentperformancesamples
+    ///
+    func getRecentPerformanceSamples(limit: [UInt]) async throws -> [PerfomanceSamples]
 }
