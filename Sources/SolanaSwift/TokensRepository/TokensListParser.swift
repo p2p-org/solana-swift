@@ -12,10 +12,10 @@ public class TokensListParser {
     private let tokenListURL: URL?
 
     public init(
-        tokenListURL: String = "https://raw.githubusercontent.com/bigearsenal/solana-token-list/main/src/tokens/solana.tokenlist.json",
+        url: String = "https://raw.githubusercontent.com/bigearsenal/solana-token-list/main/src/tokens/solana.tokenlist.json",
         networkManager: NetworkManager = URLSession.shared
     ) {
-        self.tokenListURL = URL(string: tokenListURL)
+        self.tokenListURL = URL(string: url)
         self.networkManager = networkManager
     }
 
