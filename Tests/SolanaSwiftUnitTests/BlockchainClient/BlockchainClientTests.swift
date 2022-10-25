@@ -158,7 +158,6 @@ class BlockchainClientTests: XCTestCase {
 }
 
 private class MockAPIClient: SolanaAPIClient {
-    
     let testCase: String
 
     init(testCase: String) {
@@ -428,6 +427,10 @@ private class MockAPIClient: SolanaAPIClient {
     }
     
     func batchRequest<Entity>(method: String, params: [[Encodable]]) async throws -> [Entity?] where Entity : Decodable {
+        fatalError()
+    }
+    
+    func getRecentPerformanceSamples(limit: [UInt]) async throws -> [SolanaSwift.PerfomanceSamples] {
         fatalError()
     }
 }
