@@ -12,7 +12,7 @@ public class TokensListParser {
     private let tokenListURL: URL?
 
     public init(
-        url: String = "https://raw.githubusercontent.com/bigearsenal/solana-token-list/main/src/tokens/solana.tokenlist.json",
+        url: String = "https://raw.githubusercontent.com/p2p-org/solana-token-list/main/src/tokens/solana.tokenlist.json",
         networkManager: NetworkManager = URLSession.shared
     ) {
         self.tokenListURL = URL(string: url)
@@ -68,7 +68,7 @@ public class TokensListParser {
                         symbol: "renBTC",
                         name: "renBTC",
                         decimals: 8,
-                        logoURI: "https://raw.githubusercontent.com/bigearsenal/solana-token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
+                        logoURI: "https://raw.githubusercontent.com/p2p-org/solana-token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
                         extensions: .init(
                             website: "https://renproject.io/",
                             bridgeContract: nil,
