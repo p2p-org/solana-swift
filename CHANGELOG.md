@@ -1,3 +1,8 @@
+## 2.5.3
+
+- Add rpc method getRecentPerformanceSamples
+- Change tokens repository endpoint
+
 ## 2.5.2
 
 - Add convenience variables for common tokens (ETH, USDT)

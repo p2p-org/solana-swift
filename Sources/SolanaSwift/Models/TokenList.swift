@@ -90,7 +90,7 @@ public struct Token: Hashable, Decodable {
             symbol: "SOL",
             name: "Solana",
             decimals: 9,
-            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+            logoURI: "https://raw.githubusercontent.com/bigearsenal/solana-token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
             tags: [],
             extensions: TokenExtensions(coingeckoId: "solana"),
             isNative: true
@@ -105,7 +105,7 @@ public struct Token: Hashable, Decodable {
             symbol: "renBTC",
             name: "renBTC",
             decimals: 8,
-            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
+            logoURI: "https://raw.githubusercontent.com/bigearsenal/solana-token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
             extensions: .init(
                 website: "https://renproject.io/",
                 serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv",
@@ -122,7 +122,7 @@ public struct Token: Hashable, Decodable {
             symbol: "USDC",
             name: "USDC",
             decimals: 8,
-            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
+            logoURI: "https://raw.githubusercontent.com/bigearsenal/solana-token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
             extensions: .init(coingeckoId: "usd-coin")
         )
     }
@@ -135,7 +135,7 @@ public struct Token: Hashable, Decodable {
             symbol: "USDT",
             name: "USDT",
             decimals: 6,
-            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg",
+            logoURI: "https://raw.githubusercontent.com/bigearsenal/solana-token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.png",
             extensions: .init(coingeckoId: "tether")
         )
     }
@@ -148,7 +148,7 @@ public struct Token: Hashable, Decodable {
             symbol: "ETH",
             name: "Ether (Portal)",
             decimals: 8,
-            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs/logo.png",
+            logoURI: "https://raw.githubusercontent.com/bigearsenal/solana-token-list/main/assets/mainnet/7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs/logo.png",
             extensions: .init(coingeckoId: "ethereum")
         )
     }
