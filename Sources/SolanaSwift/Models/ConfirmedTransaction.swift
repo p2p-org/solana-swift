@@ -53,6 +53,23 @@ public struct ParsedInstruction: Decodable {
     // swap
     public let data: String?
     public let accounts: [String]?
+
+    public enum CodingKeys: CodingKey {
+        case program
+        case programId
+        case parsed
+        case data
+        case accounts
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        program = try container.decodeIfPresent(String.self, forKey: .program)
+        programId = try container.decode(String.self, forKey: .programId)
+        parsed = try? container.decodeIfPresent(ParsedInstruction.Parsed.self, forKey: .parsed)
+        data = try container.decodeIfPresent(String.self, forKey: .data)
+        accounts = try container.decodeIfPresent([String].self, forKey: .accounts)
+    }
 }
 
 extension Sequence where Iterator.Element == ParsedInstruction {
