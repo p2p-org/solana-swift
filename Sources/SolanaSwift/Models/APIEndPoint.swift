@@ -7,7 +7,7 @@ public struct APIEndPoint: Hashable, Codable {
         
         self.socketUrl = socketUrl ?? address.replacingOccurrences(of: "http", with: "ws")
         if let additionalQuery = additionalQuery {
-            socketUrl += "/" + additionalQuery
+            self.socketUrl += "/" + additionalQuery
         }
         
         self.additionalQuery = additionalQuery
