@@ -6,7 +6,7 @@ public struct Account: Codable, Hashable {
     public let publicKey: PublicKey
     public let secretKey: Data
 
-    private init(phrase: [String], publicKey: PublicKey, secretKey: Data) {
+    public init(phrase: [String], publicKey: PublicKey, secretKey: Data) {
         self.phrase = phrase
         self.publicKey = publicKey
         self.secretKey = secretKey
