@@ -189,7 +189,7 @@ public struct PerformanceSample: Decodable {
 public struct SignatureInfo: Decodable {
     public let signature: String
     public let slot: UInt64?
-    public let err: TransactionError?
+    public let err: AnyTransactionError?
     public let memo: String?
     public let blockTime: UInt64?
 
@@ -205,7 +205,7 @@ public struct SignatureInfo: Decodable {
 public struct SignatureStatus: Decodable {
     public let slot: UInt64
     public let confirmations: UInt64?
-    public let err: TransactionError?
+    public let err: AnyTransactionError?
     public let confirmationStatus: String?
 }
 
@@ -217,7 +217,7 @@ public struct TransactionInfo: Decodable {
 }
 
 public struct TransactionMeta: Decodable {
-    public let err: TransactionError?
+    public let err: AnyTransactionError?
     public let fee: Lamports?
     public let innerInstructions: [InnerInstruction]?
     public let logMessages: [String]?
@@ -225,6 +225,34 @@ public struct TransactionMeta: Decodable {
     public let postTokenBalances: [TokenBalance]?
     public let preBalances: [Lamports]?
     public let preTokenBalances: [TokenBalance]?
+}
+
+public enum AnyTransactionError: Codable {
+    case detailed(TransactionError)
+    case string(String)
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let x = try? container.decode(String.self) {
+            self = .string(x)
+            return
+        }
+        if let x = try? container.decode(TransactionError.self) {
+            self = .detailed(x)
+            return
+        }
+        throw DecodingError.typeMismatch(AnyTransactionError.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for ErrUnion"))
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .detailed(let x):
+            try container.encode(x)
+        case .string(let x):
+            try container.encode(x)
+        }
+    }
 }
 
 public typealias TransactionError = [String: [ErrorDetail]]
