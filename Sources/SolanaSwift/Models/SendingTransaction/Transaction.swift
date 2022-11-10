@@ -1,7 +1,7 @@
 import Foundation
 import TweetNacl
 
-public struct Transaction: Encodable {
+public struct Transaction: Encodable, Equatable {
     fileprivate static let SIGNATURE_LENGTH = 64
     fileprivate static let DEFAULT_SIGNATURE = Data(repeating: 0, count: 64)
 
@@ -406,7 +406,7 @@ public struct Transaction: Encodable {
 }
 
 public extension Transaction {
-    struct Signature: Encodable {
+    struct Signature: Encodable, Equatable {
         public var signature: Data?
         public var publicKey: PublicKey
 
