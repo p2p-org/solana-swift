@@ -121,14 +121,14 @@ public struct Transaction: Encodable, Equatable {
     }
 
     private mutating func _addSignature(_ signature: Signature) throws {
-        guard let data = signature.signature,
-              data.count == 64,
-              let index = signatures.firstIndex(where: { $0.publicKey == signature.publicKey })
-        else {
-            throw SolanaError.other("Signer not valid: \(signature.publicKey.base58EncodedString)")
+        if let data = signature.signature,
+           data.count == 64,
+           let index = signatures.firstIndex(where: { $0.publicKey == signature.publicKey })
+        {
+            signatures[index] = signature
+        } else {
+            signatures.append(signature)
         }
-
-        signatures[index] = signature
     }
 
     // MARK: - Compiling
@@ -413,7 +413,7 @@ public extension Transaction {
         enum CodingKeys: String, CodingKey {
             case signature, publicKey
         }
-        
+
         public init(signature: Data?, publicKey: PublicKey) {
             self.signature = signature
             self.publicKey = publicKey
