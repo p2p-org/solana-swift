@@ -19,6 +19,40 @@ public struct AccountInfo: BufferLayout {
     public var delegatedAmount: UInt64
     public let closeAuthorityOption: UInt32
     public var closeAuthority: PublicKey?
+    
+    public init(
+        mint: PublicKey,
+        owner: PublicKey,
+        lamports: UInt64,
+        delegateOption: UInt32,
+        delegate: PublicKey? = nil,
+        isInitialized: Bool,
+        isFrozen: Bool,
+        state: UInt8,
+        isNativeOption: UInt32,
+        rentExemptReserve: UInt64? = nil,
+        isNativeRaw: UInt64,
+        isNative: Bool,
+        delegatedAmount: UInt64,
+        closeAuthorityOption: UInt32,
+        closeAuthority: PublicKey? = nil
+    ) {
+        self.mint = mint
+        self.owner = owner
+        self.lamports = lamports
+        self.delegateOption = delegateOption
+        self.delegate = delegate
+        self.isInitialized = isInitialized
+        self.isFrozen = isFrozen
+        self.state = state
+        self.isNativeOption = isNativeOption
+        self.rentExemptReserve = rentExemptReserve
+        self.isNativeRaw = isNativeRaw
+        self.isNative = isNative
+        self.delegatedAmount = delegatedAmount
+        self.closeAuthorityOption = closeAuthorityOption
+        self.closeAuthority = closeAuthority
+    }
 }
 
 extension AccountInfo: BorshCodable {

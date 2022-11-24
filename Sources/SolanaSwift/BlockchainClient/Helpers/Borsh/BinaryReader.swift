@@ -8,6 +8,14 @@ public struct BinaryReader {
         cursor = 0
         self.bytes = bytes
     }
+    
+    public var isEmpty: Bool {
+        bytes.isEmpty
+    }
+    
+    public var count: Int {
+        bytes.count
+    }
 }
 
 public extension BinaryReader {
