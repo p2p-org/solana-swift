@@ -169,6 +169,14 @@ public struct BufferInfo<T: BufferLayout>: Decodable {
     public let data: T
     public let executable: Bool
     public let rentEpoch: UInt64
+    
+    public init(lamports: Lamports, owner: String, data: T, executable: Bool, rentEpoch: UInt64) {
+        self.lamports = lamports
+        self.owner = owner
+        self.data = data
+        self.executable = executable
+        self.rentEpoch = rentEpoch
+    }
 }
 
 public struct BufferInfoParsed<T: Decodable>: Decodable {
