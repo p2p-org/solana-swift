@@ -354,6 +354,11 @@ public struct TokenAccountBalance: Codable, Equatable, Hashable {
 public struct TokenAccount<T: BufferLayout>: Decodable, Equatable {
     public let pubkey: String
     public let account: BufferInfo<T>
+    
+    public init(pubkey: String, account: BufferInfo<T>) {
+        self.pubkey = pubkey
+        self.account = account
+    }
 }
 
 public struct TokenAmount: Decodable {
