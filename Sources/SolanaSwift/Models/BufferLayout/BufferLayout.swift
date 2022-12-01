@@ -4,7 +4,7 @@ public enum BufferLayoutError: Error {
     case NotImplemented
 }
 
-public protocol BufferLayout: Codable, BorshCodable {}
+public protocol BufferLayout: Codable, BorshCodable, Equatable {}
 
 public extension BufferLayout {
     init(from decoder: Decoder) throws {

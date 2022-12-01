@@ -163,7 +163,7 @@ public struct ProgramAccount<T: BufferLayout>: Decodable {
     public let pubkey: String
 }
 
-public struct BufferInfo<T: BufferLayout>: Decodable {
+public struct BufferInfo<T: BufferLayout>: Decodable, Equatable {
     public let lamports: Lamports
     public let owner: String
     public let data: T
@@ -351,7 +351,7 @@ public struct TokenAccountBalance: Codable, Equatable, Hashable {
     }
 }
 
-public struct TokenAccount<T: BufferLayout>: Decodable {
+public struct TokenAccount<T: BufferLayout>: Decodable, Equatable {
     public let pubkey: String
     public let account: BufferInfo<T>
     
