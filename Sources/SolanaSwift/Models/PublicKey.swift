@@ -157,8 +157,13 @@ public extension PublicKey {
         let hash = data.sha256()
         return try PublicKey(data: hash)
     }
-
-    private static func isOnCurve(publicKeyBytes: Data) -> Int {
+    
+    static func isOnCurve(publicKey: String) -> Int {
+        guard let data = try? Base58.decode(publicKey) else { return 0 }
+        return isOnCurve(publicKeyBytes: Data(data))
+    }
+    
+    static func isOnCurve(publicKeyBytes: Data) -> Int {
         var r = [[Int64]](repeating: NaclLowLevel.gf(), count: 4)
 
         var t = NaclLowLevel.gf(),

@@ -163,12 +163,20 @@ public struct ProgramAccount<T: BufferLayout>: Decodable {
     public let pubkey: String
 }
 
-public struct BufferInfo<T: BufferLayout>: Decodable {
+public struct BufferInfo<T: BufferLayout>: Decodable, Equatable {
     public let lamports: Lamports
     public let owner: String
     public let data: T
     public let executable: Bool
     public let rentEpoch: UInt64
+    
+    public init(lamports: Lamports, owner: String, data: T, executable: Bool, rentEpoch: UInt64) {
+        self.lamports = lamports
+        self.owner = owner
+        self.data = data
+        self.executable = executable
+        self.rentEpoch = rentEpoch
+    }
 }
 
 public struct BufferInfoParsed<T: Decodable>: Decodable {
@@ -343,9 +351,14 @@ public struct TokenAccountBalance: Codable, Equatable, Hashable {
     }
 }
 
-public struct TokenAccount<T: BufferLayout>: Decodable {
+public struct TokenAccount<T: BufferLayout>: Decodable, Equatable {
     public let pubkey: String
     public let account: BufferInfo<T>
+    
+    public init(pubkey: String, account: BufferInfo<T>) {
+        self.pubkey = pubkey
+        self.account = account
+    }
 }
 
 public struct TokenAmount: Decodable {

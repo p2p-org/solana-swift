@@ -1,6 +1,6 @@
 import Foundation
 
-struct TokensList: Decodable {
+struct TokensList: Codable {
     let name: String
     let logoURI: String
     let keywords: [String]
@@ -9,7 +9,7 @@ struct TokensList: Decodable {
     var tokens: [Token]
 }
 
-public struct TokenTag: Hashable, Decodable {
+public struct TokenTag: Hashable, Codable {
     public var name: String
     public var description: String
 }
@@ -18,7 +18,7 @@ public enum WrappingToken: String {
     case sollet, wormhole
 }
 
-public struct Token: Hashable, Decodable {
+public struct Token: Hashable, Codable {
     public init(
         _tags: [String]?,
         chainId: Int,
@@ -185,7 +185,7 @@ public struct Token: Hashable, Decodable {
     }
 }
 
-public struct TokenExtensions: Hashable, Decodable {
+public struct TokenExtensions: Hashable, Codable {
     public let website: String?
     public let bridgeContract: String?
     public let assetContract: String?
