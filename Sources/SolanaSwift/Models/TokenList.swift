@@ -121,7 +121,7 @@ public struct Token: Hashable, Codable {
             address: PublicKey.usdcMint.base58EncodedString,
             symbol: "USDC",
             name: "USDC",
-            decimals: 8,
+            decimals: 6,
             logoURI: "https://raw.githubusercontent.com/p2p-org/solana-token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
             extensions: .init(coingeckoId: "usd-coin")
         )
