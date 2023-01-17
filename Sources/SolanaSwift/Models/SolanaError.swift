@@ -26,7 +26,7 @@ public enum SolanaError: Swift.Error, Equatable {
 
     case unauthorized
     case notFound
-    case assertionFailed
+    case assertionFailed(String? = nil)
 
     // Invalid Requests
     case invalidRequest(reason: String? = nil)

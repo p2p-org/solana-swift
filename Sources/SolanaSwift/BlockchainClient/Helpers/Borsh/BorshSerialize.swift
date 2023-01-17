@@ -69,6 +69,12 @@ extension Array: BorshSerializable where Element: BorshSerializable {
         try UInt32(count).serialize(to: &writer)
         try forEach { try $0.serialize(to: &writer) }
     }
+
+    public func rawSerialized() throws -> Data {
+        var data = Data()
+        try forEach { try $0.serialize(to: &data) }
+        return data
+    }
 }
 
 extension Set: BorshSerializable where Element: BorshSerializable & Comparable {

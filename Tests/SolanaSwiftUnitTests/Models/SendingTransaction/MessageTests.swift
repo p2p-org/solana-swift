@@ -13,13 +13,13 @@ class MessageTests: XCTestCase {
     func test_givenRawMessage_whenFrom_thenReturnsExpectedMessage() throws {
 
         // given
-        let expectedMessge = Transaction.Message.StubFactory.makeSignedWithInstructions()
+        let expectedMessge = Message.StubFactory.makeSignedWithInstructions()
         // Base64-encoded message containing two instructions some accounts and signers.
         let base64 = "AgADBSxW7AhRsOx/s4ecSWrcic9vfD5asiW3d287f4uUsKeb7oz2DHCBpIZPzhc3kCRgNxVedAceB6yMl6hi5hPA1OkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAan1RcZLFxRIYzJTD1K8X9Y2u4Im6H9ROPb2YoAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkHQqjYoL28uYrjQx7GX6lt1z+mBGwH0eqdU9JknzvwfQICAgABNAAAAADwHR8AAAAAAKUAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkEAgADQwAALFbsCFGw7H+zh5xJatyJz298PlqyJbd3bzt/i5Swp5sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
         let rawMessage = try XCTUnwrap(Data(base64Encoded: base64))
 
         // when
-        let result = try Transaction.Message.from(data: rawMessage)
+        let result = try Message.from(data: rawMessage)
 
         // then
         XCTAssertEqual(result.header, expectedMessge.header)

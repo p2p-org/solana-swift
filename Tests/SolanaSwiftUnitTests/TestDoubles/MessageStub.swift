@@ -1,6 +1,6 @@
 //
 //  MessageStub.swift
-//  
+//
 //
 //  Created by Kamil Wyszomerski on 20/06/2022.
 //
@@ -8,11 +8,9 @@
 import Foundation
 @testable import SolanaSwift
 
-extension Transaction.Message {
-
+extension Message {
     enum StubFactory {
-
-        static func makeSignedWithInstructions() -> Transaction.Message {
+        static func makeSignedWithInstructions() -> Message {
             .init(
                 header: .init(
                     numRequiredSignatures: 2,

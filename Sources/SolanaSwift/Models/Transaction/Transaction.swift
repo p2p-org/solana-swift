@@ -2,9 +2,6 @@ import Foundation
 import TweetNacl
 
 public struct Transaction: Encodable, Equatable {
-    fileprivate static let SIGNATURE_LENGTH = 64
-    fileprivate static let DEFAULT_SIGNATURE = Data(repeating: 0, count: 64)
-
     public var signatures = [Signature]()
     public var feePayer: PublicKey?
     public var instructions = [TransactionInstruction]()
@@ -14,8 +11,8 @@ public struct Transaction: Encodable, Equatable {
     public init() {}
     public init(
         instructions: [TransactionInstruction],
-        recentBlockhash: String?,
-        feePayer: PublicKey
+        recentBlockhash: String? = nil,
+        feePayer: PublicKey? = nil
     ) {
         self.init()
         self.instructions = instructions
@@ -256,7 +253,7 @@ public struct Transaction: Encodable, Equatable {
         }
 
         // header
-        var header = Message.Header()
+        var header = MessageHeader()
 
         var signedKeys = [Account.Meta]()
         var unsignedKeys = [Account.Meta]()
@@ -287,7 +284,7 @@ public struct Transaction: Encodable, Equatable {
         let instructions = instructions.compile(accountKeys: accountKeys)
         try instructions.forEach { instruction in
             try instruction.accounts.forEach { keyIndex in
-                if keyIndex < 0 { throw SolanaError.assertionFailed }
+                if keyIndex < 0 { throw SolanaError.assertionFailed("") }
             }
         }
 
@@ -335,7 +332,7 @@ public struct Transaction: Encodable, Equatable {
             if let signature = signature.signature {
                 data.append(signature)
             } else {
-                data.append(Transaction.DEFAULT_SIGNATURE)
+                data.append(Constants.defaultSignature)
             }
             return data
         }
@@ -356,16 +353,16 @@ public struct Transaction: Encodable, Equatable {
         let signatureCount = data.decodeLength()
 
         for _ in stride(from: 0, through: signatureCount - 1, by: 1) {
-            let signatureData = data.prefix(Transaction.SIGNATURE_LENGTH)
-            data = data.dropFirst(Transaction.SIGNATURE_LENGTH)
+            let signatureData = data.prefix(Constants.signatureLength)
+            data = data.dropFirst(Constants.signatureLength)
             signatures.append(Base58.encode(signatureData))
         }
 
         print(data.base64EncodedString())
-        return populate(try Transaction.Message.from(data: data), signatures)
+        return populate(try Message.from(data: data), signatures)
     }
 
-    static func populate(_ message: Transaction.Message, _ signatures: [String]) -> Transaction {
+    static func populate(_ message: Message, _ signatures: [String]) -> Transaction {
         var transaction = Transaction()
 
         transaction.recentBlockhash = message.recentBlockhash
@@ -373,9 +370,9 @@ public struct Transaction: Encodable, Equatable {
             transaction.feePayer = message.accountKeys[0]
         }
         signatures.enumerated().forEach { index, signature in
-            let sigPubkeyPair = Transaction.Signature(
+            let sigPubkeyPair = Signature(
                 signature: signature == Base58
-                    .encode(Transaction.DEFAULT_SIGNATURE) ? nil : Data(Base58.decode(signature)),
+                    .encode(Constants.defaultSignature) ? nil : Data(Base58.decode(signature)),
                 publicKey: message.accountKeys[index]
             )
             transaction.signatures.append(sigPubkeyPair)
@@ -405,24 +402,22 @@ public struct Transaction: Encodable, Equatable {
     }
 }
 
-public extension Transaction {
-    struct Signature: Encodable, Equatable {
-        public var signature: Data?
-        public var publicKey: PublicKey
+public struct Signature: Encodable, Equatable {
+    public var signature: Data?
+    public var publicKey: PublicKey
 
-        enum CodingKeys: String, CodingKey {
-            case signature, publicKey
-        }
-        
-        public init(signature: Data?, publicKey: PublicKey) {
-            self.signature = signature
-            self.publicKey = publicKey
-        }
+    enum CodingKeys: String, CodingKey {
+        case signature, publicKey
+    }
 
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(Base58.encode(signature?.bytes ?? []), forKey: .signature)
-            try container.encode(publicKey.base58EncodedString, forKey: .publicKey)
-        }
+    public init(signature: Data?, publicKey: PublicKey) {
+        self.signature = signature
+        self.publicKey = publicKey
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(Base58.encode(signature?.bytes ?? []), forKey: .signature)
+        try container.encode(publicKey.base58EncodedString, forKey: .publicKey)
     }
 }
