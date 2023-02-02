@@ -49,7 +49,7 @@ public struct VersionedTransaction {
         return serializedTransaction
     }
 
-    public func deserialize(data: Data) throws -> Self {
+    public static func deserialize(data: Data) throws -> Self {
         var byteArray = BinaryReader(bytes: data.bytes)
 
         var signatures: [Data] = []
