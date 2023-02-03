@@ -29,4 +29,15 @@ public enum VersionedMessage {
         case let .v0(message): return message
         }
     }
+    
+    public mutating func setRecentBlockHash(_ blockHash: BlockHash) {
+        switch self {
+        case .legacy(var message):
+            message.recentBlockhash = blockHash
+            self = .legacy(message)
+        case .v0(var messageV0):
+            messageV0.recentBlockhash = blockHash
+            self = .v0(messageV0)
+        }
+    }
 }

@@ -16,7 +16,11 @@ public enum TransactionVersion {
 public struct VersionedTransaction {
     public var message: VersionedMessage
     public internal(set) var signatures: [Data]
-
+    
+    public mutating func setRecentBlockHash(_ blockHash: BlockHash) {
+        message.setRecentBlockHash(blockHash)
+    }
+    
     public var version: TransactionVersion {
         message.value.version
     }
@@ -59,7 +63,7 @@ public struct VersionedTransaction {
             signatures.append(Data(signatureData))
         }
 
-        let versionedMessage = try VersionedMessage.deserialize(data: Data(byteArray.bytes))
+        let versionedMessage = try VersionedMessage.deserialize(data: Data(byteArray.readAll()))
 
         return .init(message: versionedMessage, signatures: signatures)
     }
