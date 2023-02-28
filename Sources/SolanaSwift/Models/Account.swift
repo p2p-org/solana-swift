@@ -1,5 +1,6 @@
 import Foundation
 import TweetNacl
+import CommonCrypto
 
 public struct Account: Codable, Hashable {
     public let phrase: [String]
@@ -18,6 +19,78 @@ public struct Account: Codable, Hashable {
         self.secretKey = keys.secretKey
         let phrase = try Mnemonic.toMnemonic(secretKey.bytes)
         self.phrase = phrase
+    }
+    
+    public init(nonMnemonicPhrase phrase: [String], salt: String, network: Network, derivablePath: DerivablePath) async throws {
+        self = try await Task {
+            let publicKey: PublicKey
+            let secretKey: Data
+
+            switch derivablePath.type {
+            case .deprecated:
+                let keychain = try Keychain(seed: phrase.joined(separator: " "), salt: salt, network: network.cluster)
+                guard let seed = try keychain?.derivedKeychain(at: derivablePath.rawValue).privateKey else {
+                    throw SolanaError.other("Could not derivate private key")
+                }
+
+                let keys = try NaclSign.KeyPair.keyPair(fromSeed: seed)
+
+                publicKey = try .init(data: keys.publicKey)
+                secretKey = keys.secretKey
+            default:
+                let password = (phrase.joined(separator: " ") as NSString).decomposedStringWithCompatibilityMapping
+                let salt = (salt as NSString).decomposedStringWithCompatibilityMapping
+                guard let seedBytes = pbkdf2(
+                    hash: CCPBKDFAlgorithm(kCCPRFHmacAlgSHA512),
+                    password: password,
+                    salt: Data(salt.bytes),
+                    keyByteCount: 64,
+                    rounds: 2048
+                )?.bytes else {
+                    throw SolanaError.other("Could not derivate private key")
+                }
+                
+                let keys = try Ed25519HDKey.derivePath(derivablePath.rawValue, seed: seedBytes.toHexString()).get()
+                let keyPair = try NaclSign.KeyPair.keyPair(fromSeed: keys.key)
+                let newKey = try PublicKey(data: keyPair.publicKey)
+
+                publicKey = newKey
+                secretKey = keyPair.secretKey
+            }
+
+            return .init(phrase: phrase, publicKey: publicKey, secretKey: secretKey)
+        }.value
+    }
+    
+    public init(mnemonic: Mnemonic, network: Network, derivablePath: DerivablePath) async throws {
+        self = try await Task {
+            let phrase = mnemonic.phrase
+            
+            let publicKey: PublicKey
+            let secretKey: Data
+            
+            switch derivablePath.type {
+            case .deprecated:
+                let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
+                guard let seed = try keychain?.derivedKeychain(at: derivablePath.rawValue).privateKey else {
+                    throw SolanaError.other("Could not derivate private key")
+                }
+                
+                let keys = try NaclSign.KeyPair.keyPair(fromSeed: seed)
+                
+                publicKey = try .init(data: keys.publicKey)
+                secretKey = keys.secretKey
+            default:
+                let keys = try Ed25519HDKey.derivePath(derivablePath.rawValue, seed: mnemonic.seed.toHexString()).get()
+                let keyPair = try NaclSign.KeyPair.keyPair(fromSeed: keys.key)
+                let newKey = try PublicKey(data: keyPair.publicKey)
+                
+                publicKey = newKey
+                secretKey = keyPair.secretKey
+            }
+            
+            return .init(phrase: phrase, publicKey: publicKey, secretKey: secretKey)
+        }.value
     }
 
     /// Create account with seed phrase

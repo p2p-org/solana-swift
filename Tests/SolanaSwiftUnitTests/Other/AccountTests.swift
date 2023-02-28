@@ -22,6 +22,27 @@ class AccountTests: XCTestCase {
         XCTAssertEqual(64, account.secretKey.count)
     }
 
+    func testRestoreAccountFromSeedPhrase() async throws {
+        let phrase12 = "miracle pizza supply useful steak border same again youth silver access hundred"
+            .components(separatedBy: " ")
+        let account12 = try await Account(phrase: phrase12, network: .mainnetBeta)
+        XCTAssertEqual(account12.publicKey.base58EncodedString, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+
+        let phrase24 =
+            "budget resource fluid mutual ankle salt demise long burst sting doctor ozone risk magic wrap clap post pole jungle great update air interest abandon"
+                .components(separatedBy: " ")
+        let account24 = try await Account(phrase: phrase24, network: .mainnetBeta)
+        XCTAssertEqual(account24.publicKey.base58EncodedString, "9avcmC97zLPwHKXiDz6GpXyjvPn9VcN3ggqM5gsRnjvv")
+    }
+    
+    func testRestoreAccountFromNonMnemonicSeedPhrase() async throws {
+        let phrase = ["y", "5", "H", "M", "p", "D", "^", "G", "6", "3", "9", "x", "a", "b", "^", "8"]
+        let account = try await Account(nonMnemonicPhrase: phrase, salt: "", network: .mainnetBeta, derivablePath: .default)
+        XCTAssertEqual(account.publicKey, "7TJ2AEYmkUYJ3ESQv5B7Z1HwrTG9hUdj3PpqZn7DCxfo")
+    }
+    
+    // MARK: - Deprecated derivable path
+
     func testDerivedKeychain() throws {
         var keychain = try Keychain(
             seedString: "miracle pizza supply useful steak border same again youth silver access hundred",
@@ -34,85 +55,7 @@ class AccountTests: XCTestCase {
 
         XCTAssertEqual(
             [UInt8](keys.secretKey),
-            [
-                109,
-                13,
-                53,
-                177,
-                69,
-                45,
-                146,
-                184,
-                62,
-                55,
-                105,
-                133,
-                210,
-                89,
-                131,
-                218,
-                248,
-                101,
-                47,
-                64,
-                81,
-                56,
-                229,
-                25,
-                173,
-                154,
-                12,
-                41,
-                66,
-                143,
-                230,
-                117,
-                39,
-                247,
-                185,
-                4,
-                85,
-                137,
-                50,
-                166,
-                147,
-                184,
-                221,
-                75,
-                110,
-                103,
-                16,
-                222,
-                41,
-                94,
-                247,
-                132,
-                43,
-                62,
-                172,
-                243,
-                95,
-                204,
-                190,
-                143,
-                153,
-                16,
-                10,
-                197,
-            ]
+            [109,13,53,177,69,45,146,184,62,55,105,133,210,89,131,218,248,101,47,64,81,56,229,25,173,154,12,41,66,143,230,117,39,247,185,4,85,137,50,166,147,184,221,75,110,103,16,222,41,94,247,132,43,62,172,243,95,204,190,143,153,16,10,197]
         )
-    }
-
-    func testRestoreAccountFromSeedPhrase() async throws {
-        let phrase12 = "miracle pizza supply useful steak border same again youth silver access hundred"
-            .components(separatedBy: " ")
-        let account12 = try await Account(phrase: phrase12, network: .mainnetBeta)
-        XCTAssertEqual(account12.publicKey.base58EncodedString, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
-
-        let phrase24 =
-            "budget resource fluid mutual ankle salt demise long burst sting doctor ozone risk magic wrap clap post pole jungle great update air interest abandon"
-                .components(separatedBy: " ")
-        let account24 = try await Account(phrase: phrase24, network: .mainnetBeta)
-        XCTAssertEqual(account24.publicKey.base58EncodedString, "9avcmC97zLPwHKXiDz6GpXyjvPn9VcN3ggqM5gsRnjvv")
     }
 }
