@@ -10,8 +10,8 @@ import SolanaSwift
 import TweetNacl
 import XCTest
 
-class AccountTests: XCTestCase {
-    func testCreateAccountFromSecretKey() throws {
+class KeyPairTests: XCTestCase {
+    func testCreateKeyPairFromSecretKey() throws {
         let secretKey = Base58
             .decode("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")
         XCTAssertNotNil(secretKey)
@@ -103,7 +103,7 @@ class AccountTests: XCTestCase {
         )
     }
 
-    func testRestoreAccountFromSeedPhrase() async throws {
+    func testRestoreKeyPairFromSeedPhrase() async throws {
         let phrase12 = "miracle pizza supply useful steak border same again youth silver access hundred"
             .components(separatedBy: " ")
         let account12 = try await KeyPair(phrase: phrase12, network: .mainnetBeta)
