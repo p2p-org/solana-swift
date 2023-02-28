@@ -11,7 +11,7 @@ import TweetNacl
 import XCTest
 
 class AccountTests: XCTestCase {
-    func testCreateAccountFromSecretKey() throws {
+    func testRestoreAccountFromSecretKey() throws {
         let secretKey = Base58
             .decode("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")
         XCTAssertNotNil(secretKey)
@@ -33,6 +33,18 @@ class AccountTests: XCTestCase {
                 .components(separatedBy: " ")
         let account24 = try await Account(phrase: phrase24, network: .mainnetBeta)
         XCTAssertEqual(account24.publicKey.base58EncodedString, "9avcmC97zLPwHKXiDz6GpXyjvPn9VcN3ggqM5gsRnjvv")
+    }
+    
+    func testRestoreAccountFromMnemonic() async throws {
+        let mnemonic12 = try Mnemonic(phrase: "miracle pizza supply useful steak border same again youth silver access hundred"
+            .components(separatedBy: " "))
+        let account12 = try await Account(mnemonic: mnemonic12, network: .mainnetBeta, derivablePath: .init(type: .deprecated, walletIndex: 0))
+        XCTAssertEqual(account12.publicKey, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
+        
+        let mnemonic24 = try Mnemonic(phrase: "budget resource fluid mutual ankle salt demise long burst sting doctor ozone risk magic wrap clap post pole jungle great update air interest abandon"
+            .components(separatedBy: " "))
+        let account24 = try await Account(mnemonic: mnemonic24, network: .mainnetBeta, derivablePath: .default)
+        XCTAssertEqual(account24.publicKey, "9avcmC97zLPwHKXiDz6GpXyjvPn9VcN3ggqM5gsRnjvv")
     }
     
     func testRestoreAccountFromNonMnemonicSeedPhrase() async throws {
