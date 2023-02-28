@@ -1,11 +1,11 @@
 import Foundation
 
 public struct TransactionInstruction: Codable, Equatable {
-    public let keys: [Account.Meta]
+    public let keys: [AccountMeta]
     public let programId: PublicKey
     public let data: [UInt8]
 
-    public init(keys: [Account.Meta], programId: PublicKey, data: [BytesEncodable]) {
+    public init(keys: [AccountMeta], programId: PublicKey, data: [BytesEncodable]) {
         self.keys = keys
         self.programId = programId
         self.data = data.bytes

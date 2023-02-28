@@ -15,9 +15,9 @@ public extension SolanaBlockchainClient {
         payer: PublicKey,
         minRentExemption mre: Lamports?
     ) async throws -> AccountInstructions {
-        let newAccount: Account
+        let newAccount: KeyPair
         let minRentExemption: Lamports
-        async let requestNewAccount = Account(network: apiClient.endpoint.network)
+        async let requestNewAccount = KeyPair(network: apiClient.endpoint.network)
 
         if let mre = mre {
             minRentExemption = mre

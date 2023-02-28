@@ -17,7 +17,7 @@ public class BlockchainClient: SolanaBlockchainClient {
     /// - Returns: PreparedTransaction, can be sent or simulated using SolanaBlockchainClient
     public func prepareTransaction(
         instructions: [TransactionInstruction],
-        signers: [Account],
+        signers: [KeyPair],
         feePayer: PublicKey,
         feeCalculator fc: FeeCalculator? = nil
     ) async throws -> PreparedTransaction {
@@ -61,7 +61,7 @@ public class BlockchainClient: SolanaBlockchainClient {
     ///    - recentBlockhash optional
     /// - Returns: PreparedTransaction, can be sent or simulated using SolanaBlockchainClient
     public func prepareSendingNativeSOL(
-        from account: Account,
+        from account: KeyPair,
         to destination: String,
         amount: UInt64,
         feePayer: PublicKey? = nil
@@ -107,7 +107,7 @@ public class BlockchainClient: SolanaBlockchainClient {
     ///   - minRentExemption: (Optional) pre-calculated min rent exemption, will be fetched if not provided
     /// - Returns: (preparedTransaction: PreparedTransaction, realDestination: String), preparedTransaction can be sent or simulated using SolanaBlockchainClient, the realDestination is the real spl address of destination. Can be different from destinationAddress if destinationAddress is a native Solana address
     public func prepareSendingSPLTokens(
-        account: Account,
+        account: KeyPair,
         mintAddress: String,
         decimals: Decimals,
         from fromPublicKey: String,

@@ -7,7 +7,7 @@ public struct ConfirmedTransaction: Decodable {
 
 public extension ConfirmedTransaction {
     struct Message: Decodable {
-        public let accountKeys: [Account.Meta]
+        public let accountKeys: [AccountMeta]
         public let instructions: [ParsedInstruction]
         public let recentBlockhash: String
     }

@@ -13,7 +13,7 @@ class TransactionTests: XCTestCase {
     func test_givenSigner_whenPartialSign_thenSignerAppended() throws {
 
         // given
-        let signer = Account.StubFactory.make()
+        let signer = KeyPair.StubFactory.make()
         var transaction = Self.makeTransaction(signer: signer)
 
         // when
@@ -26,7 +26,7 @@ class TransactionTests: XCTestCase {
     func test_givenSignerAndInvalidTransaction_whenPartialSign_thenThrowsError() throws {
 
         // given
-        let signer = Account.StubFactory.make()
+        let signer = KeyPair.StubFactory.make()
         var transaction = Transaction(
             instructions: [],
             recentBlockhash: "",
@@ -41,7 +41,7 @@ class TransactionTests: XCTestCase {
     func test_givenPartiallySignedTransactionAndSameSigner_whenPartialSign_thenSignerNotAdded() throws {
 
         // given
-        let signer = Account.StubFactory.make()
+        let signer = KeyPair.StubFactory.make()
         var transaction = Self.makeTransaction(signer: signer)
         try transaction.partialSign(signers: [signer])
         let numberOfSignatures = transaction.signatures.count
@@ -56,7 +56,7 @@ class TransactionTests: XCTestCase {
     func test_givenEmptySigners_whenPartialSign_thenThrowsError() throws {
 
         // given
-        let signer = Account.StubFactory.make()
+        let signer = KeyPair.StubFactory.make()
         var transaction = Self.makeTransaction(signer: signer)
 
         // when
@@ -68,7 +68,7 @@ class TransactionTests: XCTestCase {
 extension TransactionTests {
 
     static func makeTransaction(
-        signer: Account,
+        signer: KeyPair,
         feePayer: PublicKey = .StubFactory.make()
     ) -> Transaction {
         .init(
