@@ -11,7 +11,7 @@ public enum OwnerValidationProgram: SolanaBasicProgram {
     ) -> TransactionInstruction {
         TransactionInstruction(
             keys: [
-                Account.Meta(publicKey: account, isSigner: false, isWritable: false),
+                AccountMeta(publicKey: account, isSigner: false, isWritable: false),
             ],
             programId: OwnerValidationProgram.id,
             data: [programId]

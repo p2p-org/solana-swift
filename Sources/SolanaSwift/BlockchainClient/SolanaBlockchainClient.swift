@@ -16,7 +16,7 @@ public protocol SolanaBlockchainClient: AnyObject {
     /// - Returns: information of a prepared transaction
     func prepareTransaction(
         instructions: [TransactionInstruction],
-        signers: [Account],
+        signers: [KeyPair],
         feePayer: PublicKey,
         feeCalculator: FeeCalculator?
     ) async throws -> PreparedTransaction
