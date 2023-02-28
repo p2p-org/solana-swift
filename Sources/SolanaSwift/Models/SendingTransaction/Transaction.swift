@@ -25,11 +25,11 @@ public struct Transaction: Encodable, Equatable {
 
     // MARK: - Methods
 
-    public mutating func sign(signers: [Account]) throws {
+    public mutating func sign(signers: [KeyPair]) throws {
         guard !signers.isEmpty else { throw SolanaError.invalidRequest(reason: "No signers") }
 
         // unique signers
-        let signers = signers.reduce([Account]()) { signers, signer in
+        let signers = signers.reduce([KeyPair]()) { signers, signer in
             var uniqueSigners = signers
             if !uniqueSigners.contains(where: { $0.publicKey == signer.publicKey }) {
                 uniqueSigners.append(signer)
@@ -93,11 +93,11 @@ public struct Transaction: Encodable, Equatable {
 
     // MARK: - Signing
 
-    public mutating func partialSign(signers: [Account]) throws {
+    public mutating func partialSign(signers: [KeyPair]) throws {
         guard !signers.isEmpty else { throw SolanaError.invalidRequest(reason: "No signers") }
 
         // unique signers
-        let signers = signers.reduce([Account]()) { signers, signer in
+        let signers = signers.reduce([KeyPair]()) { signers, signer in
             var uniqueSigners = signers
             if !uniqueSigners.contains(where: { $0.publicKey == signer.publicKey }) {
                 uniqueSigners.append(signer)
@@ -111,7 +111,7 @@ public struct Transaction: Encodable, Equatable {
         try partialSign(message: message, signers: signers)
     }
 
-    private mutating func partialSign(message: Message, signers: [Account]) throws {
+    private mutating func partialSign(message: Message, signers: [KeyPair]) throws {
         let signData = try message.serialize()
 
         for signer in signers {
@@ -168,7 +168,7 @@ public struct Transaction: Encodable, Equatable {
 
         // programIds & accountMetas
         var programIds = [PublicKey]()
-        var accountMetas = [Account.Meta]()
+        var accountMetas = [AccountMeta]()
 
         for instruction in instructions {
             accountMetas.append(contentsOf: instruction.keys)
@@ -192,7 +192,7 @@ public struct Transaction: Encodable, Equatable {
         }
 
         // filterOut duplicate account metas, keeps writable one
-        accountMetas = accountMetas.reduce([Account.Meta]()) { result, accountMeta in
+        accountMetas = accountMetas.reduce([AccountMeta]()) { result, accountMeta in
             var uniqueMetas = result
             if let index = uniqueMetas.firstIndex(where: { $0.publicKey == accountMeta.publicKey }) {
                 // if accountMeta exists
@@ -204,7 +204,7 @@ public struct Transaction: Encodable, Equatable {
         }
 
         // Cull duplicate account metas
-        var uniqueMetas: [Account.Meta] = []
+        var uniqueMetas: [AccountMeta] = []
         accountMetas.forEach { accountMeta in
             let pubkey = accountMeta.publicKey.base58EncodedString
             let uniqueIndex = uniqueMetas.firstIndex { x in x.publicKey.base58EncodedString == pubkey }
@@ -224,7 +224,7 @@ public struct Transaction: Encodable, Equatable {
             uniqueMetas.insert(payerMeta, at: 0)
         } else {
             uniqueMetas.insert(
-                Account.Meta(
+                AccountMeta(
                     publicKey: feePayer,
                     isSigner: true,
                     isWritable: true
@@ -258,8 +258,8 @@ public struct Transaction: Encodable, Equatable {
         // header
         var header = Message.Header()
 
-        var signedKeys = [Account.Meta]()
-        var unsignedKeys = [Account.Meta]()
+        var signedKeys = [AccountMeta]()
+        var unsignedKeys = [AccountMeta]()
 
         uniqueMetas.forEach { accountMeta in
             // signed keys
@@ -382,9 +382,9 @@ public struct Transaction: Encodable, Equatable {
         }
 
         message.instructions.forEach { instruction in
-            let keys: [Account.Meta] = instruction.accounts.map { account in
+            let keys: [AccountMeta] = instruction.accounts.map { account in
                 let pubkey = message.accountKeys[account]
-                return Account.Meta(
+                return AccountMeta(
                     publicKey: pubkey,
                     isSigner: transaction.signatures.contains { keyObj in keyObj.publicKey == pubkey } || message
                         .isAccountSigner(index: account),
