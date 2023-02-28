@@ -16,7 +16,7 @@ class AccountTests: XCTestCase {
             .decode("4Z7cXSyeFR8wNGMVXUE1TwtKn5D5Vu7FzEv69dokLv7KrQk7h6pu4LF8ZRR9yQBhc7uSM6RTTZtU1fmaxiNrxXrs")
         XCTAssertNotNil(secretKey)
 
-        let account = try Account(secretKey: Data(secretKey))
+        let account = try KeyPair(secretKey: Data(secretKey))
 
         XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", account.publicKey.base58EncodedString)
         XCTAssertEqual(64, account.secretKey.count)
@@ -106,13 +106,13 @@ class AccountTests: XCTestCase {
     func testRestoreAccountFromSeedPhrase() async throws {
         let phrase12 = "miracle pizza supply useful steak border same again youth silver access hundred"
             .components(separatedBy: " ")
-        let account12 = try await Account(phrase: phrase12, network: .mainnetBeta)
+        let account12 = try await KeyPair(phrase: phrase12, network: .mainnetBeta)
         XCTAssertEqual(account12.publicKey.base58EncodedString, "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG")
 
         let phrase24 =
             "budget resource fluid mutual ankle salt demise long burst sting doctor ozone risk magic wrap clap post pole jungle great update air interest abandon"
                 .components(separatedBy: " ")
-        let account24 = try await Account(phrase: phrase24, network: .mainnetBeta)
+        let account24 = try await KeyPair(phrase: phrase24, network: .mainnetBeta)
         XCTAssertEqual(account24.publicKey.base58EncodedString, "9avcmC97zLPwHKXiDz6GpXyjvPn9VcN3ggqM5gsRnjvv")
     }
 }

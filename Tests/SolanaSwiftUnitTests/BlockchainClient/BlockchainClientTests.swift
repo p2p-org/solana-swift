@@ -4,10 +4,10 @@ import XCTest
 @testable import SolanaSwift
 
 class BlockchainClientTests: XCTestCase {
-    var account: Account!
+    var account: KeyPair!
 
     override func setUp() async throws {
-        account = try await Account(
+        account = try await KeyPair(
             phrase: "miracle pizza supply useful steak border same again youth silver access hundred"
                 .components(separatedBy: " "),
             network: .mainnetBeta
@@ -432,5 +432,13 @@ private class MockAPIClient: SolanaAPIClient {
     
     func getRecentPerformanceSamples(limit: [UInt]) async throws -> [SolanaSwift.PerfomanceSamples] {
         fatalError()
+    }
+    
+    func getSlot() async throws -> UInt64 {
+        0
+    }
+    
+    func getAddressLookupTable(accountKey: SolanaSwift.PublicKey) async throws -> SolanaSwift.AddressLookupTableAccount? {
+        nil
     }
 }

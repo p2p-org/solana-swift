@@ -1,6 +1,6 @@
 import Foundation
 
 public protocol SolanaAccountStorage {
-    var account: Account? { get }
-    func save(_ account: Account) throws
+    var account: KeyPair? { get }
+    func save(_ account: KeyPair) throws
 }
