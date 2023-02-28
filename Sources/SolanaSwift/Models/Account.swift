@@ -21,14 +21,20 @@ public struct Account: Codable, Hashable {
         self.phrase = phrase
     }
     
-    public init(nonMnemonicPhrase phrase: [String], salt: String, network: Network, derivablePath: DerivablePath) async throws {
+    public init(
+        seed: String,
+        salt: String,
+        passphrase: String,
+        network: Network,
+        derivablePath: DerivablePath
+    ) async throws {
         self = try await Task {
             let publicKey: PublicKey
             let secretKey: Data
 
             switch derivablePath.type {
             case .deprecated:
-                let keychain = try Keychain(seed: phrase.joined(separator: " "), salt: salt, network: network.cluster)
+                let keychain = try Keychain(seed: seed, salt: salt, network: network.cluster)
                 guard let seed = try keychain?.derivedKeychain(at: derivablePath.rawValue).privateKey else {
                     throw SolanaError.other("Could not derivate private key")
                 }
@@ -38,7 +44,7 @@ public struct Account: Codable, Hashable {
                 publicKey = try .init(data: keys.publicKey)
                 secretKey = keys.secretKey
             default:
-                let password = (phrase.joined(separator: " ") as NSString).decomposedStringWithCompatibilityMapping
+                let password = (seed as NSString).decomposedStringWithCompatibilityMapping
                 let salt = (salt as NSString).decomposedStringWithCompatibilityMapping
                 guard let seedBytes = pbkdf2(
                     hash: CCPBKDFAlgorithm(kCCPRFHmacAlgSHA512),
@@ -58,7 +64,7 @@ public struct Account: Codable, Hashable {
                 secretKey = keyPair.secretKey
             }
 
-            return .init(phrase: phrase, publicKey: publicKey, secretKey: secretKey)
+            return .init(phrase: [seed], publicKey: publicKey, secretKey: secretKey)
         }.value
     }
     

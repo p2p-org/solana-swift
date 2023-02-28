@@ -48,12 +48,16 @@ class AccountTests: XCTestCase {
     }
     
     func testRestoreAccountFromNonMnemonicSeedPhrase() async throws {
-        let phrase = ["y", "5", "H", "M", "p", "D", "^", "G", "6", "3", "9", "x", "a", "b", "^", "8"]
-        let account = try await Account(nonMnemonicPhrase: phrase, salt: "mnemonic", network: .mainnetBeta, derivablePath: .default)
+        let account = try await Account(seed: "y 5 H M p D ^ G 6 3 9 x a b ^ 8", salt: "mnemonic", passphrase: "", network: .mainnetBeta, derivablePath: .default)
         XCTAssertEqual(account.publicKey, "7TJ2AEYmkUYJ3ESQv5B7Z1HwrTG9hUdj3PpqZn7DCxfo")
         
-        let account2 = try await Account(nonMnemonicPhrase: phrase, salt: "nice", network: .mainnetBeta, derivablePath: .default)
-        XCTAssertEqual(account2.publicKey, "F3QSXRR8XffakBT4VVJhf8JyA9hatCqtDcZw1tS46PM5")
+        let account2 = try await Account(seed: "y5HMpD^G639xab^8", salt: "mnemonic", passphrase: "", network: .mainnetBeta, derivablePath: .default)
+        XCTAssertEqual(account2.publicKey, "ADBWhBBb8di17PKfdXi4VhQwXnBBiUk8FJBNA6pwUdUc")
+        XCTAssertEqual(Base58.encode(account2.secretKey), "5ruGYGx7Hco9gFoUAHo4nL9Ar7DwJZg9acQVofiYDof6pN8DFcv6vu1ikUbPmEoj7v8RvDGrXrcbDQ4c5jVqqqkC")
+        
+        let account3 = try await Account(seed: "Lnj6uTyccG8WETn9", salt: "mnemonic", passphrase: "", network: .mainnetBeta, derivablePath: .default)
+        XCTAssertEqual(account3.publicKey, "3mxR3Z2kBkxDJTfYTPcRHbZMeD4CvQTrW8UHvT1FEHd8")
+        XCTAssertEqual(Base58.encode(account3.secretKey), "54oi838sVS7EnEdUgwaf1hLcYxDNZ7HLwrkAAggE9i9rCEPb5hZi9MkEU4r3ReDZ1EGWRpv36zTx7ZeLFZW3E1PL")
     }
     
     // MARK: - Deprecated derivable path
