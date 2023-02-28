@@ -68,7 +68,7 @@ public struct VersionedTransaction {
         return .init(message: versionedMessage, signatures: signatures)
     }
 
-    public mutating func sign(signers: [Account]) throws {
+    public mutating func sign(signers: [KeyPair]) throws {
         let messageData = try message.value.serialize()
         let signerPubkeys = message.value.staticAccountKeys.prefix(message.value.header.numRequiredSignatures)
 

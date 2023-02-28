@@ -50,7 +50,7 @@ public enum LookUpTableProgram {
         payer: PublicKey?,
         addresses: [PublicKey]
     ) -> TransactionInstruction {
-        var keys: [Account.Meta] = [
+        var keys: [AccountMeta] = [
             .init(publicKey: lookupTable, isSigner: false, isWritable: true),
             .init(publicKey: authority, isSigner: true, isWritable: false)
         ]
