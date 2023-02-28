@@ -49,7 +49,7 @@ class AccountTests: XCTestCase {
     
     func testRestoreAccountFromNonMnemonicSeedPhrase() async throws {
         let phrase = ["y", "5", "H", "M", "p", "D", "^", "G", "6", "3", "9", "x", "a", "b", "^", "8"]
-        let account = try await Account(nonMnemonicPhrase: phrase, salt: "", network: .mainnetBeta, derivablePath: .default)
+        let account = try await Account(nonMnemonicPhrase: phrase, salt: "mnemonic", network: .mainnetBeta, derivablePath: .default)
         XCTAssertEqual(account.publicKey, "7TJ2AEYmkUYJ3ESQv5B7Z1HwrTG9hUdj3PpqZn7DCxfo")
     }
     
