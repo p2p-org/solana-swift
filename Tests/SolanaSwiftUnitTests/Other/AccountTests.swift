@@ -51,6 +51,9 @@ class AccountTests: XCTestCase {
         let phrase = ["y", "5", "H", "M", "p", "D", "^", "G", "6", "3", "9", "x", "a", "b", "^", "8"]
         let account = try await Account(nonMnemonicPhrase: phrase, salt: "mnemonic", network: .mainnetBeta, derivablePath: .default)
         XCTAssertEqual(account.publicKey, "7TJ2AEYmkUYJ3ESQv5B7Z1HwrTG9hUdj3PpqZn7DCxfo")
+        
+        let account2 = try await Account(nonMnemonicPhrase: phrase, salt: "nice", network: .mainnetBeta, derivablePath: .default)
+        XCTAssertEqual(account2.publicKey, "F3QSXRR8XffakBT4VVJhf8JyA9hatCqtDcZw1tS46PM5")
     }
     
     // MARK: - Deprecated derivable path
