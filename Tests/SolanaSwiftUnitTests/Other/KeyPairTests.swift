@@ -58,6 +58,10 @@ class KeyPairTests: XCTestCase {
         let account3 = try await KeyPair(seed: "Lnj6uTyccG8WETn9", salt: "mnemonic", passphrase: "", network: .mainnetBeta, derivablePath: .default)
         XCTAssertEqual(account3.publicKey, "3mxR3Z2kBkxDJTfYTPcRHbZMeD4CvQTrW8UHvT1FEHd8")
         XCTAssertEqual(Base58.encode(account3.secretKey), "54oi838sVS7EnEdUgwaf1hLcYxDNZ7HLwrkAAggE9i9rCEPb5hZi9MkEU4r3ReDZ1EGWRpv36zTx7ZeLFZW3E1PL")
+        
+        let account4 = try await KeyPair(seed: "HelloWorld", salt: "mnemonic", passphrase: "", network: .mainnetBeta, derivablePath: .default)
+        XCTAssertEqual(account4.publicKey, "E6R7yqi3Wh1p7fSrX7bMkSVB9Sh75dAGFgHVFevasSv6")
+        XCTAssertEqual(Base58.encode(account4.secretKey), "YixumKVXM5QwZsKc1k1y3niyWtaH51UxUByVpJMxGswXL6cAp556htJ8rBGPe3m1Q9PiKmtKVgrcMrMATpDZDzJ")
     }
     
     // MARK: - Deprecated derivable path
