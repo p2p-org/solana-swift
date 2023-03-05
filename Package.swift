@@ -25,7 +25,7 @@ let package = Package(
         .package(name: "Task_retrying", url: "https://github.com/bigearsenal/task-retrying-swift.git", from: "1.0.3"),
 
         // Docs generator
-        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
+        // .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
