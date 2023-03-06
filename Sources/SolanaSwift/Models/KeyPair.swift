@@ -13,6 +13,14 @@ public struct KeyPair: Codable, Hashable {
     public let phrase: [String]
     public let publicKey: PublicKey
     public let secretKey: Data
+    
+    public init() throws {
+        let keys = try NaclSign.KeyPair.keyPair()
+        publicKey = try PublicKey(data: keys.publicKey)
+        self.secretKey = keys.secretKey
+        let phrase = try Mnemonic.toMnemonic(secretKey.bytes)
+        self.phrase = phrase
+    }
 
     public init(phrase: [String], publicKey: PublicKey, secretKey: Data) {
         self.phrase = phrase
