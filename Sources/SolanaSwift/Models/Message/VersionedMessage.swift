@@ -23,7 +23,7 @@ public enum VersionedMessage {
         }
     }
     
-    var value: IMessage {
+    public var value: IMessage {
         switch self {
         case let .legacy(message): return message
         case let .v0(message): return message
