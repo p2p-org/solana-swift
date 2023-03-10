@@ -10,6 +10,7 @@ import Foundation
 protocol IMessage {
     var version: TransactionVersion { get }
     var header: MessageHeader { get }
+    var recentBlockhash: String { get }
 
     func serialize() throws -> Data
     
