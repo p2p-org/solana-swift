@@ -34,64 +34,61 @@ public class TokensListParser {
         // check again for cancellation
         try Task.checkCancellation()
 
-        // decode data in other thread because it's a very big list with a lot of tokens
-        return try await Task {
-            let tokenList: TokensList
-            do {
-                tokenList = try JSONDecoder().decode(TokensList.self, from: data)
-            } catch {
-                // get json file
-                let bundle = Bundle(for: TokensListParser.self)
-                let path = bundle.path(forResource: network + ".tokens", ofType: "json")
-                let jsonData =
-                    try Data(contentsOf: URL(fileURLWithPath: path ?! TokensListParserError.invalidTokenlistPath))
-                tokenList = try JSONDecoder().decode(TokensList.self, from: jsonData)
-            }
+        // decode data
+        let tokenList: TokensList
+        do {
+            tokenList = try JSONDecoder().decode(TokensList.self, from: data)
+        } catch {
+            // get json file
+            let bundle = Bundle(for: TokensListParser.self)
+            let path = bundle.path(forResource: network + ".tokens", ofType: "json")
+            let jsonData =
+                try Data(contentsOf: URL(fileURLWithPath: path ?! TokensListParserError.invalidTokenlistPath))
+            tokenList = try JSONDecoder().decode(TokensList.self, from: jsonData)
+        }
 
-            // map tags
-            var tokens: [Token] = tokenList.tokens.map {
-                var item = $0
-                item.tags = (item._tags ?? []).map {
-                    tokenList.tags[$0] ?? TokenTag(name: $0, description: $0)
-                }
-                return item
+        // map tags
+        var tokens: [Token] = tokenList.tokens.map {
+            var item = $0
+            item.tags = (item._tags ?? []).map {
+                tokenList.tags[$0] ?? TokenTag(name: $0, description: $0)
             }
+            return item
+        }
 
-            // TODO: Move outside parser
-            // renBTC for devnet
-            if network == "devnet" {
-                tokens.append(
-                    .init(
-                        _tags: nil,
-                        chainId: 101,
-                        address: "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD",
-                        symbol: "renBTC",
-                        name: "renBTC",
-                        decimals: 8,
-                        logoURI: "https://raw.githubusercontent.com/p2p-org/solana-token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
-                        extensions: .init(
-                            website: "https://renproject.io/",
-                            bridgeContract: nil,
-                            assetContract: nil,
-                            address: nil,
-                            explorer: nil,
-                            twitter: nil,
-                            github: nil,
-                            medium: nil,
-                            tgann: nil,
-                            tggroup: nil,
-                            discord: nil,
-                            serumV3Usdt: nil,
-                            serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv",
-                            coingeckoId: "renbtc",
-                            imageUrl: nil,
-                            description: nil
-                        )
+        // TODO: Move outside parser
+        // renBTC for devnet
+        if network == "devnet" {
+            tokens.append(
+                .init(
+                    _tags: nil,
+                    chainId: 101,
+                    address: "FsaLodPu4VmSwXGr3gWfwANe4vKf8XSZcCh1CEeJ3jpD",
+                    symbol: "renBTC",
+                    name: "renBTC",
+                    decimals: 8,
+                    logoURI: "https://raw.githubusercontent.com/p2p-org/solana-token-list/main/assets/mainnet/CDJWUqTcYTVAKXAVXoQZFes5JUFc7owSeq7eMQcDSbo5/logo.png",
+                    extensions: .init(
+                        website: "https://renproject.io/",
+                        bridgeContract: nil,
+                        assetContract: nil,
+                        address: nil,
+                        explorer: nil,
+                        twitter: nil,
+                        github: nil,
+                        medium: nil,
+                        tgann: nil,
+                        tggroup: nil,
+                        discord: nil,
+                        serumV3Usdt: nil,
+                        serumV3Usdc: "74Ciu5yRzhe8TFTHvQuEVbFZJrbnCMRoohBK33NNiPtv",
+                        coingeckoId: "renbtc",
+                        imageUrl: nil,
+                        description: nil
                     )
                 )
-            }
-            return Set(tokens)
+            )
         }
-        .value
+        return Set(tokens)
     }
 }
