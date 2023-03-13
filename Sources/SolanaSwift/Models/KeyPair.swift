@@ -14,6 +14,14 @@ public struct KeyPair: Codable, Hashable {
     public let phrase: [String]
     public let publicKey: PublicKey
     public let secretKey: Data
+    
+    public init() throws {
+        let keys = try NaclSign.KeyPair.keyPair()
+        publicKey = try PublicKey(data: keys.publicKey)
+        self.secretKey = keys.secretKey
+        let phrase = try Mnemonic.toMnemonic(secretKey.bytes)
+        self.phrase = phrase
+    }
 
     public init(phrase: [String], publicKey: PublicKey, secretKey: Data) {
         self.phrase = phrase
@@ -113,50 +121,50 @@ public struct KeyPair: Codable, Hashable {
     ///   - network: network in which account should be created
     /// - Throws: Error if the derivation is not successful
     public init(phrase: [String] = [], network: Network, derivablePath: DerivablePath? = nil) async throws {
-        self = try await Task {
-            let mnemonic: Mnemonic
-            var phrase = phrase.filter { !$0.isEmpty }
-            if !phrase.isEmpty {
-                mnemonic = try Mnemonic(phrase: phrase)
+        let mnemonic: Mnemonic
+        var phrase = phrase.filter { !$0.isEmpty }
+        if !phrase.isEmpty {
+            mnemonic = try Mnemonic(phrase: phrase)
+        } else {
+            // change from 12-words to 24-words (128 to 256)
+            mnemonic = Mnemonic()
+            phrase = mnemonic.phrase
+        }
+
+        var derivablePath = derivablePath
+        if derivablePath == nil {
+            if phrase.count == 12 {
+                derivablePath = .init(type: .deprecated, walletIndex: 0, accountIndex: 0)
             } else {
-                // change from 12-words to 24-words (128 to 256)
-                mnemonic = Mnemonic()
-                phrase = mnemonic.phrase
+                derivablePath = .default
+            }
+        }
+
+        let publicKey: PublicKey
+        let secretKey: Data
+
+        switch derivablePath!.type {
+        case .deprecated:
+            let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
+            guard let seed = try keychain?.derivedKeychain(at: derivablePath!.rawValue).privateKey else {
+                throw SolanaError.other("Could not derivate private key")
             }
 
-            var derivablePath = derivablePath
-            if derivablePath == nil {
-                if phrase.count == 12 {
-                    derivablePath = .init(type: .deprecated, walletIndex: 0, accountIndex: 0)
-                } else {
-                    derivablePath = .default
-                }
-            }
+            let keys = try NaclSign.KeyPair.keyPair(fromSeed: seed)
 
-            let publicKey: PublicKey
-            let secretKey: Data
+            publicKey = try .init(data: keys.publicKey)
+            secretKey = keys.secretKey
+        default:
+            let keys = try Ed25519HDKey.derivePath(derivablePath!.rawValue, seed: mnemonic.seed.toHexString()).get()
+            let keyPair = try NaclSign.KeyPair.keyPair(fromSeed: keys.key)
+            let newKey = try PublicKey(data: keyPair.publicKey)
 
-            switch derivablePath!.type {
-            case .deprecated:
-                let keychain = try Keychain(seedString: phrase.joined(separator: " "), network: network.cluster)
-                guard let seed = try keychain?.derivedKeychain(at: derivablePath!.rawValue).privateKey else {
-                    throw SolanaError.other("Could not derivate private key")
-                }
-
-                let keys = try NaclSign.KeyPair.keyPair(fromSeed: seed)
-
-                publicKey = try .init(data: keys.publicKey)
-                secretKey = keys.secretKey
-            default:
-                let keys = try Ed25519HDKey.derivePath(derivablePath!.rawValue, seed: mnemonic.seed.toHexString()).get()
-                let keyPair = try NaclSign.KeyPair.keyPair(fromSeed: keys.key)
-                let newKey = try PublicKey(data: keyPair.publicKey)
-
-                publicKey = newKey
-                secretKey = keyPair.secretKey
-            }
-
-            return .init(phrase: phrase, publicKey: publicKey, secretKey: secretKey)
-        }.value
+            publicKey = newKey
+            secretKey = keyPair.secretKey
+        }
+        
+        self.phrase = phrase
+        self.publicKey = publicKey
+        self.secretKey = secretKey
     }
 }

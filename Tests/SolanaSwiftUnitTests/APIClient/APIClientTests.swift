@@ -32,7 +32,7 @@ class APIClientTests: XCTestCase {
                 .getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
         } catch let error as SolanaError {
             XCTAssertTrue(error == .couldNotRetrieveAccountInfo)
-        } catch let err {
+        } catch {
             XCTAssertTrue(false)
         }
     }
