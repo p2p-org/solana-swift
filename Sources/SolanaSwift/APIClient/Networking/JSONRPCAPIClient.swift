@@ -357,7 +357,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         } catch {
             Logger.log(
                 event: "SolanaSwift: makeRequest",
-                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8))",
+                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8) ?? "")",
                 logLevel: .error
             )
             throw APIClientError.cantEncodeParams
@@ -378,7 +378,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         } catch {
             Logger.log(
                 event: "SolanaSwift: makeRequest",
-                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8))",
+                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8) ?? "")",
                 logLevel: .error
             )
             throw APIClientError.cantEncodeParams

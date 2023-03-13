@@ -159,7 +159,7 @@ public extension PublicKey {
     }
     
     static func isOnCurve(publicKey: String) -> Int {
-        guard let data = try? Base58.decode(publicKey) else { return 0 }
+        let data = Base58.decode(publicKey)
         return isOnCurve(publicKeyBytes: Data(data))
     }
     
