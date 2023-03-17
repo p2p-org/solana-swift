@@ -19,9 +19,10 @@ public extension SolanaAPIClient {
 
     // MARK: - Additional methods
 
-    func getMultipleMintDatas(mintAddresses: [String],
-                              programId: String = TokenProgram.id.base58EncodedString) async throws -> [String: Mint]
-    {
+    func getMultipleMintDatas(
+        mintAddresses: [String],
+        programId: String = TokenProgram.id.base58EncodedString
+    ) async throws -> [String: Mint] {
         let accounts: [BufferInfo<Mint>] = try await getMultipleAccounts(pubkeys: mintAddresses)
         var mintDict = [String: Mint]()
         if accounts.contains(where: { $0.owner != programId }) == true {
@@ -128,13 +129,22 @@ public extension SolanaAPIClient {
     /// - Throws: TokenRepositoryError
     /// - Returns array of Wallet
     ///
-    func getTokenWallets(account: String, tokensRepository: SolanaTokensRepository? = nil) async throws -> [Wallet] {
-        async let accounts = try await getTokenAccountsByOwner(pubkey: account,
-                                                               params: .init(
-                                                                   mint: nil,
-                                                                   programId: TokenProgram.id.base58EncodedString
-                                                               ),
-                                                               configs: .init(encoding: "base64"))
+    func getTokenWallets(
+        account: String,
+        tokensRepository: SolanaTokensRepository? = nil,
+        commitment: Commitment? = nil
+    ) async throws -> [Wallet] {
+        async let accounts = try await getTokenAccountsByOwner(
+            pubkey: account,
+            params: .init(
+                mint: nil,
+                programId: TokenProgram.id.base58EncodedString
+            ),
+            configs: .init(
+                commitment: commitment,
+                encoding: "base64"
+            )
+        )
         let tokensRepository = tokensRepository ?? TokensRepository(endpoint: endpoint)
         async let tokens = try await tokensRepository.getTokensList()
         var knownWallets = [Wallet]()
@@ -200,7 +210,7 @@ public extension SolanaAPIClient {
             }
         }
     }
-    
+
     /// Returns all information associated with the account of provided Pubkey
     /// - Parameters:
     ///  - account: Pubkey of account to query, as base-58 encoded string
@@ -214,14 +224,14 @@ public extension SolanaAPIClient {
         }
         return info
     }
-    
+
     /// Get fee per signature
     func getLamportsPerSignature() async throws -> UInt64? {
         try await getFees(commitment: nil).feeCalculator?.lamportsPerSignature
     }
-    
+
     /// Convenience method for request(method:params:) with no params
-    func request<Entity>(method: String) async throws -> Entity where Entity : Decodable {
+    func request<Entity>(method: String) async throws -> Entity where Entity: Decodable {
         try await request(method: method, params: [])
     }
 }
