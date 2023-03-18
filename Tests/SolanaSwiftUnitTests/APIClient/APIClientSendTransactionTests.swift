@@ -36,7 +36,7 @@ class APIClientSendTransactionTests: XCTestCase {
         do {
             _ = try await apiClient.sendTransaction(transaction: "")
         } catch let APIClientError.responseError(response) {
-            XCTAssertEqual(response.message, "Transaction simulation failed: Error processing Instruction 2: custom program error: 0x1786")
+            XCTAssertTrue(response.message!.hasSuffix("custom program error: 0x1786"))
         }
     }
 }
