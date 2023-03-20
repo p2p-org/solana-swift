@@ -27,6 +27,18 @@ class APIClientSendTransactionTests: XCTestCase {
             XCTAssertEqual(response.message, "Transaction simulation failed: Blockhash not found")
         }
     }
+    
+    /// Transaction failed: whirpool InvalidTimestamp
+    func testSendTransactionWhirpoolInvalidTimestamp() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["sendTransactionWhirpoolInvalidTimestamp"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        
+        do {
+            _ = try await apiClient.sendTransaction(transaction: "")
+        } catch let APIClientError.responseError(response) {
+            XCTAssertTrue(response.message!.hasSuffix("custom program error: 0x1786"))
+        }
+    }
 }
 
 private var NetworkManagerMockJSON = [
@@ -34,5 +46,7 @@ private var NetworkManagerMockJSON = [
     "sendTransactionSuccess": #"{"jsonrpc":"2.0","result":"296E1ou3V9rRVktzCqNpzbzcTZMxTnFJCK2pWRoxKVidRfQam1KLRv6ETbKtf2S4CW1MyRCbeVairQQ3QWTPMRmt","id":"3FF1AACE-812A-4106-8C34-6EF66237673C"}"#,
     // blockhash not found
     "sendTransactionBlockhashNotFound":
-        #"{"jsonrpc":"2.0","error":{"code":-32002,"message":"Transaction simulation failed: Blockhash not found","data":{"accounts":null,"err":"BlockhashNotFound","logs":[],"returnData":null,"unitsConsumed":0}},"id":"9E312DD6-EF0C-4A03-B7A4-CA3AAEB4407A"}"#
+        #"{"jsonrpc":"2.0","error":{"code":-32002,"message":"Transaction simulation failed: Blockhash not found","data":{"accounts":null,"err":"BlockhashNotFound","logs":[],"returnData":null,"unitsConsumed":0}},"id":"9E312DD6-EF0C-4A03-B7A4-CA3AAEB4407A"}"#,
+    // whirpool InvalidTimestamp
+    "sendTransactionWhirpoolInvalidTimestamp": #"{"jsonrpc":"2.0","error":{"code":-32002,"message":"Transaction simulation failed: Error processing Instruction 2: custom program error: 0x1786","data":{"accounts":null,"err":{"InstructionError":[2,{"Custom":6022}]},"logs":["Program JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB failed: custom program error: 0x1786"],"unitsConsumed":20724}},"id":"06BAEEB7-B99D-46B4-B19A-B05E80927A42"}"#
 ]
