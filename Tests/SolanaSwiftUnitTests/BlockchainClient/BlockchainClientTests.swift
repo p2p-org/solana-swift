@@ -437,4 +437,8 @@ private class MockAPIClient: SolanaAPIClient {
     func getSlot() async throws -> UInt64 {
         0
     }
+    
+    func getAddressLookupTable(accountKey: SolanaSwift.PublicKey) async throws -> SolanaSwift.AddressLookupTableAccount? {
+        nil
+    }
 }

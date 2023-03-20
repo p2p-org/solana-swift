@@ -232,7 +232,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#sendtransaction
     ///
     func sendTransaction(transaction: String, configs: RequestConfiguration) async throws -> TransactionID
-
+    
     /// Simulate sending a transaction
     /// - Parameters:
     ///  - serializedTransaction: fully-signed Transaction, as encoded string
@@ -321,4 +321,9 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getrecentperformancesamples
     ///
     func getRecentPerformanceSamples(limit: [UInt]) async throws -> [PerfomanceSamples]
+    
+    // TODO: full implement
+    func getSlot() async throws -> UInt64
+    
+    func getAddressLookupTable(accountKey: PublicKey) async throws -> AddressLookupTableAccount?
 }

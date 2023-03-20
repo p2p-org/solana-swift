@@ -30,3 +30,14 @@ public struct FeeAmount: Equatable, Hashable {
         .init(transaction: 0, accountBalances: 0)
     }
 }
+
+public extension FeeAmount {
+    static func +(lhs: FeeAmount, rhs: FeeAmount) -> FeeAmount {
+        return .init(
+            transaction: lhs.transaction + rhs.transaction,
+            accountBalances: lhs.accountBalances + rhs.accountBalances,
+            deposit: lhs.deposit + rhs.deposit,
+            others: lhs.others == nil && rhs.others == nil ? nil : ((lhs.others ?? []) + (rhs.others ?? []))
+        )
+    }
+}
