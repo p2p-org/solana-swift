@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Task_retrying
 
 public extension Error {
     var readableDescription: String {
@@ -29,7 +30,9 @@ public extension Error {
     }
     
     var isSolanaBlockchainRelatedError: Bool {
-        guard let error = self as? APIClientError else {
+        guard let error = ((self as? APIClientError) ?? // APIClientError
+            ((self as? TaskRetryingError)?.lastError as? APIClientError)) // Retrying with last error
+        else {
             return false
         }
         switch error {
