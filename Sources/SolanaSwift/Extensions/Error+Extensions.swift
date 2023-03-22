@@ -27,6 +27,18 @@ public extension Error {
         }
         return false
     }
+    
+    var isSolanaBlockchainRelatedError: Bool {
+        guard let error = self as? APIClientError else {
+            return false
+        }
+        switch error {
+        case .responseError:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 private extension String {
