@@ -1,3 +1,17 @@
+## 3.0.0
+
+- Change iconUrl of some tokens
+- Fix decoding for ConfirmedTransaction
+- Add support additional params for socket
+- Conform PreparedTransaction to Equatable
+- Rename Account to KeyPair and deprecated Account
+- Public some structs
+- Fix decimal for USDC from 8 to 6
+- Add empty init for KeyPair
+- Add test for SendTransaction
+- Add support Commitment in getTokenWallets
+- Add support for VersionedTransaction
+
 ## 2.5.3
 
 - Add rpc method getRecentPerformanceSamples
