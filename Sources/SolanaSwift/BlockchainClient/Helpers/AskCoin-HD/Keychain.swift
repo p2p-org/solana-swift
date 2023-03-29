@@ -6,6 +6,7 @@
 //  Copyright © 2017年 askcoin. All rights reserved.
 //
 import Foundation
+import CommonCrypto
 
 let BTCKeychainMainnetPrivateVersion: UInt32 = 0x0488_ADE4
 let BTCKeychainMainnetPublicVersion: UInt32 = 0x0488_B21E
@@ -47,6 +48,30 @@ public class Keychain: NSObject {
             return nil
         }
         guard let hmac = hmacSha512(message: Data(seedData.seed), key: keyData) else {
+            return nil
+        }
+        self.init(hmac: hmac.bytes)
+        isMasterKey = true
+        isTestnet = network == "devnet" || network == "testnet"
+    }
+    
+    public convenience init?(seed: String, salt: String, network: String) throws {
+        let password = (seed.components(separatedBy: " ").joined(separator: " ") as NSString).decomposedStringWithCompatibilityMapping
+        let salt = (salt as NSString).decomposedStringWithCompatibilityMapping
+        guard let seedBytes = pbkdf2(
+            hash: CCPBKDFAlgorithm(kCCPRFHmacAlgSHA512),
+            password: password,
+            salt: Data(salt.bytes),
+            keyByteCount: 64,
+            rounds: 2048
+        )?.bytes else {
+            return nil
+        }
+        
+        guard let keyData = "Bitcoin seed".data(using: .utf8) else {
+            return nil
+        }
+        guard let hmac = hmacSha512(message: Data(seedBytes), key: keyData) else {
             return nil
         }
         self.init(hmac: hmac.bytes)
