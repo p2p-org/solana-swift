@@ -187,22 +187,13 @@ public struct NewTransaction: Encodable, Equatable {
                 // Signers always come before non-signers
                 return x.isSigner ? true : false
             }
-
             if x.isWritable != y.isWritable {
                 // Writable accounts always come before read-only accounts
                 return x.isWritable ? true : false
             }
-
-            // Otherwise, sort by pubkey.
-            for (lhs, rhs) in zip(x.publicKey.data.bytes, y.publicKey.bytes) {
-                if lhs == rhs {
-                    continue
-                }
-
-                return lhs < rhs
-            }
-
-            return false
+            // Otherwise, sort by pubkey, stringwise.
+            return x.publicKey.base58EncodedString
+                .compare(y.publicKey.base58EncodedString, locale: locale) == .orderedAscending
         }
 
         // filterOut duplicate account metas, keeps writable one
@@ -364,7 +355,7 @@ public struct NewTransaction: Encodable, Equatable {
         return data
     }
 
-    public static func from(data: Data) throws -> Transaction {
+    public static func from(data: Data) throws -> Self {
         var data = data
         var signatures: [String] = []
         let signatureCount = data.decodeLength()
@@ -379,8 +370,8 @@ public struct NewTransaction: Encodable, Equatable {
         return populate(try Message.from(data: data), signatures)
     }
 
-    static func populate(_ message: Message, _ signatures: [String]) -> Transaction {
-        var transaction = Transaction()
+    static func populate(_ message: Message, _ signatures: [String]) -> Self {
+        var transaction = NewTransaction()
 
         transaction.recentBlockhash = message.recentBlockhash
         if message.header.numRequiredSignatures > 0 {
