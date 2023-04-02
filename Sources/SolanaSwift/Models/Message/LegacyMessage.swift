@@ -4,7 +4,7 @@ import Foundation
 public typealias BlockHash = String
 
 /// Lecagy message
-public struct Message: IMessage {
+public struct Message: IMessage, Equatable {
     public var version: TransactionVersion { .legacy }
 
     // MARK: - Constants
@@ -153,4 +153,3 @@ public struct Message: IMessage {
         Data.encodeLength(length)
     }
 }
-

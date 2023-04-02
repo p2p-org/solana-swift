@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum VersionedMessage {
+public enum VersionedMessage: Equatable {
     case legacy(Message)
     case v0(MessageV0)
 

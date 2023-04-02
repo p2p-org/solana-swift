@@ -19,7 +19,7 @@ public struct MessageHeader: Decodable, Equatable {
     }
 }
 
-public struct MessageCompiledInstruction {
+public struct MessageCompiledInstruction: Equatable {
     public let programIdIndex: UInt8
     public let accountKeyIndexes: [UInt8]
     public let data: [UInt8]

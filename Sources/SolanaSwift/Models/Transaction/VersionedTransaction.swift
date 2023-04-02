@@ -8,12 +8,12 @@
 import Foundation
 import TweetNacl
 
-public enum TransactionVersion {
+public enum TransactionVersion: Equatable {
     case v0
     case legacy
 }
 
-public struct VersionedTransaction {
+public struct VersionedTransaction: Equatable {
     public var message: VersionedMessage
     public internal(set) var signatures: [Data]
     
