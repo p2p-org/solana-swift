@@ -153,6 +153,19 @@ public struct Token: Hashable, Codable {
         )
     }
 
+    public static var usdcet: Self {
+        .init(
+            _tags: nil,
+            chainId: 101,
+            address: "A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM",
+            symbol: "USDCet",
+            name: "USD Coin (Wormhole)",
+            decimals: 6,
+            logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM/logo.png",
+            extensions: .init(coingeckoId: "usd-coin")
+        )
+    }
+
     public var wrappedBy: WrappingToken? {
         if tags.contains(where: { $0.name == "wrapped-sollet" }) {
             return .sollet
