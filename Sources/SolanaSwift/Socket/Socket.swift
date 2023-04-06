@@ -2,13 +2,24 @@ import Foundation
 
 public struct Filter: Codable {
     public struct MemCmp: Codable {
-        let offset: UInt64
-        let bytes: String
-        let encoding: String
+        public let offset: UInt64
+        public let bytes: String
+        public let encoding: String
+
+        public init(offset: UInt64, bytes: String, encoding: String) {
+            self.offset = offset
+            self.bytes = bytes
+            self.encoding = encoding
+        }
     }
 
     public let dataSize: UInt64
-    public let memcmp: MemCmp
+    public let memcmp: MemCmp?
+
+    public init(dataSize: UInt64, memcmp: MemCmp?) {
+        self.dataSize = dataSize
+        self.memcmp = memcmp
+    }
 }
 
 public protocol SolanaSocket {
