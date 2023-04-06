@@ -42,6 +42,11 @@ public protocol SolanaSocket {
                                                     encoding: String) async throws
         -> String
 
+    @discardableResult func rawSubscribe<T: Encodable>(
+        type entity: SocketEntity,
+        params: [T]
+    ) async throws -> String
+
     /// Unsubscribe to an entity ('account', 'program', 'signature', for example)
     /// - Parameters:
     ///   - type: type of entity, '.account', '.program',...
@@ -168,6 +173,15 @@ public class Socket: NSObject, SolanaSocket {
     ) async throws -> String {
         let method: SocketMethod = .init(entity, .subscribe)
         let params: [Encodable] = [params, ["commitment": commitment, "encoding": encoding]]
+        let request = RequestAPI(method: method.rawValue, params: params)
+        return try await writeToSocket(request: request)
+    }
+
+    @discardableResult public func rawSubscribe<T: Encodable>(
+        type entity: SocketEntity,
+        params: [T]
+    ) async throws -> String {
+        let method: SocketMethod = .init(entity, .subscribe)
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
