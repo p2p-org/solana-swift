@@ -1,5 +1,16 @@
 import Foundation
 
+public struct Filter: Codable {
+    public struct MemCmp: Codable {
+        let offset: UInt64
+        let bytes: String
+        let encoding: String
+    }
+
+    public let dataSize: UInt64
+    public let memcmp: MemCmp
+}
+
 public protocol SolanaSocket {
     /// Connection status of the socket
     var isConnected: Bool { get }
@@ -18,7 +29,17 @@ public protocol SolanaSocket {
     ///   - type: type of entity, '.account', '.program',...
     ///   - params: params to be sent
     /// - Returns: id of the request
-    @discardableResult func subscribe<T: Encodable>(type: SocketEntity, params: T, commitment: String, encoding: String) async throws
+    @discardableResult func subscribe<T: Encodable>(type: SocketEntity, params: T, commitment: String,
+                                                    encoding: String) async throws
+        -> String
+
+    /// Subscribe to an entity ('account', 'program', 'signature', for example)
+    /// - Parameters:
+    ///   - type: type of entity, '.account', '.program',...
+    ///   - params: params to be sent
+    /// - Returns: id of the request
+    @discardableResult func subscribe<T: Encodable>(type: SocketEntity, params: [T], commitment: String,
+                                                    encoding: String) async throws
         -> String
 
     /// Unsubscribe to an entity ('account', 'program', 'signature', for example)
@@ -147,6 +168,19 @@ public class Socket: NSObject, SolanaSocket {
     ) async throws -> String {
         let method: SocketMethod = .init(entity, .subscribe)
         let params: [Encodable] = [params, ["commitment": commitment, "encoding": encoding]]
+        let request = RequestAPI(method: method.rawValue, params: params)
+        return try await writeToSocket(request: request)
+    }
+
+    @discardableResult public func subscribe<T: Encodable>(
+        type entity: SocketEntity,
+        params: [T],
+        commitment: String,
+        encoding: String
+    ) async throws
+    -> String {
+        let method: SocketMethod = .init(entity, .subscribe)
+        let params: [Encodable] = params + [["commitment": commitment, "encoding": encoding]]
         let request = RequestAPI(method: method.rawValue, params: params)
         return try await writeToSocket(request: request)
     }
