@@ -172,17 +172,21 @@ public extension SolanaAPIClient {
         }
         let mintDatas = try await getMultipleMintDatas(mintAddresses: unknownAccounts.map(\.1.mint.base58EncodedString))
         guard mintDatas.count == unknownAccounts.count else { throw SolanaError.unknown }
-        let wallets = mintDatas.enumerated().map {
-            Wallet(
-                pubkey: unknownAccounts[$0].0,
-                lamports: unknownAccounts[$0].1.lamports,
-                supply: $1.value.supply,
-                token: .unsupported(
-                    mint: unknownAccounts[$0].1.mint.base58EncodedString,
-                    decimals: $1.value.decimals,
-                    supply: $1.value.supply
+        let wallets: [Wallet] = mintDatas.compactMap { address, mint in
+            if let unknownAccount = unknownAccounts.first(where: { $0.1.mint.base58EncodedString == address }) {
+                return Wallet(
+                    pubkey: unknownAccount.0,
+                    lamports: unknownAccount.1.lamports,
+                    supply: mint.supply,
+                    token: .unsupported(
+                        mint: unknownAccount.1.mint.base58EncodedString,
+                        decimals: mint.decimals,
+                        supply: mint.supply
+                    )
                 )
-            )
+            } else {
+                return nil
+            }
         }
         return knownWallets + wallets
     }
