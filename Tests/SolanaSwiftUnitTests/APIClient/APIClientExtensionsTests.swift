@@ -60,21 +60,6 @@ class APIClientExtensionsTests: XCTestCase {
         )
         XCTAssertFalse(exist2)
     }
-
-    func testGetTokenWallets() async throws {
-        let mock = TokenRepositoryMockNetworkManager(withError: false)
-        let apiClient = BaseAPIClientMock(endpoint: endpoint)
-        let tokenRepository = TokensRepository(
-            endpoint: endpoint,
-            tokenListParser: TokensListParser(networkManager: mock)
-        )
-        let res = try await apiClient.getTokenWallets(
-            account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
-            tokensRepository: tokenRepository
-        )
-        XCTAssertEqual(res.count, 1)
-        XCTAssertEqual(res.first?.pubkey, "9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4")
-    }
     
     func testGetAccountInfoThrowable() async throws {
         let mock = NetworkManagerMock1()

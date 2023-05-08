@@ -1,5 +1,11 @@
 import Foundation
 
+// TODO: - Remove later
+@available(*, deprecated, message: "Please move it to your app business logic")
+public typealias SolanaTokenAccount = Wallet
+
+
+@available(*, deprecated, renamed: "SolanaTokenAccount")
 public struct Wallet: Hashable {
     // MARK: - Properties
 

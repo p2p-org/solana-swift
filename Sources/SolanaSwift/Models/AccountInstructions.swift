@@ -6,14 +6,14 @@ public struct AccountInstructions {
         instructions: [TransactionInstruction] = [],
         cleanupInstructions: [TransactionInstruction] = [],
         signers: [KeyPair] = [],
-        newWalletPubkey: String? = nil,
+        newTokenAccountPubkey: String?,
         secretKey: Data? = nil
     ) {
         self.account = account
         self.instructions = instructions
         self.cleanupInstructions = cleanupInstructions
         self.signers = signers
-        self.newWalletPubkey = newWalletPubkey
+        self.newTokenAccountPubkey = newTokenAccountPubkey
         self.secretKey = secretKey
     }
 
@@ -22,8 +22,8 @@ public struct AccountInstructions {
     public var cleanupInstructions: [TransactionInstruction]
     public let signers: [KeyPair]
 
-    // additionally return new wallet address
-    internal private(set) var newWalletPubkey: String?
+    // additionally return new token account address
+    internal private(set) var newTokenAccountPubkey: String?
 
     // additionally return newAccount's secretkey
     internal private(set) var secretKey: Data?

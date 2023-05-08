@@ -58,6 +58,7 @@ public extension SolanaBlockchainClient {
             signers: [
                 newAccount,
             ],
+            newTokenAccountPubkey: nil,
             secretKey: newAccount.secretKey
         )
     }
@@ -115,7 +116,8 @@ public extension SolanaBlockchainClient {
         if isAssociatedTokenAddressRegistered {
             return .init(
                 account: associatedAddress,
-                cleanupInstructions: []
+                cleanupInstructions: [],
+                newTokenAccountPubkey: nil
             )
         }
 
@@ -131,7 +133,7 @@ public extension SolanaBlockchainClient {
                     ),
             ],
             cleanupInstructions: cleanupInstructions,
-            newWalletPubkey: associatedAddress.base58EncodedString
+            newTokenAccountPubkey: associatedAddress.base58EncodedString
         )
     }
 }
