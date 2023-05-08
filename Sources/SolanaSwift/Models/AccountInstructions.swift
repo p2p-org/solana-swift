@@ -6,7 +6,7 @@ public struct AccountInstructions {
         instructions: [TransactionInstruction] = [],
         cleanupInstructions: [TransactionInstruction] = [],
         signers: [KeyPair] = [],
-        newTokenAccountPubkey: String?,
+        newTokenAccountPubkey: String? = nil,
         secretKey: Data? = nil
     ) {
         self.account = account
