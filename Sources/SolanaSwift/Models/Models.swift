@@ -20,7 +20,7 @@ public struct SocketParams<T: Decodable>: Decodable {
     public let subscription: UInt64?
 }
 
-public struct ResponseError: Decodable, Equatable {
+public struct ResponseError: Codable, Equatable {
     public init(code: Int?, message: String?, data: ResponseErrorData?) {
         self.code = code
         self.message = message
@@ -32,7 +32,7 @@ public struct ResponseError: Decodable, Equatable {
     public let data: ResponseErrorData?
 }
 
-public struct ResponseErrorData: Decodable, Equatable {
+public struct ResponseErrorData: Codable, Equatable {
     // public let err: ResponseErrorDataError
     public let logs: [String]?
     public let numSlotsBehind: Int?
