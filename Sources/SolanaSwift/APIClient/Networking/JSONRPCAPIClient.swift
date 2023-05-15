@@ -192,9 +192,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
             return try await get(method: "sendTransaction", params: [transaction, configs])
         } catch {
             // Modify error message
-            if let error = error as? SolanaError {
+            if let error = error as? APIClientError {
                 switch error {
-                case let .invalidResponse(response) where response.message != nil:
+                case let .responseError(response) where response.message != nil:
+                    // Modify message
                     var message = response.message
                     if let readableMessage = response.data?.logs?
                         .first(where: { $0.contains("Error:") })?
@@ -213,8 +214,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
                         message: (message ?? "") + "\n " + (response.data?.logs?.joined(separator: " ") ?? ""),
                         logLevel: .error
                     )
-                    throw SolanaError
-                        .invalidResponse(ResponseError(code: response.code, message: message, data: response.data))
+                    throw APIClientError
+                        .responseError(ResponseError(code: response.code, message: message, data: response.data))
                 default:
                     break
                 }

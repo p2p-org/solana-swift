@@ -18,9 +18,9 @@ public extension Error {
     }
 
     var isAlreadyInUseSolanaError: Bool {
-        if let error = self as? SolanaError {
+        if let error = self as? APIClientError {
             switch error {
-            case let .invalidResponse(response):
+            case let .responseError(response):
                 return response.data?.logs?.contains(where: \.isAlreadyInUseLog) == true
             default:
                 break

@@ -111,7 +111,14 @@ private extension Error {
             switch error {
             case let .other(message) where message == "Blockhash not found":
                 return true
-            case let .invalidResponse(response) where response.message == "Blockhash not found":
+            default:
+                break
+            }
+        }
+        
+        if let error = self as? APIClientError {
+            switch error {
+            case let .responseError(response) where response.message == "Blockhash not found":
                 return true
             default:
                 break

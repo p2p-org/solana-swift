@@ -9,8 +9,6 @@ public enum SolanaError: Swift.Error, Equatable {
             return true
         case let (.invalidRequest(rs1), .invalidRequest(rs2)):
             return rs1 == rs2
-        case let (.invalidResponse(rs1), .invalidResponse(rs2)):
-            return rs1.code == rs2.code
         case let (.socket(er1), .socket(er2)):
             return er1.localizedDescription == er2.localizedDescription
         case let (.other(rs1), .other(rs2)):
@@ -30,9 +28,6 @@ public enum SolanaError: Swift.Error, Equatable {
 
     // Invalid Requests
     case invalidRequest(reason: String? = nil)
-
-    // Invalid responses
-    case invalidResponse(ResponseError)
 
     // Transaction error
     case transactionError(ErrorDetail, logs: [String])
