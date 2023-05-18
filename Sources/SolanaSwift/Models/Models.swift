@@ -33,6 +33,11 @@ public struct ResponseError: Codable, Equatable {
 }
 
 public struct ResponseErrorData: Codable, Equatable {
+    public init(logs: [String]? = nil, numSlotsBehind: Int? = nil) {
+        self.logs = logs
+        self.numSlotsBehind = numSlotsBehind
+    }
+    
     // public let err: ResponseErrorDataError
     public let logs: [String]?
     public let numSlotsBehind: Int?
