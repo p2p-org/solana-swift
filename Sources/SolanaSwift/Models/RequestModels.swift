@@ -87,6 +87,7 @@ public struct RequestConfiguration: Encodable {
     public let until: String?
     public let skipPreflight: Bool?
     public let preflightCommitment: Commitment?
+    public let searchTransactionHistory: Bool?
 
     public init?(
         commitment: Commitment? = nil,
@@ -97,10 +98,11 @@ public struct RequestConfiguration: Encodable {
         before: String? = nil,
         until: String? = nil,
         skipPreflight: Bool? = nil,
-        preflightCommitment: Commitment? = nil
+        preflightCommitment: Commitment? = nil,
+        searchTransactionHistory: Bool? = nil
     ) {
         if commitment == nil, encoding == nil, dataSlice == nil, filters == nil, limit == nil, before == nil,
-           until == nil, skipPreflight == nil
+           until == nil, skipPreflight == nil, preflightCommitment == nil, searchTransactionHistory == nil
         {
             return nil
         }
@@ -114,6 +116,7 @@ public struct RequestConfiguration: Encodable {
         self.until = until
         self.skipPreflight = skipPreflight
         self.preflightCommitment = preflightCommitment
+        self.searchTransactionHistory = searchTransactionHistory
     }
 }
 
