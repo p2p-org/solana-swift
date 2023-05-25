@@ -100,7 +100,7 @@ public struct RequestConfiguration: Encodable {
         preflightCommitment: Commitment? = nil
     ) {
         if commitment == nil, encoding == nil, dataSlice == nil, filters == nil, limit == nil, before == nil,
-           until == nil, skipPreflight == nil
+           until == nil, skipPreflight == nil, preflightCommitment == nil
         {
             return nil
         }
