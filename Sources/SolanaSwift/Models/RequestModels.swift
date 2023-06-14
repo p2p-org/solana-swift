@@ -88,6 +88,7 @@ public struct RequestConfiguration: Encodable {
     public let skipPreflight: Bool?
     public let preflightCommitment: Commitment?
     public let searchTransactionHistory: Bool?
+    public let replaceRecentBlockhash: Bool?
 
     public init?(
         commitment: Commitment? = nil,
@@ -99,10 +100,20 @@ public struct RequestConfiguration: Encodable {
         until: String? = nil,
         skipPreflight: Bool? = nil,
         preflightCommitment: Commitment? = nil,
-        searchTransactionHistory: Bool? = nil
+        searchTransactionHistory: Bool? = nil,
+        replaceRecentBlockhash: Bool? = nil
     ) {
-        if commitment == nil, encoding == nil, dataSlice == nil, filters == nil, limit == nil, before == nil,
-           until == nil, skipPreflight == nil, preflightCommitment == nil, searchTransactionHistory == nil
+        if commitment == nil,
+           encoding == nil,
+           dataSlice == nil,
+           filters == nil,
+           limit == nil,
+           before == nil,
+           until == nil,
+           skipPreflight == nil,
+           preflightCommitment == nil,
+           searchTransactionHistory == nil,
+           replaceRecentBlockhash == nil
         {
             return nil
         }
@@ -117,6 +128,7 @@ public struct RequestConfiguration: Encodable {
         self.skipPreflight = skipPreflight
         self.preflightCommitment = preflightCommitment
         self.searchTransactionHistory = searchTransactionHistory
+        self.replaceRecentBlockhash = replaceRecentBlockhash
     }
 }
 

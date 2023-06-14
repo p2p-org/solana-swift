@@ -236,15 +236,23 @@ public class JSONRPCAPIClient: SolanaAPIClient {
 
     public func simulateTransaction(
         transaction: String,
-        configs: RequestConfiguration = RequestConfiguration(encoding: "base64")!
+        configs: RequestConfiguration = RequestConfiguration(
+            commitment: "confirmed",
+            encoding: "base64",
+            replaceRecentBlockhash: true
+        )!
     ) async throws -> SimulationResult {
         let result: Rpc<SimulationResult> = try await get(method: "simulateTransaction", params: [transaction, configs])
+        
+        // Error assertion
         if let err = result.value.err {
             if (err.wrapped as? String) == "BlockhashNotFound" {
                 throw SolanaError.other("Blockhash not found")
             }
             throw SolanaError.transactionError(err, logs: result.value.logs)
         }
+        
+        // Return value
         return result.value
     }
 
