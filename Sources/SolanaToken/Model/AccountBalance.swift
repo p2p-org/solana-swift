@@ -8,9 +8,9 @@
 import Foundation
 
 @available(*, deprecated, renamed: "SolanaAccount")
-public typealias Wallet = SolanaAccount
+public typealias Wallet = AccountBalance
 
-public struct SolanaAccount: Hashable {
+public struct AccountBalance: Hashable {
     // MARK: - Properties
 
     public var pubkey: String?
@@ -43,8 +43,8 @@ public struct SolanaAccount: Hashable {
     public static func nativeSolana(
         pubkey: String?,
         lamport: UInt64?
-    ) -> SolanaAccount {
-        SolanaAccount(
+    ) -> AccountBalance {
+        AccountBalance(
             pubkey: pubkey,
             lamports: lamport,
             token: .nativeSolana
