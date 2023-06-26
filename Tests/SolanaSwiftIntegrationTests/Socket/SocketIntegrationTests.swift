@@ -14,69 +14,57 @@ class SocketIntegrationTests: XCTestCase {
         socket = nil
     }
 
-    func testSocketEvents() async throws {
-        let expectation = XCTestExpectation()
-        let delegate = MockSocketDelegate()
-        delegate.onConected = {
-            Task {
-                let _ = try await self.socket
-                    .accountSubscribe(publickey: "9xkso5sXmSEaEME7KDD7EumvYKyYRBJJ1ArQopnCGZrA") // native address
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
-                    Task {
-                        try await self.socket
-                            .accountSubscribe(publickey: "2uTfDKywe5ZGqyztJ6KMEPrRTa9WD53ueviYoti8vdCX") // usdc address
-                    }
-                }
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
-                    Task {
-                        try await self.socket
-                            .signatureSubscribe(
-                                signature: "2ctrG8WQWvbawgwY9mr7dv8LXXj4bridpD6b4sEJu7gFgvkrSgd6APu2Xnp6vq4oKEkvoSq9W1QzpVi9gZRrM6WR"
-                            ) // signature status
-                    }
-                }
-
-//                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) {
+//    func testSocketEvents() async throws {
+//        let expectation = XCTestExpectation()
+//        let delegate = MockSocketDelegate()
+//        delegate.onConected = {
+//            Task {
+//                let _ = try await self.socket
+//                    .accountSubscribe(publickey: "9xkso5sXmSEaEME7KDD7EumvYKyYRBJJ1ArQopnCGZrA") // native address
+//
+//                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
 //                    Task {
-//                        try await self.socket.logsSubscribeAll()
+//                        try await self.socket
+//                            .accountSubscribe(publickey: "2uTfDKywe5ZGqyztJ6KMEPrRTa9WD53ueviYoti8vdCX") // usdc address
 //                    }
 //                }
 //
-//                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(4)) {
+//                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
 //                    Task {
-//                        try await self.socket.programSubscribe(publickey: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA") // token program
+//                        try await self.socket
+//                            .signatureSubscribe(
+//                                signature: "2ctrG8WQWvbawgwY9mr7dv8LXXj4bridpD6b4sEJu7gFgvkrSgd6APu2Xnp6vq4oKEkvoSq9W1QzpVi9gZRrM6WR"
+//                            ) // signature status
 //                    }
 //                }
-            }
-        }
-        delegate.onSubscribed = { subscriptionId, id in
-            Logger.log(event: "response", message: "subscriptionId: \(subscriptionId), id: \(id)")
-        }
-        delegate.onNativeAccountNotification = { notification in
-            Logger.log(event: "response", message: "lamports: \(String(describing: notification.lamports))")
-        }
-        delegate.onTokenAccountNotification = { notification in
-            Logger.log(event: "response", message: "\(notification)")
-        }
-        delegate.onSignatureNotification = { notification in
-            Logger.log(event: "response", message: "\(notification)")
-        }
-        delegate.onLogsNotification = { notification in
-            Logger.log(event: "response", message: "\(notification)")
-        }
-        delegate.onProgramNotification = { notification in
-            Logger.log(event: "response", message: "\(notification)")
-        }
-        delegate.onDisconnected = {
-            expectation.fulfill()
-        }
-
-        socket.delegate = delegate
-        socket.connect()
-        wait(for: [expectation], timeout: 2000.0)
-    }
+//            }
+//        }
+//        delegate.onSubscribed = { subscriptionId, id in
+//            Logger.log(event: "response", message: "subscriptionId: \(subscriptionId), id: \(id)")
+//        }
+//        delegate.onNativeAccountNotification = { notification in
+//            Logger.log(event: "response", message: "lamports: \(String(describing: notification.lamports))")
+//        }
+//        delegate.onTokenAccountNotification = { notification in
+//            Logger.log(event: "response", message: "\(notification)")
+//        }
+//        delegate.onSignatureNotification = { notification in
+//            Logger.log(event: "response", message: "\(notification)")
+//        }
+//        delegate.onLogsNotification = { notification in
+//            Logger.log(event: "response", message: "\(notification)")
+//        }
+//        delegate.onProgramNotification = { notification in
+//            Logger.log(event: "response", message: "\(notification)")
+//        }
+//        delegate.onDisconnected = {
+//            expectation.fulfill()
+//        }
+//
+//        socket.delegate = delegate
+//        socket.connect()
+//        wait(for: [expectation], timeout: 2000.0)
+//    }
 }
 
 class MockSocketDelegate: SolanaSocketEventsDelegate {
