@@ -3,7 +3,7 @@ import XCTest
 
 class TokensRepositoryTests: XCTestCase {
     func testFill_WithStorageData_ShouldLoadFromStorage() async throws {
-        let tokens = Set([Token.usdc, Token.nativeSolana])
+        let tokens = Set([TokenMetadata.usdc, TokenMetadata.nativeSolana])
 
         let source = TestableSolanaTokenListSource()
         source.mockTokens = tokens
@@ -24,13 +24,13 @@ class TokensRepositoryTests: XCTestCase {
 
         let records = await service.records
         XCTAssertEqual(records.count, 2)
-        XCTAssertNotNil(records[Token.usdc.address])
-        XCTAssertNotNil(records[Token.nativeSolana.address])
-        XCTAssertNil(records[Token.usdt.address])
+        XCTAssertNotNil(records[TokenMetadata.usdc.address])
+        XCTAssertNotNil(records[TokenMetadata.nativeSolana.address])
+        XCTAssertNil(records[TokenMetadata.usdt.address])
     }
 
     func testFill_WithoutStorageData_ShouldLoadFromSource() async throws {
-        let tokens = Set([Token.usdc, Token.nativeSolana])
+        let tokens = Set([TokenMetadata.usdc, TokenMetadata.nativeSolana])
 
         let source = TestableSolanaTokenListSource()
         source.mockTokens = tokens
@@ -51,13 +51,13 @@ class TokensRepositoryTests: XCTestCase {
 
         let records = await service.records
         XCTAssertEqual(records.count, 2)
-        XCTAssertNotNil(records[Token.usdc.address])
-        XCTAssertNotNil(records[Token.nativeSolana.address])
-        XCTAssertNil(records[Token.usdt.address])
+        XCTAssertNotNil(records[TokenMetadata.usdc.address])
+        XCTAssertNotNil(records[TokenMetadata.nativeSolana.address])
+        XCTAssertNil(records[TokenMetadata.usdt.address])
     }
 
     func testReset_ShouldRecordBeEmpty() async throws {
-        let tokens = Set([Token.usdc, Token.nativeSolana])
+        let tokens = Set([TokenMetadata.usdc, TokenMetadata.nativeSolana])
 
         let source = TestableSolanaTokenListSource()
         source.mockTokens = tokens
@@ -79,7 +79,7 @@ class TokensRepositoryTests: XCTestCase {
     }
 
     func testGet_RecordsIsEmpty_ShouldFill() async throws {
-        let tokens = Set([Token.usdc, Token.nativeSolana])
+        let tokens = Set([TokenMetadata.usdc, TokenMetadata.nativeSolana])
 
         let source = TestableSolanaTokenListSource()
         source.mockTokens = tokens
@@ -92,7 +92,7 @@ class TokensRepositoryTests: XCTestCase {
             storage: storage
         )
 
-        let token = try await service.get(address: Token.usdc.address)
+        let token = try await service.get(address: TokenMetadata.usdc.address)
 
         XCTAssertEqual(storage.getTokensCalled, 1)
         XCTAssertEqual(storage.saveTokensCalled, 1)
@@ -103,7 +103,7 @@ class TokensRepositoryTests: XCTestCase {
 }
 
 extension SolanaTokenListRepository {
-    func updateRecords(_ records: [String: Token]) async {
+    func updateRecords(_ records: [String: TokenMetadata]) async {
         self.records = records
     }
 }

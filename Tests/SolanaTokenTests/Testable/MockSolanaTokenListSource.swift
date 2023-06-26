@@ -10,10 +10,10 @@ import Foundation
 
 class TestableSolanaTokenListSource: SolanaTokenListSource {
     var downloadCalled: Int = 0
-    var mockTokens: Set<Token>?
+    var mockTokens: Set<TokenMetadata>?
     var shouldThrowError = false
 
-    func download() async throws -> Set<Token> {
+    func download() async throws -> Set<TokenMetadata> {
         downloadCalled += 1
 
         if shouldThrowError {

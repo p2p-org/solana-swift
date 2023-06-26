@@ -11,12 +11,12 @@ class TokensRepositoryPerformanceTests: XCTestCase {
             storage: storage
         )
 
-        var records: [String: Token] = [:]
+        var records: [String: TokenMetadata] = [:]
 
         for _ in 0 ... 20000 {
             let uuid = UUID().uuidString
 
-            records[uuid] = Token(
+            records[uuid] = TokenMetadata(
                 _tags: nil,
                 chainId: 0,
                 address: uuid,

@@ -2,7 +2,7 @@ import Foundation
 import SolanaSwift
 
 public protocol SolanaTokenListSource {
-    func download() async throws -> Set<Token>
+    func download() async throws -> Set<TokenMetadata>
 }
 
 public enum SolanaTokenListSourceError: Swift.Error {
@@ -36,7 +36,7 @@ public class SolanaTokenListSourceImpl: SolanaTokenListSource {
 
     // MARK: -
 
-    public func download() async throws -> Set<Token> {
+    public func download() async throws -> Set<TokenMetadata> {
         guard let url = tokenListURL else { throw SolanaTokenListSourceError.invalidTokenlistURL }
         let urlRequest = URLRequest(url: url)
 
@@ -53,7 +53,7 @@ public class SolanaTokenListSourceImpl: SolanaTokenListSource {
         let tokenList: TokensList = try JSONDecoder().decode(TokensList.self, from: data)
 
         // map tags
-        var tokens: [Token] = tokenList.tokens.map {
+        var tokens: [TokenMetadata] = tokenList.tokens.map {
             var item = $0
             item.tags = (item._tags ?? []).map {
                 tokenList.tags[$0] ?? TokenTag(name: $0, description: $0)
@@ -72,6 +72,6 @@ extension SolanaTokenListSourceImpl {
         let keywords: [String]
         let tags: [String: TokenTag]
         let timestamp: String
-        var tokens: [Token]
+        var tokens: [TokenMetadata]
     }
 }

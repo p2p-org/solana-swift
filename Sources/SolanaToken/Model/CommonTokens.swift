@@ -1,7 +1,7 @@
 import Foundation
 import SolanaSwift
 
-public extension Token {
+public extension TokenMetadata {
     static var nativeSolana: Self {
         .init(
             _tags: [],

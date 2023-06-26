@@ -1,10 +1,11 @@
 import Foundation
 import SolanaSwift
 
+@available(*, deprecated, renamed: "TokenMetadata")
+public typealias Token = TokenMetadata
+
 /// Common token metadata structure.
-///
-/// 
-public struct Token: Hashable, Codable {
+public struct TokenMetadata: Hashable, Codable {
     public let chainId: Int
     public let address: String
     public let symbol: String
@@ -53,8 +54,8 @@ public struct Token: Hashable, Codable {
         decimals: Decimals,
         symbol: String,
         supply: UInt64?
-    ) -> Token {
-        Token(
+    ) -> TokenMetadata {
+        TokenMetadata(
             _tags: [],
             chainId: 101,
             address: mint,

@@ -8,7 +8,7 @@ public actor SolanaTokenListRepository: TokenRepository {
     let storage: SolanaTokenListStorage
 
     // Hash map for address and token.
-    var records: [String: Token] = [:]
+    var records: [String: TokenMetadata] = [:]
 
     public init(
         tokenListSource: SolanaTokenListSource,
@@ -18,7 +18,7 @@ public actor SolanaTokenListRepository: TokenRepository {
         self.tokenListSource = tokenListSource
     }
 
-    public func get(address: String) async throws -> Token? {
+    public func get(address: String) async throws -> TokenMetadata? {
         if records.isEmpty {
             try await fill()
         }
@@ -26,7 +26,7 @@ public actor SolanaTokenListRepository: TokenRepository {
         return records[address]
     }
 
-    public func all() async throws -> Set<Token> {
+    public func all() async throws -> Set<TokenMetadata> {
         if records.isEmpty {
             try await fill()
         }
