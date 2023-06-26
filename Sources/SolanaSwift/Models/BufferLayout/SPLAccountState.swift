@@ -1,7 +1,7 @@
 import Foundation
 
 @available(*, deprecated, renamed: "SPLAccountState")
-typealias AccountInfo = SPLAccountState
+public typealias AccountInfo = SPLAccountState
 
 public struct SPLAccountState: BufferLayout {
     public static let BUFFER_LENGTH: UInt64 = 165
