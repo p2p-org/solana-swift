@@ -402,7 +402,7 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
 
-    func getMultipleAccounts<T>(pubkeys _: [String]) async throws -> [BufferInfo<T>] where T: BufferLayout {
+    func getMultipleAccounts<T>(pubkeys _: [String]) async throws -> [BufferInfo<T>?] where T: BufferLayout {
         fatalError()
     }
 

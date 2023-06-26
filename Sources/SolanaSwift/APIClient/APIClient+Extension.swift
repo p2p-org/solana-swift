@@ -21,21 +21,15 @@ public extension SolanaAPIClient {
 
     func getMultipleMintDatas(
         mintAddresses: [String],
-        programId: String = TokenProgram.id.base58EncodedString
-    ) async throws -> [String: SPLTokenState] {
-        let accounts: [BufferInfo<SPLTokenState>] = try await getMultipleAccounts(pubkeys: mintAddresses)
-        var mintDict = [String: SPLTokenState]()
-        if accounts.contains(where: { $0.owner != programId }) == true {
-            throw SolanaError.other("Invalid mint owner")
-        }
-        let result = accounts.map(\.data)
-        guard result.count == mintAddresses.count else {
-            throw SolanaError.other("Some of mint data are missing")
-        }
+        programId _: String = TokenProgram.id.base58EncodedString
+    ) async throws -> [String: SPLTokenState?] {
+        let accounts: [BufferInfo<SPLTokenState>?] = try await getMultipleAccounts(pubkeys: mintAddresses)
+        var mintDict = [String: SPLTokenState?]()
 
         for (index, address) in mintAddresses.enumerated() {
-            mintDict[address] = result[index]
+            mintDict[address] = accounts[index]?.data
         }
+
         return mintDict
     }
 
@@ -50,7 +44,8 @@ public extension SolanaAPIClient {
             tokenMintAddress: mintAddress
         )
 
-        let bufferInfo: BufferInfo<SPLAccountState>? = try await getAccountInfo(account: associatedTokenAccount.base58EncodedString)
+        let bufferInfo: BufferInfo<SPLAccountState>? = try await getAccountInfo(account: associatedTokenAccount
+            .base58EncodedString)
         return bufferInfo?.data.mint == mintAddress
     }
 

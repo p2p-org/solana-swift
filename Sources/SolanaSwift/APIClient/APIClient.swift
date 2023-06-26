@@ -252,7 +252,7 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an RpcResponse
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getmultipleaccounts
     ///
-    func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>]
+    func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>?]
 
     /// Observe status of a sending transaction by periodically calling getSignatureStatuses
     /// - Parameters:

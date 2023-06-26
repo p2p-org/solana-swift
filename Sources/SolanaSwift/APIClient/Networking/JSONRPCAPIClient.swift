@@ -290,10 +290,11 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         try await get(method: "validatorExit", params: [])
     }
 
-    public func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>] {
+    public func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>?] {
         let configs = RequestConfiguration(encoding: "base64")
         guard !pubkeys.isEmpty else { return [] }
-        let result: Rpc<[BufferInfo<T>]> = try await get(method: "getMultipleAccounts", params: [pubkeys, configs])
+        
+        let result: Rpc<[BufferInfo<T>?]> = try await get(method: "getMultipleAccounts", params: [pubkeys, configs])
         return result.value
     }
 
