@@ -12,7 +12,23 @@ public protocol TokenRepository {
 }
 
 public extension TokenRepository {
+    func get(address: String?) async throws -> TokenMetadata? {
+        if let address {
+            return try await get(address: address)
+        } else {
+            return .unsupported(mint: "", decimals: 1, symbol: "", supply: nil)
+        }
+    }
+
     func get(address: PublicKey) async throws -> TokenMetadata? {
         try await get(address: address.base58EncodedString)
+    }
+
+    func get(address: PublicKey?) async throws -> TokenMetadata? {
+        if let address {
+            return try await get(address: address)
+        } else {
+            return .unsupported(mint: "", decimals: 1, symbol: "", supply: nil)
+        }
     }
 }
