@@ -25,7 +25,7 @@ public extension SolanaBlockchainClient {
         } else {
             (minRentExemption, newAccount) = try await(
                 apiClient.getMinimumBalanceForRentExemption(
-                    dataLength: UInt64(AccountInfo.BUFFER_LENGTH),
+                    dataLength: UInt64(SPLTokenAccountState.BUFFER_LENGTH),
                     commitment: "recent"
                 ),
                 requestNewAccount
@@ -39,7 +39,7 @@ public extension SolanaBlockchainClient {
                     from: owner,
                     toNewPubkey: newAccount.publicKey,
                     lamports: amount + minRentExemption,
-                    space: AccountInfo.BUFFER_LENGTH,
+                    space: SPLTokenAccountState.BUFFER_LENGTH,
                     programId: TokenProgram.id
                 ),
                 TokenProgram.initializeAccountInstruction(
@@ -82,7 +82,7 @@ public extension SolanaBlockchainClient {
 
         let isAssociatedTokenAddressRegistered: Bool
         do {
-            let info: BufferInfo<AccountInfo>? = try await apiClient
+            let info: BufferInfo<SPLTokenAccountState>? = try await apiClient
                 .getAccountInfo(account: associatedAddress.base58EncodedString)
             if info?.owner == TokenProgram.id.base58EncodedString,
                info?.data.owner == owner

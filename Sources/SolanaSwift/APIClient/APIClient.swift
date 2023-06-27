@@ -164,7 +164,7 @@ public protocol SolanaAPIClient {
         mint: String?,
         programId: String?,
         configs: RequestConfiguration?
-    ) async throws -> [TokenAccount<AccountInfo>]
+    ) async throws -> [TokenAccount<SPLTokenAccountState>]
 
     /// Returns all SPL Token accounts by token owner
     /// - Parameters:
@@ -176,7 +176,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#gettokenaccountsbyowner
     ///
     func getTokenAccountsByOwner(pubkey: String, params: OwnerInfoParams?, configs: RequestConfiguration?) async throws
-        -> [TokenAccount<AccountInfo>]
+        -> [TokenAccount<SPLTokenAccountState>]
 
     /// Returns the 20 largest accounts of a particular SPL Token type
     /// - Parameters:
@@ -252,7 +252,7 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an RpcResponse
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getmultipleaccounts
     ///
-    func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>]
+    func getMultipleAccounts<T: BufferLayout>(pubkeys: [String], commitment: Commitment) async throws -> [BufferInfo<T>?]
 
     /// Observe status of a sending transaction by periodically calling getSignatureStatuses
     /// - Parameters:

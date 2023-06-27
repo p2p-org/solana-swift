@@ -123,7 +123,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         if let mre = mre {
             minRenExemption = mre
         } else {
-            minRenExemption = try await apiClient.getMinimumBalanceForRentExemption(span: AccountInfo.BUFFER_LENGTH)
+            minRenExemption = try await apiClient.getMinimumBalanceForRentExemption(span: SPLTokenAccountState.BUFFER_LENGTH)
         }
         let splDestination = try await apiClient.findSPLTokenDestinationAddress(
             mintAddress: mintAddress,

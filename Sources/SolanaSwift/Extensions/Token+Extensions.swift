@@ -1,13 +1,6 @@
-//
-//  Token+Extensions.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 01/07/2021.
-//
-
 import Foundation
 
-public extension Array where Element == Token {
+public extension Array where Element == TokenMetadata {
     func excludingSpecialTokens() -> Self {
         var currentAddresses: Set<String> = []
 

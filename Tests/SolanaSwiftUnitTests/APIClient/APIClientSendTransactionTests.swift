@@ -24,7 +24,7 @@ class APIClientSendTransactionTests: XCTestCase {
         do {
             _ = try await apiClient.sendTransaction(transaction: "")
         } catch let APIClientError.responseError(response) {
-            XCTAssertEqual(response.message, "Transaction simulation failed: Blockhash not found")
+            XCTAssertEqual(response.message, "Blockhash not found")
         }
     }
     

@@ -5,7 +5,7 @@ public struct Wallet: Hashable {
 
     public var pubkey: String?
     public var lamports: UInt64?
-    public var token: Token
+    public var token: TokenMetadata
     public var userInfo: AnyHashable?
     public let supply: UInt64?
 
@@ -15,7 +15,12 @@ public struct Wallet: Hashable {
 
     // MARK: - Initializer
 
-    public init(pubkey: String? = nil, lamports: UInt64? = nil, supply: UInt64? = nil, token: Token) {
+    public init(
+        pubkey: String? = nil,
+        lamports: UInt64? = nil,
+        supply: UInt64? = nil,
+        token: TokenMetadata
+    ) {
         self.pubkey = pubkey
         self.lamports = lamports
         self.supply = supply

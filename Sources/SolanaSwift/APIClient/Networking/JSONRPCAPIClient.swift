@@ -21,13 +21,16 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         signature: String,
         commitment: Commitment?
     ) async throws -> TransactionInfo? {
-        try await get(method: "getTransaction", params: [signature, RequestConfiguration(commitment: commitment, encoding: "jsonParsed")])
+        try await get(
+            method: "getTransaction",
+            params: [signature, RequestConfiguration(commitment: commitment, encoding: "jsonParsed")]
+        )
     }
 
     public func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>? {
         let response: Rpc<BufferInfo<T>?> = try await get(method: "getAccountInfo", params: [
             account,
-            RequestConfiguration(encoding: "base64")
+            RequestConfiguration(encoding: "base64"),
         ])
         return response.value
     }
@@ -43,7 +46,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     public func getBalance(account: String, commitment: Commitment? = nil) async throws -> UInt64 {
         let response: Rpc<UInt64> = try await get(method: "getBalance", params: [
             account,
-            RequestConfiguration(commitment: commitment)
+            RequestConfiguration(commitment: commitment),
         ])
         return response.value
     }
@@ -137,8 +140,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         mint: String? = nil,
         programId: String? = nil,
         configs: RequestConfiguration? = nil
-    ) async throws -> [TokenAccount<AccountInfo>] {
-        let result: Rpc<[TokenAccount<AccountInfo>]> = try await get(method: "getTokenAccountsByDelegate",
+    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
+        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(method: "getTokenAccountsByDelegate",
                                                                      params: [pubkey, mint, programId, configs])
         return result.value
     }
@@ -147,8 +150,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         pubkey: String,
         params: OwnerInfoParams? = nil,
         configs: RequestConfiguration? = nil
-    ) async throws -> [TokenAccount<AccountInfo>] {
-        let result: Rpc<[TokenAccount<AccountInfo>]> = try await get(method: "getTokenAccountsByOwner",
+    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
+        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(method: "getTokenAccountsByOwner",
                                                                      params: [pubkey, params, configs])
         return result.value
     }
@@ -243,7 +246,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         )!
     ) async throws -> SimulationResult {
         let result: Rpc<SimulationResult> = try await get(method: "simulateTransaction", params: [transaction, configs])
-        
+
         // Error assertion
         if let err = result.value.err {
             if (err.wrapped as? String) == "BlockhashNotFound" {
@@ -251,7 +254,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
             }
             throw SolanaError.transactionError(err, logs: result.value.logs)
         }
-        
+
         // Return value
         return result.value
     }
@@ -290,10 +293,15 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         try await get(method: "validatorExit", params: [])
     }
 
-    public func getMultipleAccounts<T: BufferLayout>(pubkeys: [String]) async throws -> [BufferInfo<T>] {
-        let configs = RequestConfiguration(encoding: "base64")
+    public func getMultipleAccounts<T>(
+        pubkeys: [String],
+        commitment: Commitment
+    ) async throws -> [BufferInfo<T>?]
+    where T: BufferLayout {
+        let configs = RequestConfiguration(commitment: commitment, encoding: "base64")
         guard !pubkeys.isEmpty else { return [] }
-        let result: Rpc<[BufferInfo<T>]> = try await get(method: "getMultipleAccounts", params: [pubkeys, configs])
+
+        let result: Rpc<[BufferInfo<T>?]> = try await get(method: "getMultipleAccounts", params: [pubkeys, configs])
         return result.value
     }
 
@@ -319,7 +327,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
 
         let data = try await makeRequest(requests: params.map { args in .init(method: method, params: args) })
         let response = try ResponseDecoder<[AnyResponse<Entity>]>().decode(with: data)
-        return response.map { $0.result }
+        return response.map(\.result)
     }
 
     public func getSlot() async throws -> UInt64 {
@@ -327,7 +335,9 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     public func getAddressLookupTable(accountKey: PublicKey) async throws -> AddressLookupTableAccount? {
-        guard let result: BufferInfo<AddressLookupTableState> = try await getAccountInfo(account: accountKey.base58EncodedString) else {
+        guard let result: BufferInfo<AddressLookupTableState> = try await getAccountInfo(account: accountKey
+            .base58EncodedString)
+        else {
             return nil
         }
 
