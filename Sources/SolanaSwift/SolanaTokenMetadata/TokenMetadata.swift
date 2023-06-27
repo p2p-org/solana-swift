@@ -4,7 +4,7 @@ import Foundation
 public typealias Token = TokenMetadata
 
 /// Common token metadata structure.
-public struct TokenMetadata: Hashable, Codable {
+public struct TokenMetadata: Hashable, Codable, Equatable {
     public let chainId: Int
     public let address: String
     public let symbol: String
@@ -70,6 +70,10 @@ public struct TokenMetadata: Hashable, Codable {
 
     public var isNativeSOL: Bool {
         symbol == "SOL" && isNative
+    }
+
+    public func hasSameAddress(with other: TokenMetadata) -> Bool {
+        address == other.address
     }
 }
 

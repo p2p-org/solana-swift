@@ -1,6 +1,9 @@
 import Foundation
 
-public struct Wallet: Hashable {
+@available(*, deprecated, renamed: "AccountBalance")
+public typealias Wallet = AccountBalance
+
+public struct AccountBalance: Hashable, Equatable {
     // MARK: - Properties
 
     public var pubkey: String?
@@ -38,8 +41,8 @@ public struct Wallet: Hashable {
     public static func nativeSolana(
         pubkey: String?,
         lamport: UInt64?
-    ) -> Wallet {
-        Wallet(
+    ) -> AccountBalance {
+        AccountBalance(
             pubkey: pubkey,
             lamports: lamport,
             token: .nativeSolana
