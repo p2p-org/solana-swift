@@ -10,3 +10,9 @@ public protocol TokenRepository {
     /// Method to reset service
     func reset() async throws
 }
+
+public extension TokenRepository {
+    func get(address: PublicKey) async throws -> TokenMetadata? {
+        try await get(address: address.base58EncodedString)
+    }
+}
