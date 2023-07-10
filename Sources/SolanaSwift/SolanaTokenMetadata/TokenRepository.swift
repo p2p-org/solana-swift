@@ -4,6 +4,8 @@ public protocol TokenRepository {
     /// Get specific token.
     func get(address: String) async throws -> TokenMetadata?
 
+    func get(addresses: [String]) async throws -> [String: TokenMetadata?]
+
     /// Get all tokens
     func all() async throws -> Set<TokenMetadata>
 
