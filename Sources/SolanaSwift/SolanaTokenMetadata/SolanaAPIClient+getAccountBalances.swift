@@ -24,11 +24,14 @@ public extension SolanaAPIClient {
 
         var unknownTokenAccountBalances: [TokenAccount<SPLTokenAccountState>] = []
 
+        let tokenMetadatas = try await tokensRepository
+            .get(addresses: tokenAccounts.map(\.account.data.mint.base58EncodedString))
+
         for tokenAccount in tokenAccounts {
             let token: TokenMetadata
 
             let tokenMintAddress: String = tokenAccount.account.data.mint.base58EncodedString
-            if let resolvedToken = try await tokensRepository.get(address: tokenMintAddress) {
+            if let resolvedToken = tokenMetadatas[tokenMintAddress] {
                 token = resolvedToken
             } else {
                 unknownTokenAccountBalances.append(tokenAccount)
