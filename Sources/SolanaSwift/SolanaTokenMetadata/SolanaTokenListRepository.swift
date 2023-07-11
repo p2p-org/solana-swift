@@ -25,12 +25,12 @@ public actor SolanaTokenListRepository: TokenRepository {
         return records[address]
     }
 
-    public func get(addresses: [String]) async throws -> [String: TokenMetadata?] {
+    public func get(addresses: [String]) async throws -> [String: TokenMetadata] {
         if records.isEmpty {
             try await fill()
         }
 
-        var result: [String: TokenMetadata?] = [:]
+        var result: [String: TokenMetadata] = [:]
 
         for address in addresses {
             result[address] = records[address]
