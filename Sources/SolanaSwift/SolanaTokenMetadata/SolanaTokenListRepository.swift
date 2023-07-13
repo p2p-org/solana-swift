@@ -39,12 +39,12 @@ public actor SolanaTokenListRepository: TokenRepository {
         return result
     }
 
-    public func all() async throws -> Set<TokenMetadata> {
+    public func all() async throws -> [String: TokenMetadata] {
         if records.isEmpty {
             try await fill()
         }
 
-        return Set(records.values)
+        return records
     }
 
     public func reset() async throws {

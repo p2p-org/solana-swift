@@ -7,7 +7,7 @@ public protocol TokenRepository {
     func get(addresses: [String]) async throws -> [String: TokenMetadata]
 
     /// Get all tokens
-    func all() async throws -> Set<TokenMetadata>
+    func all() async throws -> [String: TokenMetadata]
 
     /// Method to reset service
     func reset() async throws
