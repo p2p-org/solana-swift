@@ -1,6 +1,6 @@
 import Foundation
 
-@available(*, deprecated, renamed: "SPLTokenState")
+@available(*, deprecated, renamed: "SPLTokenAccountState")
 public typealias AccountInfo = SPLTokenAccountState
 
 public struct SPLTokenAccountState: BufferLayout {
