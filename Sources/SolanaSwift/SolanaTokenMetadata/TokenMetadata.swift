@@ -90,6 +90,41 @@ public enum TokenExtensionValue: Hashable, Codable {
     case string(String)
     case int(Int)
     case double(Double)
+    case bool(Bool)
+    case unknown
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+
+        if let value = try? container.decodeIfPresent(String.self) {
+            self = .string(value)
+        } else if let value = try? container.decodeIfPresent(Int.self) {
+            self = .int(value)
+        } else if let value = try? container.decodeIfPresent(Double.self) {
+            self = .double(value)
+        } else if let value = try? container.decodeIfPresent(Bool.self) {
+            self = .bool(value)
+        } else {
+            self = .unknown
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        switch self {
+        case let .string(value):
+            try container.encode(value)
+        case let .int(value):
+            try container.encode(value)
+        case let .double(value):
+            try container.encode(value)
+        case let .bool(value):
+            try container.encode(value)
+        case .unknown:
+            return
+        }
+    }
 
     public var stringValue: String? {
         if case let .string(value) = self {
@@ -109,6 +144,14 @@ public enum TokenExtensionValue: Hashable, Codable {
 
     public var doubleValue: Double? {
         if case let .double(value) = self {
+            return value
+        } else {
+            return nil
+        }
+    }
+
+    public var boolValue: Bool? {
+        if case let .bool(value) = self {
             return value
         } else {
             return nil
