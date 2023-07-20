@@ -12,7 +12,7 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
     public let decimals: Decimals
     public let logoURI: String?
     public var tags: [TokenTag] = []
-    public let extensions: TokenExtensions?
+    public let extensions: [String: TokenExtensionValue]?
     public let supply: UInt64?
     public private(set) var isNative = false
 
@@ -31,7 +31,7 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
         decimals: UInt8,
         logoURI: String?,
         tags: [TokenTag] = [],
-        extensions: TokenExtensions?,
+        extensions: [String: TokenExtensionValue]?,
         isNative: Bool = false,
         supply: UInt64? = nil
     ) {
@@ -75,6 +75,10 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
     public func hasSameAddress(with other: TokenMetadata) -> Bool {
         address == other.address
     }
+
+    public var generalTokenExtensions: GeneralTokenExtension {
+        GeneralTokenExtension(data: extensions ?? [:])
+    }
 }
 
 public struct TokenTag: Hashable, Codable {
@@ -82,7 +86,37 @@ public struct TokenTag: Hashable, Codable {
     public var description: String
 }
 
-public struct TokenExtensions: Hashable, Codable {
+public enum TokenExtensionValue: Hashable, Codable {
+    case string(String)
+    case int(Int)
+    case double(Double)
+
+    public var stringValue: String? {
+        if case let .string(value) = self {
+            return value
+        } else {
+            return nil
+        }
+    }
+
+    public var intValue: Int? {
+        if case let .int(value) = self {
+            return value
+        } else {
+            return nil
+        }
+    }
+
+    public var doubleValue: Double? {
+        if case let .double(value) = self {
+            return value
+        } else {
+            return nil
+        }
+    }
+}
+
+public struct GeneralTokenExtension: Hashable, Codable {
     public let website: String?
     public let bridgeContract: String?
     public let assetContract: String?
@@ -99,6 +133,25 @@ public struct TokenExtensions: Hashable, Codable {
     public let coingeckoId: String?
     public let imageUrl: String?
     public let description: String?
+
+    public init(data: [String: TokenExtensionValue]) {
+        website = data["stringValue"]?.stringValue
+        bridgeContract = data["bridgeContract"]?.stringValue
+        assetContract = data["assetContract"]?.stringValue
+        address = data["address"]?.stringValue
+        explorer = data["explorer"]?.stringValue
+        twitter = data["twitter"]?.stringValue
+        github = data["github"]?.stringValue
+        medium = data["medium"]?.stringValue
+        tgann = data["tgann"]?.stringValue
+        tggroup = data["tggroup"]?.stringValue
+        discord = data["discord"]?.stringValue
+        serumV3Usdt = data["serumV3Usdt"]?.stringValue
+        serumV3Usdc = data["serumV3Usdc"]?.stringValue
+        coingeckoId = data["coingeckoId"]?.stringValue
+        imageUrl = data["imageUrl"]?.stringValue
+        description = data["description"]?.stringValue
+    }
 
     public init(
         website: String? = nil,

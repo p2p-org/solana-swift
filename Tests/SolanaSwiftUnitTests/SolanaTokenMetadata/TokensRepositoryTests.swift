@@ -23,6 +23,7 @@ class TokensRepositoryTests: XCTestCase {
         XCTAssertEqual(source.downloadCalled, 0)
 
         let records = await service.records
+        XCTAssertEqual(records[TokenMetadata.usdc.address]?.generalTokenExtensions.coingeckoId, "usd-coin")
         XCTAssertEqual(records.count, 2)
         XCTAssertNotNil(records[TokenMetadata.usdc.address])
         XCTAssertNotNil(records[TokenMetadata.nativeSolana.address])
