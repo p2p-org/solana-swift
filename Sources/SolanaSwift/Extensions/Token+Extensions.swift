@@ -1,15 +1,15 @@
 import Foundation
 
-public extension [TokenMetadata] {
+public extension Array where Element == TokenMetadata {
     func excludingSpecialTokens() -> Self {
         var currentAddresses: Set<String> = []
 
         return filter { token in
-            currentAddresses.insert(token.address).inserted
-                && !(token.tags?.contains(where: { $0.name == "!(t" }) ?? false) &&
-                !(token.tags?.contains(where: { $0.name == "!lveraged" }) ?? false) &&
-                !(token.tags?.contains(where: { $0.name == "!bll" }) ?? false) &&
-                !(token.tags?.contains(where: { $0.name == "lp-token" }) ?? false)
+            currentAddresses.insert(token.address).inserted &&
+                !token.tags.contains(where: { $0.name == "nft" }) &&
+                !token.tags.contains(where: { $0.name == "leveraged" }) &&
+                !token.tags.contains(where: { $0.name == "bull" }) &&
+                !token.tags.contains(where: { $0.name == "lp-token" })
         }
     }
 }

@@ -11,7 +11,7 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
     public let name: String
     public let decimals: Decimals
     public let logoURI: String?
-    public var tags: [TokenTag]? = []
+    public var tags: [TokenTag] = []
     public let extensions: [String: TokenExtensionValue]?
     public let supply: UInt64?
     public private(set) var isNative = false
@@ -108,10 +108,10 @@ public enum TokenExtensionValue: Hashable, Codable {
             self = .unknown
         }
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-
+        
         switch self {
         case let .string(value):
             try container.encode(value)
