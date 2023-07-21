@@ -1,12 +1,23 @@
 import Foundation
 
+// MARK: - Deprecation
+
 @available(*, deprecated, renamed: "TokenMetadata")
 public typealias Token = TokenMetadata
+
+public extension TokenMetadata {
+    @available(*, deprecated, renamed: "mintAddress")
+    var address: String {
+        mintAddress
+    }
+}
+
+// MARK: - TokenMetadata
 
 /// Common token metadata structure.
 public struct TokenMetadata: Hashable, Codable, Equatable {
     public let chainId: Int
-    public let address: String
+    public let mintAddress: String
     public let symbol: String
     public let name: String
     public let decimals: Decimals
@@ -19,13 +30,13 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
     let _tags: [String]?
 
     enum CodingKeys: String, CodingKey {
-        case chainId, address, symbol, name, decimals, logoURI, extensions, _tags = "tags", supply
+        case chainId, mintAddress = "address", symbol, name, decimals, logoURI, extensions, _tags = "tags", supply
     }
 
     public init(
         _tags: [String]?,
         chainId: Int,
-        address: String,
+        mintAddress: String,
         symbol: String,
         name: String,
         decimals: UInt8,
@@ -37,7 +48,7 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
     ) {
         self._tags = _tags
         self.chainId = chainId
-        self.address = address
+        self.mintAddress = mintAddress
         self.symbol = symbol
         self.name = name
         self.decimals = decimals
@@ -57,7 +68,7 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
         TokenMetadata(
             _tags: [],
             chainId: 101,
-            address: mint,
+            mintAddress: mint,
             symbol: symbol,
             name: mint,
             decimals: decimals,
@@ -72,8 +83,8 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
         symbol == "SOL" && isNative
     }
 
-    public func hasSameAddress(with other: TokenMetadata) -> Bool {
-        address == other.address
+    public func hasSameMintAddress(with other: TokenMetadata) -> Bool {
+        mintAddress == other.mintAddress
     }
 
     public var generalTokenExtensions: GeneralTokenExtension {
@@ -108,10 +119,10 @@ public enum TokenExtensionValue: Hashable, Codable {
             self = .unknown
         }
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        
+
         switch self {
         case let .string(value):
             try container.encode(value)

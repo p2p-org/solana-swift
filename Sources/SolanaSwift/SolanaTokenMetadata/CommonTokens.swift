@@ -5,7 +5,7 @@ public extension TokenMetadata {
         .init(
             _tags: [],
             chainId: 101,
-            address: "So11111111111111111111111111111111111111112",
+            mintAddress: "So11111111111111111111111111111111111111112",
             symbol: "SOL",
             name: "Solana",
             decimals: 9,
@@ -20,7 +20,7 @@ public extension TokenMetadata {
         .init(
             _tags: nil,
             chainId: 101,
-            address: PublicKey.renBTCMint.base58EncodedString,
+            mintAddress: PublicKey.renBTCMint.base58EncodedString,
             symbol: "renBTC",
             name: "renBTC",
             decimals: 8,
@@ -37,7 +37,7 @@ public extension TokenMetadata {
         .init(
             _tags: nil,
             chainId: 101,
-            address: PublicKey.usdcMint.base58EncodedString,
+            mintAddress: PublicKey.usdcMint.base58EncodedString,
             symbol: "USDC",
             name: "USDC",
             decimals: 6,
@@ -50,7 +50,7 @@ public extension TokenMetadata {
         .init(
             _tags: nil,
             chainId: 101,
-            address: PublicKey.usdtMint.base58EncodedString,
+            mintAddress: PublicKey.usdtMint.base58EncodedString,
             symbol: "USDT",
             name: "USDT",
             decimals: 6,
@@ -63,7 +63,7 @@ public extension TokenMetadata {
         .init(
             _tags: nil,
             chainId: 101,
-            address: "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
+            mintAddress: "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
             symbol: "ETH",
             name: "Ether (Portal)",
             decimals: 8,
@@ -76,7 +76,7 @@ public extension TokenMetadata {
         .init(
             _tags: nil,
             chainId: 101,
-            address: "A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM",
+            mintAddress: "A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM",
             symbol: "USDCet",
             name: "USD Coin (Wormhole)",
             decimals: 6,

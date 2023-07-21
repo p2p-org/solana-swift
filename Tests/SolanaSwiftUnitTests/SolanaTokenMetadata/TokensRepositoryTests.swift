@@ -23,11 +23,11 @@ class TokensRepositoryTests: XCTestCase {
         XCTAssertEqual(source.downloadCalled, 0)
 
         let records = await service.records
-        XCTAssertEqual(records[TokenMetadata.usdc.address]?.generalTokenExtensions.coingeckoId, "usd-coin")
+        XCTAssertEqual(records[TokenMetadata.usdc.mintAddress]?.generalTokenExtensions.coingeckoId, "usd-coin")
         XCTAssertEqual(records.count, 2)
-        XCTAssertNotNil(records[TokenMetadata.usdc.address])
-        XCTAssertNotNil(records[TokenMetadata.nativeSolana.address])
-        XCTAssertNil(records[TokenMetadata.usdt.address])
+        XCTAssertNotNil(records[TokenMetadata.usdc.mintAddress])
+        XCTAssertNotNil(records[TokenMetadata.nativeSolana.mintAddress])
+        XCTAssertNil(records[TokenMetadata.usdt.mintAddress])
     }
 
     func testFill_WithoutStorageData_ShouldLoadFromSource() async throws {
@@ -52,9 +52,9 @@ class TokensRepositoryTests: XCTestCase {
 
         let records = await service.records
         XCTAssertEqual(records.count, 2)
-        XCTAssertNotNil(records[TokenMetadata.usdc.address])
-        XCTAssertNotNil(records[TokenMetadata.nativeSolana.address])
-        XCTAssertNil(records[TokenMetadata.usdt.address])
+        XCTAssertNotNil(records[TokenMetadata.usdc.mintAddress])
+        XCTAssertNotNil(records[TokenMetadata.nativeSolana.mintAddress])
+        XCTAssertNil(records[TokenMetadata.usdt.mintAddress])
     }
 
     func testReset_ShouldRecordBeEmpty() async throws {
@@ -71,7 +71,7 @@ class TokensRepositoryTests: XCTestCase {
             storage: storage
         )
 
-        await service.updateRecords(Dictionary(uniqueKeysWithValues: tokens.map { ($0.address, $0) }))
+        await service.updateRecords(Dictionary(uniqueKeysWithValues: tokens.map { ($0.mintAddress, $0) }))
 
         try await service.reset()
 
@@ -93,7 +93,7 @@ class TokensRepositoryTests: XCTestCase {
             storage: storage
         )
 
-        let token = try await service.get(address: TokenMetadata.usdc.address)
+        let token = try await service.get(address: TokenMetadata.usdc.mintAddress)
 
         XCTAssertEqual(storage.getTokensCalled, 1)
         XCTAssertEqual(storage.saveTokensCalled, 1)

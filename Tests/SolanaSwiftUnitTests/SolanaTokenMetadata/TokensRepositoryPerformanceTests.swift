@@ -19,7 +19,7 @@ class TokensRepositoryPerformanceTests: XCTestCase {
             records[uuid] = TokenMetadata(
                 _tags: nil,
                 chainId: 0,
-                address: uuid,
+                mintAddress: uuid,
                 symbol: String(uuid.prefix(3)),
                 name: String(uuid.prefix(3)),
                 decimals: 1,
@@ -34,8 +34,8 @@ class TokensRepositoryPerformanceTests: XCTestCase {
             let exp = expectation(description: "Finished")
 
             Task { [records] in
-                _ = try await service.get(address: Array(records.values)[10000].address)
-                
+                _ = try await service.get(address: Array(records.values)[10000].mintAddress)
+
                 exp.fulfill()
             }
 

@@ -55,13 +55,13 @@ public actor SolanaTokenListRepository: TokenRepository {
     func fill() async throws {
         // Load from storage
         if let storageData = await storage.getTokens(), !storageData.isEmpty {
-            records = Dictionary(storageData.map { ($0.address, $0) }, uniquingKeysWith: { lhs, _ in lhs })
+            records = Dictionary(storageData.map { ($0.mintAddress, $0) }, uniquingKeysWith: { lhs, _ in lhs })
             return
         }
 
         // Load from source
         let sourceData = try await tokenListSource.download()
-        records = Dictionary(sourceData.map { ($0.address, $0) }, uniquingKeysWith: { lhs, _ in lhs })
+        records = Dictionary(sourceData.map { ($0.mintAddress, $0) }, uniquingKeysWith: { lhs, _ in lhs })
         await storage.save(tokens: sourceData)
     }
 }
