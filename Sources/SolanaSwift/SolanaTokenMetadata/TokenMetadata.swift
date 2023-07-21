@@ -94,15 +94,15 @@ public enum TokenExtensionValue: Hashable, Codable {
     case unknown
 
     public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
+        let container = try decoder.singleValueContainer()
 
-        if let value = try? container.decodeIfPresent(String.self) {
+        if let value = try? container.decode(String.self) {
             self = .string(value)
-        } else if let value = try? container.decodeIfPresent(Int.self) {
+        } else if let value = try? container.decode(Int.self) {
             self = .int(value)
-        } else if let value = try? container.decodeIfPresent(Double.self) {
+        } else if let value = try? container.decode(Double.self) {
             self = .double(value)
-        } else if let value = try? container.decodeIfPresent(Bool.self) {
+        } else if let value = try? container.decode(Bool.self) {
             self = .bool(value)
         } else {
             self = .unknown
