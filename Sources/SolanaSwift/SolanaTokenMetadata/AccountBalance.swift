@@ -12,10 +12,6 @@ public struct AccountBalance: Hashable, Equatable {
     public var userInfo: AnyHashable?
     public let supply: UInt64?
 
-    public var isNativeSOL: Bool {
-        token.isNativeSOL
-    }
-
     // MARK: - Initializer
 
     public init(
@@ -36,16 +32,7 @@ public struct AccountBalance: Hashable, Equatable {
         lamports?.convertToBalance(decimals: token.decimals)
     }
 
-    // MARK: - Fabric methods
-
-    public static func nativeSolana(
-        pubkey: String?,
-        lamport: UInt64?
-    ) -> AccountBalance {
-        AccountBalance(
-            pubkey: pubkey,
-            lamports: lamport,
-            token: .nativeSolana
-        )
+    public var isNativeSOL: Bool {
+        token.isNative
     }
 }

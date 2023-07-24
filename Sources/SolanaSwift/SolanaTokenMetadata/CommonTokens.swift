@@ -1,6 +1,7 @@
 import Foundation
 
-public extension TokenMetadata {
+@available(*, deprecated, message: "Only for internal package usage. Will be removed.")
+internal extension TokenMetadata {
     static var nativeSolana: Self {
         .init(
             _tags: [],

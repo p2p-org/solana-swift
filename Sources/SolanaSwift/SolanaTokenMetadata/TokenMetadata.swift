@@ -79,8 +79,9 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
         )
     }
 
+    @available(*, deprecated, renamed: "isNative")
     public var isNativeSOL: Bool {
-        symbol == "SOL" && isNative
+        isNative
     }
 
     public func hasSameMintAddress(with other: TokenMetadata) -> Bool {
