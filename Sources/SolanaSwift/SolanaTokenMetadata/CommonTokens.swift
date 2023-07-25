@@ -1,7 +1,7 @@
 import Foundation
 
 @available(*, deprecated, message: "[Legacy code] Will be removed in future.")
-extension TokenMetadata {
+public extension TokenMetadata {
     static var nativeSolana: TokenMetadata =
         .init(
             _tags: [],
