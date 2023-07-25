@@ -4,10 +4,6 @@ public protocol SolanaTokenListSource {
     func download() async throws -> Set<TokenMetadata>
 }
 
-public enum SolanaTokenListSourceError: Swift.Error {
-    case invalidTokenlistURL
-}
-
 public class SolanaTokenListSourceImpl: SolanaTokenListSource {
     // MARK: - Properties
 
@@ -36,7 +32,7 @@ public class SolanaTokenListSourceImpl: SolanaTokenListSource {
     // MARK: -
 
     public func download() async throws -> Set<TokenMetadata> {
-        guard let url = tokenListURL else { throw SolanaTokenListSourceError.invalidTokenlistURL }
+        guard let url = tokenListURL else { throw APIClientError.invalidAPIURL }
         let urlRequest = URLRequest(url: url)
 
         // check for cancellation

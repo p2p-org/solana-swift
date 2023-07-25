@@ -141,8 +141,15 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         programId: String? = nil,
         configs: RequestConfiguration? = nil
     ) async throws -> [TokenAccount<SPLTokenAccountState>] {
-        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(method: "getTokenAccountsByDelegate",
-                                                                     params: [pubkey, mint, programId, configs])
+        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(
+            method: "getTokenAccountsByDelegate",
+            params: [
+                pubkey,
+                mint,
+                programId,
+                configs,
+            ]
+        )
         return result.value
     }
 
@@ -151,8 +158,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         params: OwnerInfoParams? = nil,
         configs: RequestConfiguration? = nil
     ) async throws -> [TokenAccount<SPLTokenAccountState>] {
-        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(method: "getTokenAccountsByOwner",
-                                                                     params: [pubkey, params, configs])
+        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(
+            method: "getTokenAccountsByOwner",
+            params: [pubkey, params, configs]
+        )
         return result.value
     }
 
@@ -370,19 +379,11 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     private func makeRequest(request: RequestEncoder.RequestType) async throws -> Data {
-        var encodedParams = Data()
-        do {
-            encodedParams += try RequestEncoder(request: request).encoded()
-        } catch {
-            Logger.log(
-                event: "SolanaSwift: makeRequest",
-                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8) ?? "")",
-                logLevel: .error
-            )
-            throw APIClientError.cantEncodeParams
-        }
-        try Task.checkCancellation()
-        let responseData = try await networkManager.requestData(request: try urlRequest(data: encodedParams))
+        // encode params
+        let encodedParams = try RequestEncoder(request: request).encoded()
+
+        // request data
+        let responseData = try await networkManager.requestData(request: urlRequest(data: encodedParams))
 
         // log
         Logger.log(event: "response", message: String(data: responseData, encoding: .utf8) ?? "", logLevel: .debug)
@@ -391,19 +392,11 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     private func makeRequest(requests: [RequestEncoder.RequestType]) async throws -> Data {
-        var encodedParams = Data()
-        do {
-            encodedParams += try RequestEncoder(requests: requests).encoded()
-        } catch {
-            Logger.log(
-                event: "SolanaSwift: makeRequest",
-                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8) ?? "")",
-                logLevel: .error
-            )
-            throw APIClientError.cantEncodeParams
-        }
-        try Task.checkCancellation()
-        let responseData = try await networkManager.requestData(request: try urlRequest(data: encodedParams))
+        // encode params
+        let encodedParams = try RequestEncoder(requests: requests).encoded()
+
+        // request data
+        let responseData = try await networkManager.requestData(request: urlRequest(data: encodedParams))
 
         // log
         Logger.log(event: "response", message: String(data: responseData, encoding: .utf8) ?? "", logLevel: .debug)

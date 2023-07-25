@@ -1,6 +1,6 @@
 import Foundation
 
-public enum SolanaError: Swift.Error, Equatable {
+public enum SolanaError: Error, Equatable {
     public static func == (lhs: SolanaError, rhs: SolanaError) -> Bool {
         switch (lhs, rhs) {
         case (.unauthorized, .unauthorized):
@@ -33,7 +33,7 @@ public enum SolanaError: Swift.Error, Equatable {
     case transactionError(ErrorDetail, logs: [String])
 
     // Socket error
-    case socket(Swift.Error)
+    case socket(Error)
 
     // Transaction has not been confirmed
     case transactionHasNotBeenConfirmed

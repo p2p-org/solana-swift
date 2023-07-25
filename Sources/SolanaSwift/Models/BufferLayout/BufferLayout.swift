@@ -1,9 +1,5 @@
 import Foundation
 
-public enum BufferLayoutError: Error {
-    case NotImplemented
-}
-
 public protocol BufferLayout: Codable, BorshCodable, Equatable {}
 
 public extension BufferLayout {

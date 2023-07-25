@@ -11,11 +11,6 @@ import CommonCrypto
 import Foundation
 
 public class Mnemonic {
-    public enum Error: Swift.Error {
-        case invalidMnemonic
-        case invalidEntropy
-    }
-
     public let phrase: [String]
     let passphrase: String
 
@@ -47,7 +42,7 @@ public class Mnemonic {
 
     public init(phrase: [String], passphrase: String = "") throws {
         if !Mnemonic.isValid(phrase: phrase) {
-            throw Error.invalidMnemonic
+            throw MnemonicError.invalidMnemonic
         }
         self.phrase = phrase
         self.passphrase = passphrase
@@ -100,7 +95,7 @@ public class Mnemonic {
             UInt8(strtoul(String(entropyBits[Range($0.range, in: entropyBits)!]), nil, 2))
         }
         if checksumBits != Mnemonic.deriveChecksumBits(entropyBytes) {
-            throw Error.invalidMnemonic
+            throw MnemonicError.invalidMnemonic
         }
         return entropyBytes
     }
