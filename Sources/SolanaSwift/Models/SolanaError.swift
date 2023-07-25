@@ -3,8 +3,6 @@ import Foundation
 public enum SolanaError: Error, Equatable {
     public static func == (lhs: SolanaError, rhs: SolanaError) -> Bool {
         switch (lhs, rhs) {
-        case (.unauthorized, .unauthorized):
-            return true
         case (.notFound, .notFound):
             return true
         case let (.invalidRequest(rs1), .invalidRequest(rs2)):
@@ -20,7 +18,6 @@ public enum SolanaError: Error, Equatable {
         }
     }
 
-    case unauthorized
     case notFound
     case assertionFailed(String? = nil)
 
