@@ -12,4 +12,8 @@ extension Error {
     func isEqualTo(_ error: SolanaError) -> Bool {
         (self as? SolanaError) == error
     }
+
+    func isEqualTo(_ error: TransactionConfirmationError) -> Bool {
+        (self as? TransactionConfirmationError) == error
+    }
 }

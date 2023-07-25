@@ -27,9 +27,6 @@ public enum SolanaError: Error, Equatable {
     // Transaction error
     case transactionError(ErrorDetail, logs: [String])
 
-    // Transaction has not been confirmed
-    case transactionHasNotBeenConfirmed
-
     // Other
     case other(String)
     case unknown

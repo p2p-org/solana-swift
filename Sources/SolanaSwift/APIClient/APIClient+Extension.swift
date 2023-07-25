@@ -60,7 +60,7 @@ public extension SolanaAPIClient {
     /// - Returns wether account is valid
     ///
     func checkAccountValidation(account: String) async throws -> Bool {
-        (try await getAccountInfo(account: account) as BufferInfo<EmptyInfo>?) != nil
+        try (await getAccountInfo(account: account) as BufferInfo<EmptyInfo>?) != nil
     }
 
     func findSPLTokenDestinationAddress(
@@ -134,13 +134,13 @@ public extension SolanaAPIClient {
         // if the status is important
         if !ignoreStatus {
             guard let lastStatus = statuses.last else {
-                throw SolanaError.transactionHasNotBeenConfirmed
+                throw TransactionConfirmationError.unconfirmed
             }
             switch lastStatus {
             case .confirmed, .finalized:
                 return
             default:
-                throw SolanaError.transactionHasNotBeenConfirmed
+                throw TransactionConfirmationError.unconfirmed
             }
         }
     }

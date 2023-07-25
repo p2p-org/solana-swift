@@ -88,7 +88,7 @@ class ObserveTransactionStatusTests: XCTestCase {
                 delay: 1
             )
         } catch {
-            XCTAssertTrue(error.isEqualTo(.transactionHasNotBeenConfirmed))
+            XCTAssertTrue(error.isEqualTo(TransactionConfirmationError.unconfirmed))
         }
 
         resetAPIClient(customResponse: response)
@@ -100,7 +100,7 @@ class ObserveTransactionStatusTests: XCTestCase {
                 delay: 1
             )
         } catch {
-            XCTAssertTrue(error.isEqualTo(.transactionHasNotBeenConfirmed))
+            XCTAssertTrue(error.isEqualTo(TransactionConfirmationError.unconfirmed))
         }
 
         resetAPIClient(customResponse: response)
