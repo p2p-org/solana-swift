@@ -6,4 +6,5 @@ public enum APIClientError: Error, Equatable {
     case responseError(ResponseError)
     case transactionSimulationError(logs: [String])
     case couldNotRetrieveAccountInfo
+    case blockhashNotFound
 }

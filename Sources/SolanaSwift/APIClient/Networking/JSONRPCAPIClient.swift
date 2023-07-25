@@ -108,7 +108,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         let result: Rpc<Fee> = try await get(method: "getRecentBlockhash",
                                              params: [RequestConfiguration(commitment: commitment)])
         guard let blockhash = result.value.blockhash else {
-            throw SolanaError.other("Blockhash not found")
+            throw APIClientError.blockhashNotFound
         }
         return blockhash
     }
@@ -267,7 +267,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         // Error assertion
         if let err = result.value.err {
             if (err.wrapped as? String) == "BlockhashNotFound" {
-                throw SolanaError.other("Blockhash not found")
+                throw APIClientError.blockhashNotFound
             }
             throw APIClientError.transactionSimulationError(logs: result.value.logs)
         }

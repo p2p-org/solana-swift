@@ -1,5 +1,11 @@
 import Foundation
 
+public enum BlockchainClientError: Error, Equatable {
+    case sendTokenToYourSelf
+    case invalidAccountInfo
+    case other(String)
+}
+
 /// Default implementation of SolanaBlockchainClient
 public class BlockchainClient: SolanaBlockchainClient {
     public var apiClient: SolanaAPIClient
@@ -69,13 +75,13 @@ public class BlockchainClient: SolanaBlockchainClient {
         let feePayer = feePayer ?? account.publicKey
         let fromPublicKey = account.publicKey
         if fromPublicKey.base58EncodedString == destination {
-            throw SolanaError.other("You can not send tokens to yourself")
+            throw BlockchainClientError.sendTokenToYourSelf
         }
         var accountInfo: BufferInfo<EmptyInfo>?
         do {
             accountInfo = try await apiClient.getAccountInfo(account: destination)
             guard accountInfo == nil || accountInfo?.owner == SystemProgram.id.base58EncodedString
-            else { throw SolanaError.other("Invalid account info") }
+            else { throw BlockchainClientError.invalidAccountInfo }
         } catch let error as APIClientError where error == .couldNotRetrieveAccountInfo {
             // ignoring error
             accountInfo = nil
@@ -138,7 +144,7 @@ public class BlockchainClient: SolanaBlockchainClient {
 
         // catch error
         if fromPublicKey == toPublicKey.base58EncodedString {
-            throw SolanaError.other("You can not send tokens to yourself")
+            throw BlockchainClientError.sendTokenToYourSelf
         }
 
         let fromPublicKey = try PublicKey(string: fromPublicKey)

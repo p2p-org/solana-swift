@@ -126,7 +126,7 @@ public struct Transaction: Encodable, Equatable {
               data.count == 64,
               let index = signatures.firstIndex(where: { $0.publicKey == signature.publicKey })
         else {
-            throw SolanaError.other("Signer not valid: \(signature.publicKey.base58EncodedString)")
+            throw VersionedTransactionError.invalidSigner(signature.publicKey.base58EncodedString)
         }
 
         signatures[index] = signature
@@ -158,13 +158,13 @@ public struct Transaction: Encodable, Equatable {
     public func compileMessage() throws -> Message {
         // verify instructions
         guard !instructions.isEmpty else {
-            throw SolanaError.other("No instructions provided")
+            throw VersionedTransactionError.noInstructionProvided
         }
         guard let feePayer = feePayer else {
-            throw SolanaError.other("Fee payer not found")
+            throw VersionedTransactionError.feePayerNotFound
         }
         guard let recentBlockhash = recentBlockhash else {
-            throw SolanaError.other("Recent blockhash not found")
+            throw VersionedTransactionError.recentBlockhashNotFound
         }
 
         // programIds & accountMetas
@@ -423,5 +423,13 @@ public struct Signature: Encodable, Equatable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(Base58.encode(signature?.bytes ?? []), forKey: .signature)
         try container.encode(publicKey.base58EncodedString, forKey: .publicKey)
+    }
+}
+
+private extension Array where Element == AccountMeta {
+    func index(ofElementWithPublicKey publicKey: PublicKey) throws -> Int {
+        guard let index = firstIndex(where: { $0.publicKey == publicKey })
+        else { throw VersionedTransactionError.unknown }
+        return index
     }
 }

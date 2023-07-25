@@ -89,7 +89,7 @@ public extension SolanaBlockchainClient {
             {
                 isAssociatedTokenAddressRegistered = true
             } else {
-                throw SolanaError.other("Associated token account is belong to another user")
+                throw BlockchainClientError.other("Associated token account is belong to another user")
             }
         } catch {
             if error.isEqualTo(.couldNotRetrieveAccountInfo) {

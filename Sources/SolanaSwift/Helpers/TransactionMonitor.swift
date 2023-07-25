@@ -41,7 +41,7 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
             where: { [weak self] error in
                 guard let self = self else { return false }
                 if let error = error as? TaskRetryingError,
-                    error.type == .timedOut
+                   error.type == .timedOut
                 {
                     self.timedOutHandler()
                     return false
@@ -64,7 +64,7 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
                 self.setStatus(.finalized)
                 return
             }
-            throw SolanaError.other("Transaction has not been confirmed")
+            throw TransactionConfirmationError.unconfirmed
         }
     }
 

@@ -85,7 +85,7 @@ public struct MessageV0: IMessage, Equatable {
             }
 
             guard let tableAccount = tableAccount else {
-                throw SolanaError
+                throw VersionedMessageError
                     .other(
                         "Failed to find address lookup table account for table key \(tableLookup.accountKey.base58EncodedString)"
                     )
@@ -97,7 +97,7 @@ public struct MessageV0: IMessage, Equatable {
                         tableAccount.state.addresses[Int(index)]
                     )
                 } else {
-                    throw SolanaError
+                    throw VersionedMessageError
                         .other(
                             "Failed to find address for index \(index) in address lookup table \(tableLookup.accountKey.base58EncodedString)"
                         )
@@ -110,7 +110,7 @@ public struct MessageV0: IMessage, Equatable {
                         tableAccount.state.addresses[Int(index)]
                     )
                 } else {
-                    throw SolanaError
+                    throw VersionedMessageError
                         .other(
                             "Failed to find address for index \(index) in address lookup table \(tableLookup.accountKey.base58EncodedString)"
                         )

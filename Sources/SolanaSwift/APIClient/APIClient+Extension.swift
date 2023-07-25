@@ -85,7 +85,7 @@ public extension SolanaAPIClient {
                     tokenMintAddress: tokenMint
                 ).base58EncodedString
             } else {
-                throw PublicKeyError.invalidAddress
+                throw PublicKeyError.invalidAddress(destinationAddress)
             }
         } catch let error as APIClientError where error == .couldNotRetrieveAccountInfo {
             let owner = try PublicKey(string: destinationAddress)
@@ -148,7 +148,7 @@ public extension SolanaAPIClient {
     /// Returns all information associated with the account of provided Pubkey
     /// - Parameters:
     ///  - account: Pubkey of account to query, as base-58 encoded string
-    /// - Throws: APIClientError and SolanaError.couldNotRetrieveAccountInfo
+    /// - Throws: APIClientError
     /// - Returns The result will be an BufferInfo
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
     func getAccountInfoThrowable<T: BufferLayout>(account: String) async throws -> BufferInfo<T> {

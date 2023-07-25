@@ -61,7 +61,6 @@ public extension SolanaBlockchainClient {
         .value
     }
 
-    
     /// Simulate transaction (for testing purpose)
     /// - Parameter preparedTransaction: preparedTransaction to be simulated
     /// - Returns: The result of Simulation
@@ -86,9 +85,9 @@ public extension SolanaBlockchainClient {
         }
         .value
     }
-    
+
     // MARK: - Helpers
-    
+
     /// Sign and serialize transaction (for testing purpose)
     /// - Parameters:
     ///   - preparedTransaction: preparedTransaction
@@ -107,18 +106,11 @@ public extension SolanaBlockchainClient {
 
 private extension Error {
     var isBlockhashNotFoundError: Bool {
-        if let error = self as? SolanaError {
-            switch error {
-            case let .other(message) where message == "Blockhash not found":
-                return true
-            default:
-                break
-            }
-        }
-        
         if let error = self as? APIClientError {
             switch error {
             case let .responseError(response) where response.message == "Blockhash not found":
+                return true
+            case .blockhashNotFound:
                 return true
             default:
                 break
