@@ -9,6 +9,13 @@ public protocol TokenRepository {
     /// Get all tokens
     func all() async throws -> [String: TokenMetadata]
 
+    /// Prepare function
+    func setup() async throws
+
+    /// Get preloaded token
+    @available(*, deprecated, message: "This method is used for backward support legacy code.")
+    func get(preloaded: String) -> TokenMetadata
+
     /// Method to reset service
     func reset() async throws
 }
