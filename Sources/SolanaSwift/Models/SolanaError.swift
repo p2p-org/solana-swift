@@ -9,8 +9,6 @@ public enum SolanaError: Error, Equatable {
             return true
         case let (.invalidRequest(rs1), .invalidRequest(rs2)):
             return rs1 == rs2
-        case let (.socket(er1), .socket(er2)):
-            return er1.localizedDescription == er2.localizedDescription
         case let (.other(rs1), .other(rs2)):
             return rs1 == rs2
         case (.unknown, .unknown):
@@ -32,9 +30,6 @@ public enum SolanaError: Error, Equatable {
     // Transaction error
     case transactionError(ErrorDetail, logs: [String])
 
-    // Socket error
-    case socket(Error)
-
     // Transaction has not been confirmed
     case transactionHasNotBeenConfirmed
 
@@ -45,9 +40,5 @@ public enum SolanaError: Error, Equatable {
     // Predefined error
     public static var couldNotRetrieveAccountInfo: Self {
         .other("Could not retrieve account info")
-    }
-
-    public static var couldNotRetrieveBuffer: Self {
-        .other("Could not retrieve buffer")
     }
 }
