@@ -261,7 +261,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
             if (err.wrapped as? String) == "BlockhashNotFound" {
                 throw SolanaError.other("Blockhash not found")
             }
-            throw SolanaError.transactionError(err, logs: result.value.logs)
+            throw APIClientError.transactionSimulationError(logs: result.value.logs)
         }
 
         // Return value

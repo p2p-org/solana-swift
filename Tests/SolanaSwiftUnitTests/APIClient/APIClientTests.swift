@@ -270,8 +270,7 @@ class APIClientTests: XCTestCase {
         do {
             let _ = try await apiClient.simulateTransaction(transaction: "")
         } catch {
-            let error = error as? SolanaError
-            XCTAssertEqual(error, .transactionError(.init(wrapped: "AccountNotFound"), logs: []))
+            XCTAssertEqual(error as? APIClientError, APIClientError.transactionSimulationError(logs: []))
         }
     }
 

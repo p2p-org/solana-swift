@@ -23,7 +23,9 @@ public struct Transaction: Encodable, Equatable {
     // MARK: - Methods
 
     public mutating func sign(signers: [KeyPair]) throws {
-        guard !signers.isEmpty else { throw SolanaError.invalidRequest(reason: "No signers") }
+        guard !signers.isEmpty else {
+            throw VersionedTransactionError.noSigner
+        }
 
         // unique signers
         let signers = signers.reduce([KeyPair]()) { signers, signer in
@@ -62,7 +64,7 @@ public struct Transaction: Encodable, Equatable {
             serializedMessage: serializedMessage,
             requiredAllSignatures: requiredAllSignatures
         ) {
-            throw SolanaError.invalidRequest(reason: "Signature verification failed")
+            throw VersionedTransactionError.signatureVerificationError
         }
 
         return _serialize(serializedMessage: serializedMessage)
@@ -81,7 +83,7 @@ public struct Transaction: Encodable, Equatable {
     }
 
     mutating func verifySignatures() throws -> Bool {
-        _verifySignatures(serializedMessage: try serializeMessage(), requiredAllSignatures: true)
+        try _verifySignatures(serializedMessage: serializeMessage(), requiredAllSignatures: true)
     }
 
     public func findSignature(pubkey: PublicKey) -> Signature? {
@@ -91,7 +93,9 @@ public struct Transaction: Encodable, Equatable {
     // MARK: - Signing
 
     public mutating func partialSign(signers: [KeyPair]) throws {
-        guard !signers.isEmpty else { throw SolanaError.invalidRequest(reason: "No signers") }
+        guard !signers.isEmpty else {
+            throw VersionedTransactionError.noSigner
+        }
 
         // unique signers
         let signers = signers.reduce([KeyPair]()) { signers, signer in
@@ -248,7 +252,7 @@ public struct Transaction: Encodable, Equatable {
 //                        throw Error.invalidRequest(reason: "Transaction references a signature that is unnecessary")
                 }
             } else {
-                throw SolanaError.invalidRequest(reason: "Unknown signer: \(signature.publicKey.base58EncodedString)")
+                throw VersionedTransactionError.unknownSigner(signature.publicKey.base58EncodedString)
             }
         }
 
@@ -284,7 +288,7 @@ public struct Transaction: Encodable, Equatable {
         let instructions = instructions.compile(accountKeys: accountKeys)
         try instructions.forEach { instruction in
             try instruction.accounts.forEach { keyIndex in
-                if keyIndex < 0 { throw SolanaError.assertionFailed("") }
+                if keyIndex < 0 { throw VersionedTransactionError.unknown }
             }
         }
 
@@ -359,7 +363,7 @@ public struct Transaction: Encodable, Equatable {
         }
 
         print(data.base64EncodedString())
-        return populate(try Message.from(data: data), signatures)
+        return try populate(Message.from(data: data), signatures)
     }
 
     static func populate(_ message: Message, _ signatures: [String]) -> Transaction {

@@ -85,7 +85,7 @@ public extension SolanaAPIClient {
                     tokenMintAddress: tokenMint
                 ).base58EncodedString
             } else {
-                throw SolanaError.invalidRequest(reason: "Wallet address is not valid")
+                throw PublicKeyError.invalidAddress
             }
         } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
             let owner = try PublicKey(string: destinationAddress)

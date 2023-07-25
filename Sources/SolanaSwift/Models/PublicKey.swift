@@ -80,6 +80,11 @@ private extension Int {
     }
 }
 
+public enum PublicKeyError: Error {
+    case notFound
+    case invalidAddress
+}
+
 public extension PublicKey {
     static func associatedTokenAddress(
         walletAddress: PublicKey,
@@ -113,7 +118,7 @@ public extension PublicKey {
                 continue
             }
         }
-        throw SolanaError.notFound
+        throw PublicKeyError.notFound
     }
 
     static func createProgramAddress(
@@ -157,12 +162,12 @@ public extension PublicKey {
         let hash = data.sha256()
         return try PublicKey(data: hash)
     }
-    
+
     static func isOnCurve(publicKey: String) -> Int {
         let data = Base58.decode(publicKey)
         return isOnCurve(publicKeyBytes: Data(data))
     }
-    
+
     static func isOnCurve(publicKeyBytes: Data) -> Int {
         var r = [[Int64]](repeating: NaclLowLevel.gf(), count: 4)
 
