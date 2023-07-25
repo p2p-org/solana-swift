@@ -53,10 +53,10 @@ class ObserveTransactionStatusTests: XCTestCase {
         let response: [Result<String, Error>] = [
             .failure(CustomError.unknownNetworkError),
             .failure(CustomError.unknownNetworkError),
-            .failure(SolanaError.unknown),
+            .failure(APIClientError.invalidResponse),
             .success(mockResponse(confirmations: 5, confirmationStatus: "confirmed")),
             .success(mockResponse(confirmations: 10, confirmationStatus: "confirmed")),
-            .failure(SolanaError.unknown),
+            .failure(APIClientError.invalidResponse),
             .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
         ]
 
@@ -72,10 +72,10 @@ class ObserveTransactionStatusTests: XCTestCase {
         let response: [Result<String, Error>] = [
             .failure(CustomError.unknownNetworkError),
             .failure(CustomError.unknownNetworkError),
-            .failure(SolanaError.unknown),
+            .failure(APIClientError.invalidResponse),
             .success(mockResponse(confirmations: 5, confirmationStatus: "confirmed")),
             .success(mockResponse(confirmations: 10, confirmationStatus: "confirmed")),
-            .failure(SolanaError.unknown),
+            .failure(APIClientError.invalidResponse),
             .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
         ]
 
@@ -116,10 +116,10 @@ class ObserveTransactionStatusTests: XCTestCase {
             .failure(CustomError.unknownNetworkError),
             .success(mockResponse(confirmations: 1, confirmationStatus: "confirmed")),
             .failure(CustomError.unknownNetworkError),
-            .failure(SolanaError.unknown),
+            .failure(APIClientError.invalidResponse),
             .success(mockResponse(confirmations: 5, confirmationStatus: "confirmed")),
             .success(mockResponse(confirmations: 10, confirmationStatus: "confirmed")),
-            .failure(SolanaError.unknown),
+            .failure(APIClientError.invalidResponse),
             .success(mockResponse(confirmations: nil, confirmationStatus: "finalized")),
         ])
         apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
