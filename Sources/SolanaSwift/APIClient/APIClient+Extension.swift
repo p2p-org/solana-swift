@@ -87,7 +87,7 @@ public extension SolanaAPIClient {
             } else {
                 throw PublicKeyError.invalidAddress
             }
-        } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
+        } catch let error as APIClientError where error == .couldNotRetrieveAccountInfo {
             let owner = try PublicKey(string: destinationAddress)
             let tokenMint = try PublicKey(string: mintAddress)
             // create associated token address
@@ -154,7 +154,7 @@ public extension SolanaAPIClient {
     func getAccountInfoThrowable<T: BufferLayout>(account: String) async throws -> BufferInfo<T> {
         let info: BufferInfo<T>? = try await getAccountInfo(account: account)
         guard let info = info else {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         }
         return info
     }

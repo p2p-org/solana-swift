@@ -28,11 +28,19 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     public func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>? {
-        let response: Rpc<BufferInfo<T>?> = try await get(method: "getAccountInfo", params: [
-            account,
-            RequestConfiguration(encoding: "base64"),
-        ])
-        return response.value
+        do {
+            let response: Rpc<BufferInfo<T>?> = try await get(method: "getAccountInfo", params: [
+                account,
+                RequestConfiguration(encoding: "base64"),
+            ])
+            return response.value
+        } catch is BinaryReaderError {
+            throw APIClientError.couldNotRetrieveAccountInfo
+        } catch APIClientError.invalidResponse {
+            throw APIClientError.couldNotRetrieveAccountInfo
+        } catch {
+            throw error
+        }
     }
 
     public func getBlockHeight() async throws -> UInt64 {
@@ -130,7 +138,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
             params: [pubkey, RequestConfiguration(commitment: commitment)]
         )
         if UInt64(result.value.amount) == nil {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         }
         return result.value
     }

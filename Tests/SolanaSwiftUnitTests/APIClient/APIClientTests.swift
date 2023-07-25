@@ -30,7 +30,7 @@ class APIClientTests: XCTestCase {
         do {
             let _: BufferInfo<SPLTokenAccountState>? = try await apiClient
                 .getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
-        } catch let error as SolanaError {
+        } catch let error as APIClientError {
             XCTAssertTrue(error == .couldNotRetrieveAccountInfo)
         } catch {
             XCTAssertTrue(false)

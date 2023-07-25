@@ -120,10 +120,10 @@ public extension SolanaBlockchainClient {
         }
 
         // else create associated address
-        return .init(
+        return try .init(
             account: associatedAddress,
             instructions: [
-                try AssociatedTokenProgram
+                AssociatedTokenProgram
                     .createAssociatedTokenAccountInstruction(
                         mint: mint,
                         owner: owner,

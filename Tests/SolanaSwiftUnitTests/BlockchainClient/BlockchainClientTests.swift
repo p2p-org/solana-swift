@@ -187,11 +187,11 @@ private class MockAPIClient: SolanaAPIClient {
             case "testPrepareSendingNativeSOLToNewlyCreatedAccount()":
                 return nil
             case "testPrepareSendingSPLTokens()#1":
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             case "testPrepareSendingSPLTokens()#2":
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             case "testPrepareSendingSPLTokens()#4":
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             default:
                 fatalError()
             }
@@ -219,12 +219,12 @@ private class MockAPIClient: SolanaAPIClient {
                 executable = true
                 rentEpoch = 0
             default:
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             }
         case "G3s9UyAY7hCwrghDMyurVtPk3wy8CV6hi8haWGLdbdTc":
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         case "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh":
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         case "":
             return nil
         default:

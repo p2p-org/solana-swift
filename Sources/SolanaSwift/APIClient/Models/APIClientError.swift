@@ -5,4 +5,5 @@ public enum APIClientError: Error, Equatable {
     case invalidResponse
     case responseError(ResponseError)
     case transactionSimulationError(logs: [String])
+    case couldNotRetrieveAccountInfo
 }

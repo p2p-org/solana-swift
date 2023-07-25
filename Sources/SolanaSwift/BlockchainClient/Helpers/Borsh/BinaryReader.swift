@@ -2,6 +2,7 @@ import Foundation
 
 public enum BinaryReaderError: Error {
     case invalidBytesCount(Int)
+    case dataMismatch
 }
 
 public struct BinaryReader {
@@ -34,7 +35,7 @@ public extension BinaryReader {
     mutating func read() throws -> UInt8 {
         let newPosition = cursor + 1
         guard bytes.count >= newPosition else {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw BinaryReaderError.dataMismatch
         }
         let result = bytes[cursor]
         cursor = newPosition
@@ -52,7 +53,7 @@ public extension BinaryReader {
     mutating func read(count: UInt32) throws -> [UInt8] {
         let newPosition = cursor + Int(count)
         guard bytes.count >= newPosition else {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw BinaryReaderError.dataMismatch
         }
         let result = bytes[cursor ..< newPosition]
         cursor = newPosition
