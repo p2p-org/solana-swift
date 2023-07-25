@@ -21,19 +21,6 @@ public actor SolanaTokenListRepository: TokenRepository {
         try await fill()
     }
 
-    public nonisolated func get(preloaded: String) -> TokenMetadata {
-        [
-            TokenMetadata.nativeSolana,
-            TokenMetadata.usdc,
-            TokenMetadata.usdt,
-            TokenMetadata.eth,
-            TokenMetadata.renBTC,
-            TokenMetadata.usdcet,
-        ]
-            .first { $0.mintAddress == preloaded }
-            ?? TokenMetadata.unsupported(mint: preloaded, decimals: 1, symbol: "", supply: nil)
-    }
-
     public func get(address: String) async throws -> TokenMetadata? {
         if records.isEmpty {
             try await fill()

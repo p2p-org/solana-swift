@@ -1,7 +1,8 @@
 import Foundation
 
-internal extension TokenMetadata {
-    static var nativeSolana: Self {
+@available(*, deprecated, message: "[Legacy code] Will be removed in future.")
+extension TokenMetadata {
+    static var nativeSolana: TokenMetadata =
         .init(
             _tags: [],
             chainId: 101,
@@ -14,9 +15,8 @@ internal extension TokenMetadata {
             extensions: ["coingeckoId": .string("solana")],
             isNative: true
         )
-    }
 
-    static var renBTC: Self {
+    static var renBTC: TokenMetadata =
         .init(
             _tags: nil,
             chainId: 101,
@@ -31,9 +31,8 @@ internal extension TokenMetadata {
                 "coingeckoId": .string("renbtc"),
             ]
         )
-    }
 
-    static var usdc: Self {
+    static var usdc: TokenMetadata =
         .init(
             _tags: nil,
             chainId: 101,
@@ -44,9 +43,8 @@ internal extension TokenMetadata {
             logoURI: "https://raw.githubusercontent.com/p2p-org/solana-token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
             extensions: ["coingeckoId": .string("usd-coin")]
         )
-    }
 
-    static var usdt: Self {
+    static var usdt: TokenMetadata =
         .init(
             _tags: nil,
             chainId: 101,
@@ -57,9 +55,8 @@ internal extension TokenMetadata {
             logoURI: "https://raw.githubusercontent.com/p2p-org/solana-token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.png",
             extensions: ["coingeckoId": .string("tether")]
         )
-    }
 
-    static var eth: Self {
+    static var eth: TokenMetadata =
         .init(
             _tags: nil,
             chainId: 101,
@@ -70,9 +67,8 @@ internal extension TokenMetadata {
             logoURI: "https://raw.githubusercontent.com/p2p-org/solana-token-list/main/assets/mainnet/7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs/logo.png",
             extensions: ["coingeckoId": .string("ethereum")]
         )
-    }
 
-    static var usdcet: Self {
+    static var usdcet: TokenMetadata =
         .init(
             _tags: nil,
             chainId: 101,
@@ -83,5 +79,4 @@ internal extension TokenMetadata {
             logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM/logo.png",
             extensions: ["coingeckoId": .string("usd-coin")]
         )
-    }
 }
