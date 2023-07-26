@@ -102,11 +102,11 @@ class BaseAPIClientMock: JSONRPCAPIClient {
         pubkey _: String,
         params _: OwnerInfoParams? = nil,
         configs _: RequestConfiguration? = nil
-    ) async throws -> [TokenAccountInfo<SPLTokenAccountState>] {
+    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
         let json =
             "[{\"account\":{\"data\":[\"ppdSk884LShYnHoHm7XiDlZ28iJVm9BHPgrAEfxU44AJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"So11111111111111111111111111111111111111112\",\"rentEpoch\":309},\"pubkey\":\"9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4\"}]"
         let decoder = try JSONDecoder().decode(
-            [TokenAccountInfo<SPLTokenAccountState>].self,
+            [TokenAccount<SPLTokenAccountState>].self,
             from: json.data(using: .utf8)!
         )
         return decoder

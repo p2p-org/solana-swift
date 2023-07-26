@@ -148,8 +148,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         mint: String? = nil,
         programId: String? = nil,
         configs: RequestConfiguration? = nil
-    ) async throws -> [TokenAccountInfo<SPLTokenAccountState>] {
-        let result: Rpc<[TokenAccountInfo<SPLTokenAccountState>]> = try await get(
+    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
+        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(
             method: "getTokenAccountsByDelegate",
             params: [
                 pubkey,
@@ -165,8 +165,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         pubkey: String,
         params: OwnerInfoParams? = nil,
         configs: RequestConfiguration? = nil
-    ) async throws -> [TokenAccountInfo<SPLTokenAccountState>] {
-        let result: Rpc<[TokenAccountInfo<SPLTokenAccountState>]> = try await get(
+    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
+        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(
             method: "getTokenAccountsByOwner",
             params: [pubkey, params, configs]
         )

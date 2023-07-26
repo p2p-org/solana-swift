@@ -171,7 +171,7 @@ public protocol SolanaAPIClient {
         mint: String?,
         programId: String?,
         configs: RequestConfiguration?
-    ) async throws -> [TokenAccountInfo<SPLTokenAccountState>]
+    ) async throws -> [TokenAccount<SPLTokenAccountState>]
 
     /// Returns all SPL Token accounts by token owner
     /// - Parameters:
@@ -184,7 +184,7 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#gettokenaccountsbyowner
     ///
     func getTokenAccountsByOwner(pubkey: String, params: OwnerInfoParams?, configs: RequestConfiguration?) async throws
-        -> [TokenAccountInfo<SPLTokenAccountState>]
+        -> [TokenAccount<SPLTokenAccountState>]
 
     /// Returns the 20 largest accounts of a particular SPL Token type
     /// - Parameters:

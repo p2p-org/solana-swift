@@ -1,9 +1,9 @@
 import Foundation
 
 @available(*, deprecated, renamed: "TokenAccount")
-public typealias Wallet = TokenAccount
+public typealias Wallet = AccountBalance
 
-public struct TokenAccount: Hashable, Equatable {
+public struct AccountBalance: Hashable, Equatable {
     // MARK: - Properties
 
     public var pubkey: String?
