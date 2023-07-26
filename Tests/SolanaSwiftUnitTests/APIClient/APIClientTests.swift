@@ -1,5 +1,5 @@
-import XCTest
 @testable import SolanaSwift
+import XCTest
 
 class APIClientTests: XCTestCase {
     let endpoint = APIEndPoint(

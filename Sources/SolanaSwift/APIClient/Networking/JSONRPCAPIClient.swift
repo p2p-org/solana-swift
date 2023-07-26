@@ -314,7 +314,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         pubkeys: [String],
         commitment: Commitment
     ) async throws -> [BufferInfo<T>?]
-    where T: BufferLayout {
+        where T: BufferLayout
+    {
         let configs = RequestConfiguration(commitment: commitment, encoding: "base64")
         guard !pubkeys.isEmpty else { return [] }
 

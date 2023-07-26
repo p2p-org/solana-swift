@@ -1,12 +1,3 @@
-//
-//  Mnemonic.swift
-//
-//  See BIP39 specification for more info:
-//  https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-//
-//  Created by Liu Pengpeng on 2019/10/10.
-//
-
 import CommonCrypto
 import Foundation
 

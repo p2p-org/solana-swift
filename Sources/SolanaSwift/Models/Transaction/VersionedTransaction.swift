@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Giang Long Tran on 14.01.2023.
-//
-
 import Foundation
 import TweetNacl
 

@@ -1,10 +1,3 @@
-//
-//  FeeCalculatorTests.swift
-//
-//
-//  Created by Chung Tran on 05/05/2022.
-//
-
 import SolanaSwift
 import XCTest
 
@@ -132,8 +125,8 @@ class FeeCalculatorTests: XCTestCase {
                     owner: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
                     payer: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5"
                 ),
-                TokenProgram.closeAccountInstruction(
-                    account: try PublicKey.associatedTokenAddress(
+                try TokenProgram.closeAccountInstruction(
+                    account: PublicKey.associatedTokenAddress(
                         walletAddress: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
                         tokenMintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
                     ),

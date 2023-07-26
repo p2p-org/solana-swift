@@ -1,7 +1,7 @@
 import Foundation
 
-import XCTest
 @testable import SolanaSwift
+import XCTest
 
 class BlockchainClientTests: XCTestCase {
     var account: KeyPair!
@@ -403,7 +403,8 @@ private class MockAPIClient: SolanaAPIClient {
     }
 
     func getMultipleAccounts<T>(pubkeys _: [String], commitment _: Commitment) async throws -> [BufferInfo<T>?]
-    where T: BufferLayout {
+        where T: BufferLayout
+    {
         fatalError()
     }
 
@@ -424,12 +425,14 @@ private class MockAPIClient: SolanaAPIClient {
     }
 
     func batchRequest(with _: [JSONRPCRequestEncoder.RequestType]) async throws
-    -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>] {
+        -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>]
+    {
         fatalError()
     }
 
     func batchRequest<Entity>(method _: String, params _: [[Encodable]]) async throws -> [Entity?]
-    where Entity: Decodable {
+        where Entity: Decodable
+    {
         fatalError()
     }
 
@@ -442,7 +445,8 @@ private class MockAPIClient: SolanaAPIClient {
     }
 
     func getAddressLookupTable(accountKey _: SolanaSwift.PublicKey) async throws -> SolanaSwift
-    .AddressLookupTableAccount? {
+        .AddressLookupTableAccount?
+    {
         nil
     }
 }

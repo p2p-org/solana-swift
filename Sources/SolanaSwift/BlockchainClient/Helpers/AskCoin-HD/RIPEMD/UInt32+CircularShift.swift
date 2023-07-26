@@ -1,10 +1,3 @@
-//
-//  RIPEMD+CircularShift.swift
-//  RIPEMD
-//
-//  Created by Sjors Provoost on 08-07-14.
-//
-
 // Circular left shift: http://en.wikipedia.org/wiki/Circular_shift
 // Precendence should be the same as <<
 infix operator ~<<: BitwiseShiftPrecedence

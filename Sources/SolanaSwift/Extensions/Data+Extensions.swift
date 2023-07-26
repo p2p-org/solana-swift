@@ -1,10 +1,3 @@
-//
-//  Data+Extensions.swift
-//  p2p_wallet
-//
-//  Created by Chung Tran on 10/26/20.
-//
-
 import Foundation
 
 public extension Data {
@@ -61,8 +54,8 @@ public extension Data {
     }
 }
 
-extension Encodable {
-    public var jsonString: String? {
+public extension Encodable {
+    var jsonString: String? {
         guard let data = try? JSONEncoder().encode(self) else { return nil }
         return String(data: data, encoding: .utf8)
     }

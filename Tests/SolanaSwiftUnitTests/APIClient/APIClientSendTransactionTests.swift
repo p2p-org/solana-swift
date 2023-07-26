@@ -1,5 +1,5 @@
-import XCTest
 @testable import SolanaSwift
+import XCTest
 
 class APIClientSendTransactionTests: XCTestCase {
     let endpoint = APIEndPoint(

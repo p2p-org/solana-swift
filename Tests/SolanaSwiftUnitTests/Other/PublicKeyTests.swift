@@ -1,13 +1,5 @@
-//
-//  PublicKeyTests.swift
-//  SolanaSwift_Tests
-//
-//  Created by Chung Tran on 01/09/2021.
-//  Copyright © 2021 CocoaPods. All rights reserved.
-//
-
-import XCTest
 @testable import SolanaSwift
+import XCTest
 
 class PublicKeyTests: XCTestCase {
     func testPublicKeyFromString() throws {

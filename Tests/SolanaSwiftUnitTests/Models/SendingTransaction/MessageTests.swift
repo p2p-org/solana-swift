@@ -1,17 +1,8 @@
-//
-//  MessageTests.swift
-//  
-//
-//  Created by Kamil Wyszomerski on 20/06/2022.
-//
-
-import XCTest
 @testable import SolanaSwift
+import XCTest
 
 class MessageTests: XCTestCase {
-
     func test_givenRawMessage_whenFrom_thenReturnsExpectedMessage() throws {
-
         // given
         let expectedMessge = Message.StubFactory.makeSignedWithInstructions()
         // Base64-encoded message containing two instructions some accounts and signers.

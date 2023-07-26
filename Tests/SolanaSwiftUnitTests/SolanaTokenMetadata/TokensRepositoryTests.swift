@@ -1,5 +1,5 @@
-import XCTest
 @testable import SolanaSwift
+import XCTest
 
 class TokensRepositoryTests: XCTestCase {
     func testFill_WithStorageData_ShouldLoadFromStorage() async throws {

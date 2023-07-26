@@ -1,10 +1,3 @@
-//
-//  RIPEMD+Block.swift
-//  RIPEMD
-//
-//  Created by Sjors Provoost on 08-07-14.
-//
-
 public extension RIPEMD {
     // FIXME: Make struct and all functions framework-only as soon as tests support that
     struct Block {
