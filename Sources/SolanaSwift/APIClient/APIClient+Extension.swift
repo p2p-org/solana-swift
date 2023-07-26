@@ -96,7 +96,6 @@ public extension SolanaAPIClient {
                 tokenMintAddress: tokenMint
             ).base58EncodedString
         } catch {
-            print(String(reflecting: error))
             throw error
         }
 
