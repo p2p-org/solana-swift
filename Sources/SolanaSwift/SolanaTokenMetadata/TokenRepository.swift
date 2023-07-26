@@ -9,6 +9,9 @@ public protocol TokenRepository {
     /// Get all tokens
     func all() async throws -> [String: TokenMetadata]
 
+    /// Prepare function
+    func setup() async throws
+
     /// Method to reset service
     func reset() async throws
 }

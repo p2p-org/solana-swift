@@ -17,6 +17,10 @@ public actor SolanaTokenListRepository: TokenRepository {
         self.tokenListSource = tokenListSource
     }
 
+    public func setup() async throws {
+        try await fill()
+    }
+
     public func get(address: String) async throws -> TokenMetadata? {
         if records.isEmpty {
             try await fill()
