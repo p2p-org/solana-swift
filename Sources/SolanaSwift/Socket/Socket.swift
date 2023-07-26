@@ -18,7 +18,12 @@ public protocol SolanaSocket {
     ///   - type: type of entity, '.account', '.program',...
     ///   - params: params to be sent
     /// - Returns: id of the request
-    @discardableResult func subscribe<T: Encodable>(type: SocketEntity, params: T, commitment: String, encoding: String) async throws
+    @discardableResult func subscribe<T: Encodable>(
+        type: SocketEntity,
+        params: T,
+        commitment: String,
+        encoding: String
+    ) async throws
         -> String
 
     /// Unsubscribe to an entity ('account', 'program', 'signature', for example)
@@ -167,9 +172,7 @@ public class Socket: NSObject, SolanaSocket {
     /// - Parameter request: request to be sent
     /// - Returns: request id
     @discardableResult private func writeToSocket(request: RequestAPI) async throws -> String {
-        guard let jsonData = try? JSONEncoder().encode(request) else {
-            throw SocketError.couldNotSerialize
-        }
+        let jsonData = try JSONEncoder().encode(request)
         Logger.log(event: "request", message: "\(String(data: jsonData, encoding: .utf8) ?? "")", logLevel: .info)
         try await task.send(.data(jsonData))
         return request.id

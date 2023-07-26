@@ -13,7 +13,7 @@ public extension SolanaAPIClient {
         try await getRecentBlockhash(commitment: nil)
     }
 
-    func observeSignatureStatus(signature: String) -> AsyncStream<TransactionStatus> {
+    func observeSignatureStatus(signature: String) -> AsyncStream<PendingTransactionStatus> {
         observeSignatureStatus(signature: signature, timeout: 60, delay: 2)
     }
 
@@ -21,21 +21,19 @@ public extension SolanaAPIClient {
 
     func getMultipleMintDatas(
         mintAddresses: [String],
-        programId: String = TokenProgram.id.base58EncodedString
-    ) async throws -> [String: Mint] {
-        let accounts: [BufferInfo<Mint>] = try await getMultipleAccounts(pubkeys: mintAddresses)
-        var mintDict = [String: Mint]()
-        if accounts.contains(where: { $0.owner != programId }) == true {
-            throw SolanaError.other("Invalid mint owner")
-        }
-        let result = accounts.map(\.data)
-        guard result.count == mintAddresses.count else {
-            throw SolanaError.other("Some of mint data are missing")
-        }
+        commitment: Commitment
+    ) async throws -> [String: SPLTokenMintState?] {
+        let accounts: [BufferInfo<SPLTokenMintState>?] = try await getMultipleAccounts(
+            pubkeys: mintAddresses,
+            commitment: commitment
+        )
+
+        var mintDict = [String: SPLTokenMintState?]()
 
         for (index, address) in mintAddresses.enumerated() {
-            mintDict[address] = result[index]
+            mintDict[address] = accounts[index]?.data
         }
+
         return mintDict
     }
 
@@ -50,7 +48,8 @@ public extension SolanaAPIClient {
             tokenMintAddress: mintAddress
         )
 
-        let bufferInfo: BufferInfo<AccountInfo>? = try await getAccountInfo(account: associatedTokenAccount.base58EncodedString)
+        let bufferInfo: BufferInfo<SPLTokenAccountState>? = try await getAccountInfo(account: associatedTokenAccount
+            .base58EncodedString)
         return bufferInfo?.data.mint == mintAddress
     }
 
@@ -61,7 +60,7 @@ public extension SolanaAPIClient {
     /// - Returns wether account is valid
     ///
     func checkAccountValidation(account: String) async throws -> Bool {
-        (try await getAccountInfo(account: account) as BufferInfo<EmptyInfo>?) != nil
+        try (await getAccountInfo(account: account) as BufferInfo<EmptyInfo>?) != nil
     }
 
     func findSPLTokenDestinationAddress(
@@ -69,7 +68,7 @@ public extension SolanaAPIClient {
         destinationAddress: String
     ) async throws -> SPLTokenDestinationAddress {
         var address: String
-        var accountInfo: BufferInfo<AccountInfo>?
+        var accountInfo: BufferInfo<SPLTokenAccountState>?
         do {
             accountInfo = try await getAccountInfoThrowable(account: destinationAddress)
             let toTokenMint = accountInfo?.data.mint.base58EncodedString
@@ -86,9 +85,9 @@ public extension SolanaAPIClient {
                     tokenMintAddress: tokenMint
                 ).base58EncodedString
             } else {
-                throw SolanaError.invalidRequest(reason: "Wallet address is not valid")
+                throw PublicKeyError.invalidAddress(destinationAddress)
             }
-        } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
+        } catch let error as APIClientError where error == .couldNotRetrieveAccountInfo {
             let owner = try PublicKey(string: destinationAddress)
             let tokenMint = try PublicKey(string: mintAddress)
             // create associated token address
@@ -106,7 +105,7 @@ public extension SolanaAPIClient {
         var isUnregisteredAsocciatedToken = false
         if destinationAddress != toPublicKey.base58EncodedString {
             // check if associated address is already registered
-            let info: BufferInfo<AccountInfo>?
+            let info: BufferInfo<SPLTokenAccountState>?
             do {
                 info = try await getAccountInfoThrowable(account: toPublicKey.base58EncodedString)
             } catch {
@@ -122,81 +121,12 @@ public extension SolanaAPIClient {
         return (destination: toPublicKey, isUnregisteredAsocciatedToken: isUnregisteredAsocciatedToken)
     }
 
-    /// Method retrieves token wallets
-    /// - Parameters:
-    ///  - account: Public key of an account
-    ///  - tokensRepository: Solana token repository,
-    /// - Throws: TokenRepositoryError
-    /// - Returns array of Wallet
-    ///
-    func getTokenWallets(
-        account: String,
-        tokensRepository: SolanaTokensRepository? = nil,
-        commitment: Commitment? = nil
-    ) async throws -> [Wallet] {
-        async let accounts = try await getTokenAccountsByOwner(
-            pubkey: account,
-            params: .init(
-                mint: nil,
-                programId: TokenProgram.id.base58EncodedString
-            ),
-            configs: .init(
-                commitment: commitment,
-                encoding: "base64"
-            )
-        )
-        let tokensRepository = tokensRepository ?? TokensRepository(endpoint: endpoint)
-        async let tokens = try await tokensRepository.getTokensList()
-        var knownWallets = [Wallet]()
-        var unknownAccounts = [(String, AccountInfo)]()
-        let (list, supportedTokens) = (try await accounts, try await tokens)
-
-        for item in list {
-            let pubkey = item.pubkey
-            let accountInfo = item.account.data
-
-            let mintAddress = accountInfo.mint.base58EncodedString
-            // known token
-            if let token = supportedTokens.first(where: { $0.address == mintAddress }) {
-                knownWallets.append(
-                    Wallet(
-                        pubkey: pubkey,
-                        lamports: accountInfo.lamports,
-                        token: token
-                    )
-                )
-            } else {
-                // unknown token
-                unknownAccounts.append((item.pubkey, item.account.data))
-            }
-        }
-        let mintDatas = try await getMultipleMintDatas(mintAddresses: unknownAccounts.map(\.1.mint.base58EncodedString))
-        guard mintDatas.count == unknownAccounts.count else { throw SolanaError.unknown }
-        let wallets: [Wallet] = mintDatas.compactMap { address, mint in
-            if let unknownAccount = unknownAccounts.first(where: { $0.1.mint.base58EncodedString == address }) {
-                return Wallet(
-                    pubkey: unknownAccount.0,
-                    lamports: unknownAccount.1.lamports,
-                    supply: mint.supply,
-                    token: .unsupported(
-                        mint: unknownAccount.1.mint.base58EncodedString,
-                        decimals: mint.decimals,
-                        supply: mint.supply
-                    )
-                )
-            } else {
-                return nil
-            }
-        }
-        return knownWallets + wallets
-    }
-
     /// Wait until transaction is confirmed, return even when there is one or more confirmations and request timed out
     /// - Parameters:
     ///   - signature: signature of the transaction
     ///   - ignoreStatus: ignore status and return true even when observation is timed out
     func waitForConfirmation(signature: String, ignoreStatus: Bool, timeout: Int = 60, delay: Int = 2) async throws {
-        var statuses = [TransactionStatus]()
+        var statuses = [PendingTransactionStatus]()
         for try await status in observeSignatureStatus(signature: signature, timeout: timeout, delay: delay) {
             statuses.append(status)
         }
@@ -204,13 +134,13 @@ public extension SolanaAPIClient {
         // if the status is important
         if !ignoreStatus {
             guard let lastStatus = statuses.last else {
-                throw SolanaError.transactionHasNotBeenConfirmed
+                throw TransactionConfirmationError.unconfirmed
             }
             switch lastStatus {
             case .confirmed, .finalized:
                 return
             default:
-                throw SolanaError.transactionHasNotBeenConfirmed
+                throw TransactionConfirmationError.unconfirmed
             }
         }
     }
@@ -218,13 +148,13 @@ public extension SolanaAPIClient {
     /// Returns all information associated with the account of provided Pubkey
     /// - Parameters:
     ///  - account: Pubkey of account to query, as base-58 encoded string
-    /// - Throws: APIClientError and SolanaError.couldNotRetrieveAccountInfo
+    /// - Throws: APIClientError
     /// - Returns The result will be an BufferInfo
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
     func getAccountInfoThrowable<T: BufferLayout>(account: String) async throws -> BufferInfo<T> {
         let info: BufferInfo<T>? = try await getAccountInfo(account: account)
         guard let info = info else {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         }
         return info
     }

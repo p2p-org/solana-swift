@@ -1,6 +1,9 @@
 import Foundation
 
-public struct Mint: BufferLayout, Equatable, Hashable, Encodable {
+@available(*, deprecated, renamed: "SPLTokenMintState")
+public typealias Mint = SPLTokenMintState
+
+public struct SPLTokenMintState: BufferLayout, Equatable, Hashable, Encodable {
     public static var BUFFER_LENGTH: UInt64 = 82
 
     public let mintAuthorityOption: UInt32
@@ -12,7 +15,7 @@ public struct Mint: BufferLayout, Equatable, Hashable, Encodable {
     public let freezeAuthority: PublicKey?
 }
 
-extension Mint: BorshCodable {
+extension SPLTokenMintState: BorshCodable {
     public init(from reader: inout BinaryReader) throws {
         mintAuthorityOption = try .init(from: &reader)
         mintAuthority = try? PublicKey(from: &reader)

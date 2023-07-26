@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Chung Tran on 06/05/2022.
-//
-
 import Foundation
 import Task_retrying
 
@@ -13,17 +6,17 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
     let apiClient: SolanaAPIClient
     let timeout: Int
     let delay: Int
-    var responseHandler: (TransactionStatus) -> Void
+    var responseHandler: (PendingTransactionStatus) -> Void
     var timedOutHandler: () -> Void
     var task: Task<Void, Error>!
-    var currentStatus: TransactionStatus!
+    var currentStatus: PendingTransactionStatus!
 
     init(
         apiClient: SolanaAPIClient,
         signature: String,
         timeout: Int,
         delay: Int,
-        responseHandler: @escaping (TransactionStatus) -> Void,
+        responseHandler: @escaping (PendingTransactionStatus) -> Void,
         timedOutHandler: @escaping () -> Void
     ) {
         self.apiClient = apiClient
@@ -41,7 +34,7 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
             where: { [weak self] error in
                 guard let self = self else { return false }
                 if let error = error as? TaskRetryingError,
-                    error.type == .timedOut
+                   error.type == .timedOut
                 {
                     self.timedOutHandler()
                     return false
@@ -64,7 +57,7 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
                 self.setStatus(.finalized)
                 return
             }
-            throw SolanaError.other("Transaction has not been confirmed")
+            throw TransactionConfirmationError.unconfirmed
         }
     }
 
@@ -72,7 +65,7 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
         task.cancel()
     }
 
-    func setStatus(_ transactionStatus: TransactionStatus) {
+    func setStatus(_ transactionStatus: PendingTransactionStatus) {
         currentStatus = transactionStatus
         responseHandler(transactionStatus)
     }

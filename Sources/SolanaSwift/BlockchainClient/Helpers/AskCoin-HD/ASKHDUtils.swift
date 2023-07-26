@@ -1,11 +1,3 @@
-//
-//  ASKHDUtils.swift
-//  AskCoin-HD
-//
-//  Created by 仇弘扬 on 2017/8/16.
-//  Copyright © 2017年 askcoin. All rights reserved.
-//
-
 import Foundation
 
 protocol HexToData {

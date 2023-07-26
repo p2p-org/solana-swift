@@ -13,7 +13,7 @@ public struct AccountMeta: Equatable, Codable, CustomDebugStringConvertible {
 
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        publicKey = try PublicKey(string: try values.decode(String.self, forKey: .pubkey))
+        publicKey = try PublicKey(string: values.decode(String.self, forKey: .pubkey))
         isSigner = try values.decode(Bool.self, forKey: .signer)
         isWritable = try values.decode(Bool.self, forKey: .writable)
     }

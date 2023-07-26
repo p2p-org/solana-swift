@@ -2,6 +2,6 @@ import Foundation
 
 public typealias BorshCodable = BorshSerializable & BorshDeserializable
 
-public enum BorshDecodingError: Error {
-    case unknownData
+public enum BorshCodableError: Error {
+    case invalidData
 }

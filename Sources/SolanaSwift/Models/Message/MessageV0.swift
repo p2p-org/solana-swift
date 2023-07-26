@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Giang Long Tran on 13.01.2023.
-//
-
 import Foundation
 
 public struct MessageV0: IMessage, Equatable {
@@ -92,7 +85,7 @@ public struct MessageV0: IMessage, Equatable {
             }
 
             guard let tableAccount = tableAccount else {
-                throw SolanaError
+                throw VersionedMessageError
                     .other(
                         "Failed to find address lookup table account for table key \(tableLookup.accountKey.base58EncodedString)"
                     )
@@ -104,7 +97,7 @@ public struct MessageV0: IMessage, Equatable {
                         tableAccount.state.addresses[Int(index)]
                     )
                 } else {
-                    throw SolanaError
+                    throw VersionedMessageError
                         .other(
                             "Failed to find address for index \(index) in address lookup table \(tableLookup.accountKey.base58EncodedString)"
                         )
@@ -117,7 +110,7 @@ public struct MessageV0: IMessage, Equatable {
                         tableAccount.state.addresses[Int(index)]
                     )
                 } else {
-                    throw SolanaError
+                    throw VersionedMessageError
                         .other(
                             "Failed to find address for index \(index) in address lookup table \(tableLookup.accountKey.base58EncodedString)"
                         )
@@ -152,7 +145,7 @@ public struct MessageV0: IMessage, Equatable {
 
         // Table look uolana
         message.append(Data.encodeLength(addressTableLookups.count))
-        message.append(try serializeAddressTableLookups())
+        try message.append(serializeAddressTableLookups())
 
         return message
     }
@@ -186,10 +179,10 @@ public struct MessageV0: IMessage, Equatable {
             serializedAddressTableLookups.append(lookup.accountKey.data)
 
             serializedAddressTableLookups.append(Data.encodeLength(lookup.writableIndexes.count))
-            serializedAddressTableLookups.append(try lookup.writableIndexes.rawSerialized())
+            try serializedAddressTableLookups.append(lookup.writableIndexes.rawSerialized())
 
             serializedAddressTableLookups.append(Data.encodeLength(lookup.readonlyIndexes.count))
-            serializedAddressTableLookups.append(try lookup.readonlyIndexes.rawSerialized())
+            try serializedAddressTableLookups.append(lookup.readonlyIndexes.rawSerialized())
         }
 
         return serializedAddressTableLookups
@@ -242,28 +235,28 @@ public struct MessageV0: IMessage, Equatable {
         let prefix: UInt8 = try byteArray.read()
         let maskedPrefix: UInt8 = prefix & Constants.versionPrefixMask
         guard prefix != maskedPrefix else {
-            throw SolanaError.assertionFailed("Expected versioned message but received legacy message")
+            throw VersionedMessageError.expectedVersionedMessageButReceivedLegacyMessage
         }
 
         let version = maskedPrefix
         guard version == 0 else {
-            throw SolanaError.assertionFailed("Expected versioned message with version 0 but found version \(version)")
+            throw VersionedMessageError.invalidMessageVersion(expectedVersion: 0, receivedVersion: version)
         }
 
-        let header = MessageHeader(
-            numRequiredSignatures: Int(try byteArray.read()),
-            numReadonlySignedAccounts: Int(try byteArray.read()),
-            numReadonlyUnsignedAccounts: Int(try byteArray.read())
+        let header = try MessageHeader(
+            numRequiredSignatures: Int(byteArray.read()),
+            numReadonlySignedAccounts: Int(byteArray.read()),
+            numReadonlyUnsignedAccounts: Int(byteArray.read())
         )
 
         var staticAccountKeys: [PublicKey] = []
         let staticAccountKeysLength = try byteArray.decodeLength()
         for _ in 0 ..< staticAccountKeysLength {
             let account: [UInt8] = try byteArray.read(count: PublicKey.numberOfBytes)
-            staticAccountKeys.append(try PublicKey(string: Base58.encode(account)))
+            try staticAccountKeys.append(PublicKey(string: Base58.encode(account)))
         }
 
-        let recentBlockhash = Base58.encode(try byteArray.read(count: PublicKey.numberOfBytes))
+        let recentBlockhash = try Base58.encode(byteArray.read(count: PublicKey.numberOfBytes))
 
         let instructionCount = try byteArray.decodeLength()
         var compiledInstructions: [MessageCompiledInstruction] = []
@@ -285,7 +278,7 @@ public struct MessageV0: IMessage, Equatable {
         let addressTableLookupsCount = try byteArray.decodeLength()
         var addressTableLookups: [MessageAddressTableLookup] = []
         for _ in 0 ..< addressTableLookupsCount {
-            let accountKey = try PublicKey(string: Base58.encode(try byteArray.read(count: PublicKey.numberOfBytes)))
+            let accountKey = try PublicKey(string: Base58.encode(byteArray.read(count: PublicKey.numberOfBytes)))
             let writableIndexesLength = try byteArray.decodeLength()
             let writableIndexes = try byteArray.read(count: writableIndexesLength)
             let readonlyIndexesLength = try byteArray.decodeLength()

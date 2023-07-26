@@ -1,11 +1,3 @@
-//
-//  BufferLayoutTests.swift
-//  SolanaSwift_Tests
-//
-//  Created by Chung Tran on 06/08/2021.
-//  Copyright © 2021 CocoaPods. All rights reserved.
-//
-
 import SolanaSwift
 import XCTest
 
@@ -13,7 +5,7 @@ class BufferLayoutTests: XCTestCase {
     // MARK: - Mint
 
     func testDecodingMint() throws {
-        XCTAssertEqual(Mint.BUFFER_LENGTH, 82)
+        XCTAssertEqual(SPLTokenMintState.BUFFER_LENGTH, 82)
 
         let string =
             "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
@@ -21,7 +13,7 @@ class BufferLayoutTests: XCTestCase {
         let data = Data(base64Encoded: string)!
 
         var binaryReader = BinaryReader(bytes: data.bytes)
-        let mintLayout = try Mint(from: &binaryReader)
+        let mintLayout = try SPLTokenMintState(from: &binaryReader)
 
         XCTAssertEqual(mintLayout.mintAuthorityOption, 1)
         XCTAssertEqual(mintLayout.mintAuthority?.base58EncodedString, "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")
@@ -35,7 +27,7 @@ class BufferLayoutTests: XCTestCase {
     // MARK: - Account info
 
     func testDecodingAccountInfo() throws {
-        XCTAssertEqual(AccountInfo.BUFFER_LENGTH, 165)
+        XCTAssertEqual(SPLTokenAccountState.BUFFER_LENGTH, 165)
 
         let string =
             "BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -43,7 +35,7 @@ class BufferLayoutTests: XCTestCase {
         let data = Data(base64Encoded: string)!
 
         var binaryReader = BinaryReader(bytes: data.bytes)
-        let accountInfo = try AccountInfo(from: &binaryReader)
+        let accountInfo = try SPLTokenAccountState(from: &binaryReader)
 
         XCTAssertEqual("QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo", accountInfo.mint.base58EncodedString)
         XCTAssertEqual("BQWWFhzBdw2vKKBUX17NHeFbCoFQHfRARpdztPE2tDJ", accountInfo.owner.base58EncodedString)
@@ -69,7 +61,7 @@ class BufferLayoutTests: XCTestCase {
         let data = Data(base64Encoded: string)!
 
         var binaryReader = BinaryReader(bytes: data.bytes)
-        let accountInfo = try AccountInfo(from: &binaryReader)
+        let accountInfo = try SPLTokenAccountState(from: &binaryReader)
 
         XCTAssertEqual("11111111111111111111111111111111", accountInfo.mint.base58EncodedString)
         XCTAssertEqual("11111111111111111111111111111111", accountInfo.owner.base58EncodedString)
@@ -92,7 +84,7 @@ class BufferLayoutTests: XCTestCase {
         let data2 = Data(base64Encoded: string2)!
 
         var binaryReader2 = BinaryReader(bytes: data2.bytes)
-        let accountInfo2 = try AccountInfo(from: &binaryReader2)
+        let accountInfo2 = try SPLTokenAccountState(from: &binaryReader2)
 
         XCTAssertEqual("11111111111111111111111111111111", accountInfo2.mint.base58EncodedString)
         XCTAssertEqual("11111111111111111111111111111111", accountInfo2.owner.base58EncodedString)

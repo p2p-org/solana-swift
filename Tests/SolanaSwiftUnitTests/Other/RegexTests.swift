@@ -1,11 +1,3 @@
-//
-//  RegexTests.swift
-//  SolanaSwift_Tests
-//
-//  Created by Chung Tran on 18/11/2020.
-//  Copyright © 2020 CocoaPods. All rights reserved.
-//
-
 import XCTest
 
 class RegexTests: XCTestCase {

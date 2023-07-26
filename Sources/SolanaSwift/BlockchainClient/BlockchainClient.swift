@@ -1,5 +1,11 @@
 import Foundation
 
+public enum BlockchainClientError: Error, Equatable {
+    case sendTokenToYourSelf
+    case invalidAccountInfo
+    case other(String)
+}
+
 /// Default implementation of SolanaBlockchainClient
 public class BlockchainClient: SolanaBlockchainClient {
     public var apiClient: SolanaAPIClient
@@ -7,7 +13,7 @@ public class BlockchainClient: SolanaBlockchainClient {
     public init(apiClient: SolanaAPIClient) {
         self.apiClient = apiClient
     }
-    
+
     /// Prepare a transaction to be sent using SolanaBlockchainClient
     /// - Parameters:
     ///   - instructions: the instructions of the transaction
@@ -28,7 +34,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         if let fc = fc {
             feeCalculator = fc
         } else {
-            let (lps, minRentExemption) = try await(
+            let (lps, minRentExemption) = try await (
                 apiClient.getFees(commitment: nil).feeCalculator?.lamportsPerSignature,
                 apiClient.getMinimumBalanceForRentExemption(span: 165)
             )
@@ -39,7 +45,7 @@ public class BlockchainClient: SolanaBlockchainClient {
             )
         }
         let expectedFee = try feeCalculator.calculateNetworkFee(transaction: transaction)
-        
+
         let blockhash = try await apiClient.getRecentBlockhash()
         transaction.recentBlockhash = blockhash
 
@@ -47,7 +53,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         if !signers.isEmpty {
             try transaction.sign(signers: signers)
         }
-        
+
         // return formed transaction
         return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
     }
@@ -69,14 +75,14 @@ public class BlockchainClient: SolanaBlockchainClient {
         let feePayer = feePayer ?? account.publicKey
         let fromPublicKey = account.publicKey
         if fromPublicKey.base58EncodedString == destination {
-            throw SolanaError.other("You can not send tokens to yourself")
+            throw BlockchainClientError.sendTokenToYourSelf
         }
         var accountInfo: BufferInfo<EmptyInfo>?
         do {
             accountInfo = try await apiClient.getAccountInfo(account: destination)
             guard accountInfo == nil || accountInfo?.owner == SystemProgram.id.base58EncodedString
-            else { throw SolanaError.other("Invalid account info") }
-        } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
+            else { throw BlockchainClientError.invalidAccountInfo }
+        } catch let error as APIClientError where error == .couldNotRetrieveAccountInfo {
             // ignoring error
             accountInfo = nil
         } catch {
@@ -84,16 +90,16 @@ public class BlockchainClient: SolanaBlockchainClient {
         }
 
         // form instruction
-        let instruction = SystemProgram.transferInstruction(
+        let instruction = try SystemProgram.transferInstruction(
             from: fromPublicKey,
-            to: try PublicKey(string: destination),
+            to: PublicKey(string: destination),
             lamports: amount
         )
         return try await prepareTransaction(instructions: [instruction],
                                             signers: [account],
                                             feePayer: feePayer)
     }
-    
+
     /// Prepare for sending any SPLToken
     /// - Parameters:
     ///   - account: user's account to send from
@@ -105,7 +111,9 @@ public class BlockchainClient: SolanaBlockchainClient {
     ///   - feePayer: (Optional) if the transaction would be paid by another user
     ///   - transferChecked: (Default: false) use transferChecked instruction instead of transfer transaction
     ///   - minRentExemption: (Optional) pre-calculated min rent exemption, will be fetched if not provided
-    /// - Returns: (preparedTransaction: PreparedTransaction, realDestination: String), preparedTransaction can be sent or simulated using SolanaBlockchainClient, the realDestination is the real spl address of destination. Can be different from destinationAddress if destinationAddress is a native Solana address
+    /// - Returns: (preparedTransaction: PreparedTransaction, realDestination: String), preparedTransaction can be sent
+    /// or simulated using SolanaBlockchainClient, the realDestination is the real spl address of destination. Can be
+    /// different from destinationAddress if destinationAddress is a native Solana address
     public func prepareSendingSPLTokens(
         account: KeyPair,
         mintAddress: String,
@@ -123,7 +131,8 @@ public class BlockchainClient: SolanaBlockchainClient {
         if let mre = mre {
             minRenExemption = mre
         } else {
-            minRenExemption = try await apiClient.getMinimumBalanceForRentExemption(span: AccountInfo.BUFFER_LENGTH)
+            minRenExemption = try await apiClient
+                .getMinimumBalanceForRentExemption(span: SPLTokenAccountState.BUFFER_LENGTH)
         }
         let splDestination = try await apiClient.findSPLTokenDestinationAddress(
             mintAddress: mintAddress,
@@ -135,7 +144,7 @@ public class BlockchainClient: SolanaBlockchainClient {
 
         // catch error
         if fromPublicKey == toPublicKey.base58EncodedString {
-            throw SolanaError.other("You can not send tokens to yourself")
+            throw BlockchainClientError.sendTokenToYourSelf
         }
 
         let fromPublicKey = try PublicKey(string: fromPublicKey)
@@ -163,9 +172,9 @@ public class BlockchainClient: SolanaBlockchainClient {
         // use transfer checked transaction for proxy, otherwise use normal transfer transaction
         if transferChecked {
             // transfer checked transaction
-            sendInstruction = TokenProgram.transferCheckedInstruction(
+            sendInstruction = try TokenProgram.transferCheckedInstruction(
                 source: fromPublicKey,
-                mint: try PublicKey(string: mintAddress),
+                mint: PublicKey(string: mintAddress),
                 destination: splDestination.destination,
                 owner: account.publicKey,
                 multiSigners: [],

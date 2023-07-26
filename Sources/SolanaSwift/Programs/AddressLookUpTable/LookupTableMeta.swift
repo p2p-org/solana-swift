@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Giang Long Tran on 13.01.2023.
-//
-
 import Foundation
 
 struct LookupTableMeta: BufferLayout {
@@ -13,11 +6,11 @@ struct LookupTableMeta: BufferLayout {
     let lastExtendedSlot: UInt64
     let lastExtendedStartIndex: UInt8
     let authority: [PublicKey]
-    
-    public func serialize(to writer: inout Data) throws {
+
+    public func serialize(to _: inout Data) throws {
         fatalError()
     }
-    
+
     public init(from reader: inout BinaryReader) throws {
         typeIndex = try .init(from: &reader)
         deactivationSlot = try .init(from: &reader)
@@ -35,27 +28,27 @@ public struct AddressLookupTableState: Equatable, Codable, BufferLayout {
     let lastExtendedSlotStartIndex: UInt8
     let authority: PublicKey?
     let addresses: [PublicKey]
-    
-    public func serialize(to writer: inout Data) throws {
+
+    public func serialize(to _: inout Data) throws {
         fatalError()
     }
-    
+
     public init(from reader: inout BinaryReader) throws {
         var readerForAddresses = reader
-        
+
         typeIndex = try .init(from: &reader)
         deactivationSlot = try .init(from: &reader)
         lastExtendedSlot = try .init(from: &reader)
         lastExtendedSlotStartIndex = try .init(from: &reader)
         _ = try UInt8(from: &reader)
         authority = try PublicKey(bytes: reader.read(count: PublicKey.numberOfBytes))
-        
+
         try readerForAddresses.read(count: AddressLookupTableAccount.lookUpTableMetaSize)
         var addresses: [PublicKey] = []
         while readerForAddresses.remainBytes > PublicKey.numberOfBytes {
-            addresses.append(try PublicKey(bytes: readerForAddresses.read(count: PublicKey.numberOfBytes)))
+            try addresses.append(PublicKey(bytes: readerForAddresses.read(count: PublicKey.numberOfBytes)))
         }
-        
+
         self.addresses = addresses
     }
 }
@@ -65,16 +58,16 @@ public struct AddressLookupTableAccount: Equatable {
 
     public let key: PublicKey
     public let state: AddressLookupTableState
-    
+
     public init(key: PublicKey, state: AddressLookupTableState) {
         self.key = key
         self.state = state
     }
-    
+
     var isActive: Bool {
         return state.deactivationSlot == UInt64.max
     }
-    
+
 //    // TODO: implement?
 //    public func serialize(to writer: inout Data) throws {
 //        fatalError()

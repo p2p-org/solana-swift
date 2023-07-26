@@ -1,13 +1,15 @@
 import Foundation
 
-public struct AccountInfo: BufferLayout {
+@available(*, deprecated, renamed: "SPLTokenAccountState")
+public typealias AccountInfo = SPLTokenAccountState
+
+public struct SPLTokenAccountState: BufferLayout {
     public static let BUFFER_LENGTH: UInt64 = 165
 
     public let mint: PublicKey
     public let owner: PublicKey
     public let lamports: UInt64
     public let delegateOption: UInt32
-    // swiftlint:disable all
     public var delegate: PublicKey?
     public let isInitialized: Bool
     public let isFrozen: Bool
@@ -19,7 +21,7 @@ public struct AccountInfo: BufferLayout {
     public var delegatedAmount: UInt64
     public let closeAuthorityOption: UInt32
     public var closeAuthority: PublicKey?
-    
+
     public init(
         mint: PublicKey,
         owner: PublicKey,
@@ -55,7 +57,7 @@ public struct AccountInfo: BufferLayout {
     }
 }
 
-extension AccountInfo: BorshCodable {
+extension SPLTokenAccountState: BorshCodable {
     public func serialize(to writer: inout Data) throws {
         try mint.serialize(to: &writer)
         try owner.serialize(to: &writer)

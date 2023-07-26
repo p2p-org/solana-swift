@@ -32,7 +32,7 @@ public struct FeeAmount: Equatable, Hashable {
 }
 
 public extension FeeAmount {
-    static func +(lhs: FeeAmount, rhs: FeeAmount) -> FeeAmount {
+    static func + (lhs: FeeAmount, rhs: FeeAmount) -> FeeAmount {
         return .init(
             transaction: lhs.transaction + rhs.transaction,
             accountBalances: lhs.accountBalances + rhs.accountBalances,

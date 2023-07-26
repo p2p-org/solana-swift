@@ -73,7 +73,7 @@ public struct Message: IMessage, Equatable {
         for _ in 0 ..< accountCount {
             let account = data.prefix(PublicKey.numberOfBytes)
             data = data.dropFirst(PublicKey.numberOfBytes)
-            accountKeys.append(try PublicKey(string: Base58.encode(account.bytes)))
+            try accountKeys.append(PublicKey(string: Base58.encode(account.bytes)))
         }
 
         let recentBlockhash = data.prefix(PublicKey.numberOfBytes)

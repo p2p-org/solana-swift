@@ -1,7 +1,7 @@
 import Foundation
 
-import XCTest
 @testable import SolanaSwift
+import XCTest
 
 class BlockchainClientTests: XCTestCase {
     var account: KeyPair!
@@ -44,7 +44,7 @@ class BlockchainClientTests: XCTestCase {
             "AYqN18ZDaJtv61HxaIUnmtK0f+ST/HaO3YzAOBjwtG9Qf/Td58DSe5zS5nyx9InT+UyLIZbb4nFE/XYrWfHKCwQBAAEDJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsVQai+mnMv4ueKX0uXJIyAIv0UeTX3PGhu9bYIRBgH+2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuN92Q8S3ViiBKFjrCz0SjRSx6JhG5pY6fuBlpw98caYBAgIAAQwCAAAAZAAAAAAAAAA="
         )
     }
-    
+
     func testPrepareSendingNativeSOLToNewlyCreatedAccount() async throws {
         let toPublicKey = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
         let apiClient = MockAPIClient(testCase: #function)
@@ -144,7 +144,7 @@ class BlockchainClientTests: XCTestCase {
             to: destination,
             amount: amount.toLamport(decimals: 6)
         )
-            .preparedTransaction
+        .preparedTransaction
 
         XCTAssertEqual(tx.expectedFee, expectedFee)
 
@@ -187,11 +187,11 @@ private class MockAPIClient: SolanaAPIClient {
             case "testPrepareSendingNativeSOLToNewlyCreatedAccount()":
                 return nil
             case "testPrepareSendingSPLTokens()#1":
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             case "testPrepareSendingSPLTokens()#2":
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             case "testPrepareSendingSPLTokens()#4":
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             default:
                 fatalError()
             }
@@ -199,7 +199,7 @@ private class MockAPIClient: SolanaAPIClient {
             switch testCase {
             case "testPrepareSendingSPLTokens()#2", "testPrepareSendingSPLTokens()#4",
                  "testPrepareSendingSPLTokens()#5":
-                data = AccountInfo(
+                data = SPLTokenAccountState(
                     mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     owner: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
                     lamports: 100,
@@ -219,12 +219,12 @@ private class MockAPIClient: SolanaAPIClient {
                 executable = true
                 rentEpoch = 0
             default:
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             }
         case "G3s9UyAY7hCwrghDMyurVtPk3wy8CV6hi8haWGLdbdTc":
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         case "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh":
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         case "":
             return nil
         default:
@@ -258,7 +258,7 @@ private class MockAPIClient: SolanaAPIClient {
         case "testPrepareSendingSPLTokens()#5":
             blockhash = "7GhCDV2MK7RVhYzD3iNZAVkCd9hYCgyqkgXdFbEFj9PD"
             lastValidSlot = 133_461_991
-        
+
         default:
             fatalError()
         }
@@ -352,12 +352,12 @@ private class MockAPIClient: SolanaAPIClient {
         mint _: String?,
         programId _: String?,
         configs _: RequestConfiguration?
-    ) async throws -> [TokenAccount<AccountInfo>] {
+    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
         fatalError()
     }
 
     func getTokenAccountsByOwner(pubkey _: String, params _: OwnerInfoParams?,
-                                 configs _: RequestConfiguration?) async throws -> [TokenAccount<AccountInfo>]
+                                 configs _: RequestConfiguration?) async throws -> [TokenAccount<SPLTokenAccountState>]
     {
         fatalError()
     }
@@ -402,43 +402,51 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
 
-    func getMultipleAccounts<T>(pubkeys _: [String]) async throws -> [BufferInfo<T>] where T: BufferLayout {
+    func getMultipleAccounts<T>(pubkeys _: [String], commitment _: Commitment) async throws -> [BufferInfo<T>?]
+        where T: BufferLayout
+    {
         fatalError()
     }
 
-    func observeSignatureStatus(signature _: String, timeout _: Int, delay _: Int) -> AsyncStream<TransactionStatus> {
+    func observeSignatureStatus(signature _: String, timeout _: Int, delay _: Int) -> AsyncStream<PendingTransactionStatus> {
         fatalError()
     }
 
     func getSignaturesForAddress(address _: String, configs _: RequestConfiguration?) async throws -> [SignatureInfo] {
         fatalError()
     }
-    
-    func getTransaction(signature: String, commitment: Commitment?) async throws -> TransactionInfo? {
+
+    func getTransaction(signature _: String, commitment _: Commitment?) async throws -> TransactionInfo? {
         fatalError()
     }
-    
-    func request<Entity>(method: String, params: [Encodable]) async throws -> Entity where Entity : Decodable {
+
+    func request<Entity>(method _: String, params _: [Encodable]) async throws -> Entity where Entity: Decodable {
         fatalError()
     }
-    
-    func batchRequest(with requests: [JSONRPCRequestEncoder.RequestType]) async throws -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>] {
+
+    func batchRequest(with _: [JSONRPCRequestEncoder.RequestType]) async throws
+        -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>]
+    {
         fatalError()
     }
-    
-    func batchRequest<Entity>(method: String, params: [[Encodable]]) async throws -> [Entity?] where Entity : Decodable {
+
+    func batchRequest<Entity>(method _: String, params _: [[Encodable]]) async throws -> [Entity?]
+        where Entity: Decodable
+    {
         fatalError()
     }
-    
-    func getRecentPerformanceSamples(limit: [UInt]) async throws -> [SolanaSwift.PerfomanceSamples] {
+
+    func getRecentPerformanceSamples(limit _: [UInt]) async throws -> [SolanaSwift.PerfomanceSamples] {
         fatalError()
     }
-    
+
     func getSlot() async throws -> UInt64 {
         0
     }
-    
-    func getAddressLookupTable(accountKey: SolanaSwift.PublicKey) async throws -> SolanaSwift.AddressLookupTableAccount? {
+
+    func getAddressLookupTable(accountKey _: SolanaSwift.PublicKey) async throws -> SolanaSwift
+        .AddressLookupTableAccount?
+    {
         nil
     }
 }

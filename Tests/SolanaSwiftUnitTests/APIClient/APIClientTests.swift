@@ -17,7 +17,7 @@ class APIClientTests: XCTestCase {
     func testGetAccountInfo() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getAccountInfo"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result: BufferInfo<AccountInfo>? = try! await apiClient
+        let result: BufferInfo<SPLTokenAccountState>? = try! await apiClient
             .getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
         XCTAssert(result?.owner == "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
         XCTAssert(result?.lamports == 2_039_280)
@@ -28,9 +28,9 @@ class APIClientTests: XCTestCase {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getAccountInfo_2"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         do {
-            let _: BufferInfo<AccountInfo>? = try await apiClient
+            let _: BufferInfo<SPLTokenAccountState>? = try await apiClient
                 .getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
-        } catch let error as SolanaError {
+        } catch let error as APIClientError {
             XCTAssertTrue(error == .couldNotRetrieveAccountInfo)
         } catch {
             XCTAssertTrue(false)
@@ -102,7 +102,7 @@ class APIClientTests: XCTestCase {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["emptySingleBatch"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         let response: [Rpc<UInt64>?] = try await apiClient.batchRequest(method: "getBalance", params: [])
-        XCTAssert(response.count == 0)
+        XCTAssert(response.isEmpty)
     }
 
     func testGetBalance() async throws {
@@ -221,8 +221,8 @@ class APIClientTests: XCTestCase {
     func testGetMultipleAccounts() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getMultipleAccounts"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result: [BufferInfo<Mint>] = try await apiClient
-            .getMultipleAccounts(pubkeys: ["DkZzno16JLXYda4eHZzM9J8Vxet9StJJ5mimrtjbK5V3"])
+        let result: [BufferInfo<SPLTokenMintState>?] = try await apiClient
+            .getMultipleAccounts(pubkeys: ["DkZzno16JLXYda4eHZzM9J8Vxet9StJJ5mimrtjbK5V3"], commitment: "confirm")
         XCTAssertNotNil(result)
     }
 
@@ -230,21 +230,26 @@ class APIClientTests: XCTestCase {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getMultipleMintDatas"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         let result = try await apiClient
-            .getMultipleMintDatas(mintAddresses: ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-                                                  "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"])
+            .getMultipleMintDatas(
+                mintAddresses: [
+                    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                    "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+                ],
+                commitment: "confirm"
+            )
         XCTAssertNotNil(result)
 
         // usdc
         let usdc = result["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"]!
-        XCTAssertEqual(usdc.mintAuthority?.base58EncodedString, "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9")
-        XCTAssertEqual(usdc.decimals, 6)
-        XCTAssertEqual(usdc.freezeAuthority?.base58EncodedString, "3sNBr7kMccME5D55xNgsmYpZnzPgP2g12CixAajXypn6")
+        XCTAssertEqual(usdc?.mintAuthority?.base58EncodedString, "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9")
+        XCTAssertEqual(usdc?.decimals, 6)
+        XCTAssertEqual(usdc?.freezeAuthority?.base58EncodedString, "3sNBr7kMccME5D55xNgsmYpZnzPgP2g12CixAajXypn6")
 
         // usdt
         let usdt = result["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]!
-        XCTAssertEqual(usdt.mintAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
-        XCTAssertEqual(usdt.decimals, 6)
-        XCTAssertEqual(usdt.freezeAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
+        XCTAssertEqual(usdt?.mintAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
+        XCTAssertEqual(usdt?.decimals, 6)
+        XCTAssertEqual(usdt?.freezeAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
     }
 
     func testGetSignaturesForAddress() async throws {
@@ -265,8 +270,7 @@ class APIClientTests: XCTestCase {
         do {
             let _ = try await apiClient.simulateTransaction(transaction: "")
         } catch {
-            let error = error as? SolanaError
-            XCTAssertEqual(error, .transactionError(.init(wrapped: "AccountNotFound"), logs: []))
+            XCTAssertEqual(error as? APIClientError, APIClientError.transactionSimulationError(logs: []))
         }
     }
 
@@ -287,7 +291,11 @@ class APIClientTests: XCTestCase {
         do {
             _ = try await apiClient.sendTransaction(transaction: "ijaisjdfi")
         } catch let APIClientError.responseError(errorDetail) {
-            XCTAssertEqual(errorDetail, .init(code: -32003, message: "Transaction precompile verification failure InvalidAccountIndex", data: nil))
+            XCTAssertEqual(
+                errorDetail,
+                .init(code: -32003, message: "Transaction precompile verification failure InvalidAccountIndex",
+                      data: nil)
+            )
         } catch {
             XCTAssertFalse(true)
         }
@@ -296,7 +304,10 @@ class APIClientTests: XCTestCase {
     func testGetTokenAccountBalance() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getTokenAccountBalance"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result = try await apiClient.getTokenAccountBalance(pubkey: "FdiTt7XQ94fGkgorywN1GuXqQzmURHCDgYtUutWRcy4q", commitment: nil)
+        let result = try await apiClient.getTokenAccountBalance(
+            pubkey: "FdiTt7XQ94fGkgorywN1GuXqQzmURHCDgYtUutWRcy4q",
+            commitment: nil
+        )
         XCTAssertEqual(result.amount, "491717631607")
         XCTAssertEqual(result.decimals, 9)
         XCTAssertEqual(result.uiAmount, 491.717631607)
@@ -316,7 +327,11 @@ class APIClientTests: XCTestCase {
         do {
             let _: String = try await apiClient.request(method: "getHealth")
         } catch {
-            XCTAssertEqual(error as! APIClientError, .responseError(.init(code: -32005, message: "Node is unhealthy", data: .init(logs: nil, numSlotsBehind: nil))))
+            XCTAssertEqual(
+                error as! APIClientError,
+                .responseError(.init(code: -32005, message: "Node is unhealthy",
+                                     data: .init(logs: nil, numSlotsBehind: nil)))
+            )
         }
     }
 }

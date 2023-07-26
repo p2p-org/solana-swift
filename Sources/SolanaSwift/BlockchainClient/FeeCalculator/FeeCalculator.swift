@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Chung Tran on 05/05/2022.
-//
-
 import Foundation
 
 public protocol FeeCalculator: AnyObject {

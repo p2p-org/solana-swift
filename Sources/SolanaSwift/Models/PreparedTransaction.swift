@@ -20,7 +20,7 @@ public struct PreparedTransaction: Equatable {
         var transaction = transaction
         let serializedTransaction = try transaction.serialize().bytes.toBase64()
         #if DEBUG
-        Logger.log(event: "serializedTransaction", message: serializedTransaction, logLevel: .debug)
+            Logger.log(event: "serializedTransaction", message: serializedTransaction, logLevel: .debug)
             if let decodedTransaction = transaction.jsonString {
                 Logger.log(event: "decodedTransaction", message: decodedTransaction, logLevel: .debug)
             }
@@ -32,7 +32,7 @@ public struct PreparedTransaction: Equatable {
         guard let signature = transaction.findSignature(pubkey: publicKey)?.signature
         else {
             Logger.log(event: "SolanaSwift: findSignature", message: "Signature not found", logLevel: .error)
-            throw SolanaError.other("Signature not found")
+            throw VersionedTransactionError.signatureNotFound
         }
         return Base58.encode(signature.bytes)
     }

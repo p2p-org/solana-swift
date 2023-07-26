@@ -1,10 +1,3 @@
-//
-//  RIPEMD.swift
-//  RIPEMD
-//
-//  Created by Sjors Provoost on 08-07-14.
-//
-
 import Foundation
 
 public enum RIPEMD {

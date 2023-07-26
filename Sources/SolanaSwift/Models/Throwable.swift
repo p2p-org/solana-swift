@@ -1,10 +1,3 @@
-//
-//  Throwable.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 06/08/2021.
-//
-
 import Foundation
 
 public struct Throwable<T: Decodable>: Decodable {
