@@ -1,7 +1,6 @@
 ## 4.0.0
 
 - Rename Wallet to AccountBalance.
-- Rename old TokenAccount to TokenAccountInfo.
 - Remove comment headers
 - Do swiftformat entire codebase
 - Change target to iOS 15, tvOS 11, watchOS 4
