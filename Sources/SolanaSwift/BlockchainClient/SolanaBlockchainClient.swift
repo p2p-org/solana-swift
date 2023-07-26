@@ -43,7 +43,7 @@ public extension SolanaBlockchainClient {
         preparedTransaction: PreparedTransaction
     ) async throws -> String {
         try await Task.retrying(
-            where: { $0.isBlockhashNotFoundError },
+            where: { $0.isEqualTo(.blockhashNotFound) },
             maxRetryCount: 3,
             retryDelay: 1,
             timeoutInSeconds: 60
@@ -61,34 +61,28 @@ public extension SolanaBlockchainClient {
         .value
     }
 
-    
     /// Simulate transaction (for testing purpose)
     /// - Parameter preparedTransaction: preparedTransaction to be simulated
     /// - Returns: The result of Simulation
     func simulateTransaction(
         preparedTransaction: PreparedTransaction
     ) async throws -> SimulationResult {
-        try await Task.retrying(
-            where: { $0.isBlockhashNotFoundError },
-            maxRetryCount: 3,
-            retryDelay: 1,
-            timeoutInSeconds: 60
-        ) {
-            let recentBlockhash = try await self.apiClient.getRecentBlockhash()
-            let serializedTransaction = try self.signAndSerialize(
-                preparedTransaction: preparedTransaction,
-                recentBlockhash: recentBlockhash
-            )
-            return try await self.apiClient.simulateTransaction(
-                transaction: serializedTransaction,
-                configs: RequestConfiguration(encoding: "base64")!
-            )
-        }
-        .value
+        let recentBlockhash = try await apiClient.getRecentBlockhash()
+        let serializedTransaction = try signAndSerialize(
+            preparedTransaction: preparedTransaction,
+            recentBlockhash: recentBlockhash
+        )
+        return try await apiClient.simulateTransaction(
+            transaction: serializedTransaction, configs: RequestConfiguration(
+                commitment: "confirmed",
+                encoding: "base64",
+                replaceRecentBlockhash: true
+            )!
+        )
     }
-    
+
     // MARK: - Helpers
-    
+
     /// Sign and serialize transaction (for testing purpose)
     /// - Parameters:
     ///   - preparedTransaction: preparedTransaction
@@ -102,28 +96,5 @@ public extension SolanaBlockchainClient {
         preparedTransaction.transaction.recentBlockhash = recentBlockhash
         try preparedTransaction.sign()
         return try preparedTransaction.serialize()
-    }
-}
-
-private extension Error {
-    var isBlockhashNotFoundError: Bool {
-        if let error = self as? SolanaError {
-            switch error {
-            case let .other(message) where message == "Blockhash not found":
-                return true
-            default:
-                break
-            }
-        }
-        
-        if let error = self as? APIClientError {
-            switch error {
-            case let .responseError(response) where response.message == "Blockhash not found":
-                return true
-            default:
-                break
-            }
-        }
-        return false
     }
 }

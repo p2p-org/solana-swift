@@ -67,7 +67,8 @@ class APIClientExtensionsTests: XCTestCase {
         let apiClient = BaseAPIClientMock(endpoint: endpoint, networkManager: mock)
 
         do {
-            let _: BufferInfo<SPLTokenAccountState> = try await apiClient.getAccountInfoThrowable(account: "djfijijasdf")
+            let _: BufferInfo<SPLTokenAccountState> = try await apiClient
+                .getAccountInfoThrowable(account: "djfijijasdf")
         } catch {
             XCTAssertTrue(error.isEqualTo(.couldNotRetrieveAccountInfo))
         }
@@ -104,7 +105,10 @@ class BaseAPIClientMock: JSONRPCAPIClient {
     ) async throws -> [TokenAccount<SPLTokenAccountState>] {
         let json =
             "[{\"account\":{\"data\":[\"ppdSk884LShYnHoHm7XiDlZ28iJVm9BHPgrAEfxU44AJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"So11111111111111111111111111111111111111112\",\"rentEpoch\":309},\"pubkey\":\"9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4\"}]"
-        let decoder = try JSONDecoder().decode([TokenAccount<SPLTokenAccountState>].self, from: json.data(using: .utf8)!)
+        let decoder = try JSONDecoder().decode(
+            [TokenAccount<SPLTokenAccountState>].self,
+            from: json.data(using: .utf8)!
+        )
         return decoder
     }
 
@@ -133,8 +137,12 @@ class BaseAPIClientMock: JSONRPCAPIClient {
         } else if account == "HnXJX1Bvps8piQwDYEYC6oea9GEkvQvahvRj3c97X9xr" {
             accountInfoResponseJSON = getAccountInfoResponses["3"]!
         }
-        let decoder = try JSONDecoder()
-            .decode(Rpc<BufferInfo<T>?>.self, from: accountInfoResponseJSON.data(using: .utf8)!)
-        return decoder.value
+        do {
+            return try JSONDecoder()
+                .decode(Rpc<BufferInfo<T>?>.self, from: accountInfoResponseJSON.data(using: .utf8)!)
+                .value
+        } catch is BinaryReaderError {
+            throw APIClientError.couldNotRetrieveAccountInfo
+        }
     }
 }

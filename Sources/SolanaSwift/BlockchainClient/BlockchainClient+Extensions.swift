@@ -23,7 +23,7 @@ public extension SolanaBlockchainClient {
             minRentExemption = mre
             newAccount = try await requestNewAccount
         } else {
-            (minRentExemption, newAccount) = try await(
+            (minRentExemption, newAccount) = try await (
                 apiClient.getMinimumBalanceForRentExemption(
                     dataLength: UInt64(SPLTokenAccountState.BUFFER_LENGTH),
                     commitment: "recent"
@@ -89,7 +89,7 @@ public extension SolanaBlockchainClient {
             {
                 isAssociatedTokenAddressRegistered = true
             } else {
-                throw SolanaError.other("Associated token account is belong to another user")
+                throw BlockchainClientError.other("Associated token account is belong to another user")
             }
         } catch {
             if error.isEqualTo(.couldNotRetrieveAccountInfo) {
@@ -120,10 +120,10 @@ public extension SolanaBlockchainClient {
         }
 
         // else create associated address
-        return .init(
+        return try .init(
             account: associatedAddress,
             instructions: [
-                try AssociatedTokenProgram
+                AssociatedTokenProgram
                     .createAssociatedTokenAccountInstruction(
                         mint: mint,
                         owner: owner,

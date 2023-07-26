@@ -1,11 +1,3 @@
-//
-//  SMP Bignum Extensions.swift
-//  BigInteger
-//
-//	This module contains convenience extensions for SMP that are
-//	largely compatible with the (OpenSSL-based) Bignum Swift module.
-//
-
 import Foundation
 
 /// Bignum compatibility alias for BInt

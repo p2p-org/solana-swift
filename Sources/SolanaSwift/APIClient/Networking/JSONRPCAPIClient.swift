@@ -28,11 +28,19 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     public func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>? {
-        let response: Rpc<BufferInfo<T>?> = try await get(method: "getAccountInfo", params: [
-            account,
-            RequestConfiguration(encoding: "base64"),
-        ])
-        return response.value
+        do {
+            let response: Rpc<BufferInfo<T>?> = try await get(method: "getAccountInfo", params: [
+                account,
+                RequestConfiguration(encoding: "base64"),
+            ])
+            return response.value
+        } catch is BinaryReaderError {
+            throw APIClientError.couldNotRetrieveAccountInfo
+        } catch APIClientError.invalidResponse {
+            throw APIClientError.couldNotRetrieveAccountInfo
+        } catch {
+            throw error
+        }
     }
 
     public func getBlockHeight() async throws -> UInt64 {
@@ -100,7 +108,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         let result: Rpc<Fee> = try await get(method: "getRecentBlockhash",
                                              params: [RequestConfiguration(commitment: commitment)])
         guard let blockhash = result.value.blockhash else {
-            throw SolanaError.other("Blockhash not found")
+            throw APIClientError.blockhashNotFound
         }
         return blockhash
     }
@@ -130,7 +138,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
             params: [pubkey, RequestConfiguration(commitment: commitment)]
         )
         if UInt64(result.value.amount) == nil {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         }
         return result.value
     }
@@ -141,8 +149,15 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         programId: String? = nil,
         configs: RequestConfiguration? = nil
     ) async throws -> [TokenAccount<SPLTokenAccountState>] {
-        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(method: "getTokenAccountsByDelegate",
-                                                                     params: [pubkey, mint, programId, configs])
+        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(
+            method: "getTokenAccountsByDelegate",
+            params: [
+                pubkey,
+                mint,
+                programId,
+                configs,
+            ]
+        )
         return result.value
     }
 
@@ -151,8 +166,10 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         params: OwnerInfoParams? = nil,
         configs: RequestConfiguration? = nil
     ) async throws -> [TokenAccount<SPLTokenAccountState>] {
-        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(method: "getTokenAccountsByOwner",
-                                                                     params: [pubkey, params, configs])
+        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(
+            method: "getTokenAccountsByOwner",
+            params: [pubkey, params, configs]
+        )
         return result.value
     }
 
@@ -193,37 +210,37 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     ) async throws -> TransactionID {
         do {
             return try await get(method: "sendTransaction", params: [transaction, configs])
-        } catch {
-            // Modify error message
-            if let error = error as? APIClientError {
-                switch error {
-                case let .responseError(response) where response.message != nil:
-                    // Modify message
-                    var message = response.message
-                    if let readableMessage = response.data?.logs?
-                        .first(where: { $0.contains("Error:") })?
-                        .components(separatedBy: "Error: ")
-                        .last
-                    {
-                        message = readableMessage
-                    } else if let readableMessage = response.message?
-                        .components(separatedBy: "Transaction simulation failed: ")
-                        .last
-                    {
-                        message = readableMessage
-                    }
-                    Logger.log(
-                        event: "SolanaSwift: sendTransaction",
-                        message: (message ?? "") + "\n " + (response.data?.logs?.joined(separator: " ") ?? ""),
-                        logLevel: .error
-                    )
-                    throw APIClientError
-                        .responseError(ResponseError(code: response.code, message: message, data: response.data))
-                default:
-                    break
-                }
+        } catch let APIClientError.responseError(response) {
+            // Convert to APIClientError.blockhashNotFound
+            if response.message?.contains("Blockhash not found") == true {
+                throw APIClientError.blockhashNotFound
             }
-            throw error
+
+            // FIXME: - Remove later: Modify error message
+            var message = response.message
+            if let readableMessage = response.data?.logs?
+                .first(where: { $0.contains("Error:") })?
+                .components(separatedBy: "Error: ")
+                .last
+            {
+                message = readableMessage
+            } else if let readableMessage = response.message?
+                .components(separatedBy: "Transaction simulation failed: ")
+                .last
+            {
+                message = readableMessage
+            }
+
+            // Log
+            Logger.log(
+                event: "SolanaSwift: sendTransaction",
+                message: (message ?? "") + "\n " + (response.data?.logs?.joined(separator: " ") ?? ""),
+                logLevel: .error
+            )
+
+            // Rethrow modified error
+            throw APIClientError
+                .responseError(ResponseError(code: response.code, message: message, data: response.data))
         }
     }
 
@@ -250,9 +267,9 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         // Error assertion
         if let err = result.value.err {
             if (err.wrapped as? String) == "BlockhashNotFound" {
-                throw SolanaError.other("Blockhash not found")
+                throw APIClientError.blockhashNotFound
             }
-            throw SolanaError.transactionError(err, logs: result.value.logs)
+            throw APIClientError.transactionSimulationError(logs: result.value.logs)
         }
 
         // Return value
@@ -260,7 +277,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     public func observeSignatureStatus(signature: String, timeout: Int = 60,
-                                       delay: Int = 2) -> AsyncStream<TransactionStatus>
+                                       delay: Int = 2) -> AsyncStream<PendingTransactionStatus>
     {
         AsyncStream { continuation in
             let monitor = TransactionMonitor(
@@ -297,7 +314,8 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         pubkeys: [String],
         commitment: Commitment
     ) async throws -> [BufferInfo<T>?]
-    where T: BufferLayout {
+        where T: BufferLayout
+    {
         let configs = RequestConfiguration(commitment: commitment, encoding: "base64")
         guard !pubkeys.isEmpty else { return [] }
 
@@ -370,19 +388,11 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     private func makeRequest(request: RequestEncoder.RequestType) async throws -> Data {
-        var encodedParams = Data()
-        do {
-            encodedParams += try RequestEncoder(request: request).encoded()
-        } catch {
-            Logger.log(
-                event: "SolanaSwift: makeRequest",
-                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8) ?? "")",
-                logLevel: .error
-            )
-            throw APIClientError.cantEncodeParams
-        }
-        try Task.checkCancellation()
-        let responseData = try await networkManager.requestData(request: try urlRequest(data: encodedParams))
+        // encode params
+        let encodedParams = try RequestEncoder(request: request).encoded()
+
+        // request data
+        let responseData = try await networkManager.requestData(request: urlRequest(data: encodedParams))
 
         // log
         Logger.log(event: "response", message: String(data: responseData, encoding: .utf8) ?? "", logLevel: .debug)
@@ -391,19 +401,11 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     private func makeRequest(requests: [RequestEncoder.RequestType]) async throws -> Data {
-        var encodedParams = Data()
-        do {
-            encodedParams += try RequestEncoder(requests: requests).encoded()
-        } catch {
-            Logger.log(
-                event: "SolanaSwift: makeRequest",
-                message: "Can't encode params \(String(data: encodedParams, encoding: .utf8) ?? "")",
-                logLevel: .error
-            )
-            throw APIClientError.cantEncodeParams
-        }
-        try Task.checkCancellation()
-        let responseData = try await networkManager.requestData(request: try urlRequest(data: encodedParams))
+        // encode params
+        let encodedParams = try RequestEncoder(requests: requests).encoded()
+
+        // request data
+        let responseData = try await networkManager.requestData(request: urlRequest(data: encodedParams))
 
         // log
         Logger.log(event: "response", message: String(data: responseData, encoding: .utf8) ?? "", logLevel: .debug)

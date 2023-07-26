@@ -1,10 +1,3 @@
-//
-//  NaclLowLevel.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 27/04/2021.
-//
-
 import Foundation
 
 // https://github.com/miguelsandro/curve25519-swift/blob/master/axlsign.swift

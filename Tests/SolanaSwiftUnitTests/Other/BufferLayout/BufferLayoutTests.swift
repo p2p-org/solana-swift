@@ -1,11 +1,3 @@
-//
-//  BufferLayoutTests.swift
-//  SolanaSwift_Tests
-//
-//  Created by Chung Tran on 06/08/2021.
-//  Copyright © 2021 CocoaPods. All rights reserved.
-//
-
 import SolanaSwift
 import XCTest
 

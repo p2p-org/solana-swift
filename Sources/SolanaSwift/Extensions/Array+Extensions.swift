@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Chung Tran on 13/10/2021.
-//
-
 import Foundation
 
 public extension Array where Element: Equatable {

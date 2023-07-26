@@ -13,7 +13,7 @@ public extension SolanaAPIClient {
         try await getRecentBlockhash(commitment: nil)
     }
 
-    func observeSignatureStatus(signature: String) -> AsyncStream<TransactionStatus> {
+    func observeSignatureStatus(signature: String) -> AsyncStream<PendingTransactionStatus> {
         observeSignatureStatus(signature: signature, timeout: 60, delay: 2)
     }
 
@@ -60,7 +60,7 @@ public extension SolanaAPIClient {
     /// - Returns wether account is valid
     ///
     func checkAccountValidation(account: String) async throws -> Bool {
-        (try await getAccountInfo(account: account) as BufferInfo<EmptyInfo>?) != nil
+        try (await getAccountInfo(account: account) as BufferInfo<EmptyInfo>?) != nil
     }
 
     func findSPLTokenDestinationAddress(
@@ -85,9 +85,9 @@ public extension SolanaAPIClient {
                     tokenMintAddress: tokenMint
                 ).base58EncodedString
             } else {
-                throw SolanaError.invalidRequest(reason: "Wallet address is not valid")
+                throw PublicKeyError.invalidAddress(destinationAddress)
             }
-        } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
+        } catch let error as APIClientError where error == .couldNotRetrieveAccountInfo {
             let owner = try PublicKey(string: destinationAddress)
             let tokenMint = try PublicKey(string: mintAddress)
             // create associated token address
@@ -126,7 +126,7 @@ public extension SolanaAPIClient {
     ///   - signature: signature of the transaction
     ///   - ignoreStatus: ignore status and return true even when observation is timed out
     func waitForConfirmation(signature: String, ignoreStatus: Bool, timeout: Int = 60, delay: Int = 2) async throws {
-        var statuses = [TransactionStatus]()
+        var statuses = [PendingTransactionStatus]()
         for try await status in observeSignatureStatus(signature: signature, timeout: timeout, delay: delay) {
             statuses.append(status)
         }
@@ -134,13 +134,13 @@ public extension SolanaAPIClient {
         // if the status is important
         if !ignoreStatus {
             guard let lastStatus = statuses.last else {
-                throw SolanaError.transactionHasNotBeenConfirmed
+                throw TransactionConfirmationError.unconfirmed
             }
             switch lastStatus {
             case .confirmed, .finalized:
                 return
             default:
-                throw SolanaError.transactionHasNotBeenConfirmed
+                throw TransactionConfirmationError.unconfirmed
             }
         }
     }
@@ -148,13 +148,13 @@ public extension SolanaAPIClient {
     /// Returns all information associated with the account of provided Pubkey
     /// - Parameters:
     ///  - account: Pubkey of account to query, as base-58 encoded string
-    /// - Throws: APIClientError and SolanaError.couldNotRetrieveAccountInfo
+    /// - Throws: APIClientError
     /// - Returns The result will be an BufferInfo
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
     func getAccountInfoThrowable<T: BufferLayout>(account: String) async throws -> BufferInfo<T> {
         let info: BufferInfo<T>? = try await getAccountInfo(account: account)
         guard let info = info else {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         }
         return info
     }

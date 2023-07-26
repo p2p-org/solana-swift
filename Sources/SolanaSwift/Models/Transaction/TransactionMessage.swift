@@ -1,26 +1,19 @@
-//
-//  File.swift
-//
-//
-//  Created by Giang Long Tran on 16.01.2023.
-//
-
 import Foundation
 
 public struct TransactionMessage {
     var instructions: [TransactionInstruction]
     var recentBlockhash: String
     var payerKey: PublicKey
-    
+
     public init(instructions: [TransactionInstruction], recentBlockhash: String, payerKey: PublicKey) {
         self.instructions = instructions
         self.recentBlockhash = recentBlockhash
         self.payerKey = payerKey
     }
-    
+
     // TODO: implement
     // static func decompile() {}
-    
+
     public func compileToLegacyMessage() throws -> Message {
         try Transaction(
             instructions: instructions,
@@ -29,7 +22,7 @@ public struct TransactionMessage {
         )
         .compileMessage()
     }
-    
+
     public func compileToV0Message(
         addressLookupTableAccounts: [AddressLookupTableAccount]? = nil
     ) throws -> MessageV0 {

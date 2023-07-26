@@ -380,7 +380,7 @@ public struct BInt:
     }
 
     var rawValue: (sign: Bool, limbs: [UInt64]) {
-        return (self.sign, self.limbs)
+        (self.sign, self.limbs)
     }
 
     public func hash(into hasher: inout Hasher) {

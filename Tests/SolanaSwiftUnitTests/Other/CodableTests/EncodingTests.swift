@@ -1,11 +1,3 @@
-//
-//  EncodingTests.swift
-//  SolanaSwift_Tests
-//
-//  Created by Chung Tran on 25/01/2021.
-//  Copyright © 2021 CocoaPods. All rights reserved.
-//
-
 import SolanaSwift
 import XCTest
 
@@ -23,7 +15,6 @@ class EncodingTests: XCTestCase {
     }
 
     func test_givenBytes_whenDecodeLength_thenReturnsExpectedLength() throws {
-
         // given
         var bytes = Data([5, 3, 1, 2, 3, 7, 8, 5, 4])
 
@@ -35,9 +26,8 @@ class EncodingTests: XCTestCase {
     }
 
     func test_givenBytes_whenDecodeLengthTwice_thenReturnsExpectedLengths() throws {
-
         // given
-        var bytes = Data([5, 0xf3, 1, 2, 3, 7, 8, 5, 4])
+        var bytes = Data([5, 0xF3, 1, 2, 3, 7, 8, 5, 4])
 
         // when
         let result1 = bytes.decodeLength()
@@ -45,11 +35,10 @@ class EncodingTests: XCTestCase {
 
         // then
         XCTAssertEqual(result1, 5)
-        XCTAssertEqual(result2, 0xf3)
+        XCTAssertEqual(result2, 0xF3)
     }
 
     func test_givenBytes_whenDecodeLength_thenRemovesFirstByte() throws {
-
         // given
         var bytes = Data([5, 1, 2, 3, 7, 8, 3, 4])
         let numberOfBytes = bytes.count
@@ -63,7 +52,6 @@ class EncodingTests: XCTestCase {
     }
 
     func test_givenZeroBytes_whenDecodeLength_thenReturnsZero() throws {
-
         // given
         var bytes = Data()
 

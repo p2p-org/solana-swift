@@ -1,7 +1,7 @@
 import Foundation
 
-import XCTest
 @testable import SolanaSwift
+import XCTest
 
 class BlockchainClientTests: XCTestCase {
     var account: KeyPair!
@@ -187,11 +187,11 @@ private class MockAPIClient: SolanaAPIClient {
             case "testPrepareSendingNativeSOLToNewlyCreatedAccount()":
                 return nil
             case "testPrepareSendingSPLTokens()#1":
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             case "testPrepareSendingSPLTokens()#2":
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             case "testPrepareSendingSPLTokens()#4":
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             default:
                 fatalError()
             }
@@ -219,12 +219,12 @@ private class MockAPIClient: SolanaAPIClient {
                 executable = true
                 rentEpoch = 0
             default:
-                throw SolanaError.couldNotRetrieveAccountInfo
+                throw APIClientError.couldNotRetrieveAccountInfo
             }
         case "G3s9UyAY7hCwrghDMyurVtPk3wy8CV6hi8haWGLdbdTc":
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         case "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh":
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw APIClientError.couldNotRetrieveAccountInfo
         case "":
             return nil
         default:
@@ -403,11 +403,12 @@ private class MockAPIClient: SolanaAPIClient {
     }
 
     func getMultipleAccounts<T>(pubkeys _: [String], commitment _: Commitment) async throws -> [BufferInfo<T>?]
-    where T: BufferLayout {
+        where T: BufferLayout
+    {
         fatalError()
     }
 
-    func observeSignatureStatus(signature _: String, timeout _: Int, delay _: Int) -> AsyncStream<TransactionStatus> {
+    func observeSignatureStatus(signature _: String, timeout _: Int, delay _: Int) -> AsyncStream<PendingTransactionStatus> {
         fatalError()
     }
 
@@ -424,12 +425,14 @@ private class MockAPIClient: SolanaAPIClient {
     }
 
     func batchRequest(with _: [JSONRPCRequestEncoder.RequestType]) async throws
-    -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>] {
+        -> [AnyResponse<JSONRPCRequestEncoder.RequestType.Entity>]
+    {
         fatalError()
     }
 
     func batchRequest<Entity>(method _: String, params _: [[Encodable]]) async throws -> [Entity?]
-    where Entity: Decodable {
+        where Entity: Decodable
+    {
         fatalError()
     }
 
@@ -442,7 +445,8 @@ private class MockAPIClient: SolanaAPIClient {
     }
 
     func getAddressLookupTable(accountKey _: SolanaSwift.PublicKey) async throws -> SolanaSwift
-    .AddressLookupTableAccount? {
+        .AddressLookupTableAccount?
+    {
         nil
     }
 }

@@ -17,8 +17,8 @@ public enum AssociatedTokenProgram: SolanaBasicProgram {
         TransactionInstruction(
             keys: [
                 .init(publicKey: payer, isSigner: true, isWritable: true),
-                .init(
-                    publicKey: try PublicKey.associatedTokenAddress(
+                try .init(
+                    publicKey: PublicKey.associatedTokenAddress(
                         walletAddress: owner,
                         tokenMintAddress: mint
                     ),

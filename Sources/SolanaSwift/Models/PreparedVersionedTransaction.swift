@@ -1,10 +1,3 @@
-//
-//  PreparedVersionedTransaction.swift
-//
-//
-//  Created by Giang Long Tran on 02.04.2023.
-//
-
 import Foundation
 
 /// The prepared transaction that can be sent or simulate in SolanaBlockchainClient

@@ -15,12 +15,12 @@ public struct AnyResponse<Entity: Decodable>: APIClientResponse {
         result = response.result
         error = response.error
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         do {
             result = try container.decodeIfPresent(Entity.self, forKey: .result) ?? nil
-        } catch let error as SolanaError {
+        } catch let error as APIClientError {
             throw error
         } catch {
             result = nil
@@ -32,7 +32,6 @@ public struct AnyResponse<Entity: Decodable>: APIClientResponse {
         case result
         case error
     }
-    
 }
 
 public struct JSONRPCResponse<Entity: Decodable>: APIClientResponse {

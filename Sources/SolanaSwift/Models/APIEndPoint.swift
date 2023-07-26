@@ -4,12 +4,12 @@ public struct APIEndPoint: Hashable, Codable {
     public init(address: String, network: Network, socketUrl: String? = nil, additionalQuery: String? = nil) {
         self.address = address
         self.network = network
-        
+
         self.socketUrl = socketUrl ?? address.replacingOccurrences(of: "http", with: "ws")
         if let additionalQuery = additionalQuery {
             self.socketUrl += "/" + additionalQuery
         }
-        
+
         self.additionalQuery = additionalQuery
     }
 
