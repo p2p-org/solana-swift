@@ -48,7 +48,7 @@ public class SolanaTokenListSourceImpl: SolanaTokenListSource {
         let tokenList: TokensList = try JSONDecoder().decode(TokensList.self, from: data)
 
         // map tags
-        var tokens: [TokenMetadata] = tokenList.tokens.map {
+        let tokens: [TokenMetadata] = tokenList.tokens.map {
             var item = $0
             item.tags = (item._tags ?? []).map {
                 tokenList.tags[$0] ?? TokenTag(name: $0, description: $0)
