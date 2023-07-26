@@ -356,7 +356,7 @@ public struct TokenAccountBalance: Codable, Equatable, Hashable {
     }
 }
 
-public struct TokenAccount<T: BufferLayout>: Decodable, Equatable {
+public struct TokenAccountInfo<T: BufferLayout>: Decodable, Equatable {
     public let pubkey: String
     public let account: BufferInfo<T>
 

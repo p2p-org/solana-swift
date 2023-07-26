@@ -1,12 +1,13 @@
 ## 4.0.0
 
-- Rename Wallet to AccountBalance (?)
+- Rename Wallet to TokenAccount.
+- Rename old TokenAccount to TokenAccountInfo.
 - Remove comment headers
 - Do swiftformat entire codebase
 - Change target to iOS 15, tvOS 11, watchOS 4
 - Rename TransactionStatus to PendingTransactionStatus
-- Rename Mint to SPLTokenState (?)
-- Rename AccountInfo to SPLTokenAccountState (?)
+- Rename Mint to SPLTokenMintState
+- Rename AccountInfo to SPLTokenAccountState
 - Remove SolanaError and split it into separated error types like PublicKeyError, TransactionConfirmationError, BlockchainClientError, BinaryReaderError, BorshCodableError, KeyPairError, VersionedMessageError, VersionedTransactionError.
 - Remove DeserializationError and migrate them to BorshCodableError.
 - Add transactionSimulationError, couldNotRetrieveAccountInfo & blockhashNotFound cases into APIClientError.

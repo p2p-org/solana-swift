@@ -4,8 +4,8 @@ public extension SolanaAPIClient {
         tokensRepository: TokenRepository,
         commitment: String = "confirmed"
     ) async throws -> (
-        resolved: [AccountBalance],
-        unresolved: [TokenAccount<SPLTokenAccountState>]
+        resolved: [TokenAccount],
+        unresolved: [TokenAccountInfo<SPLTokenAccountState>]
     ) {
         let tokenAccounts = try await getTokenAccountsByOwner(
             pubkey: address,
@@ -19,10 +19,10 @@ public extension SolanaAPIClient {
             )
         )
 
-        var resolvedAccountBalances: [AccountBalance] = []
-        var unresolvedAccountBalances: [TokenAccount<SPLTokenAccountState>] = []
+        var resolvedAccountBalances: [TokenAccount] = []
+        var unresolvedAccountBalances: [TokenAccountInfo<SPLTokenAccountState>] = []
 
-        var unknownTokenAccountBalances: [TokenAccount<SPLTokenAccountState>] = []
+        var unknownTokenAccountBalances: [TokenAccountInfo<SPLTokenAccountState>] = []
 
         let tokenMetadatas = try await tokensRepository
             .get(addresses: tokenAccounts.map(\.account.data.mint.base58EncodedString))
@@ -38,7 +38,7 @@ public extension SolanaAPIClient {
                 continue
             }
 
-            let accountBalance = AccountBalance(
+            let accountBalance = TokenAccount(
                 pubkey: tokenAccount.pubkey,
                 lamports: tokenAccount.account.data.lamports,
                 token: token
@@ -60,7 +60,7 @@ public extension SolanaAPIClient {
 
             if let tokenMetadata {
                 // We have onchain token metadata
-                let accountBalance = AccountBalance(
+                let accountBalance = TokenAccount(
                     pubkey: tokenAccount.pubkey,
                     lamports: tokenAccount.account.data.lamports,
                     token: .unsupported(

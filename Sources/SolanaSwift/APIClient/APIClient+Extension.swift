@@ -22,13 +22,13 @@ public extension SolanaAPIClient {
     func getMultipleMintDatas(
         mintAddresses: [String],
         commitment: Commitment
-    ) async throws -> [String: SPLTokenState?] {
-        let accounts: [BufferInfo<SPLTokenState>?] = try await getMultipleAccounts(
+    ) async throws -> [String: SPLTokenMintState?] {
+        let accounts: [BufferInfo<SPLTokenMintState>?] = try await getMultipleAccounts(
             pubkeys: mintAddresses,
             commitment: commitment
         )
 
-        var mintDict = [String: SPLTokenState?]()
+        var mintDict = [String: SPLTokenMintState?]()
 
         for (index, address) in mintAddresses.enumerated() {
             mintDict[address] = accounts[index]?.data

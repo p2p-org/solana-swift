@@ -5,7 +5,7 @@ class BufferLayoutTests: XCTestCase {
     // MARK: - Mint
 
     func testDecodingMint() throws {
-        XCTAssertEqual(SPLTokenState.BUFFER_LENGTH, 82)
+        XCTAssertEqual(SPLTokenMintState.BUFFER_LENGTH, 82)
 
         let string =
             "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
@@ -13,7 +13,7 @@ class BufferLayoutTests: XCTestCase {
         let data = Data(base64Encoded: string)!
 
         var binaryReader = BinaryReader(bytes: data.bytes)
-        let mintLayout = try SPLTokenState(from: &binaryReader)
+        let mintLayout = try SPLTokenMintState(from: &binaryReader)
 
         XCTAssertEqual(mintLayout.mintAuthorityOption, 1)
         XCTAssertEqual(mintLayout.mintAuthority?.base58EncodedString, "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo")

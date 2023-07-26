@@ -221,7 +221,7 @@ class APIClientTests: XCTestCase {
     func testGetMultipleAccounts() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getMultipleAccounts"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result: [BufferInfo<SPLTokenState>?] = try await apiClient
+        let result: [BufferInfo<SPLTokenMintState>?] = try await apiClient
             .getMultipleAccounts(pubkeys: ["DkZzno16JLXYda4eHZzM9J8Vxet9StJJ5mimrtjbK5V3"], commitment: "confirm")
         XCTAssertNotNil(result)
     }
