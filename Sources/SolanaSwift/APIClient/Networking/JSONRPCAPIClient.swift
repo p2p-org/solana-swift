@@ -210,37 +210,37 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     ) async throws -> TransactionID {
         do {
             return try await get(method: "sendTransaction", params: [transaction, configs])
-        } catch {
-            // Modify error message
-            if let error = error as? APIClientError {
-                switch error {
-                case let .responseError(response) where response.message != nil:
-                    // Modify message
-                    var message = response.message
-                    if let readableMessage = response.data?.logs?
-                        .first(where: { $0.contains("Error:") })?
-                        .components(separatedBy: "Error: ")
-                        .last
-                    {
-                        message = readableMessage
-                    } else if let readableMessage = response.message?
-                        .components(separatedBy: "Transaction simulation failed: ")
-                        .last
-                    {
-                        message = readableMessage
-                    }
-                    Logger.log(
-                        event: "SolanaSwift: sendTransaction",
-                        message: (message ?? "") + "\n " + (response.data?.logs?.joined(separator: " ") ?? ""),
-                        logLevel: .error
-                    )
-                    throw APIClientError
-                        .responseError(ResponseError(code: response.code, message: message, data: response.data))
-                default:
-                    break
-                }
+        } catch let APIClientError.responseError(response) {
+            // Convert to APIClientError.blockhashNotFound
+            if response.message?.contains("Blockhash not found") == true {
+                throw APIClientError.blockhashNotFound
             }
-            throw error
+
+            // FIXME: - Remove later: Modify error message
+            var message = response.message
+            if let readableMessage = response.data?.logs?
+                .first(where: { $0.contains("Error:") })?
+                .components(separatedBy: "Error: ")
+                .last
+            {
+                message = readableMessage
+            } else if let readableMessage = response.message?
+                .components(separatedBy: "Transaction simulation failed: ")
+                .last
+            {
+                message = readableMessage
+            }
+
+            // Log
+            Logger.log(
+                event: "SolanaSwift: sendTransaction",
+                message: (message ?? "") + "\n " + (response.data?.logs?.joined(separator: " ") ?? ""),
+                logLevel: .error
+            )
+
+            // Rethrow modified error
+            throw APIClientError
+                .responseError(ResponseError(code: response.code, message: message, data: response.data))
         }
     }
 
