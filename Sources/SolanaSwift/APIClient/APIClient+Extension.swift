@@ -13,7 +13,7 @@ public extension SolanaAPIClient {
         try await getRecentBlockhash(commitment: nil)
     }
 
-    func observeSignatureStatus(signature: String) -> AsyncStream<TransactionStatus> {
+    func observeSignatureStatus(signature: String) -> AsyncStream<PendingTransactionStatus> {
         observeSignatureStatus(signature: signature, timeout: 60, delay: 2)
     }
 
@@ -126,7 +126,7 @@ public extension SolanaAPIClient {
     ///   - signature: signature of the transaction
     ///   - ignoreStatus: ignore status and return true even when observation is timed out
     func waitForConfirmation(signature: String, ignoreStatus: Bool, timeout: Int = 60, delay: Int = 2) async throws {
-        var statuses = [TransactionStatus]()
+        var statuses = [PendingTransactionStatus]()
         for try await status in observeSignatureStatus(signature: signature, timeout: timeout, delay: delay) {
             statuses.append(status)
         }

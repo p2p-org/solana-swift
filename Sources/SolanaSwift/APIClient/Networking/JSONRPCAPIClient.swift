@@ -277,7 +277,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     public func observeSignatureStatus(signature: String, timeout: Int = 60,
-                                       delay: Int = 2) -> AsyncStream<TransactionStatus>
+                                       delay: Int = 2) -> AsyncStream<PendingTransactionStatus>
     {
         AsyncStream { continuation in
             let monitor = TransactionMonitor(

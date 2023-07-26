@@ -407,7 +407,7 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
 
-    func observeSignatureStatus(signature _: String, timeout _: Int, delay _: Int) -> AsyncStream<TransactionStatus> {
+    func observeSignatureStatus(signature _: String, timeout _: Int, delay _: Int) -> AsyncStream<PendingTransactionStatus> {
         fatalError()
     }
 

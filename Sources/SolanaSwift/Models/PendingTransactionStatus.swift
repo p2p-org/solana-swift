@@ -1,10 +1,9 @@
 import Foundation
 
-public enum TransactionStatus: Equatable, Hashable {
+public enum PendingTransactionStatus: Equatable, Hashable {
     case sending
     case confirmed(numberOfConfirmations: UInt64, slot: UInt64?)
     case finalized
-    case error(String?)
 
     public var numberOfConfirmations: UInt64 {
         switch self {
@@ -14,7 +13,7 @@ public enum TransactionStatus: Equatable, Hashable {
             return 0
         }
     }
-    
+
     public var slot: UInt64? {
         switch self {
         case let .confirmed(_, slot):

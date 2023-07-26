@@ -12,7 +12,7 @@ class ObserveTransactionStatusTests: XCTestCase {
     )
 
     var apiClient: JSONRPCAPIClient!
-    var statuses: [TransactionStatus]!
+    var statuses: [PendingTransactionStatus]!
 
     override func setUpWithError() throws {
         resetAPIClient()

@@ -13,17 +13,17 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
     let apiClient: SolanaAPIClient
     let timeout: Int
     let delay: Int
-    var responseHandler: (TransactionStatus) -> Void
+    var responseHandler: (PendingTransactionStatus) -> Void
     var timedOutHandler: () -> Void
     var task: Task<Void, Error>!
-    var currentStatus: TransactionStatus!
+    var currentStatus: PendingTransactionStatus!
 
     init(
         apiClient: SolanaAPIClient,
         signature: String,
         timeout: Int,
         delay: Int,
-        responseHandler: @escaping (TransactionStatus) -> Void,
+        responseHandler: @escaping (PendingTransactionStatus) -> Void,
         timedOutHandler: @escaping () -> Void
     ) {
         self.apiClient = apiClient
@@ -72,7 +72,7 @@ class TransactionMonitor<SolanaAPIClient: SolanaSwift.SolanaAPIClient> {
         task.cancel()
     }
 
-    func setStatus(_ transactionStatus: TransactionStatus) {
+    func setStatus(_ transactionStatus: PendingTransactionStatus) {
         currentStatus = transactionStatus
         responseHandler(transactionStatus)
     }

@@ -273,7 +273,7 @@ public protocol SolanaAPIClient {
     /// - Throws: APIClientError
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getsignaturestatuses
     ///
-    func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<TransactionStatus>
+    func observeSignatureStatus(signature: String, timeout: Int, delay: Int) -> AsyncStream<PendingTransactionStatus>
 
     /// Returns a recent block hash from the ledger, and a fee schedule that can be used to compute the cost of
     /// submitting a transaction using it.
