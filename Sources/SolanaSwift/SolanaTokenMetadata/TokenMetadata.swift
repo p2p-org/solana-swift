@@ -122,7 +122,7 @@ public enum TokenExtensionValue: Hashable, Codable {
     }
 
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
+        var container = encoder.singleValueContainer()
 
         switch self {
         case let .string(value):
