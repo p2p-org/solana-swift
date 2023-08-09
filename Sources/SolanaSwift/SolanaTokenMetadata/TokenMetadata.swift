@@ -155,9 +155,12 @@ public enum TokenExtensionValue: Hashable, Codable {
     }
 
     public var doubleValue: Double? {
-        if case let .double(value) = self {
+        switch self {
+        case let .int(value):
+            return Double(value)
+        case let .double(value):
             return value
-        } else {
+        default:
             return nil
         }
     }
