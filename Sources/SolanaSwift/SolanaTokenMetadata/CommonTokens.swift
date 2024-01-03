@@ -4,21 +4,20 @@ import Foundation
 public extension TokenMetadata {
     static var nativeSolana: TokenMetadata =
         .init(
-            _tags: [],
+            tags: [],
             chainId: 101,
             mintAddress: "So11111111111111111111111111111111111111112",
             symbol: "SOL",
             name: "Solana",
             decimals: 9,
             logoURI: "https://raw.githubusercontent.com/p2p-org/solana-token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
-            tags: [],
             extensions: ["coingeckoId": .string("solana")],
             isNative: true
         )
 
     static var renBTC: TokenMetadata =
         .init(
-            _tags: nil,
+            tags: nil,
             chainId: 101,
             mintAddress: PublicKey.renBTCMint.base58EncodedString,
             symbol: "renBTC",
@@ -34,7 +33,7 @@ public extension TokenMetadata {
 
     static var usdc: TokenMetadata =
         .init(
-            _tags: nil,
+            tags: nil,
             chainId: 101,
             mintAddress: PublicKey.usdcMint.base58EncodedString,
             symbol: "USDC",
@@ -46,7 +45,7 @@ public extension TokenMetadata {
 
     static var usdt: TokenMetadata =
         .init(
-            _tags: nil,
+            tags: nil,
             chainId: 101,
             mintAddress: PublicKey.usdtMint.base58EncodedString,
             symbol: "USDT",
@@ -58,7 +57,7 @@ public extension TokenMetadata {
 
     static var eth: TokenMetadata =
         .init(
-            _tags: nil,
+            tags: nil,
             chainId: 101,
             mintAddress: "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
             symbol: "ETH",
@@ -70,7 +69,7 @@ public extension TokenMetadata {
 
     static var usdcet: TokenMetadata =
         .init(
-            _tags: nil,
+            tags: nil,
             chainId: 101,
             mintAddress: "A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM",
             symbol: "USDCet",

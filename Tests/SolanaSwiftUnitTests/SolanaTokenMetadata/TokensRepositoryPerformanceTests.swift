@@ -1,5 +1,5 @@
-@testable import SolanaSwift
 import XCTest
+@testable import SolanaSwift
 
 class TokensRepositoryPerformanceTests: XCTestCase {
     func testGetPerformance() async throws {
@@ -17,7 +17,7 @@ class TokensRepositoryPerformanceTests: XCTestCase {
             let uuid = UUID().uuidString
 
             records[uuid] = TokenMetadata(
-                _tags: nil,
+                tags: nil,
                 chainId: 0,
                 mintAddress: uuid,
                 symbol: String(uuid.prefix(3)),

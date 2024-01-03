@@ -64,6 +64,7 @@ public extension SolanaAPIClient {
                     pubkey: tokenAccount.pubkey,
                     lamports: tokenAccount.account.data.lamports,
                     token: .unsupported(
+                        tags: nil,
                         mint: tokenAccount.account.data.mint.base58EncodedString,
                         decimals: tokenMetadata?.decimals ?? 1,
                         symbol: "",

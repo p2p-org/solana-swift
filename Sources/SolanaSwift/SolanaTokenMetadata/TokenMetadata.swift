@@ -22,7 +22,7 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
     public let name: String
     public let decimals: Decimals
     public let logoURI: String?
-    public var tags: [TokenTag] = []
+    public var tags: [TokenTag]
     public let extensions: [String: TokenExtensionValue]?
     public let supply: UInt64?
     public private(set) var isNative = false
@@ -50,46 +50,45 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
     }
 
     public init(
-        _tags: [String]?,
+        tags: [String]?,
         chainId: Int,
         mintAddress: String,
         symbol: String,
         name: String,
         decimals: UInt8,
         logoURI: String?,
-        tags: [TokenTag] = [],
         extensions: [String: TokenExtensionValue]?,
         isNative: Bool = false,
         supply: UInt64? = nil
     ) {
-        self._tags = _tags
+        _tags = tags
         self.chainId = chainId
         self.mintAddress = mintAddress
         self.symbol = symbol
         self.name = name
         self.decimals = decimals
         self.logoURI = logoURI
-        self.tags = tags
+        self.tags = tags?.map { tag in TokenTag(name: tag, description: tag) } ?? []
         self.extensions = extensions
         self.isNative = isNative
         self.supply = supply
     }
 
     public static func unsupported(
+        tags: [String]?,
         mint: String,
         decimals: Decimals,
         symbol: String,
         supply: UInt64?
     ) -> TokenMetadata {
         TokenMetadata(
-            _tags: [],
+            tags: tags,
             chainId: 101,
             mintAddress: mint,
             symbol: symbol,
             name: mint,
             decimals: decimals,
             logoURI: nil,
-            tags: [],
             extensions: nil,
             supply: supply
         )
