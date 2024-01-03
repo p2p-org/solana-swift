@@ -33,6 +33,22 @@ public struct TokenMetadata: Hashable, Codable, Equatable {
         case chainId, mintAddress = "address", symbol, name, decimals, logoURI, extensions, _tags = "tags", supply
     }
 
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        chainId = try container.decode(Int.self, forKey: .chainId)
+        mintAddress = try container.decode(String.self, forKey: .mintAddress)
+        symbol = try container.decode(String.self, forKey: .symbol)
+        name = try container.decode(String.self, forKey: .name)
+        decimals = try container.decode(Decimals.self, forKey: .decimals)
+        logoURI = try container.decodeIfPresent(String.self, forKey: .logoURI)
+        extensions = try container.decodeIfPresent([String: TokenExtensionValue].self, forKey: .extensions)
+        _tags = try container.decodeIfPresent([String].self, forKey: ._tags)
+        supply = try container.decodeIfPresent(UInt64.self, forKey: .supply)
+
+        // Customizing tags
+        tags = _tags?.map { tag in TokenTag(name: tag, description: tag) } ?? []
+    }
+
     public init(
         _tags: [String]?,
         chainId: Int,
