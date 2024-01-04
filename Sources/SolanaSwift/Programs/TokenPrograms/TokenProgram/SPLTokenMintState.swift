@@ -1,8 +1,5 @@
 import Foundation
 
-@available(*, deprecated, renamed: "SPLTokenMintState")
-public typealias Mint = SPLTokenMintState
-
 public struct SPLTokenMintState: BufferLayout, Equatable, Hashable, Encodable {
     public static var BUFFER_LENGTH: UInt64 = 82
 

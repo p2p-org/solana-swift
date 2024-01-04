@@ -1,8 +1,5 @@
 import Foundation
 
-@available(*, deprecated, renamed: "SPLTokenAccountState")
-public typealias AccountInfo = SPLTokenAccountState
-
 public struct SPLTokenAccountState: BufferLayout {
     public static let BUFFER_LENGTH: UInt64 = 165
 
