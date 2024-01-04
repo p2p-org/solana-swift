@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SPLTokenMintState: BufferLayout, Equatable, Hashable, Encodable {
+public struct SPLTokenMintState: SolanaSPLTokenMintState {
     public static var BUFFER_LENGTH: UInt64 = 82
 
     public let mintAuthorityOption: UInt32
@@ -29,20 +29,6 @@ extension SPLTokenMintState: BorshCodable {
     }
 
     public func serialize(to writer: inout Data) throws {
-        try mintAuthorityOption.serialize(to: &writer)
-        if let mintAuthority = mintAuthority {
-            try mintAuthority.serialize(to: &writer)
-        } else {
-            try PublicKey.NULL_PUBLICKEY_BYTES.forEach { try $0.serialize(to: &writer) }
-        }
-        try supply.serialize(to: &writer)
-        try decimals.serialize(to: &writer)
-        if isInitialized { try UInt8(1).serialize(to: &writer) } else { try UInt8(0).serialize(to: &writer) }
-        try freezeAuthorityOption.serialize(to: &writer)
-        if let freezeAuthority = freezeAuthority {
-            try freezeAuthority.serialize(to: &writer)
-        } else {
-            try PublicKey.NULL_PUBLICKEY_BYTES.forEach { try $0.serialize(to: &writer) }
-        }
+        try serializeCommonProperties(to: &writer)
     }
 }

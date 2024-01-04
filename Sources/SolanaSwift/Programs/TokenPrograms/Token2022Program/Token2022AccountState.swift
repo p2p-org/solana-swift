@@ -1,6 +1,7 @@
 import Foundation
 
-public struct SPLTokenAccountState: SolanaSPLTokenAccountState {
+public struct Token2022AccountState: SolanaSPLTokenAccountState {
+    // TODO: - Fix buffer_length here
     public static let BUFFER_LENGTH: UInt64 = 165
 
     public let mint: PublicKey
@@ -54,44 +55,28 @@ public struct SPLTokenAccountState: SolanaSPLTokenAccountState {
     }
 }
 
-extension SPLTokenAccountState: BorshCodable {
+extension Token2022AccountState: BorshCodable {
     public func serialize(to writer: inout Data) throws {
         try serializeCommonProperties(to: &writer)
+        // TODO: - Serialize token-2022 extensions here
     }
 
     public init(from reader: inout BinaryReader) throws {
-        mint = try .init(from: &reader)
-        owner = try .init(from: &reader)
-        lamports = try .init(from: &reader)
-        delegateOption = try .init(from: &reader)
-        let tempdelegate = try? PublicKey(from: &reader)
-        state = try .init(from: &reader)
-        isNativeOption = try .init(from: &reader)
-        isNativeRaw = try .init(from: &reader)
-        delegatedAmount = try .init(from: &reader)
-        closeAuthorityOption = try .init(from: &reader)
-        closeAuthority = try? PublicKey(from: &reader)
-
-        if delegateOption == 0 {
-            delegate = nil
-            delegatedAmount = 0
-        } else {
-            delegate = tempdelegate
-        }
-
-        isInitialized = state != 0
-        isFrozen = state == 2
-
-        if isNativeOption == 1 {
-            rentExemptReserve = isNativeRaw
-            isNative = true
-        } else {
-            rentExemptReserve = nil
-            isNative = false
-        }
-
-        if closeAuthorityOption == 0 {
-            closeAuthority = nil
-        }
+        let oldTokenProgramData = try SPLTokenAccountState(from: &reader)
+        mint = oldTokenProgramData.mint
+        owner = oldTokenProgramData.owner
+        lamports = oldTokenProgramData.lamports
+        delegateOption = oldTokenProgramData.delegateOption
+        delegate = oldTokenProgramData.delegate
+        isInitialized = oldTokenProgramData.isInitialized
+        isFrozen = oldTokenProgramData.isFrozen
+        state = oldTokenProgramData.state
+        isNativeOption = oldTokenProgramData.isNativeOption
+        rentExemptReserve = oldTokenProgramData.rentExemptReserve
+        isNativeRaw = oldTokenProgramData.isNativeRaw
+        isNative = oldTokenProgramData.isNative
+        delegatedAmount = oldTokenProgramData.delegatedAmount
+        closeAuthorityOption = oldTokenProgramData.closeAuthorityOption
+        closeAuthority = oldTokenProgramData.closeAuthority
     }
 }
