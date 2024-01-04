@@ -17,7 +17,15 @@ public extension SolanaAPIClient {
         observeSignatureStatus(signature: signature, timeout: 60, delay: 2)
     }
 
-    // MARK: - Additional methods
+    /// Get fee per signature
+    func getLamportsPerSignature() async throws -> UInt64? {
+        try await getFees(commitment: nil).feeCalculator?.lamportsPerSignature
+    }
+
+    /// Convenience method for request(method:params:) with no params
+    func request<Entity>(method: String) async throws -> Entity where Entity: Decodable {
+        try await request(method: method, params: [])
+    }
 
     func getMultipleMintDatas(
         mintAddresses: [String],
@@ -36,6 +44,32 @@ public extension SolanaAPIClient {
 
         return mintDict
     }
+
+    /// Wait until transaction is confirmed, return even when there is one or more confirmations and request timed out
+    /// - Parameters:
+    ///   - signature: signature of the transaction
+    ///   - ignoreStatus: ignore status and return true even when observation is timed out
+    func waitForConfirmation(signature: String, ignoreStatus: Bool, timeout: Int = 60, delay: Int = 2) async throws {
+        var statuses = [PendingTransactionStatus]()
+        for try await status in observeSignatureStatus(signature: signature, timeout: timeout, delay: delay) {
+            statuses.append(status)
+        }
+
+        // if the status is important
+        if !ignoreStatus {
+            guard let lastStatus = statuses.last else {
+                throw TransactionConfirmationError.unconfirmed
+            }
+            switch lastStatus {
+            case .confirmed, .finalized:
+                return
+            default:
+                throw TransactionConfirmationError.unconfirmed
+            }
+        }
+    }
+
+    // MARK: - Additional methods
 
     func checkIfAssociatedTokenAccountExists(
         owner: PublicKey,
@@ -121,30 +155,6 @@ public extension SolanaAPIClient {
         return (destination: toPublicKey, isUnregisteredAsocciatedToken: isUnregisteredAsocciatedToken)
     }
 
-    /// Wait until transaction is confirmed, return even when there is one or more confirmations and request timed out
-    /// - Parameters:
-    ///   - signature: signature of the transaction
-    ///   - ignoreStatus: ignore status and return true even when observation is timed out
-    func waitForConfirmation(signature: String, ignoreStatus: Bool, timeout: Int = 60, delay: Int = 2) async throws {
-        var statuses = [PendingTransactionStatus]()
-        for try await status in observeSignatureStatus(signature: signature, timeout: timeout, delay: delay) {
-            statuses.append(status)
-        }
-
-        // if the status is important
-        if !ignoreStatus {
-            guard let lastStatus = statuses.last else {
-                throw TransactionConfirmationError.unconfirmed
-            }
-            switch lastStatus {
-            case .confirmed, .finalized:
-                return
-            default:
-                throw TransactionConfirmationError.unconfirmed
-            }
-        }
-    }
-
     /// Returns all information associated with the account of provided Pubkey
     /// - Parameters:
     ///  - account: Pubkey of account to query, as base-58 encoded string
@@ -157,15 +167,5 @@ public extension SolanaAPIClient {
             throw APIClientError.couldNotRetrieveAccountInfo
         }
         return info
-    }
-
-    /// Get fee per signature
-    func getLamportsPerSignature() async throws -> UInt64? {
-        try await getFees(commitment: nil).feeCalculator?.lamportsPerSignature
-    }
-
-    /// Convenience method for request(method:params:) with no params
-    func request<Entity>(method: String) async throws -> Entity where Entity: Decodable {
-        try await request(method: method, params: [])
     }
 }
