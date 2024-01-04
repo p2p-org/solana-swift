@@ -36,7 +36,7 @@ public class DefaultFeeCalculator: FeeCalculator {
                 // Check if account is closed right after its creation
                 let closingInstruction = transaction.instructions.first(
                     where: {
-                        $0.data.first == TokenProgram.Index.closeAccount &&
+                        $0.data.first == TokenProgram.closeAccountIndex &&
                             $0.keys.first?.publicKey == createdAccount
                     }
                 )
