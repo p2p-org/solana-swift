@@ -5,6 +5,19 @@ import Foundation
 public extension SolanaAPIClient {
     // MARK: - Convenience methods
 
+    func getTokenAccountsByOwner(
+        pubkey: String,
+        params: OwnerInfoParams?,
+        configs: RequestConfiguration?
+    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
+        try await getTokenAccountsByOwner(
+            pubkey: pubkey,
+            params: params,
+            configs: configs,
+            decodingTo: SPLTokenAccountState.self
+        )
+    }
+
     func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {
         try await getMinimumBalanceForRentExemption(dataLength: span, commitment: "recent")
     }
@@ -27,16 +40,17 @@ public extension SolanaAPIClient {
         try await request(method: method, params: [])
     }
 
-    func getMultipleMintDatas(
+    func getMultipleMintDatas<M: SolanaSPLTokenMintState>(
         mintAddresses: [String],
-        commitment: Commitment
-    ) async throws -> [String: SPLTokenMintState?] {
-        let accounts: [BufferInfo<SPLTokenMintState>?] = try await getMultipleAccounts(
+        commitment: Commitment,
+        mintType _: M.Type
+    ) async throws -> [String: M?] {
+        let accounts: [BufferInfo<M>?] = try await getMultipleAccounts(
             pubkeys: mintAddresses,
             commitment: commitment
         )
 
-        var mintDict = [String: SPLTokenMintState?]()
+        var mintDict = [String: M?]()
 
         for (index, address) in mintAddresses.enumerated() {
             mintDict[address] = accounts[index]?.data

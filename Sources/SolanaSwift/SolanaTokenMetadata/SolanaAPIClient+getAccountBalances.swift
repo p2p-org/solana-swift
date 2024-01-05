@@ -1,28 +1,94 @@
 public extension SolanaAPIClient {
-    func getAccountBalances(
+    func getAccountBalances<
+        T: SolanaSPLTokenAccountState,
+        M: SolanaSPLTokenMintState
+    >(
         for address: String,
         tokensRepository: TokenRepository,
-        commitment: String = "confirmed"
+        commitment: String = "confirmed",
+        programId: String = TokenProgram.id.base58EncodedString,
+        accountStateType _: T.Type = SPLTokenAccountState.self,
+        mintType _: M.Type = SPLTokenMintState.self
     ) async throws -> (
         resolved: [AccountBalance],
-        unresolved: [TokenAccount<SPLTokenAccountState>]
+        unresolved: [UnknownAccountBalance]
     ) {
         let tokenAccounts = try await getTokenAccountsByOwner(
             pubkey: address,
             params: .init(
                 mint: nil,
-                programId: TokenProgram.id.base58EncodedString
+                programId: programId
             ),
             configs: .init(
                 commitment: commitment,
                 encoding: "base64"
-            )
+            ),
+            decodingTo: T.self
         )
 
-        var resolvedAccountBalances: [AccountBalance] = []
-        var unresolvedAccountBalances: [TokenAccount<SPLTokenAccountState>] = []
+        return try await convertResult(
+            tokenAccounts: tokenAccounts,
+            tokensRepository: tokensRepository,
+            tokenProgramId: programId,
+            mintType: M.self
+        )
+    }
 
-        var unknownTokenAccountBalances: [TokenAccount<SPLTokenAccountState>] = []
+    func getAccountBalancesWithToken2022(
+        for address: String,
+        tokensRepository: TokenRepository,
+        commitment: String = "confirmed"
+    ) async throws -> (
+        resolved: [AccountBalance],
+        unresolved: [UnknownAccountBalance]
+    ) {
+        // old token standard
+        async let oldTokenAccountsResult = getAccountBalances(
+            for: address,
+            tokensRepository: tokensRepository,
+            commitment: commitment,
+            programId: TokenProgram.id.base58EncodedString,
+            accountStateType: SPLTokenAccountState.self,
+            mintType: SPLTokenMintState.self
+        )
+
+        // token 2022
+        async let tokens2022AccountsResult = getAccountBalances(
+            for: address,
+            tokensRepository: tokensRepository,
+            commitment: commitment,
+            programId: TokenProgram.id.base58EncodedString,
+            accountStateType: Token2022AccountState.self,
+            mintType: Token2022MintState.self
+        )
+
+        // get result
+
+        return try await(
+            oldTokenAccountsResult.resolved + tokens2022AccountsResult.resolved,
+            oldTokenAccountsResult.unresolved + tokens2022AccountsResult.unresolved
+        )
+    }
+
+    // MARK: - Helpers
+
+    private func convertResult<
+        T: SolanaSPLTokenAccountState,
+        M: SolanaSPLTokenMintState
+    >(
+        tokenAccounts: [TokenAccount<T>],
+        tokensRepository: TokenRepository,
+        commitment: String = "confirmed",
+        tokenProgramId: String,
+        mintType _: M.Type
+    ) async throws -> (
+        resolved: [AccountBalance],
+        unresolved: [UnknownAccountBalance]
+    ) {
+        var resolvedAccountBalances: [AccountBalance] = []
+        var unresolvedAccountBalances: [UnknownAccountBalance] = []
+
+        var unknownTokenAccountBalances: [TokenAccount<T>] = []
 
         let tokenMetadatas = try await tokensRepository
             .get(addresses: tokenAccounts.map(\.account.data.mint.base58EncodedString))
@@ -41,7 +107,8 @@ public extension SolanaAPIClient {
             let accountBalance = AccountBalance(
                 pubkey: tokenAccount.pubkey,
                 lamports: tokenAccount.account.data.lamports,
-                token: token
+                token: token,
+                tokenProgramId: tokenProgramId
             )
 
             resolvedAccountBalances.append(accountBalance)
@@ -52,7 +119,8 @@ public extension SolanaAPIClient {
             mintAddresses: unknownTokenAccountBalances.map(
                 \.account.data.mint.base58EncodedString
             ),
-            commitment: commitment
+            commitment: commitment,
+            mintType: M.self
         )
 
         for tokenAccount in unknownTokenAccountBalances {
@@ -66,16 +134,26 @@ public extension SolanaAPIClient {
                     token: .unsupported(
                         tags: nil,
                         mint: tokenAccount.account.data.mint.base58EncodedString,
-                        decimals: tokenMetadata?.decimals ?? 1,
+                        decimals: tokenMetadata?.decimals ?? 0,
                         symbol: "",
                         supply: tokenMetadata?.supply
-                    )
+                    ),
+                    tokenProgramId: tokenProgramId
                 )
 
                 resolvedAccountBalances.append(accountBalance)
             } else {
                 // We don't have onchain token metadata
-                unresolvedAccountBalances.append(tokenAccount)
+                unresolvedAccountBalances.append(
+                    .init(
+                        pubkey: tokenAccount.pubkey,
+                        lamports: tokenAccount.account.data.lamports,
+                        mintAddress: tokenAccount.account.data.mint.base58EncodedString,
+                        decimals: 0,
+                        supply: nil,
+                        tokenProgramId: tokenProgramId
+                    )
+                )
             }
         }
 

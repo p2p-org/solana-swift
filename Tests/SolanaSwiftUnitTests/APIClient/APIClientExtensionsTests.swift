@@ -98,7 +98,7 @@ class BaseAPIClientMock: JSONRPCAPIClient {
         super.init(endpoint: endpoint, networkManager: networkManager)
     }
 
-    override func getTokenAccountsByOwner(
+    func getTokenAccountsByOwner(
         pubkey _: String,
         params _: OwnerInfoParams? = nil,
         configs _: RequestConfiguration? = nil

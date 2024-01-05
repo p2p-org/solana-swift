@@ -1,5 +1,5 @@
-@testable import SolanaSwift
 import XCTest
+@testable import SolanaSwift
 
 class APIClientTests: XCTestCase {
     let endpoint = APIEndPoint(
@@ -235,7 +235,8 @@ class APIClientTests: XCTestCase {
                     "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
                 ],
-                commitment: "confirm"
+                commitment: "confirm",
+                mintType: SPLTokenMintState.self
             )
         XCTAssertNotNil(result)
 

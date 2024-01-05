@@ -304,9 +304,12 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
 
-    func getTokenAccountsByOwner(pubkey _: String, params _: OwnerInfoParams?,
-                                 configs _: RequestConfiguration?) async throws -> [TokenAccount<SPLTokenAccountState>]
-    {
+    func getTokenAccountsByOwner<T: SolanaSPLTokenAccountState>(
+        pubkey _: String,
+        params _: OwnerInfoParams?,
+        configs _: RequestConfiguration?,
+        decodingTo _: T.Type
+    ) async throws -> [TokenAccount<T>] {
         fatalError()
     }
 

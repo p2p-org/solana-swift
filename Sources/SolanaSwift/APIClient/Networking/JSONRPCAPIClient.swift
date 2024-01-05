@@ -161,12 +161,13 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         return result.value
     }
 
-    public func getTokenAccountsByOwner(
+    public func getTokenAccountsByOwner<T: SolanaSPLTokenAccountState>(
         pubkey: String,
-        params: OwnerInfoParams? = nil,
-        configs: RequestConfiguration? = nil
-    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
-        let result: Rpc<[TokenAccount<SPLTokenAccountState>]> = try await get(
+        params: OwnerInfoParams?,
+        configs: RequestConfiguration?,
+        decodingTo _: T.Type
+    ) async throws -> [TokenAccount<T>] {
+        let result: Rpc<[TokenAccount<T>]> = try await get(
             method: "getTokenAccountsByOwner",
             params: [pubkey, params, configs]
         )

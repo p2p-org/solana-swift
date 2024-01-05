@@ -1,8 +1,5 @@
 import Foundation
 
-@available(*, deprecated, renamed: "TokenAccount")
-public typealias Wallet = AccountBalance
-
 public struct AccountBalance: Hashable, Equatable {
     // MARK: - Properties
 
@@ -11,6 +8,7 @@ public struct AccountBalance: Hashable, Equatable {
     public var token: TokenMetadata
     public var userInfo: AnyHashable?
     public let supply: UInt64?
+    public let tokenProgramId: String?
 
     // MARK: - Initializer
 
@@ -18,21 +16,24 @@ public struct AccountBalance: Hashable, Equatable {
         pubkey: String? = nil,
         lamports: UInt64? = nil,
         supply: UInt64? = nil,
-        token: TokenMetadata
+        token: TokenMetadata,
+        tokenProgramId: String?
     ) {
         self.pubkey = pubkey
         self.lamports = lamports
         self.supply = supply
         self.token = token
+        self.tokenProgramId = tokenProgramId
     }
+}
 
-    // MARK: - Computed properties
+public struct UnknownAccountBalance {
+    public let pubkey: String
+    public let lamports: Lamports
 
-    public var amount: Double? {
-        lamports?.convertToBalance(decimals: token.decimals)
-    }
+    public let mintAddress: String
+    public let decimals: Decimals
 
-    public var isNativeSOL: Bool {
-        token.isNative
-    }
+    public let supply: UInt64?
+    public let tokenProgramId: String?
 }
