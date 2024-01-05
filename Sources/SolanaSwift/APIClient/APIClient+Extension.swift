@@ -53,7 +53,8 @@ public extension SolanaAPIClient {
         var mintDict = [String: M?]()
 
         for (index, address) in mintAddresses.enumerated() {
-            mintDict[address] = accounts[index]?.data
+            let account = accounts[index] as BufferInfo<M>?
+            mintDict[address] = account?.data
         }
 
         return mintDict
