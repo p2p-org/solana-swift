@@ -44,13 +44,13 @@ public extension SolanaAPIClient {
         mintAddresses: [String],
         commitment: Commitment,
         mintType _: M.Type
-    ) async throws -> [String: M?] {
+    ) async throws -> [String: M] {
         let accounts: [BufferInfo<M>?] = try await getMultipleAccounts(
             pubkeys: mintAddresses,
             commitment: commitment
         )
 
-        var mintDict = [String: M?]()
+        var mintDict = [String: M]()
 
         for (index, address) in mintAddresses.enumerated() {
             let account = accounts[index] as BufferInfo<M>?

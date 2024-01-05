@@ -134,9 +134,9 @@ public extension SolanaAPIClient {
                     token: .unsupported(
                         tags: nil,
                         mint: tokenAccount.account.data.mint.base58EncodedString,
-                        decimals: tokenMetadata?.decimals ?? 0,
+                        decimals: tokenMetadata.decimals,
                         symbol: "",
-                        supply: tokenMetadata?.supply
+                        supply: tokenMetadata.supply
                     ),
                     tokenProgramId: tokenProgramId
                 )

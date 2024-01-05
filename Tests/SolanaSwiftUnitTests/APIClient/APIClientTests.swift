@@ -242,15 +242,15 @@ class APIClientTests: XCTestCase {
 
         // usdc
         let usdc = result["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"]!
-        XCTAssertEqual(usdc?.mintAuthority?.base58EncodedString, "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9")
-        XCTAssertEqual(usdc?.decimals, 6)
-        XCTAssertEqual(usdc?.freezeAuthority?.base58EncodedString, "3sNBr7kMccME5D55xNgsmYpZnzPgP2g12CixAajXypn6")
+        XCTAssertEqual(usdc.mintAuthority?.base58EncodedString, "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9")
+        XCTAssertEqual(usdc.decimals, 6)
+        XCTAssertEqual(usdc.freezeAuthority?.base58EncodedString, "3sNBr7kMccME5D55xNgsmYpZnzPgP2g12CixAajXypn6")
 
         // usdt
         let usdt = result["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]!
-        XCTAssertEqual(usdt?.mintAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
-        XCTAssertEqual(usdt?.decimals, 6)
-        XCTAssertEqual(usdt?.freezeAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
+        XCTAssertEqual(usdt.mintAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
+        XCTAssertEqual(usdt.decimals, 6)
+        XCTAssertEqual(usdt.freezeAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
     }
 
     func testGetSignaturesForAddress() async throws {
