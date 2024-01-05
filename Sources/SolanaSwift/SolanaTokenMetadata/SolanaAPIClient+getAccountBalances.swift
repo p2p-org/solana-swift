@@ -57,7 +57,7 @@ public extension SolanaAPIClient {
             for: address,
             tokensRepository: tokensRepository,
             commitment: commitment,
-            programId: TokenProgram.id.base58EncodedString,
+            programId: Token2022Program.id.base58EncodedString,
             accountStateType: Token2022AccountState.self,
             mintType: Token2022MintState.self
         )
