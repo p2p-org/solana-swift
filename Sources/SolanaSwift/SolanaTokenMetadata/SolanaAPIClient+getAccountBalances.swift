@@ -124,7 +124,7 @@ public extension SolanaAPIClient {
         )
 
         for tokenAccount in unknownTokenAccountBalances {
-            let tokenMetadata = onChainTokenMetadataList[tokenAccount.pubkey]
+            let tokenMetadata = onChainTokenMetadataList[tokenAccount.account.data.mint.base58EncodedString]
 
             if let tokenMetadata {
                 // We have onchain token metadata
