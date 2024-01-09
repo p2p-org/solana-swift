@@ -168,23 +168,44 @@ public class BlockchainClient: SolanaBlockchainClient {
         // use transfer checked transaction for proxy, otherwise use normal transfer transaction
         if transferChecked {
             // transfer checked transaction
-            sendInstruction = try TokenProgram.transferCheckedInstruction(
-                source: fromPublicKey,
-                mint: PublicKey(string: mintAddress),
-                destination: splDestination.destination,
-                owner: account.publicKey,
-                multiSigners: [],
-                amount: amount,
-                decimals: decimals
-            )
+            if tokenProgramId == TokenProgram.id {
+                sendInstruction = try TokenProgram.transferCheckedInstruction(
+                    source: fromPublicKey,
+                    mint: PublicKey(string: mintAddress),
+                    destination: splDestination.destination,
+                    owner: account.publicKey,
+                    multiSigners: [],
+                    amount: amount,
+                    decimals: decimals
+                )
+            } else {
+                sendInstruction = try Token2022Program.transferCheckedInstruction(
+                    source: fromPublicKey,
+                    mint: PublicKey(string: mintAddress),
+                    destination: splDestination.destination,
+                    owner: account.publicKey,
+                    multiSigners: [],
+                    amount: amount,
+                    decimals: decimals
+                )
+            }
         } else {
             // transfer transaction
-            sendInstruction = TokenProgram.transferInstruction(
-                source: fromPublicKey,
-                destination: toPublicKey,
-                owner: account.publicKey,
-                amount: amount
-            )
+            if tokenProgramId == TokenProgram.id {
+                sendInstruction = TokenProgram.transferInstruction(
+                    source: fromPublicKey,
+                    destination: toPublicKey,
+                    owner: account.publicKey,
+                    amount: amount
+                )
+            } else {
+                sendInstruction = Token2022Program.transferInstruction(
+                    source: fromPublicKey,
+                    destination: toPublicKey,
+                    owner: account.publicKey,
+                    amount: amount
+                )
+            }
         }
 
         instructions.append(sendInstruction)

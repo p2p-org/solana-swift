@@ -5,6 +5,19 @@ import Foundation
 public extension SolanaAPIClient {
     // MARK: - Convenience methods
 
+    func getTokenAccountsByOwner(
+        pubkey: String,
+        params: OwnerInfoParams?,
+        configs: RequestConfiguration?
+    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
+        try await getTokenAccountsByOwner(
+            pubkey: pubkey,
+            params: params,
+            configs: configs,
+            decodingTo: SPLTokenAccountState.self
+        )
+    }
+
     func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {
         try await getMinimumBalanceForRentExemption(dataLength: span, commitment: "recent")
     }
