@@ -108,7 +108,8 @@ public extension SolanaAPIClient {
                 pubkey: tokenAccount.pubkey,
                 lamports: tokenAccount.account.data.lamports,
                 token: token,
-                tokenProgramId: tokenProgramId
+                tokenProgramId: tokenProgramId,
+                minimumBalanceForRentExemption: tokenAccount.account.lamports
             )
 
             resolvedAccountBalances.append(accountBalance)
@@ -138,7 +139,8 @@ public extension SolanaAPIClient {
                         symbol: "",
                         supply: tokenMetadata.supply
                     ),
-                    tokenProgramId: tokenProgramId
+                    tokenProgramId: tokenProgramId,
+                    minimumBalanceForRentExemption: tokenAccount.account.lamports
                 )
 
                 resolvedAccountBalances.append(accountBalance)
@@ -151,7 +153,8 @@ public extension SolanaAPIClient {
                         mintAddress: tokenAccount.account.data.mint.base58EncodedString,
                         decimals: 0,
                         supply: nil,
-                        tokenProgramId: tokenProgramId
+                        tokenProgramId: tokenProgramId,
+                        minimumBalanceForRentExemption: tokenAccount.account.lamports
                     )
                 )
             }

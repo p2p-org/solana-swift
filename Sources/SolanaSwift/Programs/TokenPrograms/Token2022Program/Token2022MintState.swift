@@ -1,9 +1,6 @@
 import Foundation
 
 public struct Token2022MintState: SolanaSPLTokenMintState {
-    // TODO: - Fix buffer_length here
-    public static var BUFFER_LENGTH: UInt64 = 82
-
     public let mintAuthorityOption: UInt32
     public let mintAuthority: PublicKey?
     public let supply: UInt64

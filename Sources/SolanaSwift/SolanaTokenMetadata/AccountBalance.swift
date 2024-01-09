@@ -9,6 +9,7 @@ public struct AccountBalance: Hashable, Equatable {
     public var userInfo: AnyHashable?
     public let supply: UInt64?
     public let tokenProgramId: String?
+    public let minimumBalanceForRentExemption: UInt64
 
     // MARK: - Initializer
 
@@ -17,13 +18,15 @@ public struct AccountBalance: Hashable, Equatable {
         lamports: UInt64? = nil,
         supply: UInt64? = nil,
         token: TokenMetadata,
-        tokenProgramId: String?
+        tokenProgramId: String?,
+        minimumBalanceForRentExemption: UInt64
     ) {
         self.pubkey = pubkey
         self.lamports = lamports
         self.supply = supply
         self.token = token
         self.tokenProgramId = tokenProgramId
+        self.minimumBalanceForRentExemption = minimumBalanceForRentExemption
     }
 }
 
@@ -36,4 +39,5 @@ public struct UnknownAccountBalance {
 
     public let supply: UInt64?
     public let tokenProgramId: String?
+    public let minimumBalanceForRentExemption: UInt64
 }
