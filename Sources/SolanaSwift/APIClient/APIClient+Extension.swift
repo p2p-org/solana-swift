@@ -5,19 +5,6 @@ import Foundation
 public extension SolanaAPIClient {
     // MARK: - Convenience methods
 
-    func getTokenAccountsByOwner(
-        pubkey: String,
-        params: OwnerInfoParams?,
-        configs: RequestConfiguration?
-    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
-        try await getTokenAccountsByOwner(
-            pubkey: pubkey,
-            params: params,
-            configs: configs,
-            decodingTo: SPLTokenAccountState.self
-        )
-    }
-
     func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {
         try await getMinimumBalanceForRentExemption(dataLength: span, commitment: "recent")
     }
@@ -40,7 +27,7 @@ public extension SolanaAPIClient {
         try await request(method: method, params: [])
     }
 
-    func getMultipleMintDatas<M: SolanaSPLTokenMintState>(
+    func getMultipleMintDatas<M: TokenMintState>(
         mintAddresses: [String],
         commitment: Commitment,
         mintType _: M.Type
@@ -88,13 +75,15 @@ public extension SolanaAPIClient {
 
     func checkIfAssociatedTokenAccountExists(
         owner: PublicKey,
-        mint: String
+        mint: String,
+        tokenProgramId: PublicKey
     ) async throws -> Bool {
         let mintAddress = try mint.toPublicKey()
 
         let associatedTokenAccount = try PublicKey.associatedTokenAddress(
             walletAddress: owner,
-            tokenMintAddress: mintAddress
+            tokenMintAddress: mintAddress,
+            tokenProgramId: tokenProgramId
         )
 
         let bufferInfo: BufferInfo<SPLTokenAccountState>? = try await getAccountInfo(account: associatedTokenAccount
@@ -114,7 +103,8 @@ public extension SolanaAPIClient {
 
     func findSPLTokenDestinationAddress(
         mintAddress: String,
-        destinationAddress: String
+        destinationAddress: String,
+        tokenProgramId: PublicKey
     ) async throws -> SPLTokenDestinationAddress {
         var address: String
         var accountInfo: BufferInfo<SPLTokenAccountState>?
@@ -131,7 +121,8 @@ public extension SolanaAPIClient {
                 // create associated token address
                 address = try PublicKey.associatedTokenAddress(
                     walletAddress: owner,
-                    tokenMintAddress: tokenMint
+                    tokenMintAddress: tokenMint,
+                    tokenProgramId: tokenProgramId
                 ).base58EncodedString
             } else {
                 throw PublicKeyError.invalidAddress(destinationAddress)
@@ -142,7 +133,8 @@ public extension SolanaAPIClient {
             // create associated token address
             address = try PublicKey.associatedTokenAddress(
                 walletAddress: owner,
-                tokenMintAddress: tokenMint
+                tokenMintAddress: tokenMint,
+                tokenProgramId: tokenProgramId
             ).base58EncodedString
         } catch {
             throw error
@@ -163,7 +155,9 @@ public extension SolanaAPIClient {
             isUnregisteredAsocciatedToken = true
 
             // if associated token account has been registered
-            if info?.owner == TokenProgram.id.base58EncodedString, info?.data != nil {
+            if PublicKey.isSPLTokenOrToken2022ProgramId(info?.owner),
+               info?.data != nil
+            {
                 isUnregisteredAsocciatedToken = false
             }
         }

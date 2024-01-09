@@ -34,7 +34,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         if let fc = fc {
             feeCalculator = fc
         } else {
-            let (lps, minRentExemption) = try await (
+            let (lps, minRentExemption) = try await(
                 apiClient.getFees(commitment: nil).feeCalculator?.lamportsPerSignature,
                 apiClient.getMinimumBalanceForRentExemption(span: 165)
             )
@@ -117,26 +117,21 @@ public class BlockchainClient: SolanaBlockchainClient {
     public func prepareSendingSPLTokens(
         account: KeyPair,
         mintAddress: String,
+        tokenProgramId: PublicKey,
         decimals: Decimals,
         from fromPublicKey: String,
         to destinationAddress: String,
         amount: UInt64,
         feePayer: PublicKey? = nil,
         transferChecked: Bool = false,
-        minRentExemption mre: Lamports? = nil
+        minRentExemption: Lamports
     ) async throws -> (preparedTransaction: PreparedTransaction, realDestination: String) {
         let feePayer = feePayer ?? account.publicKey
 
-        let minRenExemption: Lamports
-        if let mre = mre {
-            minRenExemption = mre
-        } else {
-            minRenExemption = try await apiClient
-                .getMinimumBalanceForRentExemption(span: SPLTokenAccountState.BUFFER_LENGTH)
-        }
         let splDestination = try await apiClient.findSPLTokenDestinationAddress(
             mintAddress: mintAddress,
-            destinationAddress: destinationAddress
+            destinationAddress: destinationAddress,
+            tokenProgramId: tokenProgramId
         )
 
         // get address
@@ -160,10 +155,11 @@ public class BlockchainClient: SolanaBlockchainClient {
             let createATokenInstruction = try AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
                 mint: mint,
                 owner: owner,
-                payer: feePayer
+                payer: feePayer,
+                tokenProgramId: tokenProgramId
             )
             instructions.append(createATokenInstruction)
-            accountsCreationFee += minRenExemption
+            accountsCreationFee += minRentExemption
         }
 
         // send instruction

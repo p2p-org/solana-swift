@@ -87,10 +87,12 @@ final class BlockchainClientWithTokenProgramTests: XCTestCase {
         let tx = try await blockchainClient.prepareSendingSPLTokens(
             account: account,
             mintAddress: mintAddress,
+            tokenProgramId: TokenProgram.id,
             decimals: 6,
             from: source,
             to: destination,
-            amount: amount.toLamport(decimals: 6)
+            amount: amount.toLamport(decimals: 6),
+            minRentExemption: 2_039_280
         )
         .preparedTransaction
 
@@ -295,16 +297,16 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
 
-    func getTokenAccountsByDelegate(
+    func getTokenAccountsByDelegate<T: TokenAccountState>(
         pubkey _: String,
         mint _: String?,
         programId _: String?,
         configs _: RequestConfiguration?
-    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
+    ) async throws -> [TokenAccount<T>] {
         fatalError()
     }
 
-    func getTokenAccountsByOwner<T: SolanaSPLTokenAccountState>(
+    func getTokenAccountsByOwner<T: TokenAccountState>(
         pubkey _: String,
         params _: OwnerInfoParams?,
         configs _: RequestConfiguration?,

@@ -13,24 +13,9 @@ public extension SolanaBlockchainClient {
         from owner: PublicKey,
         amount: Lamports,
         payer: PublicKey,
-        minRentExemption mre: Lamports?
+        minRentExemption: Lamports
     ) async throws -> AccountInstructions {
-        let newAccount: KeyPair
-        let minRentExemption: Lamports
-        async let requestNewAccount = KeyPair(network: apiClient.endpoint.network)
-
-        if let mre = mre {
-            minRentExemption = mre
-            newAccount = try await requestNewAccount
-        } else {
-            (minRentExemption, newAccount) = try await (
-                apiClient.getMinimumBalanceForRentExemption(
-                    dataLength: UInt64(SPLTokenAccountState.BUFFER_LENGTH),
-                    commitment: "recent"
-                ),
-                requestNewAccount
-            )
-        }
+        let newAccount = try await KeyPair(network: apiClient.endpoint.network)
 
         return .init(
             account: newAccount.publicKey,
@@ -72,19 +57,21 @@ public extension SolanaBlockchainClient {
     func prepareForCreatingAssociatedTokenAccount(
         owner: PublicKey,
         mint: PublicKey,
+        tokenProgramId: PublicKey,
         feePayer: PublicKey,
         closeAfterward: Bool
     ) async throws -> AccountInstructions {
         let associatedAddress = try PublicKey.associatedTokenAddress(
             walletAddress: owner,
-            tokenMintAddress: mint
+            tokenMintAddress: mint,
+            tokenProgramId: tokenProgramId
         )
 
         let isAssociatedTokenAddressRegistered: Bool
         do {
             let info: BufferInfo<SPLTokenAccountState>? = try await apiClient
                 .getAccountInfo(account: associatedAddress.base58EncodedString)
-            if info?.owner == TokenProgram.id.base58EncodedString,
+            if PublicKey.isSPLTokenOrToken2022ProgramId(info?.owner),
                info?.data.owner == owner
             {
                 isAssociatedTokenAddressRegistered = true
@@ -127,7 +114,8 @@ public extension SolanaBlockchainClient {
                     .createAssociatedTokenAccountInstruction(
                         mint: mint,
                         owner: owner,
-                        payer: feePayer
+                        payer: feePayer,
+                        tokenProgramId: tokenProgramId
                     ),
             ],
             cleanupInstructions: cleanupInstructions,

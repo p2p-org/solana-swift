@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol SolanaSPLTokenAccountState: BufferLayout {
+public protocol TokenAccountState: BufferLayout {
     var mint: PublicKey { get }
     var owner: PublicKey { get }
     var lamports: UInt64 { get }
@@ -18,7 +18,7 @@ public protocol SolanaSPLTokenAccountState: BufferLayout {
     var closeAuthority: PublicKey? { get set }
 }
 
-extension SolanaSPLTokenAccountState {
+extension TokenAccountState {
     func serializeCommonProperties(to writer: inout Data) throws {
         try mint.serialize(to: &writer)
         try owner.serialize(to: &writer)

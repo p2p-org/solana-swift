@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Token2022AccountState: SolanaSPLTokenAccountState {
+public struct Token2022AccountState: TokenAccountState {
     public let mint: PublicKey
     public let owner: PublicKey
     public let lamports: UInt64

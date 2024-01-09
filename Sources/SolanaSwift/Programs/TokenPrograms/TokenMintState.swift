@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol SolanaSPLTokenMintState: BufferLayout, Equatable, Hashable, Encodable {
+public protocol TokenMintState: BufferLayout, Equatable, Hashable, Encodable {
     var mintAuthorityOption: UInt32 { get }
     var mintAuthority: PublicKey? { get }
     var supply: UInt64 { get }
@@ -10,7 +10,7 @@ public protocol SolanaSPLTokenMintState: BufferLayout, Equatable, Hashable, Enco
     var freezeAuthority: PublicKey? { get }
 }
 
-extension SolanaSPLTokenMintState {
+extension TokenMintState {
     func serializeCommonProperties(to writer: inout Data) throws {
         try mintAuthorityOption.serialize(to: &writer)
         if let mintAuthority = mintAuthority {

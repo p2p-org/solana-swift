@@ -5,7 +5,8 @@ class AssociatedTokenProgramTests: XCTestCase {
     func testAssociatedTokenAddress() throws {
         let associatedTokenAddress = try PublicKey.associatedTokenAddress(
             walletAddress: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
-            tokenMintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            tokenMintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            tokenProgramId: TokenProgram.id
         )
 
         XCTAssertEqual(associatedTokenAddress.base58EncodedString, "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3")
@@ -19,7 +20,8 @@ class AssociatedTokenProgramTests: XCTestCase {
             .createAssociatedTokenAccountInstruction(
                 mint: mintAddress,
                 owner: owner,
-                payer: owner
+                payer: owner,
+                tokenProgramId: TokenProgram.id
             )
 
         XCTAssertEqual(instruction.keys.count, 7)

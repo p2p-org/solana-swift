@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SPLTokenAccountState: SolanaSPLTokenAccountState {
+public struct SPLTokenAccountState: TokenAccountState {
     public static let BUFFER_LENGTH: UInt64 = 165
 
     public let mint: PublicKey

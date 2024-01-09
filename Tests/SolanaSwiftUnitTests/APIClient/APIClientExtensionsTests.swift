@@ -40,7 +40,8 @@ class APIClientExtensionsTests: XCTestCase {
         let apiClient = BaseAPIClientMock(endpoint: endpoint)
         let result = try await apiClient.findSPLTokenDestinationAddress(
             mintAddress: mintAddress,
-            destinationAddress: destination
+            destinationAddress: destination,
+            tokenProgramId: TokenProgram.id
         )
         XCTAssertEqual(result.destination, "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3")
         XCTAssertEqual(result.isUnregisteredAsocciatedToken, false)
@@ -50,13 +51,15 @@ class APIClientExtensionsTests: XCTestCase {
         let apiClient = BaseAPIClientMock(endpoint: endpoint)
         let exist = try await apiClient.checkIfAssociatedTokenAccountExists(
             owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM",
-            mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            tokenProgramId: TokenProgram.id
         )
         XCTAssertTrue(exist)
 
         let exist2 = try await apiClient.checkIfAssociatedTokenAccountExists(
             owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM",
-            mint: "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk"
+            mint: "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk",
+            tokenProgramId: TokenProgram.id
         )
         XCTAssertFalse(exist2)
     }

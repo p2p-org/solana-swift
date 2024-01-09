@@ -1,14 +1,14 @@
 public extension SolanaAPIClient {
     func getAccountBalances<
-        T: SolanaSPLTokenAccountState,
-        M: SolanaSPLTokenMintState
+        T: TokenAccountState,
+        M: TokenMintState
     >(
         for address: String,
         tokensRepository: TokenRepository,
         commitment: String = "confirmed",
-        programId: String = TokenProgram.id.base58EncodedString,
-        accountStateType _: T.Type = SPLTokenAccountState.self,
-        mintType _: M.Type = SPLTokenMintState.self
+        programId: String,
+        accountStateType _: T.Type,
+        mintType _: M.Type
     ) async throws -> (
         resolved: [AccountBalance],
         unresolved: [UnknownAccountBalance]
@@ -73,8 +73,8 @@ public extension SolanaAPIClient {
     // MARK: - Helpers
 
     private func convertResult<
-        T: SolanaSPLTokenAccountState,
-        M: SolanaSPLTokenMintState
+        T: TokenAccountState,
+        M: TokenMintState
     >(
         tokenAccounts: [TokenAccount<T>],
         tokensRepository: TokenRepository,

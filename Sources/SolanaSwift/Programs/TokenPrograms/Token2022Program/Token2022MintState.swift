@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Token2022MintState: SolanaSPLTokenMintState {
+public struct Token2022MintState: TokenMintState {
     public let mintAuthorityOption: UInt32
     public let mintAuthority: PublicKey?
     public let supply: UInt64
