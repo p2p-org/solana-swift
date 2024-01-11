@@ -95,9 +95,11 @@ public class BlockchainClient: SolanaBlockchainClient {
             to: PublicKey(string: destination),
             lamports: amount
         )
-        return try await prepareTransaction(instructions: [instruction],
-                                            signers: [account],
-                                            feePayer: feePayer)
+        return try await prepareTransaction(
+            instructions: [instruction],
+            signers: [account],
+            feePayer: feePayer
+        )
     }
 
     /// Prepare for sending any SPLToken
