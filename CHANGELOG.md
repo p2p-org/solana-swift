@@ -1,6 +1,16 @@
 ## 5.0.0
 
+- Fix TokenMetadata encoding, tags.
+- Remove deprecated PublicKey.tokenProgramId, use TokenProgram.id instead.
+- Remove deprecated PublicKey.programId, use SystemProgram.id instead.
+- Remove deprecated PublicKey.ownerValidationProgramId, use OwnerValidationProgram.id instead.
+- Remove deprecated PublicKey.splAssociatedTokenAccountProgramId, use AssociatedTokenProgram.id instead.
+- Remove deprecated typealias AccountInfo, use SPLTokenAccountState or Token2022AccountState instead.
+- Remove deprecated typealias Mint, use SPLTokenMintState or Token2022MintState instead.
+- Remove deprecated typealias Wallet, use AccountBalance instead.
+- Add method getAccountBalancesWithToken2022.
 - Support token 2022 and Token2022Program.
+
 ## 4.0.0
 
 - Rename Wallet to AccountBalance.
