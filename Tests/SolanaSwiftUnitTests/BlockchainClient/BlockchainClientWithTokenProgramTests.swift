@@ -92,6 +92,7 @@ final class BlockchainClientWithTokenProgramTests: XCTestCase {
             from: source,
             to: destination,
             amount: amount.toLamport(decimals: 6),
+            lamportsPerSignature: 5000,
             minRentExemption: 2_039_280
         )
         .preparedTransaction
