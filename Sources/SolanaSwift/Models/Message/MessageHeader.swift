@@ -3,9 +3,9 @@ import Foundation
 public struct MessageHeader: Decodable, Equatable {
     static let LENGTH = 3
 
-    var numRequiredSignatures: Int = 0
-    var numReadonlySignedAccounts: Int = 0
-    var numReadonlyUnsignedAccounts: Int = 0
+    public internal(set) var numRequiredSignatures: Int = 0
+    public internal(set) var numReadonlySignedAccounts: Int = 0
+    public internal(set) var numReadonlyUnsignedAccounts: Int = 0
 
     var bytes: [UInt8] {
         [UInt8(numRequiredSignatures), UInt8(numReadonlySignedAccounts), UInt8(numReadonlyUnsignedAccounts)]
