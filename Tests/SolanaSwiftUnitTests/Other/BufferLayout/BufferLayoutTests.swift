@@ -2,6 +2,28 @@ import SolanaSwift
 import XCTest
 
 class BufferLayoutTests: XCTestCase {
+    // MARK: - Raw data
+
+    func testDecodingRawData() throws {
+        let string =
+            "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+
+        let data = Data(base64Encoded: string)!
+
+        var binaryReader = BinaryReader(bytes: data.bytes)
+
+        let expectedBytes: [UInt8] = [
+            1, 0, 0, 0, 6, 26, 217, 208, 83, 135, 21,
+            72, 83, 126, 222, 62, 38, 24, 73, 163, 223, 183,
+            253, 2, 250, 188, 117, 178, 35, 200, 228,
+            106, 219, 133, 61, 12, 0, 16, 165, 212, 232,
+            0, 0, 0, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]
+
+        XCTAssertEqual(try Data(from: &binaryReader).bytes, expectedBytes)
+    }
+
     // MARK: - Mint
 
     func testDecodingMint() throws {
@@ -26,11 +48,12 @@ class BufferLayoutTests: XCTestCase {
 
     // MARK: - Account info
 
+    
     func testDecodingAccountInfo() throws {
         XCTAssertEqual(SPLTokenAccountState.BUFFER_LENGTH, 165)
 
         let string =
-            "Ki8B8ueli4aki+iJfBsIY86NqGNtSFNBWByygEBeZ9QljVXOg8TM+cg/bJJqIcR4NCTqhLKqJTeTag0dQ5U+1gBAehDzWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcAAAA="
+            "BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 
         let data = Data(base64Encoded: string)!
 

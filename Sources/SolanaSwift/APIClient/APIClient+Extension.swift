@@ -5,17 +5,31 @@ import Foundation
 public extension SolanaAPIClient {
     // MARK: - Convenience methods
 
-    func getTokenAccountsByOwner(
+    func getTokenAccountsByOwner<T: TokenAccountState>(
         pubkey: String,
         params: OwnerInfoParams?,
-        configs: RequestConfiguration?
-    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
-        try await getTokenAccountsByOwner(
+        configs: RequestConfiguration?,
+        decodingTo _: T.Type
+    ) async throws -> [TokenAccount<T>] {
+        let result = try await getTokenAccountsByOwner(
             pubkey: pubkey,
             params: params,
-            configs: configs,
-            decodingTo: SPLTokenAccountState.self
+            configs: configs
         )
+
+        return try result.map { result in
+            var binaryReader = BinaryReader(bytes: result.account.data.bytes)
+            return try .init(
+                pubkey: result.pubkey,
+                account: .init(
+                    lamports: result.account.lamports,
+                    owner: result.account.owner,
+                    data: T(from: &binaryReader),
+                    executable: result.account.executable,
+                    rentEpoch: result.account.rentEpoch
+                )
+            )
+        }
     }
 
     func getMinimumBalanceForRentExemption(span: UInt64) async throws -> UInt64 {

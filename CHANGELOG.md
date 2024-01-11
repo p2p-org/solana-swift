@@ -1,3 +1,8 @@
+## 5.0.0
+
+- Support token 2022 and Token2022Program.
+- Replace generic function getTokenAccountsByOwner and getTokenAccountsByDelegate by function that returned raw data. See MIGRATION.md
+
 ## 4.0.0
 
 - Rename Wallet to AccountBalance.
