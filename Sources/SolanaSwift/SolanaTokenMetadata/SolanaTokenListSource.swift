@@ -51,7 +51,7 @@ public class SolanaTokenListSourceImpl: SolanaTokenListSource {
         let tokens: [TokenMetadata] = tokenList.tokens.map {
             var item = $0
             item.tags = (item._tags ?? []).map {
-                tokenList.tags[$0] ?? TokenTag(name: $0, description: $0)
+                tokenList.tags?[$0] ?? TokenTag(name: $0, description: $0)
             }
             return item
         }
@@ -62,10 +62,10 @@ public class SolanaTokenListSourceImpl: SolanaTokenListSource {
 
 extension SolanaTokenListSourceImpl {
     struct TokensList: Codable {
-        let name: String
-        let logoURI: String
-        let keywords: [String]
-        let tags: [String: TokenTag]
+        let name: String?
+        let logoURI: String?
+        let keywords: [String]?
+        let tags: [String: TokenTag]?
         let timestamp: String
         var tokens: [TokenMetadata]
     }
