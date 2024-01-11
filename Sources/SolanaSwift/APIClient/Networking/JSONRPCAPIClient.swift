@@ -143,13 +143,13 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         return result.value
     }
 
-    public func getTokenAccountsByDelegate(
+    public func getTokenAccountsByDelegate<T: TokenAccountState>(
         pubkey: String,
         mint: String? = nil,
         programId: String? = nil,
         configs: RequestConfiguration? = nil
-    ) async throws -> [TokenAccount<Data>] {
-        try await get(
+    ) async throws -> [TokenAccount<T>] {
+        let result: Rpc<[TokenAccount<T>]> = try await get(
             method: "getTokenAccountsByDelegate",
             params: [
                 pubkey,
@@ -158,17 +158,20 @@ public class JSONRPCAPIClient: SolanaAPIClient {
                 configs,
             ]
         )
+        return result.value
     }
 
-    public func getTokenAccountsByOwner(
+    public func getTokenAccountsByOwner<T: TokenAccountState>(
         pubkey: String,
         params: OwnerInfoParams?,
-        configs: RequestConfiguration?
-    ) async throws -> [TokenAccount<Data>] {
-        try await get(
+        configs: RequestConfiguration?,
+        decodingTo _: T.Type
+    ) async throws -> [TokenAccount<T>] {
+        let result: Rpc<[TokenAccount<T>]> = try await get(
             method: "getTokenAccountsByOwner",
             params: [pubkey, params, configs]
         )
+        return result.value
     }
 
     public func getTokenLargestAccounts(pubkey: String, commitment: Commitment? = nil) async throws -> [TokenAmount] {

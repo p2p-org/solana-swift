@@ -298,20 +298,21 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
 
-    func getTokenAccountsByDelegate(
+    func getTokenAccountsByDelegate<T: TokenAccountState>(
         pubkey _: String,
         mint _: String?,
         programId _: String?,
         configs _: RequestConfiguration?
-    ) async throws -> [TokenAccount<Data>] {
+    ) async throws -> [TokenAccount<T>] {
         fatalError()
     }
 
-    func getTokenAccountsByOwner(
+    func getTokenAccountsByOwner<T: TokenAccountState>(
         pubkey _: String,
         params _: OwnerInfoParams?,
-        configs _: RequestConfiguration?
-    ) async throws -> [TokenAccount<Data>] {
+        configs _: RequestConfiguration?,
+        decodingTo _: T.Type
+    ) async throws -> [TokenAccount<T>] {
         fatalError()
     }
 
