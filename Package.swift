@@ -36,7 +36,10 @@ let package = Package(
         ),
         .testTarget(
             name: "SolanaSwiftUnitTests",
-            dependencies: ["SolanaSwift"]
+            dependencies: ["SolanaSwift"],
+            resources: [
+                .process("Resources/get_all_tokens_info.json"),
+            ]
         ),
         .testTarget(
             name: "SolanaSwiftIntegrationTests",
