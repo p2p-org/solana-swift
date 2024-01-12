@@ -1,7 +1,7 @@
 import Foundation
 
-@testable import SolanaSwift
 import XCTest
+@testable import SolanaSwift
 
 class BlockchainClientTests: XCTestCase {
     var account: KeyPair!
@@ -24,6 +24,9 @@ class BlockchainClientTests: XCTestCase {
         let toPublicKey = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
         let apiClient = MockAPIClient(testCase: #function)
         let blockchain = BlockchainClient(apiClient: apiClient)
+        let recentBlockhash = try await apiClient.getRecentBlockhash()
+
+        // Legacy
 
         let tx = try await blockchain.prepareSendingNativeSOL(
             from: account,
@@ -32,7 +35,6 @@ class BlockchainClientTests: XCTestCase {
             feePayer: account.publicKey
         )
 
-        let recentBlockhash = try await apiClient.getRecentBlockhash()
         let serializedTransaction = try blockchain.signAndSerialize(
             preparedTransaction: tx,
             recentBlockhash: recentBlockhash
@@ -42,6 +44,27 @@ class BlockchainClientTests: XCTestCase {
         XCTAssertEqual(
             serializedTransaction,
             "AYqN18ZDaJtv61HxaIUnmtK0f+ST/HaO3YzAOBjwtG9Qf/Td58DSe5zS5nyx9InT+UyLIZbb4nFE/XYrWfHKCwQBAAEDJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsVQai+mnMv4ueKX0uXJIyAIv0UeTX3PGhu9bYIRBgH+2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuN92Q8S3ViiBKFjrCz0SjRSx6JhG5pY6fuBlpw98caYBAgIAAQwCAAAAZAAAAAAAAAA="
+        )
+
+        // Versioned
+
+        let txVersioned = try await blockchain.prepareSendingNativeSOL(
+            from: account,
+            to: toPublicKey,
+            amount: 100,
+            feePayer: account.publicKey,
+            resultType: PreparedVersionedTransaction.self
+        )
+
+        let serializedVersionedTransaction = try blockchain.signAndSerialize(
+            preparedTransaction: txVersioned,
+            recentBlockhash: recentBlockhash
+        )
+
+        XCTAssertEqual(txVersioned.expectedFee, tx.expectedFee)
+        XCTAssertEqual(
+            serializedVersionedTransaction,
+            serializedTransaction
         )
     }
 
@@ -49,6 +72,7 @@ class BlockchainClientTests: XCTestCase {
         let toPublicKey = "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm"
         let apiClient = MockAPIClient(testCase: #function)
         let blockchain = BlockchainClient(apiClient: apiClient)
+        let recentBlockhash = try await apiClient.getRecentBlockhash()
 
         let tx = try await blockchain.prepareSendingNativeSOL(
             from: account,
@@ -57,7 +81,6 @@ class BlockchainClientTests: XCTestCase {
             feePayer: account.publicKey
         )
 
-        let recentBlockhash = try await apiClient.getRecentBlockhash()
         let serializedTransaction = try blockchain.signAndSerialize(
             preparedTransaction: tx,
             recentBlockhash: recentBlockhash
@@ -67,6 +90,25 @@ class BlockchainClientTests: XCTestCase {
         XCTAssertEqual(
             serializedTransaction,
             "AYqN18ZDaJtv61HxaIUnmtK0f+ST/HaO3YzAOBjwtG9Qf/Td58DSe5zS5nyx9InT+UyLIZbb4nFE/XYrWfHKCwQBAAEDJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsVQai+mnMv4ueKX0uXJIyAIv0UeTX3PGhu9bYIRBgH+2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuN92Q8S3ViiBKFjrCz0SjRSx6JhG5pY6fuBlpw98caYBAgIAAQwCAAAAZAAAAAAAAAA="
+        )
+
+        let txVersioned = try await blockchain.prepareSendingNativeSOL(
+            from: account,
+            to: toPublicKey,
+            amount: 100,
+            feePayer: account.publicKey,
+            resultType: PreparedVersionedTransaction.self
+        )
+
+        let serializedVersionedTransaction = try blockchain.signAndSerialize(
+            preparedTransaction: txVersioned,
+            recentBlockhash: recentBlockhash
+        )
+
+        XCTAssertEqual(tx.expectedFee, .init(transaction: 5000, accountBalances: 0))
+        XCTAssertEqual(
+            serializedVersionedTransaction,
+            serializedTransaction
         )
     }
 
@@ -119,12 +161,68 @@ class BlockchainClientTests: XCTestCase {
             expectedFee: .init(transaction: 5000, accountBalances: 0),
             expectedSerializedTransaction: "ATfyE+TZcxsXHnQzWgqgCpsJ3hVmYteZYBnsBS4KGNH5zJcw8QL49tWztgIssBXk8j5aW4jWi4mFWM7ZAbT/rw4BAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKldK0fNaK6EJyL45ciI7x9wC9uwOhoblHsR+lp+1bX0OAEDAwECAAkD6AMAAAAAAAA="
         )
+
+        // VERSIONED
+        // TESTS: SEND TO NATIVE SOL ACCOUNT (AUTO FIND AND CHECK SPL TOKEN ACCOUNT FROM OWNER NATIVE SOL ACCOUNT)
+
+        // Test1: for address that has no funds no usdc account
+        try await doSendSPLTokenTest(
+            testCase: #function + "#1",
+            destination: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+            amount: 0.001,
+            preparedTransactionType: PreparedVersionedTransaction.self,
+            expectedFee: .init(transaction: 5000, accountBalances: 2_039_280),
+            expectedSerializedTransaction: "AYMEskYoYyUUFfAOOBVge/ZvKsdnThz6h8SD9fjwhMrlzdyJqOHWd1E/TNwtASCdkG2tb6+mKwvPbTmfvpDJ/gUBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsV6z8KtZmvbVqZpAcS9akND4i7DwzOEXd14OkugPk5Sjis0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sUGovppzL+Lnil9LlySMgCL9FHk19zxobvW2CEQYB/trG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZfhq5F8HYKBbSm7geKKfkJABMkKQSWgrHSxAVWNN0/7wCCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA=="
+        )
+
+        // Test2: for address that has no funds but has usdc
+        try await doSendSPLTokenTest(
+            testCase: #function + "#2",
+            destination: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+            amount: 0.001,
+            preparedTransactionType: PreparedVersionedTransaction.self,
+            expectedFee: .init(transaction: 5000, accountBalances: 0),
+            expectedSerializedTransaction: "AcmZrbta/yeGExv0eP4fVbdNNZGplCRvXDmlfoxNHh6ycwtCSFuPXUBOWyrZfMpEofvsm2yGTIyBt+YR6efJlQIBAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkrJVtPUbEv94VNs3mRIzbJPOl5IOElFA5abYNNphafAwEDAwECAAkD6AMAAAAAAAA="
+        )
+
+        // Test3: for address that has funds but doesn't have usdc
+        try await doSendSPLTokenTest(
+            testCase: #function + "#3",
+            destination: "5n3vrofk2Cj2zEUm7Bq4eT6GNbw8Hyq8EFdWJX2yXPbh",
+            amount: 0.001,
+            preparedTransactionType: PreparedVersionedTransaction.self,
+            expectedFee: .init(transaction: 5000, accountBalances: 2_039_280),
+            expectedSerializedTransaction: "AdFz8FoWp+YjJVuR0hPx4CKcDdpV36IsfbQXfSrMDWXqSOzOIlRp2rY2b4lRgB8VcXqmwpxcXGDGxVGFdU4JMAEBAAYJJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsXfmyqCexcvWjX327oQJDPaq1QcjeU6DhBOBHkowzTMxys0aQm3mACZwx0qmTJR8WAhAmhoXy0B+vDEdgGHBP5sRvkyC6kCcd7AsWv0bpvAPPFAp4Byt86SKMMioFAVLcTG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZM+I2hl0m6ASxaD/BXAGtM5jr5pKui/izvz+3UR6SIT8CCAcAAQMEBQYHAAYDAgEACQPoAwAAAAAAAA=="
+        )
+
+        // Test4: for address that has funds and has usdc
+        try await doSendSPLTokenTest(
+            testCase: #function + "#4",
+            destination: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
+            amount: 0.001,
+            preparedTransactionType: PreparedVersionedTransaction.self,
+            expectedFee: .init(transaction: 5000, accountBalances: 0),
+            expectedSerializedTransaction: "AYZTxeufMDUP3SaAKy1V0B7LsQfO/oUpkGW/VlbD5K9KdYHdumis1YARp5VmkOye3GHuH41gfQPVvq6cibyVfwYBAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKmdjDa7+mojnL/9tFXOHQHyRb2yoOh+Mrxn+Yekjd3s0AEDAwECAAkD6AMAAAAAAAA="
+        )
+
+        // TESTS: SEND DIRECTLY TO SPL TOKEN ACCOUNT
+
+        // Test5: directly to spl token account
+        try await doSendSPLTokenTest(
+            testCase: #function + "#5",
+            destination: "9GQV3bQP9tv7m6XgGMaixxEeEdxtFhwgABw2cxCFZoch",
+            amount: 0.001,
+            preparedTransactionType: PreparedVersionedTransaction.self,
+            expectedFee: .init(transaction: 5000, accountBalances: 0),
+            expectedSerializedTransaction: "ATfyE+TZcxsXHnQzWgqgCpsJ3hVmYteZYBnsBS4KGNH5zJcw8QL49tWztgIssBXk8j5aW4jWi4mFWM7ZAbT/rw4BAAEEJ/e5BFWJMqaTuN1LbmcQ3ile94QrPqzzX8y+j5kQCsUrNGkJt5gAmcMdKpkyUfFgIQJoaF8tAfrwxHYBhwT+bHrPwq1ma9tWpmkBxL1qQ0PiLsPDM4Rd3Xg6S6A+TlKOBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKldK0fNaK6EJyL45ciI7x9wC9uwOhoblHsR+lp+1bX0OAEDAwECAAkD6AMAAAAAAAA="
+        )
     }
 
     private func doSendSPLTokenTest(
         testCase: String,
         destination: String,
         amount: Double,
+        preparedTransactionType: PreparedTransactionType.Type = PreparedTransaction.self,
         expectedFee: FeeAmount,
         expectedSerializedTransaction: String
     ) async throws {
@@ -142,7 +240,8 @@ class BlockchainClientTests: XCTestCase {
             decimals: 6,
             from: source,
             to: destination,
-            amount: amount.toLamport(decimals: 6)
+            amount: amount.toLamport(decimals: 6),
+            resultType: preparedTransactionType
         )
         .preparedTransaction
 
@@ -408,7 +507,9 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
 
-    func observeSignatureStatus(signature _: String, timeout _: Int, delay _: Int) -> AsyncStream<PendingTransactionStatus> {
+    func observeSignatureStatus(signature _: String, timeout _: Int,
+                                delay _: Int) -> AsyncStream<PendingTransactionStatus>
+    {
         fatalError()
     }
 

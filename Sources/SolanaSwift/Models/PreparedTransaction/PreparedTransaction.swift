@@ -37,3 +37,17 @@ public struct PreparedTransaction: Equatable {
         return Base58.encode(signature.bytes)
     }
 }
+
+extension PreparedTransaction: PreparedTransactionType {
+    public init(
+        legacyTransaction transaction: Transaction,
+        signers: [KeyPair],
+        expectedFee: FeeAmount
+    ) throws {
+        self.init(transaction: transaction, signers: signers, expectedFee: expectedFee)
+    }
+
+    public mutating func setRecentBlockHash(_ blockHash: BlockHash) {
+        transaction.recentBlockhash = blockHash
+    }
+}

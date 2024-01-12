@@ -21,12 +21,12 @@ public class BlockchainClient: SolanaBlockchainClient {
     ///   - feePayer: the feePayer of the transaction
     ///   - feeCalculator: (Optional) fee custom calculator for calculating fee
     /// - Returns: PreparedTransaction, can be sent or simulated using SolanaBlockchainClient
-    public func prepareTransaction(
+    public func prepareTransaction<P: PreparedTransactionType>(
         instructions: [TransactionInstruction],
         signers: [KeyPair],
         feePayer: PublicKey,
         feeCalculator fc: FeeCalculator? = nil
-    ) async throws -> PreparedTransaction {
+    ) async throws -> P {
         // form transaction
         var transaction = Transaction(instructions: instructions, recentBlockhash: nil, feePayer: feePayer)
 
@@ -34,7 +34,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         if let fc = fc {
             feeCalculator = fc
         } else {
-            let (lps, minRentExemption) = try await (
+            let (lps, minRentExemption) = try await(
                 apiClient.getFees(commitment: nil).feeCalculator?.lamportsPerSignature,
                 apiClient.getMinimumBalanceForRentExemption(span: 165)
             )
@@ -55,7 +55,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         }
 
         // return formed transaction
-        return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
+        return try .init(legacyTransaction: transaction, signers: signers, expectedFee: expectedFee)
     }
 
     /// Create prepared transaction for sending SOL
@@ -66,12 +66,13 @@ public class BlockchainClient: SolanaBlockchainClient {
     ///   - feePayer: customm fee payer, can be omited if the authorized user is the payer
     ///    - recentBlockhash optional
     /// - Returns: PreparedTransaction, can be sent or simulated using SolanaBlockchainClient
-    public func prepareSendingNativeSOL(
+    public func prepareSendingNativeSOL<P: PreparedTransactionType>(
         from account: KeyPair,
         to destination: String,
         amount: UInt64,
-        feePayer: PublicKey? = nil
-    ) async throws -> PreparedTransaction {
+        feePayer: PublicKey? = nil,
+        resultType _: P.Type = PreparedTransaction.self
+    ) async throws -> P {
         let feePayer = feePayer ?? account.publicKey
         let fromPublicKey = account.publicKey
         if fromPublicKey.base58EncodedString == destination {
@@ -114,7 +115,7 @@ public class BlockchainClient: SolanaBlockchainClient {
     /// - Returns: (preparedTransaction: PreparedTransaction, realDestination: String), preparedTransaction can be sent
     /// or simulated using SolanaBlockchainClient, the realDestination is the real spl address of destination. Can be
     /// different from destinationAddress if destinationAddress is a native Solana address
-    public func prepareSendingSPLTokens(
+    public func prepareSendingSPLTokens<P: PreparedTransactionType>(
         account: KeyPair,
         mintAddress: String,
         decimals: Decimals,
@@ -123,8 +124,9 @@ public class BlockchainClient: SolanaBlockchainClient {
         amount: UInt64,
         feePayer: PublicKey? = nil,
         transferChecked: Bool = false,
-        minRentExemption mre: Lamports? = nil
-    ) async throws -> (preparedTransaction: PreparedTransaction, realDestination: String) {
+        minRentExemption mre: Lamports? = nil,
+        resultType _: P.Type = PreparedTransaction.self
+    ) async throws -> (preparedTransaction: P, realDestination: String) {
         let feePayer = feePayer ?? account.publicKey
 
         let minRenExemption: Lamports
@@ -199,7 +201,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         }
 
         // if not, serialize and send instructions normally
-        let preparedTransaction = try await prepareTransaction(
+        let preparedTransaction: P = try await prepareTransaction(
             instructions: instructions,
             signers: [account],
             feePayer: feePayer

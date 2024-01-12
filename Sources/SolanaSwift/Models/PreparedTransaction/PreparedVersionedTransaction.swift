@@ -12,10 +12,14 @@ public struct PreparedVersionedTransaction: Equatable {
         self.expectedFee = expectedFee
     }
 
-    public init(legacyPreparedTransaction: PreparedTransaction) throws {
-        transaction = try .init(message: .legacy(legacyPreparedTransaction.transaction.compileMessage()))
-        signers = legacyPreparedTransaction.signers
-        expectedFee = legacyPreparedTransaction.expectedFee
+    public init(
+        legacyTransaction transaction: Transaction,
+        signers: [KeyPair],
+        expectedFee: FeeAmount
+    ) throws {
+        self.transaction = try .init(message: .legacy(transaction.compileMessage()))
+        self.signers = signers
+        self.expectedFee = expectedFee
     }
 
     public mutating func sign() throws {
@@ -29,5 +33,11 @@ public struct PreparedVersionedTransaction: Equatable {
             Logger.log(event: "decodedTransaction", message: String(reflecting: transaction), logLevel: .debug)
         #endif
         return serializedTransaction
+    }
+}
+
+extension PreparedVersionedTransaction: PreparedTransactionType {
+    public mutating func setRecentBlockHash(_ blockHash: BlockHash) {
+        transaction.setRecentBlockHash(blockHash)
     }
 }
