@@ -81,6 +81,51 @@ public extension SolanaBlockchainClient {
         )
     }
 
+    /// Send preparedTransaction
+    /// - Parameter preparedTransaction: preparedTransaction to be sent
+    /// - Returns: Transaction signature
+    func sendTransaction(
+        preparedTransaction: PreparedVersionedTransaction
+    ) async throws -> String {
+        try await Task.retrying(
+            where: { $0.isEqualTo(.blockhashNotFound) },
+            maxRetryCount: 3,
+            retryDelay: 1,
+            timeoutInSeconds: 60
+        ) {
+            let recentBlockhash = try await self.apiClient.getRecentBlockhash()
+            let serializedTransaction = try self.signAndSerialize(
+                preparedTransaction: preparedTransaction,
+                recentBlockhash: recentBlockhash
+            )
+            return try await self.apiClient.sendTransaction(
+                transaction: serializedTransaction,
+                configs: RequestConfiguration(encoding: "base64")!
+            )
+        }
+        .value
+    }
+
+    /// Simulate transaction (for testing purpose)
+    /// - Parameter preparedTransaction: preparedTransaction to be simulated
+    /// - Returns: The result of Simulation
+    func simulateTransaction(
+        preparedTransaction: PreparedVersionedTransaction
+    ) async throws -> SimulationResult {
+        let recentBlockhash = try await apiClient.getRecentBlockhash()
+        let serializedTransaction = try signAndSerialize(
+            preparedTransaction: preparedTransaction,
+            recentBlockhash: recentBlockhash
+        )
+        return try await apiClient.simulateTransaction(
+            transaction: serializedTransaction, configs: RequestConfiguration(
+                commitment: "confirmed",
+                encoding: "base64",
+                replaceRecentBlockhash: true
+            )!
+        )
+    }
+
     // MARK: - Helpers
 
     /// Sign and serialize transaction (for testing purpose)
@@ -94,6 +139,21 @@ public extension SolanaBlockchainClient {
     ) throws -> String {
         var preparedTransaction = preparedTransaction
         preparedTransaction.transaction.recentBlockhash = recentBlockhash
+        try preparedTransaction.sign()
+        return try preparedTransaction.serialize()
+    }
+
+    /// Sign and serialize transaction (for testing purpose)
+    /// - Parameters:
+    ///   - preparedTransaction: preparedTransaction
+    ///   - recentBlockhash: recentBlockhash
+    /// - Returns: serializedTransaction
+    internal func signAndSerialize(
+        preparedTransaction: PreparedVersionedTransaction,
+        recentBlockhash: String
+    ) throws -> String {
+        var preparedTransaction = preparedTransaction
+        preparedTransaction.transaction.setRecentBlockHash(recentBlockhash)
         try preparedTransaction.sign()
         return try preparedTransaction.serialize()
     }
