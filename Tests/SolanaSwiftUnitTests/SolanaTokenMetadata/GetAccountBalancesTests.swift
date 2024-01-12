@@ -22,15 +22,58 @@ final class GetAccountBalancesTests: XCTestCase {
         )
     }
 
-    func testGetAccountBalancesWithToken2022() async throws {
-        let result = try await rpcClient.getAccountBalancesWithToken2022(
+    func testGetAccountBalances() async throws {
+        let result = try await rpcClient.getAccountBalances(
             for: "abctest",
+            withToken2022: false,
             tokensRepository: tokensRepository
         )
 
         XCTAssertEqual(result.unresolved.count, 0)
 
         let resolved = result.resolved
+
+        XCTAssertEqual(resolved.count, 2)
+
+        // Token
+        XCTAssertEqual(resolved[0].pubkey, "BNUGJRjzQYeGTSLPkCp4xNSH4oBDMCevpsHEfWvWMYeq")
+        XCTAssertEqual(resolved[0].lamports, 153_269_049_492)
+        XCTAssertEqual(resolved[0].token.chainId, 101)
+        XCTAssertEqual(resolved[0].token.symbol, "$DEDE")
+        XCTAssertEqual(resolved[0].token.name, "$DEDE")
+        XCTAssertEqual(resolved[0].token.decimals, 6)
+        XCTAssertEqual(
+            resolved[0].token.logoURI,
+            "https://bafkreic2m54r4fvg4a6jfuxe2pnxzkuwx75gzu2jbxw4magd2eraqhccua.ipfs.nftstorage.link"
+        )
+        XCTAssertEqual(resolved[0].token.mintAddress, "CzXyy265vDCXRysRd5nvpy9oieq2KUtx51Sz1jUMUWyE")
+        XCTAssertEqual(resolved[0].tokenProgramId, TokenProgram.id.base58EncodedString)
+        XCTAssertEqual(resolved[0].minimumBalanceForRentExemption, 2_039_280)
+
+        XCTAssertEqual(resolved[1].pubkey, "6uJPNjuLnoT6rvwj2wFLHnvbFtJqkbdvKhtdw16EabNx")
+        XCTAssertEqual(resolved[1].lamports, 4_030_896)
+        XCTAssertEqual(resolved[1].token.chainId, 101)
+        XCTAssertEqual(resolved[1].token.symbol, "BONK")
+        XCTAssertEqual(resolved[1].token.name, "Bonk")
+        XCTAssertEqual(resolved[1].token.decimals, 5)
+        XCTAssertEqual(resolved[1].token.logoURI, "https://arweave.net/hQiPZOsRZXGXBJd_82PhVdlM_hACsT_q6wqwf5cSY7I")
+        XCTAssertEqual(resolved[1].token.mintAddress, "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263")
+        XCTAssertEqual(resolved[1].tokenProgramId, TokenProgram.id.base58EncodedString)
+        XCTAssertEqual(resolved[1].minimumBalanceForRentExemption, 2_039_280)
+    }
+
+    func testGetAccountBalancesWithToken2022() async throws {
+        let result = try await rpcClient.getAccountBalances(
+            for: "abctest",
+            withToken2022: true,
+            tokensRepository: tokensRepository
+        )
+
+        XCTAssertEqual(result.unresolved.count, 0)
+
+        let resolved = result.resolved
+
+        XCTAssertEqual(resolved.count, 3)
 
         // Token
         XCTAssertEqual(resolved[0].pubkey, "BNUGJRjzQYeGTSLPkCp4xNSH4oBDMCevpsHEfWvWMYeq")

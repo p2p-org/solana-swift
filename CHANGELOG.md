@@ -8,7 +8,7 @@
 - Remove deprecated typealias AccountInfo, use SPLTokenAccountState or Token2022AccountState instead.
 - Remove deprecated typealias Mint, use SPLTokenMintState or Token2022MintState instead.
 - Remove deprecated typealias Wallet, use AccountBalance instead.
-- Add method getAccountBalancesWithToken2022.
+- Support token 2022 via method getAccountBalances (See GetAccountBalancesTests).
 - Support token 2022 and Token2022Program.
 
 ## 4.0.0

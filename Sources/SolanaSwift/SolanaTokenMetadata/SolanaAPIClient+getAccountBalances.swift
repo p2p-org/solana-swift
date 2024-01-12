@@ -1,5 +1,50 @@
 public extension SolanaAPIClient {
-    func getAccountBalances<
+    func getAccountBalances(
+        for address: String,
+        withToken2022: Bool,
+        tokensRepository: TokenRepository,
+        commitment: String = "confirmed"
+    ) async throws -> (
+        resolved: [AccountBalance],
+        unresolved: [UnknownAccountBalance]
+    ) {
+        // old token standard
+        async let oldTokenAccountsResult = getAccountBalances(
+            for: address,
+            tokensRepository: tokensRepository,
+            commitment: commitment,
+            programId: TokenProgram.id.base58EncodedString,
+            accountStateType: SPLTokenAccountState.self,
+            mintType: SPLTokenMintState.self
+        )
+
+        // token 2022
+        let token2022Accounts: (resolved: [AccountBalance], unresolved: [UnknownAccountBalance])
+        if withToken2022 {
+            async let tokens2022AccountsResult = getAccountBalances(
+                for: address,
+                tokensRepository: tokensRepository,
+                commitment: commitment,
+                programId: Token2022Program.id.base58EncodedString,
+                accountStateType: Token2022AccountState.self,
+                mintType: Token2022MintState.self
+            )
+            token2022Accounts = try await tokens2022AccountsResult
+        } else {
+            token2022Accounts = (resolved: [], unresolved: [])
+        }
+
+        // get result
+
+        return try await(
+            oldTokenAccountsResult.resolved + token2022Accounts.resolved,
+            oldTokenAccountsResult.unresolved + token2022Accounts.unresolved
+        )
+    }
+
+    // MARK: - Helpers
+
+    private func getAccountBalances<
         T: TokenAccountState,
         M: TokenMintState
     >(
@@ -33,44 +78,6 @@ public extension SolanaAPIClient {
             mintType: M.self
         )
     }
-
-    func getAccountBalancesWithToken2022(
-        for address: String,
-        tokensRepository: TokenRepository,
-        commitment: String = "confirmed"
-    ) async throws -> (
-        resolved: [AccountBalance],
-        unresolved: [UnknownAccountBalance]
-    ) {
-        // old token standard
-        async let oldTokenAccountsResult = getAccountBalances(
-            for: address,
-            tokensRepository: tokensRepository,
-            commitment: commitment,
-            programId: TokenProgram.id.base58EncodedString,
-            accountStateType: SPLTokenAccountState.self,
-            mintType: SPLTokenMintState.self
-        )
-
-        // token 2022
-        async let tokens2022AccountsResult = getAccountBalances(
-            for: address,
-            tokensRepository: tokensRepository,
-            commitment: commitment,
-            programId: Token2022Program.id.base58EncodedString,
-            accountStateType: Token2022AccountState.self,
-            mintType: Token2022MintState.self
-        )
-
-        // get result
-
-        return try await(
-            oldTokenAccountsResult.resolved + tokens2022AccountsResult.resolved,
-            oldTokenAccountsResult.unresolved + tokens2022AccountsResult.unresolved
-        )
-    }
-
-    // MARK: - Helpers
 
     private func convertResult<
         T: TokenAccountState,
