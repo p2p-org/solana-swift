@@ -20,6 +20,9 @@ extension Token2022MintState: BorshCodable {
         isInitialized = oldTokenMintState.isInitialized
         freezeAuthorityOption = oldTokenMintState.freezeAuthorityOption
         freezeAuthority = oldTokenMintState.freezeAuthority
+
+        _ = try reader.read(count: 83) // padding
+        _ = try reader.read(count: 1) // account type
     }
 
     public func serialize(to writer: inout Data) throws {

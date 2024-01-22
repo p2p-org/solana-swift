@@ -75,5 +75,7 @@ extension Token2022AccountState: BorshCodable {
         delegatedAmount = oldTokenProgramData.delegatedAmount
         closeAuthorityOption = oldTokenProgramData.closeAuthorityOption
         closeAuthority = oldTokenProgramData.closeAuthority
+
+        _ = try reader.read(count: 1) // account type
     }
 }
