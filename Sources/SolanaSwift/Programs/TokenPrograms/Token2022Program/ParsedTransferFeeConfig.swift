@@ -4,9 +4,9 @@ public struct ParsedTransferFeeConfig: Codable {
     public static let name: String = "transferFeeConfig"
 
     public struct TransferFee: Codable {
-        let epoch: UInt64
-        let maximumFee: UInt64
-        let transferFeeBasisPoints: UInt64
+        public let epoch: UInt64
+        public let maximumFee: UInt64
+        public let transferFeeBasisPoints: UInt64
     }
 
     public let newerTransferFee, olderTransferFee: TransferFee
