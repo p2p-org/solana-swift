@@ -43,6 +43,15 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         }
     }
 
+    public func getAccountInfoJsonParsed(account: String) async throws -> Any {
+        let request = RequestEncoder.RequestType(method: "getAccountInfo", params: [
+            account,
+            RequestConfiguration(encoding: "jsonParsed"),
+        ])
+        let data = try await makeRequest(request: request)
+        return try JSONSerialization.jsonObject(with: data)
+    }
+
     public func getBlockHeight() async throws -> UInt64 {
         try await get(method: "getBlockHeight", params: [])
     }

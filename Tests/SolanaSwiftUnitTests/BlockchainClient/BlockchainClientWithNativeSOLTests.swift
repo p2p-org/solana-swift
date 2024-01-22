@@ -146,6 +146,10 @@ private class MockAPIClient: SolanaAPIClient {
         }
         return BufferInfo<T>(lamports: lamports, owner: owner, data: data, executable: executable, rentEpoch: rentEpoch)
     }
+    
+    public func getAccountInfoJsonParsed(account: String) async throws -> Any {
+        fatalError()
+    }
 
     func getFees(commitment _: Commitment?) async throws -> Fee {
         let blockhash: String

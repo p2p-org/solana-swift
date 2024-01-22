@@ -10,6 +10,7 @@
 - Remove deprecated typealias Wallet, use AccountBalance instead.
 - Support token 2022 via method getAccountBalances (See GetAccountBalancesTests).
 - Support token 2022 and Token2022Program.
+- Support receive token 2022 extensions via parsedJSON encoding.
 
 ## 4.0.0
 

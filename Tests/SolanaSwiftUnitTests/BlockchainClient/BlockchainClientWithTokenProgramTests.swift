@@ -18,6 +18,22 @@ final class BlockchainClientWithTokenProgramTests: XCTestCase {
         account = nil
     }
 
+    func testGetBearingInterest() async throws {
+        let client = BlockchainClient(apiClient: MockAPIClient(testCase: #function))
+        let extensions = try await client.getTokenExtensions(for: "CKfatsPMUf8SkiURsDXs7eK6GWb4Jsd6UDbs7twMCWxo")
+        let config = try client.getTransferTokenConfig(extensions)
+
+        XCTAssertEqual(config?.transferFeeConfigAuthority, "7MyTjmRygJoCuDBUtAuSugiYZFULD2SWaoUTmtjtRDzD")
+        XCTAssertEqual(config?.withdrawWithheldAuthority, "7MyTjmRygJoCuDBUtAuSugiYZFULD2SWaoUTmtjtRDzD")
+        XCTAssertEqual(config?.withheldAmount, 27_678_712_834)
+        XCTAssertEqual(config?.newerTransferFee.epoch, 457)
+        XCTAssertEqual(config?.newerTransferFee.maximumFee, 3_906_250_000_000_000_000)
+        XCTAssertEqual(config?.newerTransferFee.transferFeeBasisPoints, 690)
+        XCTAssertEqual(config?.olderTransferFee.epoch, 455)
+        XCTAssertEqual(config?.olderTransferFee.maximumFee, 3_906_250_000_000_000_000)
+        XCTAssertEqual(config?.olderTransferFee.transferFeeBasisPoints, 0)
+    }
+
     func testPrepareSendingSPLTokens() async throws {
         // TESTS: SEND TO NATIVE SOL ACCOUNT (AUTO FIND AND CHECK SPL TOKEN ACCOUNT FROM OWNER NATIVE SOL ACCOUNT)
 
@@ -182,6 +198,16 @@ private class MockAPIClient: SolanaAPIClient {
             fatalError()
         }
         return BufferInfo<T>(lamports: lamports, owner: owner, data: data, executable: executable, rentEpoch: rentEpoch)
+    }
+
+    public func getAccountInfoJsonParsed(account: String) async throws -> Any {
+        if account == "CKfatsPMUf8SkiURsDXs7eK6GWb4Jsd6UDbs7twMCWxo" {
+            return try JSONSerialization.jsonObject(with: """
+            {"jsonrpc":"2.0","result":{"context":{"apiVersion":"1.17.16","slot":243428293},"value":{"data":{"parsed":{"info":{"decimals":5,"extensions":[{"extension":"transferFeeConfig","state":{"newerTransferFee":{"epoch":457,"maximumFee":3906250000000000000,"transferFeeBasisPoints":690},"olderTransferFee":{"epoch":455,"maximumFee":3906250000000000000,"transferFeeBasisPoints":0},"transferFeeConfigAuthority":"7MyTjmRygJoCuDBUtAuSugiYZFULD2SWaoUTmtjtRDzD","withdrawWithheldAuthority":"7MyTjmRygJoCuDBUtAuSugiYZFULD2SWaoUTmtjtRDzD","withheldAmount":27678712834}}],"freezeAuthority":"7MyTjmRygJoCuDBUtAuSugiYZFULD2SWaoUTmtjtRDzD","isInitialized":true,"mintAuthority":null,"supply":"99218869185231"},"type":"mint"},"program":"spl-token-2022","space":278},"executable":false,"lamports":10574116480,"owner":"TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb","rentEpoch":0,"space":278}},"id":1}
+            """.data(using: .utf8)!)
+        } else {
+            fatalError()
+        }
     }
 
     func getFees(commitment _: Commitment?) async throws -> Fee {

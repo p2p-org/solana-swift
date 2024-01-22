@@ -81,6 +81,46 @@ public extension SolanaBlockchainClient {
         )
     }
 
+    func getTokenExtensions(for mint: String) async throws -> [[String: Any]] {
+        let response = try await apiClient.getAccountInfoJsonParsed(account: mint)
+
+        guard
+            let rpcResponse = response as? [String: Any],
+            let result = rpcResponse["result"] as? [String: Any],
+            let value = result["value"] as? [String: Any],
+            let data = value["data"] as? [String: Any],
+            let parsed = data["parsed"] as? [String: Any],
+            let info = parsed["info"] as? [String: Any],
+            let extensions = info["extensions"] as? [[String: Any]]
+        else {
+            return []
+        }
+
+        return extensions
+    }
+
+    func getExtension<T: Decodable>(for name: String, extensions: [[String: Any]]) throws -> T? {
+        for _extension in extensions {
+            if
+                name == _extension["extension"] as? String,
+                let state = _extension["state"]
+            {
+                let data = try JSONSerialization.data(withJSONObject: state)
+                return try JSONDecoder().decode(T.self, from: data)
+            }
+        }
+
+        return nil
+    }
+
+    func getTransferTokenConfig(_ extensions: [[String: Any]]) throws -> ParsedTransferFeeConfig? {
+        try getExtension(for: ParsedTransferFeeConfig.name, extensions: extensions)
+    }
+
+    func getBearingTokenConfig(_ extensions: [[String: Any]]) throws -> ParsedInterestBearingConfig? {
+        try getExtension(for: ParsedInterestBearingConfig.name, extensions: extensions)
+    }
+
     // MARK: - Helpers
 
     /// Sign and serialize transaction (for testing purpose)

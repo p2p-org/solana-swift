@@ -14,6 +14,15 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
     ///
     func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>?
+    
+    /// Returns all information associated with the account of provided Pubkey. Use jsonParsed encoding.
+    /// - Parameters:
+    ///  - account: Pubkey of account to query, as base-58 encoded string
+    /// - Throws: APIClientError
+    /// - Returns The result will be an BufferInfo
+    /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
+    ///
+    func getAccountInfoJsonParsed(account: String) async throws -> Any
 
     /// Returns all information associated with the account of provided Pubkey
     /// - Parameters:

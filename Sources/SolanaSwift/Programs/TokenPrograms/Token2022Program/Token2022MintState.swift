@@ -1,5 +1,7 @@
 import Foundation
 
+/// Get token 2022 mint account state.
+/// Use `ParsedToken2022MintState` if encoding is parsedJSON
 public struct Token2022MintState: TokenMintState {
     public let mintAuthorityOption: UInt32
     public let mintAuthority: PublicKey?
