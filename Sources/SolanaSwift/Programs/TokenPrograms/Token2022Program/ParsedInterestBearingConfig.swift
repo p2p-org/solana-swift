@@ -1,7 +1,7 @@
 import Foundation
 
 public struct ParsedInterestBearingConfig: Codable {
-    static let name: String = "interestBearingConfig"
+    public static let name: String = "interestBearingConfig"
     
     public let currentRate: Int64
     public let preUpdateAverageRate: Int64
