@@ -48,7 +48,6 @@ class BufferLayoutTests: XCTestCase {
 
     // MARK: - Account info
 
-    
     func testDecodingAccountInfo() throws {
         XCTAssertEqual(SPLTokenAccountState.BUFFER_LENGTH, 165)
 
@@ -167,5 +166,37 @@ class BufferLayoutTests: XCTestCase {
         let data = Data(base64Encoded: string)!
         var binaryReader = BinaryReader(bytes: data.bytes)
         let _ = try EmptyInfo(from: &binaryReader)
+    }
+
+    // MARK: - Token2022
+
+    func testDecodingToken2022MintState() throws {
+        let string =
+            "AAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6XUTVg3ktAAAFAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6N5bilgAAAAASAgAAAAAAAAAgPYh5LQAALAESAgAAAAAAAAAgPYh5LQAALAE="
+        let data = Data(base64Encoded: string)!
+        var binaryReader = BinaryReader(bytes: data.bytes)
+        let state = try Token2022MintState(from: &binaryReader)
+
+        XCTAssertEqual(state.extensions.count, 1)
+    }
+
+    func testDecodingToken2022MintState2() throws {
+        let string =
+            "AAAAAAqd+/BkAIWrREJAlO8riSEDAskpXTfDsO0VupwIAiDvhhG9Du1aAAAFAQEAAAAKnfvwZACFq0RCQJTvK4khAwLJKV03w7DtFbqcCAIg7wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQMAIAAKnfvwZACFq0RCQJTvK4khAwLJKV03w7DtFbqcCAIg7wEAbAAKnfvwZACFq0RCQJTvK4khAwLJKV03w7DtFbqcCAIg7wqd+/BkAIWrREJAlO8riSEDAskpXTfDsO0VupwIAiDvei271GcAAAAlAgAAAAAAAAAAAAAAAAAAkAEqAgAAAAAAAP//////////kAESAEAACp378GQAhatEQkCU7yuJIQMCySldN8Ow7RW6nAgCIO9jaESlF9ipUf/nNuF4/OCfeiXPLHDyX+/00naFdXdqyBMArAIKnfvwZACFq0RCQJTvK4khAwLJKV03w7DtFbqcCAIg7wqd+++LUZes7mU1pgsecBo43MtHryn3/Uofjd6kUAh2DgAAAEluZGV4ZWQgU29sYW5hBAAAAGlTT0woAAAAaHR0cHM6Ly9pcGZzLmx1Y2lkcHVua3NuZnQuY29tL2lzb2wuanNvbgcAAAADAAAAdXJsDwAAAGh0dHBzOi8vaXNvbC5zbwUAAABpbWFnZScAAABodHRwczovL2lwZnMubHVjaWRwdW5rc25mdC5jb20vaXNvbC5wbmcLAAAAZGVzY3JpcHRpb24YAQAAVGhlIGZpcnN0IFNvbGFuYSBJbmRleCBUb2tlbi4gaVNPTCBpcyBhbiBTUEwgdG9rZW4gcGVnZ2VkIHRvIHRoZSBTUExzIG9mIHRoZSBsZWFkaW5nIFNvbGFuYSBlY29zeXN0ZW0gcHJvamVjdHMgdmlhIHNoYXJlZCBsaXF1aWRpdHkgcG9vbCBwb3NpdGlvbnMuIENvbW11bml0eSBhZGRlZCBsaXF1aWRpdHkgdG8gc3RyZW5ndGhlbiB0aGUgcGFpciBvZiBpU09MIHRvIHRoZSBtb3N0IHByb21pc2luZyBTb2xhbmEgZWNvc3lzdGVtIHRva2Vucy4gT25lIHRva2VuIHRvIHJpZGUgdGhlbSBhbGwuLgcAAAB0d2l0dGVyHgAAAGh0dHBzOi8vdHdpdHRlci5jb20vTHVjaWRQdW5rcwEAAAB4GAAAAGh0dHBzOi8veC5jb20vTHVjaWRQdW5rcwYAAABtZWRpdW0hAAAAaHR0cHM6Ly9tZWRpdW0uY29tL0BMdWNpZFB1bmtzTkZUBwAAAGRpc2NvcmQdAAAAaHR0cHM6Ly9kaXNjb3JkLmdnL2x1Y2lkcHVua3M="
+        let data = Data(base64Encoded: string)!
+        var binaryReader = BinaryReader(bytes: data.bytes)
+        let state = try Token2022MintState(from: &binaryReader)
+
+        XCTAssertEqual(state.extensions.count, 4)
+    }
+
+    func testDecodingToken2022AccountState() throws {
+        let string =
+            "c8d675Tc8/enuGEbVogbaWoW6iY9JFkJIswLnf/gvCXDAcw04n4gWtOj5P12Rb7RAxY9RRwFQOwFWCWPS3OnJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcAAAA="
+        let data = Data(base64Encoded: string)!
+        var binaryReader = BinaryReader(bytes: data.bytes)
+        let state = try Token2022AccountState(from: &binaryReader)
+
+        XCTAssertEqual(state.extensions.count, 1)
     }
 }
