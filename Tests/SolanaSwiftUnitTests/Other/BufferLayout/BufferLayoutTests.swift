@@ -189,8 +189,32 @@ class BufferLayoutTests: XCTestCase {
         let state = try Token2022MintState(from: &binaryReader)
 
         XCTAssertEqual(state.extensions.count, 3)
-        XCTAssertTrue(state.extensions[0].state is TransferFeeConfigExtensionState)
-        XCTAssertTrue(state.extensions[1].state is InterestBearingConfigExtensionState)
+
+        let transferConfig = state.getExtension(
+            ofType: TransferFeeConfigExtensionState.self
+        )
+
+        XCTAssertEqual(transferConfig?.length, 108)
+        XCTAssertEqual(transferConfig?.transferFeeConfigAuthority, "11111111111111111111111111111111")
+        XCTAssertEqual(transferConfig?.withdrawWithHeldAuthority, "11111111111111111111111111111111")
+        XCTAssertEqual(transferConfig?.withheldAmount, 1_299_782_865_324_245_038)
+        XCTAssertEqual(transferConfig?.olderTransferFee.epoch, 489)
+        XCTAssertEqual(transferConfig?.olderTransferFee.maximumFee, 8_888_888_888_888_889_344)
+        XCTAssertEqual(transferConfig?.olderTransferFee.transferFeeBasisPoints, 300)
+        XCTAssertEqual(transferConfig?.newerTransferFee.epoch, 489)
+        XCTAssertEqual(transferConfig?.newerTransferFee.maximumFee, 8_888_888_888_888_889_344)
+        XCTAssertEqual(transferConfig?.newerTransferFee.transferFeeBasisPoints, 300)
+
+        let interestBearingConfig = state.getExtension(
+            ofType: InterestBearingConfigExtensionState.self
+        )
+
+        XCTAssertEqual(interestBearingConfig?.length, 52)
+        XCTAssertEqual(interestBearingConfig?.rateAuthority, "2a9H7uNfUxt7YdS5yH3ZEijdPqpeBtyq7JPtVyi6XKtk")
+        XCTAssertEqual(interestBearingConfig?.initializationTimestamp, 1_692_005_389)
+        XCTAssertEqual(interestBearingConfig?.preUpdateAverageRate, 0)
+        XCTAssertEqual(interestBearingConfig?.lastUpdateTimestamp, 1_692_005_389)
+        XCTAssertEqual(interestBearingConfig?.currentRate, 0)
     }
 
     func testDecodingToken2022AccountState() throws {
