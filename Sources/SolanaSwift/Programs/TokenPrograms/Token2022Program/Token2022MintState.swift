@@ -11,8 +11,9 @@ public struct Token2022MintState: TokenMintState {
 
     public var extensions: [AnyToken2022ExtensionState]
 
-    public func getExtension<T: Token2022ExtensionState>(ofType _: T.Type) -> T? {
-        extensions.first(where: { $0.state is T })?.state as? T
+    public func getParsedExtension<T: Token2022ExtensionState>(ofType _: T.Type) -> T? {
+        assert(T.self != UnparsedExtensionState.self)
+        return extensions.first(where: { $0.state is T })?.state as? T
     }
 }
 

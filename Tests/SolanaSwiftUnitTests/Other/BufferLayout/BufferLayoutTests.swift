@@ -190,7 +190,7 @@ class BufferLayoutTests: XCTestCase {
 
         XCTAssertEqual(state.extensions.count, 3)
 
-        let transferConfig = state.getExtension(
+        let transferConfig = state.getParsedExtension(
             ofType: TransferFeeConfigExtensionState.self
         )
 
@@ -205,7 +205,7 @@ class BufferLayoutTests: XCTestCase {
         XCTAssertEqual(transferConfig?.newerTransferFee.maximumFee, 8_888_888_888_888_889_344)
         XCTAssertEqual(transferConfig?.newerTransferFee.transferFeeBasisPoints, 300)
 
-        let interestBearingConfig = state.getExtension(
+        let interestBearingConfig = state.getParsedExtension(
             ofType: InterestBearingConfigExtensionState.self
         )
 
