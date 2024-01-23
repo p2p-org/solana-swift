@@ -1,6 +1,6 @@
 import Foundation
 
-enum ExtensionType: UInt16 {
+public enum ExtensionType: UInt16, Codable, Hashable {
     /// Used as padding if the account size would otherwise be 355, same as a
     /// multisig
     case Uninitialized

@@ -8,6 +8,8 @@ public struct Token2022MintState: TokenMintState {
     public let isInitialized: Bool
     public let freezeAuthorityOption: UInt32
     public let freezeAuthority: PublicKey?
+
+    public var extensions: [AnyToken2022ExtensionState]
 }
 
 extension Token2022MintState: BorshCodable {
@@ -21,12 +23,27 @@ extension Token2022MintState: BorshCodable {
         freezeAuthorityOption = oldTokenMintState.freezeAuthorityOption
         freezeAuthority = oldTokenMintState.freezeAuthority
 
+        guard reader.cursor < reader.bytes.count else {
+            extensions = []
+            return
+        }
+
         _ = try reader.read(count: 83) // padding
-        _ = try reader.read(count: 1) // account type
+        _ = try reader.read(count: 1) // mint type
+
+        var extensions = [AnyToken2022ExtensionState]()
+        repeat {
+            let ext = try AnyToken2022ExtensionState(from: &reader)
+            extensions.append(ext)
+        } while reader.cursor < reader.bytes.count
+
+        self.extensions = extensions
     }
 
     public func serialize(to writer: inout Data) throws {
         try serializeCommonProperties(to: &writer)
-        // TODO: - Serialize token-2022 extensions here
+        for ext in extensions {
+            try ext.serialize(to: &writer)
+        }
     }
 }
