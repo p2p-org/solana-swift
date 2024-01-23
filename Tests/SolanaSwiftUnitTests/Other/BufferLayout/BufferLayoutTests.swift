@@ -48,7 +48,6 @@ class BufferLayoutTests: XCTestCase {
 
     // MARK: - Account info
 
-    
     func testDecodingAccountInfo() throws {
         XCTAssertEqual(SPLTokenAccountState.BUFFER_LENGTH, 165)
 
@@ -167,5 +166,64 @@ class BufferLayoutTests: XCTestCase {
         let data = Data(base64Encoded: string)!
         var binaryReader = BinaryReader(bytes: data.bytes)
         let _ = try EmptyInfo(from: &binaryReader)
+    }
+
+    // MARK: - Token2022
+
+    func testDecodingToken2022MintState() throws {
+        let string =
+            "AAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6XUTVg3ktAAAFAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6N5bilgAAAAASAgAAAAAAAAAgPYh5LQAALAESAgAAAAAAAAAgPYh5LQAALAE="
+        let data = Data(base64Encoded: string)!
+        var binaryReader = BinaryReader(bytes: data.bytes)
+        let state = try Token2022MintState(from: &binaryReader)
+
+        XCTAssertEqual(state.extensions.count, 1)
+    }
+
+    func testDecodingToken2022MintState2() throws {
+        // Mint FZYEgCWzzedxcmxYvGXSkMrj7TaA3bXoaEv6XMnwtLKh
+        let string =
+            "AAAAABdZNqd8UPqRoeBHXdhoEwzZNLf6UnDQ1UDsr4oXimfhquOLA1BVIXECAQAAAAAXWTanfFD6kaHgR13YaBMM2TS3+lJw0NVA7K+KF4pn4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALoDKJKHBCRLpAQAAAAAAAACQI15ZrVt7LAHpAQAAAAAAAACQI15ZrVt7LAEKADQAF1k2p3xQ+pGh4Edd2GgTDNk0t/pScNDVQOyviheKZ+EN9NlkAAAAAAAADfTZZAAAAAAAAAYAAQAB"
+        let data = Data(base64Encoded: string)!
+        var binaryReader = BinaryReader(bytes: data.bytes)
+        let state = try Token2022MintState(from: &binaryReader)
+
+        XCTAssertEqual(state.extensions.count, 3)
+
+        let transferConfig = state.getParsedExtension(
+            ofType: TransferFeeConfigExtensionState.self
+        )
+
+        XCTAssertEqual(transferConfig?.length, 108)
+        XCTAssertEqual(transferConfig?.transferFeeConfigAuthority, "11111111111111111111111111111111")
+        XCTAssertEqual(transferConfig?.withdrawWithHeldAuthority, "11111111111111111111111111111111")
+        XCTAssertEqual(transferConfig?.withheldAmount, 1_299_782_865_324_245_038)
+        XCTAssertEqual(transferConfig?.olderTransferFee.epoch, 489)
+        XCTAssertEqual(transferConfig?.olderTransferFee.maximumFee, 8_888_888_888_888_889_344)
+        XCTAssertEqual(transferConfig?.olderTransferFee.transferFeeBasisPoints, 300)
+        XCTAssertEqual(transferConfig?.newerTransferFee.epoch, 489)
+        XCTAssertEqual(transferConfig?.newerTransferFee.maximumFee, 8_888_888_888_888_889_344)
+        XCTAssertEqual(transferConfig?.newerTransferFee.transferFeeBasisPoints, 300)
+
+        let interestBearingConfig = state.getParsedExtension(
+            ofType: InterestBearingConfigExtensionState.self
+        )
+
+        XCTAssertEqual(interestBearingConfig?.length, 52)
+        XCTAssertEqual(interestBearingConfig?.rateAuthority, "2a9H7uNfUxt7YdS5yH3ZEijdPqpeBtyq7JPtVyi6XKtk")
+        XCTAssertEqual(interestBearingConfig?.initializationTimestamp, 1_692_005_389)
+        XCTAssertEqual(interestBearingConfig?.preUpdateAverageRate, 0)
+        XCTAssertEqual(interestBearingConfig?.lastUpdateTimestamp, 1_692_005_389)
+        XCTAssertEqual(interestBearingConfig?.currentRate, 0)
+    }
+
+    func testDecodingToken2022AccountState() throws {
+        let string =
+            "c8d675Tc8/enuGEbVogbaWoW6iY9JFkJIswLnf/gvCXDAcw04n4gWtOj5P12Rb7RAxY9RRwFQOwFWCWPS3OnJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcAAAA="
+        let data = Data(base64Encoded: string)!
+        var binaryReader = BinaryReader(bytes: data.bytes)
+        let state = try Token2022AccountState(from: &binaryReader)
+
+        XCTAssertEqual(state.extensions.count, 1)
     }
 }

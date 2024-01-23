@@ -17,6 +17,8 @@ public struct Token2022AccountState: TokenAccountState {
     public let closeAuthorityOption: UInt32
     public var closeAuthority: PublicKey?
 
+    public var extensions: [AnyToken2022ExtensionState]
+
     public init(
         mint: PublicKey,
         owner: PublicKey,
@@ -32,7 +34,8 @@ public struct Token2022AccountState: TokenAccountState {
         isNative: Bool,
         delegatedAmount: UInt64,
         closeAuthorityOption: UInt32,
-        closeAuthority: PublicKey? = nil
+        closeAuthority: PublicKey? = nil,
+        extensions: [AnyToken2022ExtensionState] = []
     ) {
         self.mint = mint
         self.owner = owner
@@ -49,13 +52,16 @@ public struct Token2022AccountState: TokenAccountState {
         self.delegatedAmount = delegatedAmount
         self.closeAuthorityOption = closeAuthorityOption
         self.closeAuthority = closeAuthority
+        self.extensions = extensions
     }
 }
 
 extension Token2022AccountState: BorshCodable {
     public func serialize(to writer: inout Data) throws {
         try serializeCommonProperties(to: &writer)
-        // TODO: - Serialize token-2022 extensions here
+        for ext in extensions {
+            try ext.serialize(to: &writer)
+        }
     }
 
     public init(from reader: inout BinaryReader) throws {
@@ -75,5 +81,20 @@ extension Token2022AccountState: BorshCodable {
         delegatedAmount = oldTokenProgramData.delegatedAmount
         closeAuthorityOption = oldTokenProgramData.closeAuthorityOption
         closeAuthority = oldTokenProgramData.closeAuthority
+
+        guard reader.cursor < reader.bytes.count else {
+            extensions = []
+            return
+        }
+
+        _ = try reader.read(count: 1) // account type
+
+        var extensions = [AnyToken2022ExtensionState]()
+        repeat {
+            let ext = try AnyToken2022ExtensionState(from: &reader)
+            extensions.append(ext)
+        } while reader.cursor < reader.bytes.count
+
+        self.extensions = extensions
     }
 }
