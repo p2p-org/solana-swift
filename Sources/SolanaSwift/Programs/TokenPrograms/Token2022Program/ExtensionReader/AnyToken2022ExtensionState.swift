@@ -55,6 +55,8 @@ public struct AnyToken2022ExtensionState: BorshCodable, Codable, Equatable, Hash
         switch type {
         case .transferFeeConfig:
             state = try TransferFeeConfigExtensionState(from: &reader)
+        case .interestBearingConfig:
+            state = try InterestBearingConfigExtensionState(from: &reader)
         default:
             state = try UnparsedExtensionState(from: &reader)
         }
