@@ -62,6 +62,14 @@ public struct AnyToken2022ExtensionState: BorshCodable, Codable, Equatable, Hash
         }
     }
 
+    init(
+        type: Token2022ExtensionType,
+        state: any Token2022ExtensionState
+    ) {
+        self.type = type
+        self.state = state
+    }
+
     public func serialize(to data: inout Data) throws {
         try type.rawValue.serialize(to: &data)
         try state.serialize(to: &data)

@@ -1,7 +1,7 @@
 import SolanaSwift
 import XCTest
 
-class BufferLayoutTests: XCTestCase {
+class BufferLayoutDecodingTests: XCTestCase {
     // MARK: - Raw data
 
     func testDecodingRawData() throws {
@@ -177,7 +177,31 @@ class BufferLayoutTests: XCTestCase {
         var binaryReader = BinaryReader(bytes: data.bytes)
         let state = try Token2022MintState(from: &binaryReader)
 
+        XCTAssertEqual(state.mintAuthorityOption, 0)
+        XCTAssertEqual(state.mintAuthority?.base58EncodedString, "LPF354oHyPWL7BoMRySPQLwfvUyqPBWpwC4R7atptrD")
+        XCTAssertEqual(state.isInitialized, true)
+        XCTAssertEqual(state.freezeAuthorityOption, 0)
+        XCTAssertEqual(state.decimals, 5)
+        XCTAssertEqual(state.supply, 49_999_926_084_701)
         XCTAssertEqual(state.extensions.count, 1)
+
+        // Assertions for the extension state
+        let extensionState = state.getParsedExtension(ofType: TransferFeeConfigExtensionState.self)!
+        XCTAssertEqual(extensionState.withheldAmount, 2_531_431_991)
+        XCTAssertEqual(
+            extensionState.transferFeeConfigAuthority.base58EncodedString,
+            "11111111111111111111111111111111"
+        )
+        XCTAssertEqual(
+            extensionState.withdrawWithHeldAuthority.base58EncodedString,
+            "LPF354oHyPWL7BoMRySPQLwfvUyqPBWpwC4R7atptrD"
+        )
+        XCTAssertEqual(extensionState.olderTransferFee.maximumFee, 50_000_000_000_000)
+        XCTAssertEqual(extensionState.olderTransferFee.epoch, 530)
+        XCTAssertEqual(extensionState.olderTransferFee.transferFeeBasisPoints, 300)
+        XCTAssertEqual(extensionState.newerTransferFee.transferFeeBasisPoints, 300)
+        XCTAssertEqual(extensionState.newerTransferFee.maximumFee, 50_000_000_000_000)
+        XCTAssertEqual(extensionState.newerTransferFee.epoch, 530)
     }
 
     func testDecodingToken2022MintState2() throws {

@@ -47,6 +47,8 @@ extension Token2022MintState: BorshCodable {
 
     public func serialize(to writer: inout Data) throws {
         try serializeCommonProperties(to: &writer)
+        try Data(repeating: UInt8(0), count: 83).serialize(to: &writer)
+        try UInt8(1).serialize(to: &writer)
         for ext in extensions {
             try ext.serialize(to: &writer)
         }

@@ -168,7 +168,7 @@ public extension SolanaAPIClient {
             isUnregisteredAsocciatedToken = true
 
             // if associated token account has been registered
-            if PublicKey.isSPLTokenOrToken2022ProgramId(info?.owner),
+            if PublicKey.isSPLTokenProgram(info?.owner),
                info?.data != nil
             {
                 isUnregisteredAsocciatedToken = false

@@ -17,6 +17,16 @@ public struct TransferFeeConfigExtensionState: Token2022ExtensionState {
             try maximumFee.serialize(to: &data)
             try transferFeeBasisPoints.serialize(to: &data)
         }
+
+        init(
+            epoch: UInt64,
+            maximumFee: UInt64,
+            transferFeeBasisPoints: UInt16
+        ) {
+            self.epoch = epoch
+            self.maximumFee = maximumFee
+            self.transferFeeBasisPoints = transferFeeBasisPoints
+        }
     }
 
     public let length: UInt16
@@ -48,5 +58,21 @@ public struct TransferFeeConfigExtensionState: Token2022ExtensionState {
         try withheldAmount.serialize(to: &data)
         try olderTransferFee.serialize(to: &data)
         try newerTransferFee.serialize(to: &data)
+    }
+
+    init(
+        length: UInt16,
+        transferFeeConfigAuthority: PublicKey,
+        withdrawWithHeldAuthority: PublicKey,
+        withheldAmount: UInt64,
+        olderTransferFee: TransferFeeConfigExtensionState.TransferFee,
+        newerTransferFee: TransferFeeConfigExtensionState.TransferFee
+    ) {
+        self.length = length
+        self.transferFeeConfigAuthority = transferFeeConfigAuthority
+        self.withdrawWithHeldAuthority = withdrawWithHeldAuthority
+        self.withheldAmount = withheldAmount
+        self.olderTransferFee = olderTransferFee
+        self.newerTransferFee = newerTransferFee
     }
 }

@@ -71,7 +71,7 @@ public extension SolanaBlockchainClient {
         do {
             let info: BufferInfo<SPLTokenAccountState>? = try await apiClient
                 .getAccountInfo(account: associatedAddress.base58EncodedString)
-            if PublicKey.isSPLTokenOrToken2022ProgramId(info?.owner),
+            if PublicKey.isSPLTokenProgram(info?.owner),
                info?.data.owner == owner
             {
                 isAssociatedTokenAddressRegistered = true

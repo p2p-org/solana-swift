@@ -59,6 +59,7 @@ public struct Token2022AccountState: TokenAccountState {
 extension Token2022AccountState: BorshCodable {
     public func serialize(to writer: inout Data) throws {
         try serializeCommonProperties(to: &writer)
+        try UInt8(0).serialize(to: &writer)
         for ext in extensions {
             try ext.serialize(to: &writer)
         }

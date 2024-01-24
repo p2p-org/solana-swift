@@ -26,4 +26,20 @@ public struct InterestBearingConfigExtensionState: Token2022ExtensionState {
         try lastUpdateTimestamp.serialize(to: &data)
         try currentRate.serialize(to: &data)
     }
+
+    init(
+        length: UInt16,
+        rateAuthority: PublicKey,
+        initializationTimestamp: Int64,
+        preUpdateAverageRate: Int16,
+        lastUpdateTimestamp: Int64,
+        currentRate: Int16
+    ) {
+        self.length = length
+        self.rateAuthority = rateAuthority
+        self.initializationTimestamp = initializationTimestamp
+        self.preUpdateAverageRate = preUpdateAverageRate
+        self.lastUpdateTimestamp = lastUpdateTimestamp
+        self.currentRate = currentRate
+    }
 }

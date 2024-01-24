@@ -1,0 +1,243 @@
+import XCTest
+@testable import SolanaSwift
+
+final class BufferLayoutEncodingTests: XCTestCase {
+    // MARK: - Mint
+
+    func testEncodingMint() throws {
+        let mintLayout = SPLTokenMintState(
+            mintAuthorityOption: 1,
+            mintAuthority: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo",
+            supply: 1_000_000_000_000,
+            decimals: 6,
+            isInitialized: true,
+            freezeAuthorityOption: 0,
+            freezeAuthority: nil
+        )
+
+        var data = Data()
+        try mintLayout.serialize(to: &data)
+
+        XCTAssertEqual(
+            data.base64EncodedString(),
+            "AQAAAAYa2dBThxVIU37ePiYYSaPft/0C+rx1siPI5GrbhT0MABCl1OgAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        )
+    }
+
+    // MARK: - Account info
+
+    func testEncodingAccountInfo() throws {
+        XCTAssertEqual(SPLTokenAccountState.BUFFER_LENGTH, 165)
+
+        let accountInfo = SPLTokenAccountState(
+            mint: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo",
+            owner: "BQWWFhzBdw2vKKBUX17NHeFbCoFQHfRARpdztPE2tDJ",
+            lamports: 100_000,
+            delegateOption: 1,
+            delegate: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
+            isInitialized: true,
+            isFrozen: false,
+            state: 1,
+            isNativeOption: 0,
+            rentExemptReserve: nil,
+            isNativeRaw: 0,
+            isNative: false,
+            delegatedAmount: 100,
+            closeAuthorityOption: 0,
+            closeAuthority: nil
+        )
+
+        var data = Data()
+        try accountInfo.serialize(to: &data)
+
+        XCTAssertEqual(
+            data.base64EncodedString(),
+            "BhrZ0FOHFUhTft4+JhhJo9+3/QL6vHWyI8jkatuFPQwCqmOzhzy1ve5l2AqL0ottCChJZ1XSIW3k3C7TaBQn7aCGAQAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWqAQAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        )
+    }
+
+    func testEncodingAccountInfo2() throws {
+        let accountInfo = SPLTokenAccountState(
+            mint: "11111111111111111111111111111111",
+            owner: "11111111111111111111111111111111",
+            lamports: 0,
+            delegateOption: 0,
+            delegate: nil,
+            isInitialized: false,
+            isFrozen: false,
+            state: 0,
+            isNativeOption: 0,
+            rentExemptReserve: nil,
+            isNativeRaw: 0,
+            isNative: false,
+            delegatedAmount: 0,
+            closeAuthorityOption: 1,
+            closeAuthority: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5"
+        )
+
+        var data = Data()
+        try accountInfo.serialize(to: &data)
+
+        XCTAssertEqual(
+            data.base64EncodedString(),
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAOt6vNDYdevCbaGxgaMzmz7yoxaVu3q9vGeCc7ytzeWq"
+        )
+    }
+
+    // MARK: - TokenSwapInfo
+
+    func testEncodingTokenSwapInfo() throws {
+        let swapInfo = TokenSwapInfo(
+            version: 1,
+            isInitialized: true,
+            nonce: 255,
+            tokenProgramId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            tokenAccountA: "3DY5BRoi2dsBW8XsBep5GXAipbDqUJwLwGxJVTcZ3Xfe",
+            tokenAccountB: "GtnU7VTM5bn2Z8LSfAa1Jz3YedeffxzkExkieFQsAjTP",
+            tokenPool: "AfwKRiMcANbPdELxAisQY3hCJg9M86fDGQMGPYGswvYX",
+            mintA: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            mintB: "BQcdHdAQW1hczDbBi9hiegXAR7A98Q9jx3X3iBBBDiq4",
+            feeAccount: "8dwNHBvcqG7eXWhDucKXTcS57k9cweopc55Mm648N8B9",
+            tradeFeeNumerator: 30,
+            tradeFeeDenominator: 10000,
+            ownerTradeFeeNumerator: 0,
+            ownerTradeFeeDenominator: 0,
+            ownerWithdrawFeeNumerator: 0,
+            ownerWithdrawFeeDenominator: 0,
+            hostFeeNumerator: 0,
+            hostFeeDenominator: 0,
+            curveType: 0,
+            payer: "11111111111111111111111111111111"
+        )
+
+        var data = Data()
+        try swapInfo.serialize(to: &data)
+
+        XCTAssertEqual(
+            data.base64EncodedString(),
+            "AQH/Bt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKkg7XoTWySqouc9rBPiFviH2xU9/fRb+6P90QcOMKupqewjVdppkaFaD9TmikzQc7KAtp/LEF9bATPPnDdGT+7Kj7KrmDRVoZN9WTu3h9wgrrN83pVvcqGHLhOtWWeWCUjG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYZqhgojuhD2D9j0JH/1UU78OyY17yIzxSctOkEdQqtVncXgwwKhJB+PCDsVtlUWWQbPgBu+MNnFskXx8qDFMwSAeAAAAAAAAABAnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        )
+    }
+
+    // MARK: - EmptyInfo
+
+    func testEncodingEmptyInfo() throws {
+        let emptyInfo = EmptyInfo()
+
+        var data = Data()
+        try emptyInfo.serialize(to: &data)
+
+        XCTAssertEqual(
+            data.base64EncodedString(),
+            ""
+        )
+    }
+
+    // MARK: - Token2022
+
+    func testEncodingToken2022MintState() throws {
+        // Create an instance of Token2022MintState with the same values as in the decoding test
+        var state = Token2022MintState(
+            mintAuthorityOption: 0,
+            mintAuthority: "LPF354oHyPWL7BoMRySPQLwfvUyqPBWpwC4R7atptrD",
+            supply: 49_999_926_084_701,
+            decimals: 5,
+            isInitialized: true,
+            freezeAuthorityOption: 0,
+            freezeAuthority: nil,
+            extensions: []
+        )
+
+        // Add an extension to the state
+        let extensionState = TransferFeeConfigExtensionState(
+            length: 108,
+            transferFeeConfigAuthority: "11111111111111111111111111111111",
+            withdrawWithHeldAuthority: "LPF354oHyPWL7BoMRySPQLwfvUyqPBWpwC4R7atptrD",
+            withheldAmount: 2_531_431_991,
+            olderTransferFee: .init(
+                epoch: 530,
+                maximumFee: 50_000_000_000_000,
+                transferFeeBasisPoints: 300
+            ),
+            newerTransferFee: .init(
+                epoch: 530,
+                maximumFee: 50_000_000_000_000,
+                transferFeeBasisPoints: 300
+            )
+        )
+        state.extensions = [
+            .init(
+                type: .transferFeeConfig,
+                state: extensionState
+            ),
+        ]
+
+        // Serialize the state
+        var data = Data()
+        try state.serialize(to: &data)
+
+        // Check if the serialized data matches the expected base64-encoded string
+        XCTAssertEqual(
+            data.base64EncodedString(),
+            "AAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6XUTVg3ktAAAFAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6N5bilgAAAAASAgAAAAAAAAAgPYh5LQAALAESAgAAAAAAAAAgPYh5LQAALAE="
+        )
+    }
+
+//    func testEncodingToken2022MintState() throws {
+//        let extensionState = TransferFeeConfigExtensionState(
+//            length: 108,
+//            transferFeeConfigAuthority: "11111111111111111111111111111111",
+//            withdrawWithHeldAuthority: "11111111111111111111111111111111",
+//            withheldAmount: 1_299_782_865_324_245_038,
+//            olderTransferFee: .init(
+//                epoch: 489,
+//                maximumFee: 8_888_888_888_888_889_344,
+//                transferFeeBasisPoints: 300
+//            ),
+//            newerTransferFee: .init(
+//                epoch: 489,
+//                maximumFee: 8_888_888_888_888_889_344,
+//                transferFeeBasisPoints: 300
+//            )
+//        )
+//
+//        let interestBearingConfig = InterestBearingConfigExtensionState(
+//            length: 52,
+//            rateAuthority: "2a9H7uNfUxt7YdS5yH3ZEijdPqpeBtyq7JPtVyi6XKtk",
+//            initializationTimestamp: 1_692_005_389,
+//            preUpdateAverageRate: 0,
+//            lastUpdateTimestamp: 1_692_005_389,
+//            currentRate: 0
+//        )
+//
+//        let state = Token2022MintState(
+//            mintAuthorityOption: <#T##UInt32#>,
+//            mintAuthority: <#T##PublicKey?#>,
+//            supply: <#T##UInt64#>,
+//            decimals: <#T##UInt8#>,
+//            isInitialized: <#T##Bool#>,
+//            freezeAuthorityOption: <#T##UInt32#>,
+//            freezeAuthority: <#T##PublicKey?#>,
+//            extensions: <#T##[AnyToken2022ExtensionState]#>
+//        )
+//
+//        var data = Data()
+//        try state.serialize(to: &data)
+//
+//        XCTAssertEqual(
+//            data.base64EncodedString(),
+//            "AAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6XUTVg3ktAAAFAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6N5bilgAAAAASAgAAAAAAAAAgPYh5LQAALAESAgAAAAAAAAAgPYh5LQAALAE="
+//        )
+//    }
+
+//
+//    func testEncodingToken2022AccountState() throws {
+//        let string =
+//            "c8d675Tc8/enuGEbVogbaWoW6iY9JFkJIswLnf/gvCXDAcw04n4gWtOj5P12Rb7RAxY9RRwFQOwFWCWPS3OnJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcAAAA="
+//        let data = Data(base64Encoded: string)!
+//        var binaryReader = BinaryReader(bytes: data.bytes)
+//        let state = try Token2022AccountState(from: &binaryReader)
+//
+//        XCTAssertEqual(state.extensions.count, 1)
+//    }
+}
