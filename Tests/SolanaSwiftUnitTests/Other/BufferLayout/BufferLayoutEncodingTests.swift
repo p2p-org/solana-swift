@@ -183,8 +183,21 @@ final class BufferLayoutEncodingTests: XCTestCase {
         )
     }
 
-//    func testEncodingToken2022MintState() throws {
-//        let extensionState = TransferFeeConfigExtensionState(
+//    func testEncodingToken2022MintState2() throws {
+//        // Mint FZYEgCWzzedxcmxYvGXSkMrj7TaA3bXoaEv6XMnwtLKh
+//        let state = Token2022MintState(
+//            mintAuthorityOption: 1,
+//            mintAuthority: "FZYEgCWzzedxcmxYvGXSkMrj7TaA3bXoaEv6XMnwtLKh",
+//            supply: 1_000_000_000_000,
+//            decimals: 10,
+//            isInitialized: true,
+//            freezeAuthorityOption: 10,
+//            freezeAuthority: nil,
+//            extensions: []
+//        )
+//
+//        // Add TransferFeeConfigExtensionState
+//        let transferConfig = TransferFeeConfigExtensionState(
 //            length: 108,
 //            transferFeeConfigAuthority: "11111111111111111111111111111111",
 //            withdrawWithHeldAuthority: "11111111111111111111111111111111",
@@ -200,7 +213,9 @@ final class BufferLayoutEncodingTests: XCTestCase {
 //                transferFeeBasisPoints: 300
 //            )
 //        )
+//        state.extensions.append(TokenExtension(type: 1, state: transferConfig))
 //
+//        // Add InterestBearingConfigExtensionState
 //        let interestBearingConfig = InterestBearingConfigExtensionState(
 //            length: 52,
 //            rateAuthority: "2a9H7uNfUxt7YdS5yH3ZEijdPqpeBtyq7JPtVyi6XKtk",
@@ -209,24 +224,16 @@ final class BufferLayoutEncodingTests: XCTestCase {
 //            lastUpdateTimestamp: 1_692_005_389,
 //            currentRate: 0
 //        )
+//        state.extensions.append(TokenExtension(type: 2, state: interestBearingConfig))
 //
-//        let state = Token2022MintState(
-//            mintAuthorityOption: <#T##UInt32#>,
-//            mintAuthority: <#T##PublicKey?#>,
-//            supply: <#T##UInt64#>,
-//            decimals: <#T##UInt8#>,
-//            isInitialized: <#T##Bool#>,
-//            freezeAuthorityOption: <#T##UInt32#>,
-//            freezeAuthority: <#T##PublicKey?#>,
-//            extensions: <#T##[AnyToken2022ExtensionState]#>
-//        )
-//
+//        // Serialize the state
 //        var data = Data()
 //        try state.serialize(to: &data)
 //
+//        // Base64 encode the serialized data and compare with the expected value
 //        XCTAssertEqual(
 //            data.base64EncodedString(),
-//            "AAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6XUTVg3ktAAAFAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT3LznRbp1toHmr0Mjv1bBjc6oSrtihgQu/PG0Sunz6N5bilgAAAAASAgAAAAAAAAAgPYh5LQAALAESAgAAAAAAAAAgPYh5LQAALAE="
+//            "AAAAABdZNqd8UPqRoeBHXdhoEwzZNLf6UnDQ1UDsr4oXimfhquOLA1BVIXECAQAAAAAXWTanfFD6kaHgR13YaBMM2TS3+lJw0NVA7K+KF4pn4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALoDKJKHBCRLpAQAAAAAAAACQI15ZrVt7LAHpAQAAAAAAAACQI15ZrVt7LAEKADQAF1k2p3xQ+pGh4Edd2GgTDNk0t/pScNDVQOyviheKZ+EN9NlkAAAAAAAADfTZZAAAAAAAAAYAAQAB"
 //        )
 //    }
 

@@ -35,7 +35,7 @@ public struct AnyToken2022ExtensionState: BorshCodable, Codable, Equatable, Hash
         case .transferFeeConfig:
             state = try container.decode(TransferFeeConfigExtensionState.self, forKey: .state)
         default:
-            state = try container.decode(UnparsedExtensionState.self, forKey: .state)
+            state = try container.decode(VecU8.self, forKey: .state)
         }
     }
 
@@ -58,7 +58,7 @@ public struct AnyToken2022ExtensionState: BorshCodable, Codable, Equatable, Hash
         case .interestBearingConfig:
             state = try InterestBearingConfigExtensionState(from: &reader)
         default:
-            state = try UnparsedExtensionState(from: &reader)
+            state = try VecU8(from: &reader)
         }
     }
 

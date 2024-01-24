@@ -1,6 +1,6 @@
 import Foundation
 
-struct UnparsedExtensionState: Token2022ExtensionState {
+struct VecU8: BorshCodable, Codable, Equatable, Hashable {
     let length: UInt16
     let data: Data
     init(from reader: inout BinaryReader) throws {
