@@ -14,8 +14,8 @@ public extension SolanaAPIClient {
             tokensRepository: tokensRepository,
             commitment: commitment,
             programId: TokenProgram.id.base58EncodedString,
-            accountStateType: SPLTokenAccountState.self,
-            mintType: SPLTokenMintState.self
+            accountStateType: TokenAccountState.self,
+            mintType: TokenMintState.self
         )
 
         // token 2022
@@ -45,8 +45,8 @@ public extension SolanaAPIClient {
     // MARK: - Helpers
 
     private func getAccountBalances<
-        T: TokenAccountState,
-        M: TokenMintState
+        T: TokenAccountLayoutState,
+        M: MintLayoutState
     >(
         for address: String,
         tokensRepository: TokenRepository,
@@ -80,8 +80,8 @@ public extension SolanaAPIClient {
     }
 
     private func convertResult<
-        T: TokenAccountState,
-        M: TokenMintState
+        T: TokenAccountLayoutState,
+        M: MintLayoutState
     >(
         tokenAccounts: [TokenAccount<T>],
         tokensRepository: TokenRepository,

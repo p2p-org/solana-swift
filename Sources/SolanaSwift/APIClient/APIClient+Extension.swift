@@ -9,12 +9,12 @@ public extension SolanaAPIClient {
         pubkey: String,
         params: OwnerInfoParams?,
         configs: RequestConfiguration?
-    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
+    ) async throws -> [TokenAccount<TokenAccountState>] {
         try await getTokenAccountsByOwner(
             pubkey: pubkey,
             params: params,
             configs: configs,
-            decodingTo: SPLTokenAccountState.self
+            decodingTo: TokenAccountState.self
         )
     }
 
@@ -99,7 +99,7 @@ public extension SolanaAPIClient {
             tokenProgramId: tokenProgramId
         )
 
-        let bufferInfo: BufferInfo<SPLTokenAccountState>? = try await getAccountInfo(account: associatedTokenAccount
+        let bufferInfo: BufferInfo<TokenAccountState>? = try await getAccountInfo(account: associatedTokenAccount
             .base58EncodedString)
         return bufferInfo?.data.mint == mintAddress
     }
@@ -120,7 +120,7 @@ public extension SolanaAPIClient {
         tokenProgramId: PublicKey
     ) async throws -> SPLTokenDestinationAddress {
         var address: String
-        var accountInfo: BufferInfo<SPLTokenAccountState>?
+        var accountInfo: BufferInfo<TokenAccountState>?
         do {
             accountInfo = try await getAccountInfoThrowable(account: destinationAddress)
             let toTokenMint = accountInfo?.data.mint.base58EncodedString
@@ -159,7 +159,7 @@ public extension SolanaAPIClient {
         var isUnregisteredAsocciatedToken = false
         if destinationAddress != toPublicKey.base58EncodedString {
             // check if associated address is already registered
-            let info: BufferInfo<SPLTokenAccountState>?
+            let info: BufferInfo<TokenAccountState>?
             do {
                 info = try await getAccountInfoThrowable(account: toPublicKey.base58EncodedString)
             } catch {

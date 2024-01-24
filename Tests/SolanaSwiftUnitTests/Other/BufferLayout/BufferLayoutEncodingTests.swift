@@ -5,7 +5,7 @@ final class BufferLayoutEncodingTests: XCTestCase {
     // MARK: - Mint
 
     func testEncodingMint() throws {
-        let mintLayout = SPLTokenMintState(
+        let mintLayout = TokenMintState(
             mintAuthorityOption: 1,
             mintAuthority: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo",
             supply: 1_000_000_000_000,
@@ -44,9 +44,9 @@ final class BufferLayoutEncodingTests: XCTestCase {
     // MARK: - Account info
 
     func testEncodingAccountInfo() throws {
-        XCTAssertEqual(SPLTokenAccountState.BUFFER_LENGTH, 165)
+        XCTAssertEqual(TokenAccountState.BUFFER_LENGTH, 165)
 
-        let accountInfo = SPLTokenAccountState(
+        let accountInfo = TokenAccountState(
             mint: "QqCCvshxtqMAL2CVALqiJB7uEeE5mjSPsseQdDzsRUo",
             owner: "BQWWFhzBdw2vKKBUX17NHeFbCoFQHfRARpdztPE2tDJ",
             lamports: 100_000,
@@ -74,7 +74,7 @@ final class BufferLayoutEncodingTests: XCTestCase {
     }
 
     func testEncodingAccountInfo2() throws {
-        let accountInfo = SPLTokenAccountState(
+        let accountInfo = TokenAccountState(
             mint: "11111111111111111111111111111111",
             owner: "11111111111111111111111111111111",
             lamports: 0,

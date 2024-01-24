@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol TokenAccountState: BufferLayout {
+public protocol TokenAccountLayoutState: BufferLayout {
     var mint: PublicKey { get }
     var owner: PublicKey { get }
     var lamports: UInt64 { get }
@@ -18,7 +18,7 @@ public protocol TokenAccountState: BufferLayout {
     var closeAuthority: PublicKey? { get set }
 }
 
-extension TokenAccountState {
+extension TokenAccountLayoutState {
     func serializeCommonProperties(to writer: inout Data) throws {
         try mint.serialize(to: &writer)
         try owner.serialize(to: &writer)

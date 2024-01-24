@@ -113,7 +113,7 @@ private class MockAPIClient: SolanaAPIClient {
             switch testCase {
             case "testPrepareSendingSPLTokens()#2", "testPrepareSendingSPLTokens()#4",
                  "testPrepareSendingSPLTokens()#5":
-                data = SPLTokenAccountState(
+                data = TokenAccountState(
                     mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     owner: "6QuXb6mB6WmRASP2y8AavXh6aabBXEH5ZzrSH5xRrgSm",
                     lamports: 100,
@@ -261,7 +261,7 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
 
-    func getTokenAccountsByDelegate<T: TokenAccountState>(
+    func getTokenAccountsByDelegate<T: TokenAccountLayoutState>(
         pubkey _: String,
         mint _: String?,
         programId _: String?,
@@ -270,7 +270,7 @@ private class MockAPIClient: SolanaAPIClient {
         fatalError()
     }
 
-    func getTokenAccountsByOwner<T: TokenAccountState>(
+    func getTokenAccountsByOwner<T: TokenAccountLayoutState>(
         pubkey _: String,
         params _: OwnerInfoParams?,
         configs _: RequestConfiguration?,

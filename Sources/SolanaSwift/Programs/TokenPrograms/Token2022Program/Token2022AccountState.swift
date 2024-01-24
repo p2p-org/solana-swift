@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Token2022AccountState: TokenAccountState {
+public struct Token2022AccountState: TokenAccountLayoutState {
     static var ACCOUNT_TYPE: UInt8 { 2 }
 
     public let mint: PublicKey
@@ -68,7 +68,7 @@ extension Token2022AccountState: BorshCodable {
     }
 
     public init(from reader: inout BinaryReader) throws {
-        let oldTokenProgramData = try SPLTokenAccountState(from: &reader)
+        let oldTokenProgramData = try TokenAccountState(from: &reader)
         mint = oldTokenProgramData.mint
         owner = oldTokenProgramData.owner
         lamports = oldTokenProgramData.lamports

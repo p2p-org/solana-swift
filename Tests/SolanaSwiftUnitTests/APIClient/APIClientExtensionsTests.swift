@@ -70,7 +70,7 @@ class APIClientExtensionsTests: XCTestCase {
         let apiClient = BaseAPIClientMock(endpoint: endpoint, networkManager: mock)
 
         do {
-            let _: BufferInfo<SPLTokenAccountState> = try await apiClient
+            let _: BufferInfo<TokenAccountState> = try await apiClient
                 .getAccountInfoThrowable(account: "djfijijasdf")
         } catch {
             XCTAssertTrue(error.isEqualTo(.couldNotRetrieveAccountInfo))
@@ -105,11 +105,11 @@ class BaseAPIClientMock: JSONRPCAPIClient {
         pubkey _: String,
         params _: OwnerInfoParams? = nil,
         configs _: RequestConfiguration? = nil
-    ) async throws -> [TokenAccount<SPLTokenAccountState>] {
+    ) async throws -> [TokenAccount<TokenAccountState>] {
         let json =
             "[{\"account\":{\"data\":[\"ppdSk884LShYnHoHm7XiDlZ28iJVm9BHPgrAEfxU44AJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"So11111111111111111111111111111111111111112\",\"rentEpoch\":309},\"pubkey\":\"9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4\"}]"
         let decoder = try JSONDecoder().decode(
-            [TokenAccount<SPLTokenAccountState>].self,
+            [TokenAccount<TokenAccountState>].self,
             from: json.data(using: .utf8)!
         )
         return decoder
@@ -122,7 +122,7 @@ class BaseAPIClientMock: JSONRPCAPIClient {
         let json =
             "{\"context\":{\"slot\":132420615},\"value\":[{\"data\":[\"APoAh5MDAAAAAAKLjuya35R64GfrOPbupmMcxJ1pmaH2fciYq9DxSQ88FioLlNul6FnDNF06/RKhMFBVI8fFQKRYcqukjYZitosKxZBjjg9hLR2AsDm2e/itloPtlrPeVDPIVdnO4+dmM2JiSZHdhsj7+Fn94OTNte9elt1ek0p487C2fLrFA9CvUPerjZvfP97EqlF9OXbPSzaGJzdmfWhk4jRnThsg5scAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAObFpMVhxY3CRrzEcywhYTa4a4SsovPp4wKPRTbTJVtzAfQBZAAAAABDU47UFrGnHMTsb0EaE1TBoVQGvCIHKJ4/EvpK3zvIfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACsWQY44PYS0dgLA5tnv4rZaD7Zaz3lQzyFXZzuPnZjMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\",\"base64\"],\"executable\":false,\"lamports\":1345194,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":306}]}"
         let decoder = try JSONDecoder()
-            .decode(Rpc<[BufferInfo<SPLTokenMintState>]>.self, from: json.data(using: .utf8)!) as! Rpc<[BufferInfo<T>]>
+            .decode(Rpc<[BufferInfo<TokenMintState>]>.self, from: json.data(using: .utf8)!) as! Rpc<[BufferInfo<T>]>
         return decoder.value
     }
 
