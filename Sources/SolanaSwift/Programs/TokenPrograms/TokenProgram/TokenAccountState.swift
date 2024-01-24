@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SPLTokenAccountState: TokenAccountState {
+public struct TokenAccountState: TokenAccountLayoutState {
     public static let BUFFER_LENGTH: UInt64 = 165
 
     public let mint: PublicKey
@@ -54,7 +54,7 @@ public struct SPLTokenAccountState: TokenAccountState {
     }
 }
 
-extension SPLTokenAccountState: BorshCodable {
+extension TokenAccountState: BorshCodable {
     public func serialize(to writer: inout Data) throws {
         try serializeCommonProperties(to: &writer)
     }

@@ -17,7 +17,7 @@ class APIClientTests: XCTestCase {
     func testGetAccountInfo() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getAccountInfo"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result: BufferInfo<SPLTokenAccountState>? = try! await apiClient
+        let result: BufferInfo<TokenAccountState>? = try! await apiClient
             .getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
         XCTAssert(result?.owner == "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
         XCTAssert(result?.lamports == 2_039_280)
@@ -28,7 +28,7 @@ class APIClientTests: XCTestCase {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getAccountInfo_2"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         do {
-            let _: BufferInfo<SPLTokenAccountState>? = try await apiClient
+            let _: BufferInfo<TokenAccountState>? = try await apiClient
                 .getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
         } catch let error as APIClientError {
             XCTAssertTrue(error == .couldNotRetrieveAccountInfo)
@@ -221,7 +221,7 @@ class APIClientTests: XCTestCase {
     func testGetMultipleAccounts() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getMultipleAccounts"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result: [BufferInfo<SPLTokenMintState>?] = try await apiClient
+        let result: [BufferInfo<TokenMintState>?] = try await apiClient
             .getMultipleAccounts(pubkeys: ["DkZzno16JLXYda4eHZzM9J8Vxet9StJJ5mimrtjbK5V3"], commitment: "confirm")
         XCTAssertNotNil(result)
     }
@@ -236,7 +236,7 @@ class APIClientTests: XCTestCase {
                     "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
                 ],
                 commitment: "confirm",
-                mintType: SPLTokenMintState.self
+                mintType: TokenMintState.self
             )
         XCTAssertNotNil(result)
 

@@ -21,7 +21,7 @@ public struct Token2022MintState: MintLayoutState {
 
 extension Token2022MintState: BorshCodable {
     public init(from reader: inout BinaryReader) throws {
-        let oldTokenMintState = try SPLTokenMintState(from: &reader)
+        let oldTokenMintState = try TokenMintState(from: &reader)
         mintAuthorityOption = oldTokenMintState.mintAuthorityOption
         mintAuthority = oldTokenMintState.mintAuthority
         supply = oldTokenMintState.supply

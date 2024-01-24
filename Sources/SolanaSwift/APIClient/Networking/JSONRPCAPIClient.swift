@@ -143,7 +143,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         return result.value
     }
 
-    public func getTokenAccountsByDelegate<T: TokenAccountState>(
+    public func getTokenAccountsByDelegate<T: TokenAccountLayoutState>(
         pubkey: String,
         mint: String? = nil,
         programId: String? = nil,
@@ -161,7 +161,7 @@ public class JSONRPCAPIClient: SolanaAPIClient {
         return result.value
     }
 
-    public func getTokenAccountsByOwner<T: TokenAccountState>(
+    public func getTokenAccountsByOwner<T: TokenAccountLayoutState>(
         pubkey: String,
         params: OwnerInfoParams?,
         configs: RequestConfiguration?,

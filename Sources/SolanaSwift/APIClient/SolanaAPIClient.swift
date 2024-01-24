@@ -166,7 +166,7 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an array of TokenAccount<AccountInfo>
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#gettokenaccountsbydelegate
     ///
-    func getTokenAccountsByDelegate<T: TokenAccountState>(
+    func getTokenAccountsByDelegate<T: TokenAccountLayoutState>(
         pubkey: String,
         mint: String?,
         programId: String?,
@@ -183,7 +183,7 @@ public protocol SolanaAPIClient {
     /// - Returns The result will be an array of TokenAccount<AccountInfo>
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#gettokenaccountsbyowner
     ///
-    func getTokenAccountsByOwner<T: TokenAccountState>(
+    func getTokenAccountsByOwner<T: TokenAccountLayoutState>(
         pubkey: String,
         params: OwnerInfoParams?,
         configs: RequestConfiguration?,

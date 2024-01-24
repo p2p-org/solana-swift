@@ -24,7 +24,7 @@ public extension SolanaBlockchainClient {
                     from: owner,
                     toNewPubkey: newAccount.publicKey,
                     lamports: amount + minRentExemption,
-                    space: SPLTokenAccountState.BUFFER_LENGTH,
+                    space: TokenAccountState.BUFFER_LENGTH,
                     programId: TokenProgram.id
                 ),
                 TokenProgram.initializeAccountInstruction(
@@ -69,7 +69,7 @@ public extension SolanaBlockchainClient {
 
         let isAssociatedTokenAddressRegistered: Bool
         do {
-            let info: BufferInfo<SPLTokenAccountState>? = try await apiClient
+            let info: BufferInfo<TokenAccountState>? = try await apiClient
                 .getAccountInfo(account: associatedAddress.base58EncodedString)
             if PublicKey.isSPLTokenProgram(info?.owner),
                info?.data.owner == owner
