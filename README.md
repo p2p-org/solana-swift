@@ -15,6 +15,7 @@ Solana-blockchain client, written in pure swift.
 - Support token 2022 via method getAccountBalances (See GetAccountBalancesTests).
 - Support token 2022 and Token2022Program.
 ...
+[See more](https://github.com/p2p-org/solana-swift/blob/main/CHANGELOG.md)
 
 ## Features
 - [x] Supported swift concurrency (from 2.0.0)
