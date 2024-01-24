@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Token2022MintState: TokenMintState {
+public struct Token2022MintState: MintLayoutState {
     private static var ACCOUNT_TYPE: UInt8 { 1 }
 
     public let mintAuthorityOption: UInt32

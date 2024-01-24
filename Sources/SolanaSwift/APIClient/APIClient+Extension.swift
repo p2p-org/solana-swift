@@ -40,7 +40,7 @@ public extension SolanaAPIClient {
         try await request(method: method, params: [])
     }
 
-    func getMultipleMintDatas<M: TokenMintState>(
+    func getMultipleMintDatas<M: MintLayoutState>(
         mintAddresses: [String],
         commitment: Commitment,
         mintType _: M.Type

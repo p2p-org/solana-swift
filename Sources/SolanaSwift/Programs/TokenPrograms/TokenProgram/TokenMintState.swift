@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SPLTokenMintState: TokenMintState {
+public struct TokenMintState: MintLayoutState {
     public static var BUFFER_LENGTH: UInt64 = 82
 
     public let mintAuthorityOption: UInt32
@@ -12,7 +12,7 @@ public struct SPLTokenMintState: TokenMintState {
     public let freezeAuthority: PublicKey?
 }
 
-extension SPLTokenMintState: BorshCodable {
+extension TokenMintState: BorshCodable {
     public init(from reader: inout BinaryReader) throws {
         mintAuthorityOption = try .init(from: &reader)
         mintAuthority = try? PublicKey(from: &reader)
