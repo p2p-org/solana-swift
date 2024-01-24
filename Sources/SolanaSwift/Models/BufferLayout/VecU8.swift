@@ -1,15 +1,21 @@
 import Foundation
 
-struct VecU8: BorshCodable, Codable, Equatable, Hashable {
-    let length: UInt16
-    let data: Data
-    init(from reader: inout BinaryReader) throws {
-        length = try UInt16(from: &reader)
+public struct VecU8<T: FixedWidthInteger & Codable>: BorshCodable, Codable, Equatable, Hashable {
+    public let length: T
+    public let data: Data
+
+    public init(from reader: inout BinaryReader) throws {
+        length = try T(from: &reader)
         data = try Data(reader.read(count: Int(length)))
     }
 
-    func serialize(to data: inout Data) throws {
-        try length.serialize(to: &data)
-        try data.serialize(to: &data)
+    public init(length: T, data: Data) {
+        self.length = length
+        self.data = data
+    }
+
+    public func serialize(to writer: inout Data) throws {
+        try length.serialize(to: &writer)
+        try data.serialize(to: &writer)
     }
 }

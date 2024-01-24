@@ -4,4 +4,4 @@ public protocol Token2022ExtensionState: BorshCodable, Codable, Equatable, Hasha
     var length: UInt16 { get }
 }
 
-extension VecU8: Token2022ExtensionState {}
+extension VecU8<UInt16>: Token2022ExtensionState {}

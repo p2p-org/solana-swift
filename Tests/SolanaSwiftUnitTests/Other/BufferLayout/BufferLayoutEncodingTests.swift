@@ -24,6 +24,23 @@ final class BufferLayoutEncodingTests: XCTestCase {
         )
     }
 
+    // MARK: - VecU8
+
+    func testEncodingVecU8() throws {
+        let length: UInt16 = 25
+        let data = Data([
+            167, 237, 210, 172, 25, 197,
+            64, 38, 27, 69, 68, 48, 193,
+            113, 24, 3, 242, 45, 200, 253,
+            96, 228, 225, 157, 178,
+        ])
+
+        var result = Data()
+        try VecU8(length: length, data: data).serialize(to: &result)
+
+        XCTAssertEqual(result.base64EncodedString(), "GQCn7dKsGcVAJhtFRDDBcRgD8i3I/WDk4Z2y")
+    }
+
     // MARK: - Account info
 
     func testEncodingAccountInfo() throws {

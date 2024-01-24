@@ -24,6 +24,23 @@ class BufferLayoutDecodingTests: XCTestCase {
         XCTAssertEqual(try Data(from: &binaryReader).bytes, expectedBytes)
     }
 
+    // MARK: - VecU8
+
+    func testDecodingVecU8() throws {
+        let string = "GQCn7dKsGcVAJhtFRDDBcRgD8i3I/WDk4Z2y"
+        let data = Data(base64Encoded: string)!
+        var binaryReader = BinaryReader(bytes: data.bytes)
+        let vecU8 = try VecU8<UInt16>(from: &binaryReader)
+
+        XCTAssertEqual(vecU8.length, 25)
+        XCTAssertEqual(vecU8.data.bytes, [
+            167, 237, 210, 172, 25, 197,
+            64, 38, 27, 69, 68, 48, 193,
+            113, 24, 3, 242, 45, 200, 253,
+            96, 228, 225, 157, 178,
+        ])
+    }
+
     // MARK: - Mint
 
     func testDecodingMint() throws {
