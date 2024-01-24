@@ -1,6 +1,8 @@
 import Foundation
 
 public struct Token2022MintState: TokenMintState {
+    private static var ACCOUNT_TYPE: UInt8 { 1 }
+
     public let mintAuthorityOption: UInt32
     public let mintAuthority: PublicKey?
     public let supply: UInt64
@@ -34,7 +36,13 @@ extension Token2022MintState: BorshCodable {
         }
 
         _ = try reader.read(count: 83) // padding
-        _ = try reader.read(count: 1) // mint type
+
+        let accountType = try reader.read(count: 1)
+
+        // AccountType == 1 for MintState
+        guard accountType.first == Self.ACCOUNT_TYPE else {
+            throw BinaryReaderError.dataMismatch
+        }
 
         var extensions = [AnyToken2022ExtensionState]()
         repeat {
@@ -48,7 +56,7 @@ extension Token2022MintState: BorshCodable {
     public func serialize(to writer: inout Data) throws {
         try serializeCommonProperties(to: &writer)
         try Data(repeating: UInt8(0), count: 83).serialize(to: &writer)
-        try UInt8(1).serialize(to: &writer)
+        try Self.ACCOUNT_TYPE.serialize(to: &writer)
         for ext in extensions {
             try ext.serialize(to: &writer)
         }

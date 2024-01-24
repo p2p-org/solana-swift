@@ -265,6 +265,28 @@ class BufferLayoutDecodingTests: XCTestCase {
         var binaryReader = BinaryReader(bytes: data.bytes)
         let state = try Token2022AccountState(from: &binaryReader)
 
+        XCTAssertEqual(state.isNativeRaw, 0)
+        XCTAssertEqual(state.delegatedAmount, 0)
+        XCTAssertEqual(state.mint.base58EncodedString, "8nxJnGJDyvehdEHw4PgRc7ccJ1Zi134PhM2USK3WE8mS")
+        XCTAssertEqual(state.delegateOption, 0)
+        XCTAssertNil(state.delegate)
+        XCTAssertEqual(state.isFrozen, false)
+        XCTAssertEqual(state.closeAuthorityOption, 0)
+        XCTAssertEqual(state.isNativeOption, 0)
+        XCTAssertEqual(state.owner.base58EncodedString, "E8E6GvyCpbGu7YSFxfhTXGx6SW4VhzVmxWh3gbrgXZNd")
+        XCTAssertEqual(state.lamports, 0)
+        XCTAssertEqual(state.isInitialized, true)
+        XCTAssertEqual(state.isNative, false)
+        XCTAssertEqual(state.state, 1)
+
         XCTAssertEqual(state.extensions.count, 1)
+
+        // Assertions for the extension state
+        let firstExtension = state.extensions[0]
+        XCTAssertEqual(firstExtension.type, .immutableOwner)
+
+        let extensionState = firstExtension.state as! VecU8<UInt16>
+        XCTAssertEqual(extensionState.length, 0)
+        XCTAssertEqual(extensionState.data, Data())
     }
 }

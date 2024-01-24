@@ -200,68 +200,96 @@ final class BufferLayoutEncodingTests: XCTestCase {
         )
     }
 
-//    func testEncodingToken2022MintState2() throws {
-//        // Mint FZYEgCWzzedxcmxYvGXSkMrj7TaA3bXoaEv6XMnwtLKh
-//        let state = Token2022MintState(
-//            mintAuthorityOption: 1,
-//            mintAuthority: "FZYEgCWzzedxcmxYvGXSkMrj7TaA3bXoaEv6XMnwtLKh",
-//            supply: 1_000_000_000_000,
-//            decimals: 10,
-//            isInitialized: true,
-//            freezeAuthorityOption: 10,
-//            freezeAuthority: nil,
-//            extensions: []
-//        )
-//
-//        // Add TransferFeeConfigExtensionState
-//        let transferConfig = TransferFeeConfigExtensionState(
-//            length: 108,
-//            transferFeeConfigAuthority: "11111111111111111111111111111111",
-//            withdrawWithHeldAuthority: "11111111111111111111111111111111",
-//            withheldAmount: 1_299_782_865_324_245_038,
-//            olderTransferFee: .init(
-//                epoch: 489,
-//                maximumFee: 8_888_888_888_888_889_344,
-//                transferFeeBasisPoints: 300
-//            ),
-//            newerTransferFee: .init(
-//                epoch: 489,
-//                maximumFee: 8_888_888_888_888_889_344,
-//                transferFeeBasisPoints: 300
-//            )
-//        )
-//        state.extensions.append(TokenExtension(type: 1, state: transferConfig))
-//
-//        // Add InterestBearingConfigExtensionState
-//        let interestBearingConfig = InterestBearingConfigExtensionState(
-//            length: 52,
-//            rateAuthority: "2a9H7uNfUxt7YdS5yH3ZEijdPqpeBtyq7JPtVyi6XKtk",
-//            initializationTimestamp: 1_692_005_389,
-//            preUpdateAverageRate: 0,
-//            lastUpdateTimestamp: 1_692_005_389,
-//            currentRate: 0
-//        )
-//        state.extensions.append(TokenExtension(type: 2, state: interestBearingConfig))
-//
-//        // Serialize the state
-//        var data = Data()
-//        try state.serialize(to: &data)
-//
-//        // Base64 encode the serialized data and compare with the expected value
-//        XCTAssertEqual(
-//            data.base64EncodedString(),
-//            "AAAAABdZNqd8UPqRoeBHXdhoEwzZNLf6UnDQ1UDsr4oXimfhquOLA1BVIXECAQAAAAAXWTanfFD6kaHgR13YaBMM2TS3+lJw0NVA7K+KF4pn4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALoDKJKHBCRLpAQAAAAAAAACQI15ZrVt7LAHpAQAAAAAAAACQI15ZrVt7LAEKADQAF1k2p3xQ+pGh4Edd2GgTDNk0t/pScNDVQOyviheKZ+EN9NlkAAAAAAAADfTZZAAAAAAAAAYAAQAB"
-//        )
-//    }
+    func testEncodingToken2022MintState2() throws {
+        // Mint FZYEgCWzzedxcmxYvGXSkMrj7TaA3bXoaEv6XMnwtLKh
+        var state = Token2022MintState(
+            mintAuthorityOption: 0,
+            mintAuthority: "2a9H7uNfUxt7YdS5yH3ZEijdPqpeBtyq7JPtVyi6XKtk",
+            supply: 8_151_890_602_662_552_490,
+            decimals: 2,
+            isInitialized: true,
+            freezeAuthorityOption: 0,
+            freezeAuthority: "2a9H7uNfUxt7YdS5yH3ZEijdPqpeBtyq7JPtVyi6XKtk",
+            extensions: []
+        )
 
-//
-//    func testEncodingToken2022AccountState() throws {
-//        let string =
-//            "c8d675Tc8/enuGEbVogbaWoW6iY9JFkJIswLnf/gvCXDAcw04n4gWtOj5P12Rb7RAxY9RRwFQOwFWCWPS3OnJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcAAAA="
-//        let data = Data(base64Encoded: string)!
-//        var binaryReader = BinaryReader(bytes: data.bytes)
-//        let state = try Token2022AccountState(from: &binaryReader)
-//
-//        XCTAssertEqual(state.extensions.count, 1)
-//    }
+        // Add TransferFeeConfigExtensionState
+        let transferConfig = TransferFeeConfigExtensionState(
+            length: 108,
+            transferFeeConfigAuthority: "11111111111111111111111111111111",
+            withdrawWithHeldAuthority: "11111111111111111111111111111111",
+            withheldAmount: 1_299_782_865_324_245_038,
+            olderTransferFee: .init(
+                epoch: 489,
+                maximumFee: 8_888_888_888_888_889_344,
+                transferFeeBasisPoints: 300
+            ),
+            newerTransferFee: .init(
+                epoch: 489,
+                maximumFee: 8_888_888_888_888_889_344,
+                transferFeeBasisPoints: 300
+            )
+        )
+
+        // Add InterestBearingConfigExtensionState
+        let interestBearingConfig = InterestBearingConfigExtensionState(
+            length: 52,
+            rateAuthority: "2a9H7uNfUxt7YdS5yH3ZEijdPqpeBtyq7JPtVyi6XKtk",
+            initializationTimestamp: 1_692_005_389,
+            preUpdateAverageRate: 0,
+            lastUpdateTimestamp: 1_692_005_389,
+            currentRate: 0
+        )
+
+        state.extensions = [
+            .init(type: .transferFeeConfig, state: transferConfig),
+            .init(type: .interestBearingConfig, state: interestBearingConfig),
+            .init(type: .defaultAccountState, state: VecU8(length: UInt16(1), data: Data([1]))),
+        ]
+
+        // Serialize the state
+        var data = Data()
+        try state.serialize(to: &data)
+
+        // Base64 encode the serialized data and compare with the expected value
+        XCTAssertEqual(
+            data.base64EncodedString(),
+            "AAAAABdZNqd8UPqRoeBHXdhoEwzZNLf6UnDQ1UDsr4oXimfhquOLA1BVIXECAQAAAAAXWTanfFD6kaHgR13YaBMM2TS3+lJw0NVA7K+KF4pn4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALoDKJKHBCRLpAQAAAAAAAACQI15ZrVt7LAHpAQAAAAAAAACQI15ZrVt7LAEKADQAF1k2p3xQ+pGh4Edd2GgTDNk0t/pScNDVQOyviheKZ+EN9NlkAAAAAAAADfTZZAAAAAAAAAYAAQAB"
+        )
+    }
+
+    func testEncodingTokenAccountState() throws {
+        let accountState = Token2022AccountState(
+            mint: "8nxJnGJDyvehdEHw4PgRc7ccJ1Zi134PhM2USK3WE8mS",
+            owner: "E8E6GvyCpbGu7YSFxfhTXGx6SW4VhzVmxWh3gbrgXZNd",
+            lamports: 0,
+            delegateOption: 0,
+            delegate: nil,
+            isInitialized: true,
+            isFrozen: false,
+            state: 1,
+            isNativeOption: 0,
+            rentExemptReserve: nil,
+            isNativeRaw: 0,
+            isNative: false,
+            delegatedAmount: 0,
+            closeAuthorityOption: 0,
+            extensions: [
+                .init(
+                    type: .immutableOwner,
+                    state: VecU8<UInt16>(length: 0, data: Data())
+                ),
+            ]
+        )
+
+        // Serialize the state
+        var data = Data()
+        try accountState.serialize(to: &data)
+
+        // Base64 encode the serialized data and compare with the expected value
+        XCTAssertEqual(
+            data.base64EncodedString(),
+            "c8d675Tc8/enuGEbVogbaWoW6iY9JFkJIswLnf/gvCXDAcw04n4gWtOj5P12Rb7RAxY9RRwFQOwFWCWPS3OnJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcAAAA="
+        )
+    }
 }

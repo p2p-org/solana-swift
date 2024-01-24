@@ -1,6 +1,8 @@
 import Foundation
 
 public struct Token2022AccountState: TokenAccountState {
+    static var ACCOUNT_TYPE: UInt8 { 2 }
+
     public let mint: PublicKey
     public let owner: PublicKey
     public let lamports: UInt64
@@ -59,7 +61,7 @@ public struct Token2022AccountState: TokenAccountState {
 extension Token2022AccountState: BorshCodable {
     public func serialize(to writer: inout Data) throws {
         try serializeCommonProperties(to: &writer)
-        try UInt8(0).serialize(to: &writer)
+        try Self.ACCOUNT_TYPE.serialize(to: &writer)
         for ext in extensions {
             try ext.serialize(to: &writer)
         }
@@ -88,7 +90,12 @@ extension Token2022AccountState: BorshCodable {
             return
         }
 
-        _ = try reader.read(count: 1) // account type
+        let accountType = try reader.read(count: 1)
+
+        // AccountType == 2 for AccountState
+        guard accountType.first == Self.ACCOUNT_TYPE else {
+            throw BinaryReaderError.dataMismatch
+        }
 
         var extensions = [AnyToken2022ExtensionState]()
         repeat {
