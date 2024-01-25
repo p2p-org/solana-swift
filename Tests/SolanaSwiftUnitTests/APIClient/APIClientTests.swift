@@ -1,5 +1,5 @@
-@testable import SolanaSwift
 import XCTest
+@testable import SolanaSwift
 
 class APIClientTests: XCTestCase {
     let endpoint = APIEndPoint(
@@ -17,7 +17,7 @@ class APIClientTests: XCTestCase {
     func testGetAccountInfo() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getAccountInfo"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result: BufferInfo<SPLTokenAccountState>? = try! await apiClient
+        let result: BufferInfo<TokenAccountState>? = try! await apiClient
             .getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
         XCTAssert(result?.owner == "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
         XCTAssert(result?.lamports == 2_039_280)
@@ -28,7 +28,7 @@ class APIClientTests: XCTestCase {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getAccountInfo_2"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
         do {
-            let _: BufferInfo<SPLTokenAccountState>? = try await apiClient
+            let _: BufferInfo<TokenAccountState>? = try await apiClient
                 .getAccountInfo(account: "HWbsF542VSCxdGKcHrXuvJJnpwCEewmzdsG6KTxXMRRk")
         } catch let error as APIClientError {
             XCTAssertTrue(error == .couldNotRetrieveAccountInfo)
@@ -221,7 +221,7 @@ class APIClientTests: XCTestCase {
     func testGetMultipleAccounts() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["getMultipleAccounts"]!)
         let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
-        let result: [BufferInfo<SPLTokenMintState>?] = try await apiClient
+        let result: [BufferInfo<TokenMintState>?] = try await apiClient
             .getMultipleAccounts(pubkeys: ["DkZzno16JLXYda4eHZzM9J8Vxet9StJJ5mimrtjbK5V3"], commitment: "confirm")
         XCTAssertNotNil(result)
     }
@@ -235,21 +235,22 @@ class APIClientTests: XCTestCase {
                     "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
                 ],
-                commitment: "confirm"
+                commitment: "confirm",
+                mintType: TokenMintState.self
             )
         XCTAssertNotNil(result)
 
         // usdc
         let usdc = result["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"]!
-        XCTAssertEqual(usdc?.mintAuthority?.base58EncodedString, "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9")
-        XCTAssertEqual(usdc?.decimals, 6)
-        XCTAssertEqual(usdc?.freezeAuthority?.base58EncodedString, "3sNBr7kMccME5D55xNgsmYpZnzPgP2g12CixAajXypn6")
+        XCTAssertEqual(usdc.mintAuthority?.base58EncodedString, "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9")
+        XCTAssertEqual(usdc.decimals, 6)
+        XCTAssertEqual(usdc.freezeAuthority?.base58EncodedString, "3sNBr7kMccME5D55xNgsmYpZnzPgP2g12CixAajXypn6")
 
         // usdt
         let usdt = result["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]!
-        XCTAssertEqual(usdt?.mintAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
-        XCTAssertEqual(usdt?.decimals, 6)
-        XCTAssertEqual(usdt?.freezeAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
+        XCTAssertEqual(usdt.mintAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
+        XCTAssertEqual(usdt.decimals, 6)
+        XCTAssertEqual(usdt.freezeAuthority?.base58EncodedString, "Q6XprfkF8RQQKoQVG33xT88H7wi8Uk1B1CC7YAs69Gi")
     }
 
     func testGetSignaturesForAddress() async throws {
@@ -280,9 +281,23 @@ class APIClientTests: XCTestCase {
         let result = try await apiClient.getTokenAccountsByOwner(
             pubkey: "fjohsw9j8aBJaEE5ddzHk3AgMjdbQSXrMoPGrepNHrB",
             params: .init(mint: nil, programId: TokenProgram.id.base58EncodedString),
-            configs: .init(encoding: "base64")
+            configs: .init(encoding: "base64"),
+            decodingTo: Token2022AccountState.self
         )
         XCTAssertEqual(result.first?.account.owner, TokenProgram.id.base58EncodedString)
+    }
+
+    func testGetToken2022AccountsByOwner() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getToken2022AccountsByOwner"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result = try await apiClient.getTokenAccountsByOwner(
+            pubkey: "fjohsw9j8aBJaEE5ddzHk3AgMjdbQSXrMoPGrepNHrB",
+            params: .init(mint: nil, programId: TokenProgram.id.base58EncodedString),
+            configs: .init(encoding: "base64"),
+            decodingTo: Token2022AccountState.self
+        )
+        XCTAssertEqual(result.first?.account.owner, Token2022Program.id.base58EncodedString)
+        XCTAssertEqual(result.first?.pubkey, "43W7QvyKr5hJhFRhvteb7VbsLdwGQG3VZ2fRYVcw5yFN")
     }
 
     func testSendTransactionError1() async throws {
@@ -367,6 +382,8 @@ private var NetworkManagerMockJSON = [
     "getSignatureStatuses": #"{"jsonrpc":"2.0","result":{"context":{"slot":82},"value":[{"slot":72,"confirmations":10,"err":null,"status":{"Ok":null},"confirmationStatus":"confirmed"},null]},"id":1}"#,
     "getSignatureForAddress": "{\"jsonrpc\":\"2.0\",\"result\":[{\"blockTime\":1652351736,\"confirmationStatus\":\"finalized\",\"err\":null,\"memo\":null,\"signature\":\"31vx5MqPX1cxzfwGEWjaHuHnmSo9vwrtwBNXyTJjxtfbzkzqWr4sY8JE5Mq5ZZK7aokps9UjhHcNuJTF82FP2ekM\",\"slot\":133510309}],\"id\":\"6D72B578-401C-449E-A89F-2E31EA441A47\"}\n",
     "getTokenAccountsByOwner": "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":134133059},\"value\":[{\"account\":{\"data\":[\"KLrvuAuq+8gDEGl28m80PrYteWuPlqjGuBpCW5rA84gJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":309},\"pubkey\":\"9nuVPk3KR7oUXmDsHL7irue2Nxaj3ejvuBXoaEcXMmN7\"},{\"account\":{\"data\":[\"ppdSk884LShYnHoHm7XiDlZ28iJVm9BHPgrAEfxU44AJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":309},\"pubkey\":\"9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4\"}]},\"id\":\"0891812F-1F8B-4927-80F7-C7C1C1D990B3\"}\n",
+    "getToken2022AccountsByOwner":
+        #"{"jsonrpc":"2.0","result":{"context":{"apiVersion":"1.17.14","slot":239989261},"value":[{"account":{"data":["qDijZLhcKuVLVBmL6Ve9S9DvSU7kn1XtkCnOtnDXGjA1zKFCx20D2kF7X/jEMh09sgYqyBraJk1DWsFwaUfQkCtqbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcAAAACAAgAAAAAAAAAAAA=","base64"],"executable":false,"lamports":2157600,"owner":"TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb","rentEpoch":0,"space":182},"pubkey":"43W7QvyKr5hJhFRhvteb7VbsLdwGQG3VZ2fRYVcw5yFN"}]},"id":1}"#,
     "sendTransactionError1": #"{"jsonrpc":"2.0","error":{"code":-32003,"message":"Transaction precompile verification failure InvalidAccountIndex"},"id":"7DEDE6E5-95E7-4866-BFC0-B4C10A76B457"}"#,
     "getTokenAccountBalance": #"{"jsonrpc":"2.0","result":{"context":{"slot":135942588},"value":{"amount":"491717631607","decimals":9,"uiAmount":491.717631607,"uiAmountString":"491.717631607"}},"id":"3D9E7B6E-B48D-40EF-B656-EA3054227CCD"}"#,
     "getHealth": #"{ "jsonrpc": "2.0", "result": "ok", "id": 1 }"#,

@@ -1,9 +1,6 @@
 import Foundation
 
-@available(*, deprecated, renamed: "SPLTokenAccountState")
-public typealias AccountInfo = SPLTokenAccountState
-
-public struct SPLTokenAccountState: BufferLayout {
+public struct TokenAccountState: TokenAccountLayoutState {
     public static let BUFFER_LENGTH: UInt64 = 165
 
     public let mint: PublicKey
@@ -57,27 +54,9 @@ public struct SPLTokenAccountState: BufferLayout {
     }
 }
 
-extension SPLTokenAccountState: BorshCodable {
+extension TokenAccountState: BorshCodable {
     public func serialize(to writer: inout Data) throws {
-        try mint.serialize(to: &writer)
-        try owner.serialize(to: &writer)
-        try lamports.serialize(to: &writer)
-        try delegateOption.serialize(to: &writer)
-        if let delegate = delegate {
-            try delegate.serialize(to: &writer)
-        } else {
-            try PublicKey.NULL_PUBLICKEY_BYTES.forEach { try $0.serialize(to: &writer) }
-        }
-        try state.serialize(to: &writer)
-        try isNativeOption.serialize(to: &writer)
-        try isNativeRaw.serialize(to: &writer)
-        try delegatedAmount.serialize(to: &writer)
-        try closeAuthorityOption.serialize(to: &writer)
-        if let closeAuthority = closeAuthority {
-            try closeAuthority.serialize(to: &writer)
-        } else {
-            try PublicKey.NULL_PUBLICKEY_BYTES.forEach { try $0.serialize(to: &writer) }
-        }
+        try serializeCommonProperties(to: &writer)
     }
 
     public init(from reader: inout BinaryReader) throws {

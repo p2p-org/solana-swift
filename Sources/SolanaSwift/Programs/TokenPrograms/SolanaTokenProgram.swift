@@ -1,28 +1,18 @@
 import Foundation
 
-public enum TokenProgram: SolanaBasicProgram {
-    // MARK: - Nested type
+public protocol SolanaTokenProgram: SolanaBasicProgram {}
 
-    public enum Index {
-        static let initalizeMint: UInt8 = 0
-        static let initializeAccount: UInt8 = 1
-        static let transfer: UInt8 = 3
-        static let approve: UInt8 = 4
-        static let mintTo: UInt8 = 7
-        static let closeAccount: UInt8 = 9
-        static let transferChecked: UInt8 = 12
-        static let burnChecked: UInt8 = 15
-    }
+public extension SolanaTokenProgram {
+    static var initalizeMintIndex: UInt8 { 0 }
+    static var initializeAccountIndex: UInt8 { 1 }
+    static var transferIndex: UInt8 { 3 }
+    static var approveIndex: UInt8 { 4 }
+    static var mintToIndex: UInt8 { 7 }
+    static var closeAccountIndex: UInt8 { 9 }
+    static var transferCheckedIndex: UInt8 { 12 }
+    static var burnCheckedIndex: UInt8 { 15 }
 
-    // MARK: - Properties
-
-    public static var id: PublicKey {
-        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-    }
-
-    // MARK: - Instruction builders
-
-    public static func initializeMintInstruction(
+    static func initializeMintInstruction(
         mint: PublicKey,
         decimals: UInt8,
         authority: PublicKey,
@@ -33,9 +23,9 @@ public enum TokenProgram: SolanaBasicProgram {
                 AccountMeta(publicKey: mint, isSigner: false, isWritable: true),
                 AccountMeta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false),
             ],
-            programId: TokenProgram.id,
+            programId: id,
             data: [
-                Index.initalizeMint,
+                initalizeMintIndex,
                 decimals,
                 authority,
                 freezeAuthority != nil,
@@ -44,7 +34,7 @@ public enum TokenProgram: SolanaBasicProgram {
         )
     }
 
-    public static func initializeAccountInstruction(
+    static func initializeAccountInstruction(
         account: PublicKey,
         mint: PublicKey,
         owner: PublicKey
@@ -56,12 +46,12 @@ public enum TokenProgram: SolanaBasicProgram {
                 AccountMeta(publicKey: owner, isSigner: false, isWritable: false),
                 AccountMeta(publicKey: PublicKey.sysvarRent, isSigner: false, isWritable: false),
             ],
-            programId: TokenProgram.id,
-            data: [Index.initializeAccount]
+            programId: id,
+            data: [initializeAccountIndex]
         )
     }
 
-    public static func transferInstruction(
+    static func transferInstruction(
         source: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
@@ -73,12 +63,12 @@ public enum TokenProgram: SolanaBasicProgram {
                 AccountMeta(publicKey: destination, isSigner: false, isWritable: true),
                 AccountMeta(publicKey: owner, isSigner: true, isWritable: true),
             ],
-            programId: TokenProgram.id,
-            data: [Index.transfer, amount]
+            programId: id,
+            data: [transferIndex, amount]
         )
     }
 
-    public static func transferCheckedInstruction(
+    static func transferCheckedInstruction(
         source: PublicKey,
         mint: PublicKey,
         destination: PublicKey,
@@ -104,12 +94,12 @@ public enum TokenProgram: SolanaBasicProgram {
 
         return .init(
             keys: keys,
-            programId: TokenProgram.id,
-            data: [Index.transferChecked, amount, decimals]
+            programId: id,
+            data: [transferCheckedIndex, amount, decimals]
         )
     }
 
-    public static func burnCheckedInstruction(
+    static func burnCheckedInstruction(
         mint: PublicKey,
         account: PublicKey,
         owner: PublicKey,
@@ -122,16 +112,16 @@ public enum TokenProgram: SolanaBasicProgram {
                 .init(publicKey: mint, isSigner: false, isWritable: true),
                 .init(publicKey: owner, isSigner: true, isWritable: false),
             ],
-            programId: TokenProgram.id,
+            programId: id,
             data: [
-                Index.burnChecked,
+                burnCheckedIndex,
                 amount,
                 decimals,
             ]
         )
     }
 
-    public static func approveInstruction(
+    static func approveInstruction(
         account: PublicKey,
         delegate: PublicKey,
         owner: PublicKey,
@@ -161,12 +151,12 @@ public enum TokenProgram: SolanaBasicProgram {
 
         return TransactionInstruction(
             keys: keys,
-            programId: TokenProgram.id,
-            data: [Index.approve, amount]
+            programId: id,
+            data: [approveIndex, amount]
         )
     }
 
-    public static func mintToInstruction(
+    static func mintToInstruction(
         mint: PublicKey,
         destination: PublicKey,
         authority: PublicKey,
@@ -178,12 +168,12 @@ public enum TokenProgram: SolanaBasicProgram {
                 AccountMeta(publicKey: destination, isSigner: false, isWritable: true),
                 AccountMeta(publicKey: authority, isSigner: true, isWritable: true),
             ],
-            programId: TokenProgram.id,
-            data: [Index.mintTo, amount]
+            programId: id,
+            data: [mintToIndex, amount]
         )
     }
 
-    public static func closeAccountInstruction(
+    static func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
         owner: PublicKey
@@ -194,12 +184,12 @@ public enum TokenProgram: SolanaBasicProgram {
                 AccountMeta(publicKey: destination, isSigner: false, isWritable: true),
                 AccountMeta(publicKey: owner, isSigner: false, isWritable: false),
             ],
-            programId: TokenProgram.id,
-            data: [Index.closeAccount]
+            programId: id,
+            data: [closeAccountIndex]
         )
     }
 
-    public static func closeAccountInstruction(
+    static func closeAccountInstruction(
         account: PublicKey,
         destination: PublicKey,
         owner: PublicKey,
@@ -211,8 +201,8 @@ public enum TokenProgram: SolanaBasicProgram {
                 .writable(publicKey: destination, isSigner: false),
                 .readonly(publicKey: owner, isSigner: signers.isEmpty),
             ] + signers.map { .readonly(publicKey: $0, isSigner: true) },
-            programId: TokenProgram.id,
-            data: [Index.closeAccount]
+            programId: id,
+            data: [closeAccountIndex]
         )
     }
 }

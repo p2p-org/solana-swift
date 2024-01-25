@@ -7,6 +7,16 @@ Solana-blockchain client, written in pure swift.
 [![Platform](https://img.shields.io/cocoapods/p/SolanaSwift.svg?style=flat)](https://cocoapods.org/pods/SolanaSwift)
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://p2p-org.github.io/solana-swift/documentation/solanaswift)
 
+## Breaking changes
+### v5.0
+...
+- Remove deprecated typealias Mint, use SPLTokenMintState or Token2022MintState instead.
+- Remove deprecated typealias Wallet, use AccountBalance instead.
+- Support token 2022 via method getAccountBalances (See GetAccountBalancesTests).
+- Support token 2022 and Token2022Program.
+...
+[See more](https://github.com/p2p-org/solana-swift/blob/main/CHANGELOG.md)
+
 ## Features
 - [x] Supported swift concurrency (from 2.0.0)
 - [x] Key pairs generation

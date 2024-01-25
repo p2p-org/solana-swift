@@ -34,7 +34,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         if let fc = fc {
             feeCalculator = fc
         } else {
-            let (lps, minRentExemption) = try await (
+            let (lps, minRentExemption) = try await(
                 apiClient.getFees(commitment: nil).feeCalculator?.lamportsPerSignature,
                 apiClient.getMinimumBalanceForRentExemption(span: 165)
             )
@@ -95,9 +95,11 @@ public class BlockchainClient: SolanaBlockchainClient {
             to: PublicKey(string: destination),
             lamports: amount
         )
-        return try await prepareTransaction(instructions: [instruction],
-                                            signers: [account],
-                                            feePayer: feePayer)
+        return try await prepareTransaction(
+            instructions: [instruction],
+            signers: [account],
+            feePayer: feePayer
+        )
     }
 
     /// Prepare for sending any SPLToken
@@ -117,26 +119,22 @@ public class BlockchainClient: SolanaBlockchainClient {
     public func prepareSendingSPLTokens(
         account: KeyPair,
         mintAddress: String,
+        tokenProgramId: PublicKey,
         decimals: Decimals,
         from fromPublicKey: String,
         to destinationAddress: String,
         amount: UInt64,
         feePayer: PublicKey? = nil,
         transferChecked: Bool = false,
-        minRentExemption mre: Lamports? = nil
+        lamportsPerSignature: Lamports,
+        minRentExemption: Lamports
     ) async throws -> (preparedTransaction: PreparedTransaction, realDestination: String) {
         let feePayer = feePayer ?? account.publicKey
 
-        let minRenExemption: Lamports
-        if let mre = mre {
-            minRenExemption = mre
-        } else {
-            minRenExemption = try await apiClient
-                .getMinimumBalanceForRentExemption(span: SPLTokenAccountState.BUFFER_LENGTH)
-        }
         let splDestination = try await apiClient.findSPLTokenDestinationAddress(
             mintAddress: mintAddress,
-            destinationAddress: destinationAddress
+            destinationAddress: destinationAddress,
+            tokenProgramId: tokenProgramId
         )
 
         // get address
@@ -160,10 +158,11 @@ public class BlockchainClient: SolanaBlockchainClient {
             let createATokenInstruction = try AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
                 mint: mint,
                 owner: owner,
-                payer: feePayer
+                payer: feePayer,
+                tokenProgramId: tokenProgramId
             )
             instructions.append(createATokenInstruction)
-            accountsCreationFee += minRenExemption
+            accountsCreationFee += minRentExemption
         }
 
         // send instruction
@@ -172,23 +171,44 @@ public class BlockchainClient: SolanaBlockchainClient {
         // use transfer checked transaction for proxy, otherwise use normal transfer transaction
         if transferChecked {
             // transfer checked transaction
-            sendInstruction = try TokenProgram.transferCheckedInstruction(
-                source: fromPublicKey,
-                mint: PublicKey(string: mintAddress),
-                destination: splDestination.destination,
-                owner: account.publicKey,
-                multiSigners: [],
-                amount: amount,
-                decimals: decimals
-            )
+            if tokenProgramId == TokenProgram.id {
+                sendInstruction = try TokenProgram.transferCheckedInstruction(
+                    source: fromPublicKey,
+                    mint: PublicKey(string: mintAddress),
+                    destination: splDestination.destination,
+                    owner: account.publicKey,
+                    multiSigners: [],
+                    amount: amount,
+                    decimals: decimals
+                )
+            } else {
+                sendInstruction = try Token2022Program.transferCheckedInstruction(
+                    source: fromPublicKey,
+                    mint: PublicKey(string: mintAddress),
+                    destination: splDestination.destination,
+                    owner: account.publicKey,
+                    multiSigners: [],
+                    amount: amount,
+                    decimals: decimals
+                )
+            }
         } else {
             // transfer transaction
-            sendInstruction = TokenProgram.transferInstruction(
-                source: fromPublicKey,
-                destination: toPublicKey,
-                owner: account.publicKey,
-                amount: amount
-            )
+            if tokenProgramId == TokenProgram.id {
+                sendInstruction = TokenProgram.transferInstruction(
+                    source: fromPublicKey,
+                    destination: toPublicKey,
+                    owner: account.publicKey,
+                    amount: amount
+                )
+            } else {
+                sendInstruction = Token2022Program.transferInstruction(
+                    source: fromPublicKey,
+                    destination: toPublicKey,
+                    owner: account.publicKey,
+                    amount: amount
+                )
+            }
         }
 
         instructions.append(sendInstruction)
@@ -202,7 +222,11 @@ public class BlockchainClient: SolanaBlockchainClient {
         let preparedTransaction = try await prepareTransaction(
             instructions: instructions,
             signers: [account],
-            feePayer: feePayer
+            feePayer: feePayer,
+            feeCalculator: DefaultFeeCalculator(
+                lamportsPerSignature: lamportsPerSignature,
+                minRentExemption: minRentExemption
+            )
         )
         return (preparedTransaction, realDestination)
     }
