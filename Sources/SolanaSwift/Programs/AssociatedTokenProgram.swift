@@ -12,15 +12,17 @@ public enum AssociatedTokenProgram: SolanaBasicProgram {
     public static func createAssociatedTokenAccountInstruction(
         mint: PublicKey,
         owner: PublicKey,
-        payer: PublicKey
+        payer: PublicKey,
+        tokenProgramId: PublicKey
     ) throws -> TransactionInstruction {
-        TransactionInstruction(
+        try TransactionInstruction(
             keys: [
                 .init(publicKey: payer, isSigner: true, isWritable: true),
                 .init(
-                    publicKey: try PublicKey.associatedTokenAddress(
+                    publicKey: PublicKey.associatedTokenAddress(
                         walletAddress: owner,
-                        tokenMintAddress: mint
+                        tokenMintAddress: mint,
+                        tokenProgramId: tokenProgramId
                     ),
                     isSigner: false,
                     isWritable: true
@@ -28,7 +30,7 @@ public enum AssociatedTokenProgram: SolanaBasicProgram {
                 .init(publicKey: owner, isSigner: false, isWritable: false),
                 .init(publicKey: mint, isSigner: false, isWritable: false),
                 .init(publicKey: SystemProgram.id, isSigner: false, isWritable: false),
-                .init(publicKey: TokenProgram.id, isSigner: false, isWritable: false),
+                .init(publicKey: tokenProgramId, isSigner: false, isWritable: false),
                 .init(publicKey: .sysvarRent, isSigner: false, isWritable: false),
             ],
             programId: AssociatedTokenProgram.id,

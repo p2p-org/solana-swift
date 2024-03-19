@@ -9,9 +9,11 @@ on:
 
 jobs:
   upversion:
-    runs-on: macos-12
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
     - name: upversion
       env:

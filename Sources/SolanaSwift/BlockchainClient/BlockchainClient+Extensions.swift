@@ -13,24 +13,9 @@ public extension SolanaBlockchainClient {
         from owner: PublicKey,
         amount: Lamports,
         payer: PublicKey,
-        minRentExemption mre: Lamports?
+        minRentExemption: Lamports
     ) async throws -> AccountInstructions {
-        let newAccount: KeyPair
-        let minRentExemption: Lamports
-        async let requestNewAccount = KeyPair(network: apiClient.endpoint.network)
-
-        if let mre = mre {
-            minRentExemption = mre
-            newAccount = try await requestNewAccount
-        } else {
-            (minRentExemption, newAccount) = try await(
-                apiClient.getMinimumBalanceForRentExemption(
-                    dataLength: UInt64(AccountInfo.BUFFER_LENGTH),
-                    commitment: "recent"
-                ),
-                requestNewAccount
-            )
-        }
+        let newAccount = try await KeyPair(network: apiClient.endpoint.network)
 
         return .init(
             account: newAccount.publicKey,
@@ -39,7 +24,7 @@ public extension SolanaBlockchainClient {
                     from: owner,
                     toNewPubkey: newAccount.publicKey,
                     lamports: amount + minRentExemption,
-                    space: AccountInfo.BUFFER_LENGTH,
+                    space: TokenAccountState.BUFFER_LENGTH,
                     programId: TokenProgram.id
                 ),
                 TokenProgram.initializeAccountInstruction(
@@ -72,24 +57,26 @@ public extension SolanaBlockchainClient {
     func prepareForCreatingAssociatedTokenAccount(
         owner: PublicKey,
         mint: PublicKey,
+        tokenProgramId: PublicKey,
         feePayer: PublicKey,
         closeAfterward: Bool
     ) async throws -> AccountInstructions {
         let associatedAddress = try PublicKey.associatedTokenAddress(
             walletAddress: owner,
-            tokenMintAddress: mint
+            tokenMintAddress: mint,
+            tokenProgramId: tokenProgramId
         )
 
         let isAssociatedTokenAddressRegistered: Bool
         do {
-            let info: BufferInfo<AccountInfo>? = try await apiClient
+            let info: BufferInfo<TokenAccountState>? = try await apiClient
                 .getAccountInfo(account: associatedAddress.base58EncodedString)
-            if info?.owner == TokenProgram.id.base58EncodedString,
+            if PublicKey.isSPLTokenProgram(info?.owner),
                info?.data.owner == owner
             {
                 isAssociatedTokenAddressRegistered = true
             } else {
-                throw SolanaError.other("Associated token account is belong to another user")
+                throw BlockchainClientError.other("Associated token account is belong to another user")
             }
         } catch {
             if error.isEqualTo(.couldNotRetrieveAccountInfo) {
@@ -120,14 +107,15 @@ public extension SolanaBlockchainClient {
         }
 
         // else create associated address
-        return .init(
+        return try .init(
             account: associatedAddress,
             instructions: [
-                try AssociatedTokenProgram
+                AssociatedTokenProgram
                     .createAssociatedTokenAccountInstruction(
                         mint: mint,
                         owner: owner,
-                        payer: feePayer
+                        payer: feePayer,
+                        tokenProgramId: tokenProgramId
                     ),
             ],
             cleanupInstructions: cleanupInstructions,

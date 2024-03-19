@@ -4,10 +4,6 @@ public protocol BorshDeserializable {
     init(from reader: inout BinaryReader) throws
 }
 
-enum DeserializationError: Error {
-    case noData
-}
-
 public extension FixedWidthInteger {
     init(from reader: inout BinaryReader) throws {
         var value: Self = .zero
@@ -75,7 +71,7 @@ extension String: BorshDeserializable {
     public init(from reader: inout BinaryReader) throws {
         let count: UInt32 = try .init(from: &reader)
         let bytes = try reader.read(count: count)
-        guard let value = String(bytes: bytes, encoding: .utf8) else { throw DeserializationError.noData }
+        guard let value = String(bytes: bytes, encoding: .utf8) else { throw BorshCodableError.invalidData }
         self = value
     }
 }
@@ -97,7 +93,7 @@ extension Dictionary: BorshDeserializable where Key: BorshDeserializable & Equat
     public init(from reader: inout BinaryReader) throws {
         let count: UInt32 = try .init(from: &reader)
         let keyValuePairs = try [UInt32](0 ..< count)
-            .map { _ in (try Key(from: &reader), try Value(from: &reader)) }
+            .map { _ in try (Key(from: &reader), Value(from: &reader)) }
         self = Dictionary(uniqueKeysWithValues: keyValuePairs)
     }
 }

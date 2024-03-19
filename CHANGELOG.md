@@ -1,3 +1,36 @@
+## 5.0.0
+
+- Fix TokenMetadata encoding, tags.
+- Remove deprecated PublicKey.tokenProgramId, use TokenProgram.id instead.
+- Remove deprecated PublicKey.programId, use SystemProgram.id instead.
+- Remove deprecated PublicKey.ownerValidationProgramId, use OwnerValidationProgram.id instead.
+- Remove deprecated PublicKey.splAssociatedTokenAccountProgramId, use AssociatedTokenProgram.id instead.
+- Remove deprecated typealias AccountInfo, use TokenAccountState or Token2022AccountState instead.
+- Remove deprecated typealias Mint, use TokenMintState or Token2022MintState instead.
+- Remove deprecated typealias Wallet, use AccountBalance instead.
+- Support token 2022 via method getAccountBalances (See GetAccountBalancesTests).
+- Support token 2022 and Token2022Program.
+
+## 4.0.0
+
+- Rename Wallet to AccountBalance.
+- Remove comment headers
+- Do swiftformat entire codebase
+- Change target to iOS 15, tvOS 11, watchOS 4
+- Rename TransactionStatus to PendingTransactionStatus
+- Rename Mint to SPLTokenMintState
+- Rename AccountInfo to SPLTokenAccountState
+- Remove SolanaError and split it into separated error types like PublicKeyError, TransactionConfirmationError, BlockchainClientError, BinaryReaderError, BorshCodableError, KeyPairError, VersionedMessageError, VersionedTransactionError.
+- Remove DeserializationError and migrate them to BorshCodableError.
+- Add transactionSimulationError, couldNotRetrieveAccountInfo & blockhashNotFound cases into APIClientError.
+- Rename Mnemomic.Error into MnemonicError.
+- Rename Ed25519HDKey.Error to Ed25519HDKeyError.
+- Remove getTokenWallets method (should be done in client)
+- Remove some methods in Error+Extensions.
+- Rename Token to TokenMetadata.
+- Rename Token.address to Token.mintAddress.
+...
+
 ## 3.0.0
 
 - Change iconUrl of some tokens

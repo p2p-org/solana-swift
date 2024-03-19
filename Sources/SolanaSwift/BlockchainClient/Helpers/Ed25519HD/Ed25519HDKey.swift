@@ -5,16 +5,10 @@ public enum Ed25519HDKey {
     public typealias Hex = String
     public typealias Path = String
 
-    public enum Error: Swift.Error {
-        case invalidDerivationPath
-        case hmacCanNotAuthenticate
-        case canNotGetMasterKeyFromSeed
-    }
-
     private static let ed25519Curve = "ed25519 seed"
     public static let hardenedOffset = 0x8000_0000
 
-    public static func getMasterKeyFromSeed(_ seed: Hex) -> Result<Keys, Error> {
+    public static func getMasterKeyFromSeed(_ seed: Hex) -> Result<Keys, Ed25519HDKeyError> {
         let hmacKey = ed25519Curve.bytes
 
         guard let entropy = hmacSha512(message: Data(hex: seed), key: Data(hmacKey)) else {
@@ -25,7 +19,7 @@ public enum Ed25519HDKey {
         return .success(Keys(key: IL, chainCode: IR))
     }
 
-    private static func CKDPriv(keys: Keys, index: UInt32) -> Result<Keys, Error> {
+    private static func CKDPriv(keys: Keys, index: UInt32) -> Result<Keys, Ed25519HDKeyError> {
         var bytes = [UInt8]()
         bytes.append(UInt8(0))
         bytes += keys.key.bytes
@@ -47,9 +41,11 @@ public enum Ed25519HDKey {
         return withZeroBytes ? Data(zero + signPk) : Data(signPk)
     }
 
-    public static func derivePath(_ path: Path, seed: Hex, offSet: Int = hardenedOffset) -> Result<Keys, Error> {
+    public static func derivePath(_ path: Path, seed: Hex,
+                                  offSet: Int = hardenedOffset) -> Result<Keys, Ed25519HDKeyError>
+    {
         guard path.isValidDerivationPath else {
-            return .failure(Error.invalidDerivationPath)
+            return .failure(.invalidDerivationPath)
         }
 
         return getMasterKeyFromSeed(seed).flatMap { keys in

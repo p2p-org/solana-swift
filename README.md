@@ -7,6 +7,20 @@ Solana-blockchain client, written in pure swift.
 [![Platform](https://img.shields.io/cocoapods/p/SolanaSwift.svg?style=flat)](https://cocoapods.org/pods/SolanaSwift)
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://p2p-org.github.io/solana-swift/documentation/solanaswift)
 
+## Breaking changes
+### v5.0
+...
+- Remove deprecated typealias Mint, use SPLTokenMintState or Token2022MintState instead.
+- Remove deprecated typealias Wallet, use AccountBalance instead.
+- Support token 2022 via method getAccountBalances (See GetAccountBalancesTests).
+- Support token 2022 and Token2022Program.
+...
+[See more](https://github.com/p2p-org/solana-swift/blob/main/CHANGELOG.md)
+
+### v2.0
+- From v2.0.0 we officially omited Rx library and a lot of dependencies, thus we also adopt swift concurrency to `solana-swift`. [What have been changed?](https://github.com/p2p-org/solana-swift/issues/42)
+- For those who still use `SolanaSDK` class, follow [this link](https://github.com/p2p-org/solana-swift/blob/deprecated/1.3.8/README.md)
+
 ## Features
 - [x] Supported swift concurrency (from 2.0.0)
 - [x] Key pairs generation
@@ -17,11 +31,7 @@ Solana-blockchain client, written in pure swift.
 - [x] Socket communication
 - [x] OrcaSwapSwift
 - [x] RenVMSwift
-
-## Example
-
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
-Demo wallet: [p2p-wallet](https://github.com/p2p-org/p2p-wallet-ios)
+- [x] Token2022
 
 ## Requirements
 - iOS 13 or later
@@ -29,6 +39,7 @@ Demo wallet: [p2p-wallet](https://github.com/p2p-org/p2p-wallet-ios)
 ## Dependencies
 - TweetNacl
 - secp256k1.swift
+- Task_retrying
 
 ## Installation
 
@@ -37,7 +48,7 @@ SolanaSwift is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'SolanaSwift', '~> 3.0.0'
+pod 'SolanaSwift', '~> 5.0.0'
 ```
 
 ### Swift package manager
@@ -45,15 +56,12 @@ pod 'SolanaSwift', '~> 3.0.0'
 ...
 dependencies: [
     ...
-    .package(url: "https://github.com/p2p-org/solana-swift", from: "3.0.0")
+    .package(url: "https://github.com/p2p-org/solana-swift", from: "5.0.0")
 ],
 ...
 ```
 
 ## How to use
-### Version 2.0 update anouncement
-* From v2.0.0 we officially omited Rx library and a lot of dependencies, thus we also adopt swift concurrency to `solana-swift`. [What have been changed?](https://github.com/p2p-org/solana-swift/issues/42)
-* For those who still use `SolanaSDK` class, follow [this link](https://github.com/p2p-org/solana-swift/blob/deprecated/1.3.8/README.md)
 
 ### Import
 ```swift
@@ -111,14 +119,14 @@ struct InMemoryAccountStorage: SolanaAccountStorage {
 
 ### Create an account (keypair)
 ```swift
-let account = try await Account(network: .mainnetBeta)
+let account = try await KeyPair(network: .mainnetBeta)
 // optional
 accountStorage.save(account)
 ```
 
 ### Restore an account from a seed phrase (keypair)
 ```swift
-let account = try await Account(phrases: ["miracle", "hundred", ...], network: .mainnetBeta, derivablePath: ...)
+let account = try await KeyPair(phrases: ["miracle", "hundred", ...], network: .mainnetBeta, derivablePath: ...)
 // optional
 accountStorage.save(account)
 ```
@@ -140,7 +148,7 @@ let apiClient = JSONRPCAPIClient(endpoint: endpoint)
 let result = try await apiClient.getBlockHeight()
 
 // To get balance of the current account
-guard let account = try? accountStorage.account?.publicKey.base58EncodedString else { throw SolanaError.unauthorized }
+guard let account = try? accountStorage.account?.publicKey.base58EncodedString else { throw UnauthorizedError }
 let balance = try await apiClient.getBalance(account: account, commitment: "recent")
 ```
 
@@ -236,6 +244,7 @@ List of default programs and pre-defined method that live on Solana network:
 3. AssociatedTokenProgram. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/associatedtokenprogram)
 4. OwnerValidationProgram. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/ownervalidationprogram)
 5. TokenSwapProgram. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokenswapprogram)
+6. Token2022Program. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/token2022program)
 
 ### Solana Tokens Repository
 Tokens repository usefull when you need to get a list of tokens. See [Documentation](https://p2p-org.github.io/solana-swift/documentation/solanaswift/tokensrepository)
@@ -246,15 +255,6 @@ let tokenRepository = TokensRepository(endpoint: endpoint)
 let list = try await tokenRepository.getTokensList()
 ```
 TokenRepository be default uses cache not to make extra calls, it can disabled manually `.getTokensList(useCache: false)`
-
-## How to use OrcaSwap
-OrcaSwap has been moved to new library [OrcaSwapSwift](https://github.com/p2p-org/OrcaSwapSwift) 
-
-## How to use RenVM
-RenVM has been moved to new library [RenVMSwift](https://github.com/p2p-org/RenVMSwift)
-
-## How to use Serum swap (DEX) (NOT STABLE)
-SerumSwap has been moved to new library [SerumSwapSwift](https://github.com/p2p-org/SerumSwapSwift)
 
 ## Contribution
 - Welcome to contribute, feel free to change and open a PR.

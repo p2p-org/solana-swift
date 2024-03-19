@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Giang Long Tran on 13.01.2023.
-//
-
 import Foundation
 
 public typealias AccountKeysFromLookups = LoadedAddresses
@@ -62,7 +55,7 @@ public struct MessageAccountKeys {
         instructions: [TransactionInstruction]
     ) throws -> [MessageCompiledInstruction] {
         if count > UInt8.max {
-            throw SolanaError.other("Account index overflow encountered during compilation")
+            throw VersionedMessageError.other("Account index overflow encountered during compilation")
         }
         var keyIndexMap: [String: Int] = [:]
         keySegments
@@ -76,13 +69,13 @@ public struct MessageAccountKeys {
             if let keyIndex = keyIndexMap[key.base58EncodedString] {
                 return keyIndex
             }
-            throw SolanaError.other("Encountered an unknown instruction account key during compilation")
+            throw VersionedMessageError.other("Encountered an unknown instruction account key during compilation")
         }
 
         return try instructions.map { (instruction: TransactionInstruction) in
-            .init(
-                programIdIndex: UInt8(try findKeyIndex(key: instruction.programId)),
-                accountKeyIndexes: try instruction.keys.map { meta in UInt8(try findKeyIndex(key: meta.publicKey)) },
+            try .init(
+                programIdIndex: UInt8(findKeyIndex(key: instruction.programId)),
+                accountKeyIndexes: instruction.keys.map { meta in try UInt8(findKeyIndex(key: meta.publicKey)) },
                 data: instruction.data
             )
         }

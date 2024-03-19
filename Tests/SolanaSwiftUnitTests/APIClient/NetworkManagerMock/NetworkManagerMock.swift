@@ -1,5 +1,5 @@
-import SolanaSwift
 import Foundation
+import SolanaSwift
 
 class NetworkManagerMock: NetworkManager {
     private let json: String

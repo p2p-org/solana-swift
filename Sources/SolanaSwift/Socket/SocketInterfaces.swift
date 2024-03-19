@@ -39,22 +39,22 @@ public protocol SolanaSocketEventsDelegate: AnyObject {
 
 public extension SolanaSocketEventsDelegate {
     func connected() {}
-    
-    func nativeAccountNotification(notification: SocketNativeAccountNotification) {}
-    
-    func tokenAccountNotification(notification: SocketTokenAccountNotification) {}
-    
-    func programNotification(notification: SocketProgramAccountNotification) {}
-    
-    func signatureNotification(notification: SocketSignatureNotification) {}
-    
-    func logsNotification(notification: SocketLogsNotification) {}
-    
-    func unsubscribed(id: String) {}
-    
-    func subscribed(socketId: UInt64, id: String) {}
-    
-    func disconnected(reason: String, code: Int) {}
-    
-    func error(error: Error?) {}
+
+    func nativeAccountNotification(notification _: SocketNativeAccountNotification) {}
+
+    func tokenAccountNotification(notification _: SocketTokenAccountNotification) {}
+
+    func programNotification(notification _: SocketProgramAccountNotification) {}
+
+    func signatureNotification(notification _: SocketSignatureNotification) {}
+
+    func logsNotification(notification _: SocketLogsNotification) {}
+
+    func unsubscribed(id _: String) {}
+
+    func subscribed(socketId _: UInt64, id _: String) {}
+
+    func disconnected(reason _: String, code _: Int) {}
+
+    func error(error _: Error?) {}
 }

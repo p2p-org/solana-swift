@@ -5,6 +5,7 @@
 //  Created by 仇弘扬 on 2017/8/14.
 //  Copyright © 2017年 askcoin. All rights reserved.
 //
+import CommonCrypto
 import Foundation
 
 let BTCKeychainMainnetPrivateVersion: UInt32 = 0x0488_ADE4
@@ -18,15 +19,6 @@ let BTCKeychainHardenedSymbol = "'"
 let BTCKeychainPathSeparator = "/"
 
 public class Keychain: NSObject {
-    public enum KeyDerivationError: Error {
-        case indexInvalid
-        case pathInvalid
-        case privateKeyNil
-        case publicKeyNil
-        case chainCodeNil
-        case notMasterKey
-    }
-
     public var privateKey: Data?
     private var chainCode: Data?
 
@@ -47,6 +39,31 @@ public class Keychain: NSObject {
             return nil
         }
         guard let hmac = hmacSha512(message: Data(seedData.seed), key: keyData) else {
+            return nil
+        }
+        self.init(hmac: hmac.bytes)
+        isMasterKey = true
+        isTestnet = network == "devnet" || network == "testnet"
+    }
+
+    public convenience init?(seed: String, salt: String, network: String) throws {
+        let password = (seed.components(separatedBy: " ").joined(separator: " ") as NSString)
+            .decomposedStringWithCompatibilityMapping
+        let salt = (salt as NSString).decomposedStringWithCompatibilityMapping
+        guard let seedBytes = pbkdf2(
+            hash: CCPBKDFAlgorithm(kCCPRFHmacAlgSHA512),
+            password: password,
+            salt: Data(salt.bytes),
+            keyByteCount: 64,
+            rounds: 2048
+        )?.bytes else {
+            return nil
+        }
+
+        guard let keyData = "Bitcoin seed".data(using: .utf8) else {
+            return nil
+        }
+        guard let hmac = hmacSha512(message: Data(seedBytes), key: keyData) else {
             return nil
         }
         self.init(hmac: hmac.bytes)

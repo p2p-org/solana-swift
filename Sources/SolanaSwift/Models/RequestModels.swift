@@ -1,10 +1,3 @@
-//
-//  SolanaRequest.swift
-//  SolanaSwift
-//
-//  Created by Chung Tran on 10/26/20.
-//
-
 import Foundation
 
 public struct EncodableWrapper: Encodable {
@@ -86,6 +79,9 @@ public struct RequestConfiguration: Encodable {
     public let before: String?
     public let until: String?
     public let skipPreflight: Bool?
+    public let preflightCommitment: Commitment?
+    public let searchTransactionHistory: Bool?
+    public let replaceRecentBlockhash: Bool?
 
     public init?(
         commitment: Commitment? = nil,
@@ -95,14 +91,26 @@ public struct RequestConfiguration: Encodable {
         limit: Int? = nil,
         before: String? = nil,
         until: String? = nil,
-        skipPreflight: Bool? = nil
+        skipPreflight: Bool? = nil,
+        preflightCommitment: Commitment? = nil,
+        searchTransactionHistory: Bool? = nil,
+        replaceRecentBlockhash: Bool? = nil
     ) {
-        if commitment == nil, encoding == nil, dataSlice == nil, filters == nil, limit == nil, before == nil,
-           until == nil, skipPreflight == nil
+        if commitment == nil,
+           encoding == nil,
+           dataSlice == nil,
+           filters == nil,
+           limit == nil,
+           before == nil,
+           until == nil,
+           skipPreflight == nil,
+           preflightCommitment == nil,
+           searchTransactionHistory == nil,
+           replaceRecentBlockhash == nil
         {
             return nil
         }
-        
+
         self.commitment = commitment
         self.encoding = encoding
         self.dataSlice = dataSlice
@@ -111,13 +119,16 @@ public struct RequestConfiguration: Encodable {
         self.before = before
         self.until = until
         self.skipPreflight = skipPreflight
+        self.preflightCommitment = preflightCommitment
+        self.searchTransactionHistory = searchTransactionHistory
+        self.replaceRecentBlockhash = replaceRecentBlockhash
     }
 }
 
 public struct DataSlice: Encodable {
     public let offset: Int
     public let length: Int
-    
+
     public init(offset: Int, length: Int) {
         self.offset = offset
         self.length = length

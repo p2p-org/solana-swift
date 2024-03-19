@@ -1,14 +1,7 @@
-//
-//  File.swift
-//  
-//
-//  Created by Giang Long Tran on 13.01.2023.
-//
-
 import Foundation
 
 // TODO: follow code from solana!
-public struct CompiledInstruction {
+public struct CompiledInstruction: Equatable {
     public let programIdIndex: UInt8
     let keyIndicesCount: [UInt8]
     let keyIndices: [UInt8]

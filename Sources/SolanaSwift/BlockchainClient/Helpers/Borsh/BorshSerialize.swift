@@ -44,7 +44,7 @@ extension Bool: BorshSerializable {
     }
 }
 
-extension Optional where Wrapped: BorshSerializable {
+public extension Optional where Wrapped: BorshSerializable {
     func serialize(to writer: inout Data) throws {
         switch self {
         case let .some(value):

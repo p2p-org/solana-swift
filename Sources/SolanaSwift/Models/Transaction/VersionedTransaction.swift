@@ -1,26 +1,19 @@
-//
-//  File.swift
-//
-//
-//  Created by Giang Long Tran on 14.01.2023.
-//
-
 import Foundation
 import TweetNacl
 
-public enum TransactionVersion {
+public enum TransactionVersion: Equatable {
     case v0
     case legacy
 }
 
-public struct VersionedTransaction {
+public struct VersionedTransaction: Equatable {
     public var message: VersionedMessage
     public internal(set) var signatures: [Data]
-    
+
     public mutating func setRecentBlockHash(_ blockHash: BlockHash) {
         message.setRecentBlockHash(blockHash)
     }
-    
+
     public var version: TransactionVersion {
         message.value.version
     }
@@ -88,7 +81,7 @@ public struct VersionedTransaction {
         let signerPubkeys = Array(message.value.staticAccountKeys.prefix(message.value.header.numRequiredSignatures))
 
         guard let signerIndex = signerPubkeys.firstIndex(of: publicKey) else {
-            throw SolanaError.assertionFailed("Can not add signature because \(publicKey.base58EncodedString) is not required to sign this transaction")
+            throw VersionedTransactionError.nonRequiredSigner(publicKey.base58EncodedString)
         }
 
         signatures[signerIndex] = signature

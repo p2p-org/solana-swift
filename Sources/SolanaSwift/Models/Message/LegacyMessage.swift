@@ -4,7 +4,7 @@ import Foundation
 public typealias BlockHash = String
 
 /// Lecagy message
-public struct Message: IMessage {
+public struct Message: IMessage, Equatable {
     public var version: TransactionVersion { .legacy }
 
     // MARK: - Constants
@@ -73,7 +73,7 @@ public struct Message: IMessage {
         for _ in 0 ..< accountCount {
             let account = data.prefix(PublicKey.numberOfBytes)
             data = data.dropFirst(PublicKey.numberOfBytes)
-            accountKeys.append(try PublicKey(string: Base58.encode(account.bytes)))
+            try accountKeys.append(PublicKey(string: Base58.encode(account.bytes)))
         }
 
         let recentBlockhash = data.prefix(PublicKey.numberOfBytes)
@@ -153,4 +153,3 @@ public struct Message: IMessage {
         Data.encodeLength(length)
     }
 }
-

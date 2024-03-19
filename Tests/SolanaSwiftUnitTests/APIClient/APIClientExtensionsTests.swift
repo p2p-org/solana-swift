@@ -9,7 +9,7 @@ class APIClientExtensionsTests: XCTestCase {
 
     func testCheckAccountValidation() async throws {
         let mock = NetworkManagerMock1()
-        
+
         mock.prepare(name: "checkAccountValidation1")
         let apiClient = BaseAPIClientMock(endpoint: endpoint, networkManager: mock)
         // TODO:
@@ -40,7 +40,8 @@ class APIClientExtensionsTests: XCTestCase {
         let apiClient = BaseAPIClientMock(endpoint: endpoint)
         let result = try await apiClient.findSPLTokenDestinationAddress(
             mintAddress: mintAddress,
-            destinationAddress: destination
+            destinationAddress: destination,
+            tokenProgramId: TokenProgram.id
         )
         XCTAssertEqual(result.destination, "3uetDDizgTtadDHZzyy9BqxrjQcozMEkxzbKhfZF4tG3")
         XCTAssertEqual(result.isUnregisteredAsocciatedToken, false)
@@ -50,39 +51,27 @@ class APIClientExtensionsTests: XCTestCase {
         let apiClient = BaseAPIClientMock(endpoint: endpoint)
         let exist = try await apiClient.checkIfAssociatedTokenAccountExists(
             owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM",
-            mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            tokenProgramId: TokenProgram.id
         )
         XCTAssertTrue(exist)
 
         let exist2 = try await apiClient.checkIfAssociatedTokenAccountExists(
             owner: "9sdwzJWooFrjNGVX6GkkWUG9GyeBnhgJYqh27AsPqwbM",
-            mint: "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk"
+            mint: "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk",
+            tokenProgramId: TokenProgram.id
         )
         XCTAssertFalse(exist2)
     }
 
-    func testGetTokenWallets() async throws {
-        let mock = TokenRepositoryMockNetworkManager(withError: false)
-        let apiClient = BaseAPIClientMock(endpoint: endpoint)
-        let tokenRepository = TokensRepository(
-            endpoint: endpoint,
-            tokenListParser: TokensListParser(networkManager: mock)
-        )
-        let res = try await apiClient.getTokenWallets(
-            account: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
-            tokensRepository: tokenRepository
-        )
-        XCTAssertEqual(res.count, 1)
-        XCTAssertEqual(res.first?.pubkey, "9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4")
-    }
-    
     func testGetAccountInfoThrowable() async throws {
         let mock = NetworkManagerMock1()
         mock.prepare(name: "checkAccountValidation2")
         let apiClient = BaseAPIClientMock(endpoint: endpoint, networkManager: mock)
-        
+
         do {
-            let _: BufferInfo<AccountInfo> = try await apiClient.getAccountInfoThrowable(account: "djfijijasdf")
+            let _: BufferInfo<TokenAccountState> = try await apiClient
+                .getAccountInfoThrowable(account: "djfijijasdf")
         } catch {
             XCTAssertTrue(error.isEqualTo(.couldNotRetrieveAccountInfo))
         }
@@ -112,22 +101,28 @@ class BaseAPIClientMock: JSONRPCAPIClient {
         super.init(endpoint: endpoint, networkManager: networkManager)
     }
 
-    override func getTokenAccountsByOwner(
+    func getTokenAccountsByOwner(
         pubkey _: String,
         params _: OwnerInfoParams? = nil,
         configs _: RequestConfiguration? = nil
-    ) async throws -> [TokenAccount<AccountInfo>] {
+    ) async throws -> [TokenAccount<TokenAccountState>] {
         let json =
             "[{\"account\":{\"data\":[\"ppdSk884LShYnHoHm7XiDlZ28iJVm9BHPgrAEfxU44AJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"So11111111111111111111111111111111111111112\",\"rentEpoch\":309},\"pubkey\":\"9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4\"}]"
-        let decoder = try JSONDecoder().decode([TokenAccount<AccountInfo>].self, from: json.data(using: .utf8)!)
+        let decoder = try JSONDecoder().decode(
+            [TokenAccount<TokenAccountState>].self,
+            from: json.data(using: .utf8)!
+        )
         return decoder
     }
 
-    override func getMultipleAccounts<T: BufferLayout>(pubkeys _: [String]) async throws -> [BufferInfo<T>] {
+    override func getMultipleAccounts<T: BufferLayout>(
+        pubkeys _: [String],
+        commitment _: Commitment
+    ) async throws -> [BufferInfo<T>?] {
         let json =
             "{\"context\":{\"slot\":132420615},\"value\":[{\"data\":[\"APoAh5MDAAAAAAKLjuya35R64GfrOPbupmMcxJ1pmaH2fciYq9DxSQ88FioLlNul6FnDNF06/RKhMFBVI8fFQKRYcqukjYZitosKxZBjjg9hLR2AsDm2e/itloPtlrPeVDPIVdnO4+dmM2JiSZHdhsj7+Fn94OTNte9elt1ek0p487C2fLrFA9CvUPerjZvfP97EqlF9OXbPSzaGJzdmfWhk4jRnThsg5scAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAObFpMVhxY3CRrzEcywhYTa4a4SsovPp4wKPRTbTJVtzAfQBZAAAAABDU47UFrGnHMTsb0EaE1TBoVQGvCIHKJ4/EvpK3zvIfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACsWQY44PYS0dgLA5tnv4rZaD7Zaz3lQzyFXZzuPnZjMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\",\"base64\"],\"executable\":false,\"lamports\":1345194,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":306}]}"
         let decoder = try JSONDecoder()
-            .decode(Rpc<[BufferInfo<Mint>]>.self, from: json.data(using: .utf8)!) as! Rpc<[BufferInfo<T>]>
+            .decode(Rpc<[BufferInfo<TokenMintState>]>.self, from: json.data(using: .utf8)!) as! Rpc<[BufferInfo<T>]>
         return decoder.value
     }
 
@@ -136,7 +131,7 @@ class BaseAPIClientMock: JSONRPCAPIClient {
     private var getAccountInfoResponses = [
         "1": "{\"context\":{\"slot\":134254318},\"value\":{\"data\":[\"\",\"base64\"],\"executable\":false,\"lamports\":9984180,\"owner\":\"11111111111111111111111111111111\",\"rentEpoch\":310}}",
         "2": #"{"context":{"slot":134254375},"value":{"data":["xvp6877brTo9ZfNqq8l0MbG75MLS9uDkfKYCA0UvXWEn97kEVYkyppO43UtuZxDeKV73hCs+rPNfzL6PmRAKxebSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","base64"],"executable":false,"lamports":2039280,"owner":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","rentEpoch":310}}"#,
-        "3":#"{"context":{"slot":135918577},"value":null}"#
+        "3": #"{"context":{"slot":135918577},"value":null}"#,
     ]
     override func getAccountInfo<T: BufferLayout>(account: String) async throws -> BufferInfo<T>? {
         var accountInfoResponseJSON: String = getAccountInfoResponses["2"]!
@@ -145,8 +140,12 @@ class BaseAPIClientMock: JSONRPCAPIClient {
         } else if account == "HnXJX1Bvps8piQwDYEYC6oea9GEkvQvahvRj3c97X9xr" {
             accountInfoResponseJSON = getAccountInfoResponses["3"]!
         }
-        let decoder = try JSONDecoder()
-            .decode(Rpc<BufferInfo<T>?>.self, from: accountInfoResponseJSON.data(using: .utf8)!)
-        return decoder.value
+        do {
+            return try JSONDecoder()
+                .decode(Rpc<BufferInfo<T>?>.self, from: accountInfoResponseJSON.data(using: .utf8)!)
+                .value
+        } catch is BinaryReaderError {
+            throw APIClientError.couldNotRetrieveAccountInfo
+        }
     }
 }

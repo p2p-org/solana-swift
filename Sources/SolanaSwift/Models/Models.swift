@@ -20,7 +20,7 @@ public struct SocketParams<T: Decodable>: Decodable {
     public let subscription: UInt64?
 }
 
-public struct ResponseError: Decodable, Equatable {
+public struct ResponseError: Codable, Equatable {
     public init(code: Int?, message: String?, data: ResponseErrorData?) {
         self.code = code
         self.message = message
@@ -32,7 +32,12 @@ public struct ResponseError: Decodable, Equatable {
     public let data: ResponseErrorData?
 }
 
-public struct ResponseErrorData: Decodable, Equatable {
+public struct ResponseErrorData: Codable, Equatable {
+    public init(logs: [String]? = nil, numSlotsBehind: Int? = nil) {
+        self.logs = logs
+        self.numSlotsBehind = numSlotsBehind
+    }
+
     // public let err: ResponseErrorDataError
     public let logs: [String]?
     public let numSlotsBehind: Int?
@@ -169,7 +174,7 @@ public struct BufferInfo<T: BufferLayout>: Decodable, Equatable {
     public let data: T
     public let executable: Bool
     public let rentEpoch: UInt64
-    
+
     public init(lamports: Lamports, owner: String, data: T, executable: Bool, rentEpoch: UInt64) {
         self.lamports = lamports
         self.owner = owner
@@ -238,7 +243,7 @@ public struct TransactionMeta: Decodable {
 public enum AnyTransactionError: Codable {
     case detailed(TransactionError)
     case string(String)
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         if let x = try? container.decode(String.self) {
@@ -251,13 +256,13 @@ public enum AnyTransactionError: Codable {
         }
         throw DecodingError.typeMismatch(AnyTransactionError.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for ErrUnion"))
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
-        case .detailed(let x):
+        case let .detailed(x):
             try container.encode(x)
-        case .string(let x):
+        case let .string(x):
             try container.encode(x)
         }
     }
@@ -354,7 +359,7 @@ public struct TokenAccountBalance: Codable, Equatable, Hashable {
 public struct TokenAccount<T: BufferLayout>: Decodable, Equatable {
     public let pubkey: String
     public let account: BufferInfo<T>
-    
+
     public init(pubkey: String, account: BufferInfo<T>) {
         self.pubkey = pubkey
         self.account = account

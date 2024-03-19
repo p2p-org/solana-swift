@@ -1,17 +1,8 @@
-//
-//  TransactionTests.swift
-//  
-//
-//  Created by Kamil Wyszomierski on 21/06/2022.
-//
-
 import SolanaSwift
 import XCTest
 
 class TransactionTests: XCTestCase {
-
     func test_givenSigner_whenPartialSign_thenSignerAppended() throws {
-
         // given
         let signer = KeyPair.StubFactory.make()
         var transaction = Self.makeTransaction(signer: signer)
@@ -24,7 +15,6 @@ class TransactionTests: XCTestCase {
     }
 
     func test_givenSignerAndInvalidTransaction_whenPartialSign_thenThrowsError() throws {
-
         // given
         let signer = KeyPair.StubFactory.make()
         var transaction = Transaction(
@@ -39,7 +29,6 @@ class TransactionTests: XCTestCase {
     }
 
     func test_givenPartiallySignedTransactionAndSameSigner_whenPartialSign_thenSignerNotAdded() throws {
-
         // given
         let signer = KeyPair.StubFactory.make()
         var transaction = Self.makeTransaction(signer: signer)
@@ -54,7 +43,6 @@ class TransactionTests: XCTestCase {
     }
 
     func test_givenEmptySigners_whenPartialSign_thenThrowsError() throws {
-
         // given
         let signer = KeyPair.StubFactory.make()
         var transaction = Self.makeTransaction(signer: signer)
@@ -66,7 +54,6 @@ class TransactionTests: XCTestCase {
 }
 
 extension TransactionTests {
-
     static func makeTransaction(
         signer: KeyPair,
         feePayer: PublicKey = .StubFactory.make()
@@ -79,11 +66,11 @@ extension TransactionTests {
                             publicKey: signer.publicKey,
                             isSigner: true,
                             isWritable: true
-                        )
+                        ),
                     ],
                     programId: .fake,
                     data: [UInt8]([0])
-                )
+                ),
             ],
             recentBlockhash: "",
             feePayer: feePayer

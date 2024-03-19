@@ -44,7 +44,7 @@ public protocol APIClientRequestEncoder {
     func encoded() throws -> Data
 }
 
-enum JSONRPCRequestEncoderError: Error {
+public enum JSONRPCRequestEncoderError: Error {
     case cantEncodeValue
 }
 

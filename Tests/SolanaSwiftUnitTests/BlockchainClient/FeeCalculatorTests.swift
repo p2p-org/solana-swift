@@ -1,10 +1,3 @@
-//
-//  FeeCalculatorTests.swift
-//
-//
-//  Created by Chung Tran on 05/05/2022.
-//
-
 import SolanaSwift
 import XCTest
 
@@ -109,12 +102,13 @@ class FeeCalculatorTests: XCTestCase {
         XCTAssertEqual(fee2.deposit, minRentExemption)
 
         // create associated token
-        let transaction3 = createTransaction(
+        let transaction3 = try createTransaction(
             instructions: [
-                try AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+                AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
                     mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     owner: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
-                    payer: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5"
+                    payer: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
+                    tokenProgramId: TokenProgram.id
                 ),
             ]
         )
@@ -125,17 +119,19 @@ class FeeCalculatorTests: XCTestCase {
         XCTAssertEqual(fee3.deposit, 0)
 
         // create associated token and close
-        let transaction4 = createTransaction(
+        let transaction4 = try createTransaction(
             instructions: [
-                try AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
+                AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
                     mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     owner: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
-                    payer: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5"
+                    payer: "GrDMoeqMLFjeXQ24H56S1RLgT4R76jsuWCd6SvXyGPQ5",
+                    tokenProgramId: TokenProgram.id
                 ),
                 TokenProgram.closeAccountInstruction(
-                    account: try PublicKey.associatedTokenAddress(
+                    account: PublicKey.associatedTokenAddress(
                         walletAddress: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
-                        tokenMintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+                        tokenMintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        tokenProgramId: TokenProgram.id
                     ),
                     destination: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG",
                     owner: "3h1zGmCwsRJnVk5BuRNMLsPaQu1y2aqXqXDWYCgrp5UG"

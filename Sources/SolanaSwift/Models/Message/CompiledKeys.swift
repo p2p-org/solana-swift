@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Giang Long Tran on 14.01.2023.
-//
-
 import Foundation
 
 public struct CompiledKeyMeta {
@@ -43,7 +36,7 @@ public struct CompiledKeys {
             !keyMeta.isSigner && !keyMeta.isInvoked && !keyMeta.isWritable
         }
 
-        if writableIndexes.count == 0 && readonlyIndexes.count == 0 {
+        if writableIndexes.count == 0, readonlyIndexes.count == 0 {
             return nil
         }
 

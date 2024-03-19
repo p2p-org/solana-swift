@@ -19,9 +19,6 @@ gsed -i 's/solana-swift", from: "'.*'")/solana-swift", from: "'$1'")/g' README.m
 # set version in podspec
 gsed -i 's/s.version.*= '.*'/s.version          = '\'''$1'\'\''/g' SolanaSwift.podspec
 
-# lint podspec
-pod lib lint SolanaSwift.podspec --allow-warnings
-
 # commit and tag
 git add 'SolanaSwift.podspec' 'README.md'
 git commit -m "feat: upversion to '$1'"

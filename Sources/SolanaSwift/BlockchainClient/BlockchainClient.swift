@@ -1,5 +1,11 @@
 import Foundation
 
+public enum BlockchainClientError: Error, Equatable {
+    case sendTokenToYourSelf
+    case invalidAccountInfo
+    case other(String)
+}
+
 /// Default implementation of SolanaBlockchainClient
 public class BlockchainClient: SolanaBlockchainClient {
     public var apiClient: SolanaAPIClient
@@ -7,7 +13,7 @@ public class BlockchainClient: SolanaBlockchainClient {
     public init(apiClient: SolanaAPIClient) {
         self.apiClient = apiClient
     }
-    
+
     /// Prepare a transaction to be sent using SolanaBlockchainClient
     /// - Parameters:
     ///   - instructions: the instructions of the transaction
@@ -39,7 +45,7 @@ public class BlockchainClient: SolanaBlockchainClient {
             )
         }
         let expectedFee = try feeCalculator.calculateNetworkFee(transaction: transaction)
-        
+
         let blockhash = try await apiClient.getRecentBlockhash()
         transaction.recentBlockhash = blockhash
 
@@ -47,7 +53,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         if !signers.isEmpty {
             try transaction.sign(signers: signers)
         }
-        
+
         // return formed transaction
         return .init(transaction: transaction, signers: signers, expectedFee: expectedFee)
     }
@@ -69,14 +75,14 @@ public class BlockchainClient: SolanaBlockchainClient {
         let feePayer = feePayer ?? account.publicKey
         let fromPublicKey = account.publicKey
         if fromPublicKey.base58EncodedString == destination {
-            throw SolanaError.other("You can not send tokens to yourself")
+            throw BlockchainClientError.sendTokenToYourSelf
         }
         var accountInfo: BufferInfo<EmptyInfo>?
         do {
             accountInfo = try await apiClient.getAccountInfo(account: destination)
             guard accountInfo == nil || accountInfo?.owner == SystemProgram.id.base58EncodedString
-            else { throw SolanaError.other("Invalid account info") }
-        } catch let error as SolanaError where error == .couldNotRetrieveAccountInfo {
+            else { throw BlockchainClientError.invalidAccountInfo }
+        } catch let error as APIClientError where error == .couldNotRetrieveAccountInfo {
             // ignoring error
             accountInfo = nil
         } catch {
@@ -84,16 +90,18 @@ public class BlockchainClient: SolanaBlockchainClient {
         }
 
         // form instruction
-        let instruction = SystemProgram.transferInstruction(
+        let instruction = try SystemProgram.transferInstruction(
             from: fromPublicKey,
-            to: try PublicKey(string: destination),
+            to: PublicKey(string: destination),
             lamports: amount
         )
-        return try await prepareTransaction(instructions: [instruction],
-                                            signers: [account],
-                                            feePayer: feePayer)
+        return try await prepareTransaction(
+            instructions: [instruction],
+            signers: [account],
+            feePayer: feePayer
+        )
     }
-    
+
     /// Prepare for sending any SPLToken
     /// - Parameters:
     ///   - account: user's account to send from
@@ -105,29 +113,28 @@ public class BlockchainClient: SolanaBlockchainClient {
     ///   - feePayer: (Optional) if the transaction would be paid by another user
     ///   - transferChecked: (Default: false) use transferChecked instruction instead of transfer transaction
     ///   - minRentExemption: (Optional) pre-calculated min rent exemption, will be fetched if not provided
-    /// - Returns: (preparedTransaction: PreparedTransaction, realDestination: String), preparedTransaction can be sent or simulated using SolanaBlockchainClient, the realDestination is the real spl address of destination. Can be different from destinationAddress if destinationAddress is a native Solana address
+    /// - Returns: (preparedTransaction: PreparedTransaction, realDestination: String), preparedTransaction can be sent
+    /// or simulated using SolanaBlockchainClient, the realDestination is the real spl address of destination. Can be
+    /// different from destinationAddress if destinationAddress is a native Solana address
     public func prepareSendingSPLTokens(
         account: KeyPair,
         mintAddress: String,
+        tokenProgramId: PublicKey,
         decimals: Decimals,
         from fromPublicKey: String,
         to destinationAddress: String,
         amount: UInt64,
         feePayer: PublicKey? = nil,
         transferChecked: Bool = false,
-        minRentExemption mre: Lamports? = nil
+        lamportsPerSignature: Lamports,
+        minRentExemption: Lamports
     ) async throws -> (preparedTransaction: PreparedTransaction, realDestination: String) {
         let feePayer = feePayer ?? account.publicKey
 
-        let minRenExemption: Lamports
-        if let mre = mre {
-            minRenExemption = mre
-        } else {
-            minRenExemption = try await apiClient.getMinimumBalanceForRentExemption(span: AccountInfo.BUFFER_LENGTH)
-        }
         let splDestination = try await apiClient.findSPLTokenDestinationAddress(
             mintAddress: mintAddress,
-            destinationAddress: destinationAddress
+            destinationAddress: destinationAddress,
+            tokenProgramId: tokenProgramId
         )
 
         // get address
@@ -135,7 +142,7 @@ public class BlockchainClient: SolanaBlockchainClient {
 
         // catch error
         if fromPublicKey == toPublicKey.base58EncodedString {
-            throw SolanaError.other("You can not send tokens to yourself")
+            throw BlockchainClientError.sendTokenToYourSelf
         }
 
         let fromPublicKey = try PublicKey(string: fromPublicKey)
@@ -151,10 +158,11 @@ public class BlockchainClient: SolanaBlockchainClient {
             let createATokenInstruction = try AssociatedTokenProgram.createAssociatedTokenAccountInstruction(
                 mint: mint,
                 owner: owner,
-                payer: feePayer
+                payer: feePayer,
+                tokenProgramId: tokenProgramId
             )
             instructions.append(createATokenInstruction)
-            accountsCreationFee += minRenExemption
+            accountsCreationFee += minRentExemption
         }
 
         // send instruction
@@ -163,23 +171,44 @@ public class BlockchainClient: SolanaBlockchainClient {
         // use transfer checked transaction for proxy, otherwise use normal transfer transaction
         if transferChecked {
             // transfer checked transaction
-            sendInstruction = TokenProgram.transferCheckedInstruction(
-                source: fromPublicKey,
-                mint: try PublicKey(string: mintAddress),
-                destination: splDestination.destination,
-                owner: account.publicKey,
-                multiSigners: [],
-                amount: amount,
-                decimals: decimals
-            )
+            if tokenProgramId == TokenProgram.id {
+                sendInstruction = try TokenProgram.transferCheckedInstruction(
+                    source: fromPublicKey,
+                    mint: PublicKey(string: mintAddress),
+                    destination: splDestination.destination,
+                    owner: account.publicKey,
+                    multiSigners: [],
+                    amount: amount,
+                    decimals: decimals
+                )
+            } else {
+                sendInstruction = try Token2022Program.transferCheckedInstruction(
+                    source: fromPublicKey,
+                    mint: PublicKey(string: mintAddress),
+                    destination: splDestination.destination,
+                    owner: account.publicKey,
+                    multiSigners: [],
+                    amount: amount,
+                    decimals: decimals
+                )
+            }
         } else {
             // transfer transaction
-            sendInstruction = TokenProgram.transferInstruction(
-                source: fromPublicKey,
-                destination: toPublicKey,
-                owner: account.publicKey,
-                amount: amount
-            )
+            if tokenProgramId == TokenProgram.id {
+                sendInstruction = TokenProgram.transferInstruction(
+                    source: fromPublicKey,
+                    destination: toPublicKey,
+                    owner: account.publicKey,
+                    amount: amount
+                )
+            } else {
+                sendInstruction = Token2022Program.transferInstruction(
+                    source: fromPublicKey,
+                    destination: toPublicKey,
+                    owner: account.publicKey,
+                    amount: amount
+                )
+            }
         }
 
         instructions.append(sendInstruction)
@@ -193,7 +222,11 @@ public class BlockchainClient: SolanaBlockchainClient {
         let preparedTransaction = try await prepareTransaction(
             instructions: instructions,
             signers: [account],
-            feePayer: feePayer
+            feePayer: feePayer,
+            feeCalculator: DefaultFeeCalculator(
+                lamportsPerSignature: lamportsPerSignature,
+                minRentExemption: minRentExemption
+            )
         )
         return (preparedTransaction, realDestination)
     }

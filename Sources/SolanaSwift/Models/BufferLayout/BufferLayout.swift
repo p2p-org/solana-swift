@@ -1,9 +1,5 @@
 import Foundation
 
-public enum BufferLayoutError: Error {
-    case NotImplemented
-}
-
 public protocol BufferLayout: Codable, BorshCodable, Equatable {}
 
 public extension BufferLayout {
@@ -19,11 +15,11 @@ public extension BufferLayout {
         // Unable to get parsed data, fallback to decoding base64
         let stringData = (try? container.decode([String].self).first) ?? (try? container.decode(String.self))
         guard let string = stringData else {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw BinaryReaderError.dataMismatch
         }
 
         if string.isEmpty, !(Self.self == EmptyInfo.self) {
-            throw SolanaError.couldNotRetrieveAccountInfo
+            throw BinaryReaderError.dataMismatch
         }
 
         let data = Data(base64Encoded: string) ?? Data(Base58.decode(string))

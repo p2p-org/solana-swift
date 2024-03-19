@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Giang Long Tran on 15.01.2023.
-//
-
 import Foundation
 
 public enum LookUpTableProgram {
@@ -20,7 +13,7 @@ public enum LookUpTableProgram {
         let (lookupTableAddress, bump) = try PublicKey.findProgramAddress(
             seeds: [
                 authority.data,
-                Data(recentSlot.bytes)
+                Data(recentSlot.bytes),
             ],
             programId: id
         )
@@ -31,13 +24,13 @@ public enum LookUpTableProgram {
                     .init(publicKey: lookupTableAddress, isSigner: false, isWritable: true),
                     .init(publicKey: authority, isSigner: true, isWritable: false),
                     .init(publicKey: payer, isSigner: true, isWritable: true),
-                    .init(publicKey: SystemProgram.id, isSigner: false, isWritable: false)
+                    .init(publicKey: SystemProgram.id, isSigner: false, isWritable: false),
                 ],
                 programId: id,
                 data: [
                     UInt32(0),
                     recentSlot,
-                    bump
+                    bump,
                 ]
             ),
             lookupTableAddress
@@ -52,13 +45,13 @@ public enum LookUpTableProgram {
     ) -> TransactionInstruction {
         var keys: [AccountMeta] = [
             .init(publicKey: lookupTable, isSigner: false, isWritable: true),
-            .init(publicKey: authority, isSigner: true, isWritable: false)
+            .init(publicKey: authority, isSigner: true, isWritable: false),
         ]
 
         if let payer = payer {
             keys.append(contentsOf: [
                 .init(publicKey: payer, isSigner: true, isWritable: true),
-                .init(publicKey: SystemProgram.id, isSigner: false, isWritable: false)
+                .init(publicKey: SystemProgram.id, isSigner: false, isWritable: false),
             ])
         }
 
@@ -68,7 +61,7 @@ public enum LookUpTableProgram {
             data: [
                 UInt32(2),
                 UInt64(addresses.count),
-                addresses.map { $0.bytes }.reduce([], +)
+                addresses.map { $0.bytes }.reduce([], +),
             ]
         )
     }
@@ -82,7 +75,7 @@ public enum LookUpTableProgram {
             keys: [
                 .init(publicKey: lookupTable, isSigner: false, isWritable: true),
                 .init(publicKey: authority, isSigner: true, isWritable: false),
-                .init(publicKey: recipient, isSigner: false, isWritable: true)
+                .init(publicKey: recipient, isSigner: false, isWritable: true),
             ],
             programId: id,
             data: [UInt32(4)]
