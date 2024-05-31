@@ -351,6 +351,31 @@ public struct Transaction: Encodable, Equatable {
         return data
     }
 
+    public static func addSignatureRaw(data: Data, signer: Keypair) throws -> Data {
+        var data = data
+        var signatures: [Data] = []
+        let signatureCount = data.decodeLength()
+
+        // Pop off all of the signatures
+        for index in stride(from: 0, through: signatureCount - 1, by: 1) {
+            let existingSignature = data.prefix(Constants.signatureLength)
+            data = data.dropFirst(Constants.signatureLength)
+            signatures.append(existingSignature)
+        }
+
+        // Find the correct index based on the order of `Message.accountKeys`.
+        let message = try Message.from(data)
+        guard let index = message.accountKeys.firstIndex(where: { $0.publicKey == signer.publicKey })
+        else { throw VersionedTransactionError.unknown }
+        // Avoid index out of bounds error
+        guard signatureCount > index
+        else { throw VersionedTransactionError.signatureVerificationError }
+        // Sign
+        let signature = try NaclSign.signDetached(message: data, secretKey: signer.secretKey)
+        signatures[index] = signature
+        // TODO Concatenate the signatureCount, signatures, and message data
+    }
+
     public static func from(data: Data) throws -> Transaction {
         var data = data
         var signatures: [String] = []
