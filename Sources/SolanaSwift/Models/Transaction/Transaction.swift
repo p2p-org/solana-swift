@@ -351,21 +351,21 @@ public struct Transaction: Encodable, Equatable {
         return data
     }
 
-    public static func addSignatureRaw(data: Data, signer: Keypair) throws -> Data {
+    public static func addSignatureRaw(data: Data, signer: KeyPair) throws -> Data {
         var data = data
         var signatures: [Data] = []
         let signatureCount = data.decodeLength()
 
         // Pop off all of the signatures
-        for index in stride(from: 0, through: signatureCount - 1, by: 1) {
+        for _ in stride(from: 0, through: signatureCount - 1, by: 1) {
             let existingSignature = data.prefix(Constants.signatureLength)
             data = data.dropFirst(Constants.signatureLength)
             signatures.append(existingSignature)
         }
 
         // Find the correct index based on the order of `Message.accountKeys`.
-        let message = try Message.from(data)
-        guard let index = message.accountKeys.firstIndex(where: { $0.publicKey == signer.publicKey })
+        let message = try Message.from(data: data)
+        guard let index = message.accountKeys.firstIndex(where: { $0 == signer.publicKey })
         else { throw VersionedTransactionError.unknown }
         // Avoid index out of bounds error
         guard signatureCount > index
@@ -373,7 +373,22 @@ public struct Transaction: Encodable, Equatable {
         // Sign
         let signature = try NaclSign.signDetached(message: data, secretKey: signer.secretKey)
         signatures[index] = signature
-        // TODO Concatenate the signatureCount, signatures, and message data
+
+
+        // signature data
+        let signaturesData = signatures.reduce(Data()) { result, signature in
+            var data = result
+            data.append(signature)
+            return data
+        }
+
+        let encodedSignatureLength = Data.encodeLength(signatures.count)
+
+        var dataToReturn = Data(capacity: encodedSignatureLength.count + signaturesData.count + data.count)
+        dataToReturn.append(encodedSignatureLength)
+        dataToReturn.append(signaturesData)
+        dataToReturn.append(data)
+        return dataToReturn
     }
 
     public static func from(data: Data) throws -> Transaction {
