@@ -79,7 +79,7 @@ class MyCustomLogger: SolanaSwiftLogger {
     }
 }
 
-// AppDelegate or somewhere eles
+// AppDelegate or somewhere else
 
 let customLogger: SolanaSwiftLogger = MyCustomLogger()
 SolanaSwift.Logger.setLoggers([customLogger])
