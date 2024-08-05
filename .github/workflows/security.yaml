@@ -1,0 +1,14 @@
+name: Security Testing
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [ opened, synchronize ]
+
+jobs:
+  sast:
+    uses: p2p-org/security-workflows/.github/workflows/sast.yaml@main
+    secrets: inherit
+  sca:
+    uses: p2p-org/security-workflows/.github/workflows/sca.yaml@main
+    secrets: inherit
