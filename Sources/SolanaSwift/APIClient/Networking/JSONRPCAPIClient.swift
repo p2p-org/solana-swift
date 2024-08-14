@@ -175,7 +175,9 @@ public class JSONRPCAPIClient: SolanaAPIClient {
     }
 
     public func getTokenLargestAccounts(pubkey: String, commitment: Commitment? = nil) async throws -> [TokenAmount] {
-        try await get(method: "getTokenLargestAccounts", params: [pubkey, RequestConfiguration(commitment: commitment)])
+        let result: Rpc<[TokenAmount]> = try await get(method: "getTokenLargestAccounts", 
+                                                       params: [pubkey, RequestConfiguration(commitment: commitment)])
+        return result.value
     }
 
     public func getTokenSupply(pubkey: String, commitment: Commitment? = nil) async throws -> TokenAmount {

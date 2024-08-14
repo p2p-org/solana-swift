@@ -299,6 +299,19 @@ class APIClientTests: XCTestCase {
         XCTAssertEqual(result.first?.account.owner, Token2022Program.id.base58EncodedString)
         XCTAssertEqual(result.first?.pubkey, "43W7QvyKr5hJhFRhvteb7VbsLdwGQG3VZ2fRYVcw5yFN")
     }
+    
+    func testGetTokenLargestAccounts() async throws {
+        let mock = NetworkManagerMock(NetworkManagerMockJSON["getTokenLargestAccounts"]!)
+        let apiClient = JSONRPCAPIClient(endpoint: endpoint, networkManager: mock)
+        let result = try await apiClient.getTokenLargestAccounts(
+            pubkey: "3wyAj7Rt1TWVPZVteFJPLa26JmLvdb1CAKEFZm3NY75E"
+        )
+        XCTAssertEqual(result.first?.address, "FYjHNoFtSQ5uijKrZFyYAxvEr87hsKXkXcxkcmkBAf4r")
+        XCTAssertEqual(result.first?.amount, "771")
+        XCTAssertEqual(result.first?.decimals, 2)
+        XCTAssertEqual(result.first?.uiAmount, 7.71)
+
+    }
 
     func testSendTransactionError1() async throws {
         let mock = NetworkManagerMock(NetworkManagerMockJSON["sendTransactionError1"]!)
@@ -384,6 +397,8 @@ private var NetworkManagerMockJSON = [
     "getTokenAccountsByOwner": "{\"jsonrpc\":\"2.0\",\"result\":{\"context\":{\"slot\":134133059},\"value\":[{\"account\":{\"data\":[\"KLrvuAuq+8gDEGl28m80PrYteWuPlqjGuBpCW5rA84gJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":309},\"pubkey\":\"9nuVPk3KR7oUXmDsHL7irue2Nxaj3ejvuBXoaEcXMmN7\"},{\"account\":{\"data\":[\"ppdSk884LShYnHoHm7XiDlZ28iJVm9BHPgrAEfxU44AJ7HiGa7fztefqNjU2MSBOZ3HPlRmb0eAXj0bEanmyfAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"base64\"],\"executable\":false,\"lamports\":2039280,\"owner\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"rentEpoch\":309},\"pubkey\":\"9bNJ7AF8w1Ms4BsqpqbUPZ16vCSePYJpgSBUTRqd8ph4\"}]},\"id\":\"0891812F-1F8B-4927-80F7-C7C1C1D990B3\"}\n",
     "getToken2022AccountsByOwner":
         #"{"jsonrpc":"2.0","result":{"context":{"apiVersion":"1.17.14","slot":239989261},"value":[{"account":{"data":["qDijZLhcKuVLVBmL6Ve9S9DvSU7kn1XtkCnOtnDXGjA1zKFCx20D2kF7X/jEMh09sgYqyBraJk1DWsFwaUfQkCtqbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcAAAACAAgAAAAAAAAAAAA=","base64"],"executable":false,"lamports":2157600,"owner":"TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb","rentEpoch":0,"space":182},"pubkey":"43W7QvyKr5hJhFRhvteb7VbsLdwGQG3VZ2fRYVcw5yFN"}]},"id":1}"#,
+    "getTokenLargestAccounts":
+        #"{"jsonrpc":"2.0","result":{"context":{"slot":1114},"value":[{"address":"FYjHNoFtSQ5uijKrZFyYAxvEr87hsKXkXcxkcmkBAf4r","amount":"771","decimals":2,"uiAmount":7.71,"uiAmountString":"7.71"},{"address":"BnsywxTcaYeNUtzrPxQUvzAWxfzZe3ZLUJ4wMMuLESnu","amount":"229","decimals":2,"uiAmount":2.29,"uiAmountString":"2.29"}]},"id":1}"#,
     "sendTransactionError1": #"{"jsonrpc":"2.0","error":{"code":-32003,"message":"Transaction precompile verification failure InvalidAccountIndex"},"id":"7DEDE6E5-95E7-4866-BFC0-B4C10A76B457"}"#,
     "getTokenAccountBalance": #"{"jsonrpc":"2.0","result":{"context":{"slot":135942588},"value":{"amount":"491717631607","decimals":9,"uiAmount":491.717631607,"uiAmountString":"491.717631607"}},"id":"3D9E7B6E-B48D-40EF-B656-EA3054227CCD"}"#,
     "getHealth": #"{ "jsonrpc": "2.0", "result": "ok", "id": 1 }"#,
