@@ -99,10 +99,10 @@ final class BlockchainClientWithTokenProgramTests: XCTestCase {
 
         XCTAssertEqual(tx.expectedFee, expectedFee)
 
-        let recentBlockhash = try await apiClient.getRecentBlockhash()
+        let latestBlockhash = try await apiClient.getLatestBlockhash()
         let serializedTransaction = try blockchainClient.signAndSerialize(
             preparedTransaction: tx,
-            recentBlockhash: recentBlockhash
+            recentBlockhash: latestBlockhash
         )
         XCTAssertEqual(serializedTransaction, expectedSerializedTransaction)
     }
@@ -221,7 +221,7 @@ private class MockAPIClient: SolanaAPIClient {
         )
     }
 
-    func getRecentBlockhash(commitment _: Commitment?) async throws -> String {
+    func getLatestBlockhash(commitment _: Commitment?) async throws -> String {
         switch testCase {
         case "testPrepareSendingNativeSOL()":
             return "DSfeYUm7WDw1YnKodR361rg8sUzUCGdat9V7fSKPFgzq"

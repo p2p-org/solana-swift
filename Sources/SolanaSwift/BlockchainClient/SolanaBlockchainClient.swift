@@ -48,10 +48,10 @@ public extension SolanaBlockchainClient {
             retryDelay: 1,
             timeoutInSeconds: 60
         ) {
-            let recentBlockhash = try await self.apiClient.getRecentBlockhash()
+            let latestBlockhash = try await self.apiClient.getLatestBlockhash()
             let serializedTransaction = try self.signAndSerialize(
                 preparedTransaction: preparedTransaction,
-                recentBlockhash: recentBlockhash
+                recentBlockhash: latestBlockhash
             )
             return try await self.apiClient.sendTransaction(
                 transaction: serializedTransaction,
@@ -67,10 +67,10 @@ public extension SolanaBlockchainClient {
     func simulateTransaction(
         preparedTransaction: PreparedTransaction
     ) async throws -> SimulationResult {
-        let recentBlockhash = try await apiClient.getRecentBlockhash()
+        let latestBlockhash = try await apiClient.getLatestBlockhash()
         let serializedTransaction = try signAndSerialize(
             preparedTransaction: preparedTransaction,
-            recentBlockhash: recentBlockhash
+            recentBlockhash: latestBlockhash
         )
         return try await apiClient.simulateTransaction(
             transaction: serializedTransaction, configs: RequestConfiguration(
