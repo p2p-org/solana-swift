@@ -46,7 +46,7 @@ public class BlockchainClient: SolanaBlockchainClient {
         }
         let expectedFee = try feeCalculator.calculateNetworkFee(transaction: transaction)
 
-        let blockhash = try await apiClient.getRecentBlockhash()
+        let blockhash = try await apiClient.getLatestBlockhash()
         transaction.recentBlockhash = blockhash
 
         // if any signers, sign
