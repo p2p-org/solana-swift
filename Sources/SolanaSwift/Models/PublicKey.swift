@@ -50,6 +50,10 @@ public struct PublicKey: Codable, Equatable, CustomStringConvertible, Hashable {
     public var description: String {
         base58EncodedString
     }
+    
+    public var isOnCurve: Bool {
+        Self.isOnCurve(publicKey: base58EncodedString).toBool()
+    }
 
     public func short(numOfSymbolsRevealed: Int = 4) -> String {
         let pubkey = base58EncodedString
@@ -172,6 +176,10 @@ public extension PublicKey {
     }
 
     static func isOnCurve(publicKeyBytes: Data) -> Int {
+        guard !publicKeyBytes.bytes.isEmpty else {
+            return 0
+        }
+
         var r = [[Int64]](repeating: NaclLowLevel.gf(), count: 4)
 
         var t = NaclLowLevel.gf(),
