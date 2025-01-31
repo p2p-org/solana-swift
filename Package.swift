@@ -8,7 +8,7 @@ let package = Package(
         .macOS(.v10_15),
         .iOS(.v15),
         .tvOS(.v11),
-        .watchOS(.v4),
+        .watchOS(.v6),
     ],
     products: [
         .library(
@@ -20,7 +20,7 @@ let package = Package(
         // Main depedencies
         .package(url: "https://github.com/21-DOT-DEV/swift-secp256k1", .upToNextMajor(from: "0.18.0")),
         .package(url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git", from: "1.0.2"),
-        .package(url: "https://github.com/bigearsenal/task-retrying-swift.git", from: "2.0.0"),
+        .package(url: "https://github.com/JuniperDAO/task-retrying-swift", from: "2.0.1"),
 
         // Docs generator
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
