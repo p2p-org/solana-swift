@@ -6,7 +6,7 @@ public enum Ed25519HDKey {
     public typealias Path = String
 
     private static let ed25519Curve = "ed25519 seed"
-    public static let hardenedOffset = 0x8000_0000
+    public static let hardenedOffset = 0x8000_0000 as Int64
 
     public static func getMasterKeyFromSeed(_ seed: Hex) -> Result<Keys, Ed25519HDKeyError> {
         let hmacKey = ed25519Curve.bytes
@@ -42,7 +42,7 @@ public enum Ed25519HDKey {
     }
 
     public static func derivePath(_ path: Path, seed: Hex,
-                                  offSet: Int = hardenedOffset) -> Result<Keys, Ed25519HDKeyError>
+                                  offSet: Int64 = hardenedOffset) -> Result<Keys, Ed25519HDKeyError>
     {
         guard path.isValidDerivationPath else {
             return .failure(.invalidDerivationPath)
@@ -51,9 +51,9 @@ public enum Ed25519HDKey {
         return getMasterKeyFromSeed(seed).flatMap { keys in
             let segments = path.components(separatedBy: "/")[1...]
                 .map(\.replacingDerive)
-                .map { Int($0)! }
+                .map { Int64($0)! }
             return .success((keys: keys, segments: segments))
-        }.flatMap { (keys: Keys, segments: [Int]) in
+        }.flatMap { (keys: Keys, segments: [Int64]) in
             do {
                 let keys = try segments.reduce(keys) { try CKDPriv(keys: $0, index: UInt32($1 + offSet)).get() }
                 return .success(keys)
