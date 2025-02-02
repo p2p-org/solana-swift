@@ -120,6 +120,18 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getfees
     ///
     func getFees(commitment: Commitment?) async throws -> Fee
+    
+    /// Get the fee the network will charge for a particular Message
+    /// - Parameters:
+    ///  -  message: Base-64 encoded Message
+    ///  - commitment: Optional
+    /// - Throws: ApiClientError
+    /// - Returns Fee corresponding to the message at the specified blockhash
+    /// - SeeAlso https://solana.com/docs/rpc/http/getfeeformessage
+    /// - Note: This method is only available in solana-core v1.9 or newer.
+    /// Please use ``getFees(commitment:)`` for solana-core v1.8 and below.
+    ///
+    func getFeeForMessage(message: String, commitment: Commitment?) async throws -> Lamports
 
     /// Returns minimum balance required to make account rent exempt
     /// - Parameters:
@@ -287,6 +299,16 @@ public protocol SolanaAPIClient {
     /// - SeeAlso https://docs.solana.com/developing/clients/jsonrpc-api#getrecentblockhash
     ///
     func getRecentBlockhash(commitment: Commitment?) async throws -> String
+    
+    /// Returns the latest blockhash
+    /// - Parameters:
+    ///  - commitment: (optional) Commitment
+    /// - Throws: APIClientError
+    /// - SeeAlso https://solana.com/docs/rpc/http/getlatestblockhash
+    /// - Note: This method is only available in solana-core v1.9 or newer.
+    /// Please use ``getRecentBlockhash(commitment:)`` for solana-core v1.8 and below.
+    ///
+    func getLatestBlockhash(commitment: Commitment?) async throws -> String
 
     /// Returns signatures for confirmed transactions that include the given address in their accountKeys list.
     /// Returns signatures backwards in time from the provided signature or most recent confirmed block
