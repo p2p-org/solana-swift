@@ -25,6 +25,10 @@ public extension SolanaAPIClient {
     func getRecentBlockhash() async throws -> String {
         try await getRecentBlockhash(commitment: nil)
     }
+    
+    func getLatestBlockhash() async throws -> String {
+        try await getLatestBlockhash(commitment: "processed")
+    }
 
     func observeSignatureStatus(signature: String) -> AsyncStream<PendingTransactionStatus> {
         observeSignatureStatus(signature: signature, timeout: 60, delay: 2)
