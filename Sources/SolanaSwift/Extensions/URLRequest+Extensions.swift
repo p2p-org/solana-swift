@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public extension URLRequest {
     func cURL(pretty: Bool = false) -> String {

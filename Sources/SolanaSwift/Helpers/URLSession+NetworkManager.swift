@@ -1,5 +1,9 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
+#if canImport(FoundationNetworking)
 extension URLSession: NetworkManager {
     public func requestData(request: URLRequest) async throws -> Data {
         let (data, _): (Data, URLResponse)
@@ -7,3 +11,4 @@ extension URLSession: NetworkManager {
         return data
     }
 }
+#endif // canImport(FoundationNetworking)

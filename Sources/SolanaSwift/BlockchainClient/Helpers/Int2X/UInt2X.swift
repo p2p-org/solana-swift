@@ -1,4 +1,6 @@
+#if canImport(Accelerate)
 import Accelerate.vecLib
+#endif
 import Foundation
 
 public typealias UInt1X = FixedWidthInteger & BinaryInteger & UnsignedInteger & Codable

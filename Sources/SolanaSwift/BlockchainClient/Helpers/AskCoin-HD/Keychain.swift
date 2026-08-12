@@ -1,3 +1,6 @@
+#if canImport(CommonCrypto)
+import CommonCrypto
+#endif
 //
 //  ASKKeychain.swift
 //  AskCoin-HD
@@ -5,7 +8,6 @@
 //  Created by 仇弘扬 on 2017/8/14.
 //  Copyright © 2017年 askcoin. All rights reserved.
 //
-import CommonCrypto
 import Foundation
 
 let BTCKeychainMainnetPrivateVersion: UInt32 = 0x0488_ADE4
@@ -96,7 +98,7 @@ public class Keychain: NSObject {
         guard let prvKey = self.privateKey else {
             return nil
         }
-        return CKSecp256k1.generatePublicKey(withPrivateKey: prvKey, compression: true)
+        return try CKSecp256k1.generatePublicKey(withPrivateKey: prvKey, compression: true)
     }()
 
     // MARK: - Extended private key
