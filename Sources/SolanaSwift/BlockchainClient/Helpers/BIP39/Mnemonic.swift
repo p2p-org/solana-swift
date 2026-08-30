@@ -64,8 +64,10 @@ public class Mnemonic {
 
     // Mnemonic -> Entropy
     public static func toEntropy(_ phrase: [String], wordlist: [String] = Wordlists.english) throws -> [UInt8] {
-        let bits = phrase.map { word -> String in
-            let index = wordlist.firstIndex(of: word)!
+        let bits = try phrase.map { word -> String in
+            guard let index = wordlist.firstIndex(of: word) else {
+                throw MnemonicError.invalidMnemonic
+            }
             var str = String(index, radix: 2)
             while str.count < 11 {
                 str = "0" + str
