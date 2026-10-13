@@ -6,6 +6,9 @@ on:
     paths:
       - 'Sources/**/*'
 
+permissions:
+  contents: write # auto-commit
+
 jobs:
   docs:
     runs-on: macos-12
